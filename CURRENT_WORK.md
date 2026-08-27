@@ -2,16 +2,6 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
-
-### `M2-G0-003A` — Feature Audit Slice B1 — appointment/reminder safety foundations
-
-- **Merged PR:** #5
-- **Merge SHA:** `8cad56b311cdbe7c6e6157044afc9f83779f6e97`
-- **Audited features:** `CAL-001`, `CAL-002`, `CAL-003`, `REMIND-001`, `REMIND-002`
-- **Live Google production touched:** no.
-- **Executable product behavior changed:** no.
-
 ## Active packet
 
 - **Packet ID:** `M2-G0-003B`
@@ -19,43 +9,58 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-003b-appointment-mail-safety`
-- **Base audit-state SHA:** `8cad56b311cdbe7c6e6157044afc9f83779f6e97`
-- **Objective:** Audit the remaining category-B appointment/mail/communication-safety behaviors as stable feature records without importing private email/calendar data or changing executable behavior.
+- **Base main SHA:** `fb6c9944bb573ed486c4b8aed1fa77636f72609d`
+- **Feature audit commit:** `6bdfe0b518eecd6adea59f19ebcf4c8bd5b82346`
+- **Backlog checkpoint commit:** `521a22c34131f95bc510e7f920ace3d674dc73fb`
+- **Status:** acceptance work complete; PR/merge/readback pending.
 
-## Audit rows in this packet
+## Completed acceptance evidence
 
-Audit exactly category-B rows 6-10:
+1. Assigned stable semantic IDs:
+   - `CAL-004` Context-aware appointment visibility without fabricated confirmation state;
+   - `MAIL-001` Evidence-grounded important-mail triage;
+   - `MAIL-002` Explicit per-message approval for outbound contact;
+   - `MAIL-003` Explicit archive-approval queue with repeat-on-silence;
+   - `CAREER-001` Optional qualified job watch with realistic fit filtering.
+2. Added `CAREER-*` as a separate family because career monitoring is optional per user and has its own canonical qualification/fit state rather than being generic mail behavior.
+3. Kept appointment presentation separate from reminder planning and recorded the no-fabricated-confirmation requirement at its actual evidence level: appointment window/filter logic is test-verified, while hidden-confirmation suppression is policy-specified pending dedicated testing.
+4. Recorded important-mail triage as bounded evidence workflow, not as permission to archive, contact, or mutate downstream authorities.
+5. Preserved the absolute no-auto-email rule as provider-independent `MAIL-002`, with exact per-action approval and recipient/channel revalidation requirements.
+6. Preserved archive silence as no permission and the exact approval question `Is it OK to archive these emails?`.
+7. Recorded career/job watch as an optional personal service using owner-approved canonical qualifications/settings, mandatory-vs-preferred distinction, ambiguity handling, dedupe and no automatic application/contact.
+8. Sized category C into bounded C1/C2/C3 packets before beginning commerce audit.
+9. Updated `FEATURES.md` and `BACKLOG.md`; touched no live Google production state and changed no executable product behavior.
 
-1. Context-aware appointment windows without exposing misleading confirmation state.
-2. Important email triage across school, employer, jobs, financial, medical, vendors, fraud/security.
-3. No automatic outbound email or vendor contact.
-4. Archive-approval prompt using the exact user-facing question and repeat-on-silence behavior.
-5. Career/job watch with realistic qualification filtering.
+## Key audit findings
 
-Do not expand this packet into orders/shipments/receipts or category C.
+- Mail triage, archive approval and outbound send approval are three separate permission/state boundaries.
+- `MAIL-002` must survive provider changes. Outlook, Apple Mail or any later provider cannot weaken explicit send approval simply because Gmail-specific policy is absent.
+- Job watch is optional per user and must not become a universal onboarding default or separate duplicate scheduler.
+- Category B contains no MIRA 2.0 integration/live-verified feature merely because the legacy system had connected Gmail/Calendar state.
 
-## Acceptance criteria
+## Blockers
 
-1. Each scoped behavior receives a stable semantic feature ID and complete feature record.
-2. Appointment visibility/state semantics remain separate from reminder planning and from hidden confirmation/anti-nag state.
-3. Mail triage, outbound-contact authorization, archive approval, and career watch remain distinct where permissions/defaults differ.
-4. Requirement status is separated from implementation/test/integration/live evidence.
-5. Relevant legacy policy/reference/test evidence is inspected without copying live email/calendar content into the public repo.
-6. No automatic outbound email/contact behavior is weakened during normalization.
-7. Archive silence never becomes approval; exact user-facing approval wording is preserved when still current.
-8. Career/job watch remains optional/personal, uses realistic qualification filtering, and does not become a universal default or separate duplicate scheduler.
-9. `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are the only intended changed files.
-10. A small PR is scope-verified, merged, and remotely read back.
-11. `CURRENT_WORK.md` advances to the first bounded category-C packet before completion.
-12. No live Google production state and no executable product behavior is changed.
+None. PR/merge/readback is the remaining packet release step.
 
 ## Exact next action
 
-Create/confirm branch `audit/g0-003b-appointment-mail-safety`. Inspect the legacy appointment-window/confirmation-state policy for row 6: **Context-aware appointment windows without exposing misleading confirmation state**. Assign its stable feature ID and evidence boundary before moving to mail triage.
+Open a pull request from `audit/g0-003b-appointment-mail-safety` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back category-B closure, then activate `M2-G0-004A` on main and create its audit branch.
 
-## Next packet boundary
+## Next packet after merge
 
-After B2 completes, size category C into bounded packets before auditing orders/shipments/receipts/payments/spending. Do not assume category C fits one session merely because humans enjoy repeating mistakes.
+### `M2-G0-004A` — Feature Audit Slice C1 — fulfillment lifecycle foundations
+
+Audit exactly category-C rows 1-5:
+
+1. Gmail/mail evidence ingestion and carrier/vendor correlation.
+2. Ordered → shipped → delivered lifecycle with dedupe.
+3. Cancelled, replaced, returned, refunded and no-settlement states.
+4. Replacement updates superseded purchase state without duplicate spend.
+5. Active-undelivered-only brief output plus five-business-day no-progress action.
+
+Do not expand this packet to receipt/photo intake, spending summaries, financial connectors or category-C rows 6-12.
+
+The exact first unaudited behavior is **Gmail/mail evidence ingestion and carrier/vendor correlation**.
 
 ## Recovery protocol
 

@@ -21,6 +21,7 @@ ID families include:
 - `CAL-*` — calendar, appointments and appointment-window semantics;
 - `REMIND-*` — reminder planning, medication reminder safety and sharing boundaries;
 - `MAIL-*` — email triage, communication safety, evidence ingestion;
+- `CAREER-*` — optional career/job monitoring and fit evaluation;
 - `ORDER-*` — orders, shipments, replacements, returns, refunds;
 - `RECEIPT-*` — receipts, purchases, evidence, payment reconciliation;
 - `ASSET-*` — assets, fitment, specifications, manuals, maintenance;
@@ -176,97 +177,151 @@ Category A is complete. Scheduling, context, Trip, Route, mileage, task and reco
 
 **Delivery/evidence:** `test_verified` for deterministic window calculation in legacy policy. **Live Calendar query coverage and MIRA 2.0 brief integration remain unverified.**
 
-**Hard dependencies:** `OPS-001` canonical AM/PM slot semantics; canonical/user timezone semantics; Calendar/evidence adapter for real appointments; `RECOVERY-002` so Calendar failure can remain scoped.
+**Hard dependencies:** `OPS-001`; canonical/user timezone; Calendar/evidence adapter; `RECOVERY-002`.
 
-**Enables:** weekly planning, Saturday brief appointment section and reminder reconciliation horizon.
+**Legacy evidence:** feature-ledger category B row 1; appointment-window runtime/tests; `brief-run.md`.
 
-**Legacy evidence:** feature-ledger category B row 1; `ops_policy.py` appointment-window logic; `test_ops_policy.py` verifies Saturday AM seven-calendar-day preview and Saturday PM returning to normal day-before behavior; `brief-run.md` explicitly states appointment rendering is slot-based and mode-independent.
-
-**Acceptance / verification boundary:** Deterministic window tests plus MIRA 2.0 sandbox Calendar/evidence read showing exact Saturday-through-Friday inclusion/exclusion. Provider readback/query evidence is required before integration verification.
-
----
+**Acceptance / verification boundary:** Deterministic window tests plus MIRA 2.0 sandbox Calendar/evidence read showing exact Saturday-through-Friday inclusion/exclusion.
 
 ### `CAL-002` — Day-before and morning-of appointment reminders
 
-**Description:** MIRA provides both day-before and morning-of appointment coverage. The reminder planner produces deterministic reminder candidates at configured local wall times; the Ops Brief independently surfaces tomorrow's appointments on PM briefs and today's appointments on normal AM briefs. Cancelled or per-event-disabled appointments do not remind, equal-time triggers deduplicate, and reminders that would occur at/after event start are suppressed rather than emitted late.
+**Description:** MIRA provides day-before and morning-of appointment coverage through deterministic reminder candidates and Ops Brief visibility. Cancelled/disabled appointments do not remind, overlapping triggers deduplicate, and late reminders are suppressed.
 
-**Why it exists / user outcome:** Appointments should appear when preparation is useful and again when action is imminent, without duplicate nagging or nonsense reminders after the appointment has already started.
-
-**Requirement status:** `required`.
-
-**Delivery/evidence:** `test_verified` in the legacy deterministic planner and brief-window logic. **Calendar projection/readback and actual notification delivery are not MIRA 2.0 integration/live verified.**
-
-**Hard dependencies:** canonical appointment identity/evidence; named IANA timezone; reminder activation state; Calendar/notification projection adapter for delivery; `RECOVERY-002` for adapter isolation.
-
-**Enables:** reliable appointment planning and later Android/Calendar notification delivery.
-
-**Legacy evidence:** feature-ledger category B row 2; `reminder_policy.py`; `test_reminder_policy.py` verifies day-before/morning-of planning, dedupe, suppression and disabled-service behavior; `brief-run.md` defines PM tomorrow / AM today visibility.
-
-**Acceptance / verification boundary:** Planner tests plus MIRA 2.0 sandbox appointment read/write/readback and projection identity/readback. Actual user-facing delivery must be observed separately.
-
----
+**Requirement:** required. **Evidence:** `test_verified`; Calendar projection/readback and user delivery unverified. **Dependencies:** appointment identity/evidence, timezone, activation, delivery adapter, `RECOVERY-002`.
 
 ### `CAL-003` — Configurable relative appointment reminder, default one hour before
 
-**Description:** Appointment reminder policy includes a configurable relative interval before event start, defaulting to 60 minutes. The planner rejects invalid intervals, suppresses any computed reminder at/after event start, and deduplicates the relative trigger with day/morning triggers when they resolve to the same instant.
+**Description:** Appointment policy includes a configurable relative interval, default 60 minutes, with invalid-interval rejection, at/after-start suppression and trigger dedupe.
 
-**Why it exists / user outcome:** The user gets a final actionable reminder close enough to leave, prepare, or join without creating a dedicated automation for every appointment.
-
-**Requirement status:** `required`.
-
-**Delivery/evidence:** `test_verified` for deterministic default/configurable relative timing, suppression and dedupe. **Provider projection and notification delivery remain unverified in MIRA 2.0.**
-
-**Hard dependencies:** canonical appointment start time/identity; `CAL-002` planner/projection foundation; named timezone.
-
-**Enables:** close-in appointment prompting without per-event ChatGPT tasks.
-
-**Legacy evidence:** feature-ledger category B row 3; `reminder_policy.py` default `relative_minutes_before = 60`; `test_reminder_policy.py` verifies one-hour-before output, dedupe and invalid profile rejection; policy YAML lists 60-minute stock reminder.
-
-**Acceptance / verification boundary:** Deterministic timing tests plus a sandbox projected event readback proving one stable reminder identity and no reminder at/after event start.
-
----
+**Requirement:** required. **Evidence:** `test_verified`; provider projection/delivery unverified. **Dependencies:** appointment identity/start, `CAL-002`, timezone.
 
 ### `REMIND-001` — Evidence-gated medication reminders
 
-**Description:** Medication reminders are disabled by default and may activate only from an explicitly confirmed schedule supported by an allowed authority: owner confirmation, prescription label, pharmacy, or clinician. Active regimens require stable identity, explicit nonempty schedule times and explicit schedule confirmation. MIRA must not infer medication dose/timing, provide missed-dose advice, silently activate reminders, or use assistant inference as a medication timing source. Paused/ended/disabled regimens do not remind.
+**Description:** Medication reminders are default-off and may activate only from explicitly confirmed schedules supported by owner confirmation, prescription label, pharmacy, or clinician evidence. No inferred dose/timing, missed-dose advice, silent activation or assistant-inferred timing source is permitted.
 
-**Why it exists / user outcome:** MIRA can reliably remind a user about an already-established regimen without turning a reminder feature into unauthorized medical decision-making.
-
-**Requirement status:** `required safety boundary`.
-
-**Delivery/evidence:** `test_verified` in the legacy deterministic planner for source whitelist, explicit confirmation, schedule validation, disabled/paused suppression, DST failure, and no-inference safety flags. **MIRA 2.0 medication authority/projection and actual notification delivery remain unverified.**
-
-**Hard dependencies:** explicit medication regimen authority/provenance; stable regimen identity; named timezone; reminder activation state; notification/projection adapter.
-
-**Enables:** safe medication reminder delivery and optional later caregiver sharing through `REMIND-002`.
-
-**Legacy evidence:** feature-ledger category B row 4; `reminder_policy.py` source whitelist and explicit schedule rules; `test_reminder_policy.py` verifies confirmed schedule planning, untrusted-source rejection, paused suppression, duplicate/empty-time rejection and DST fail-closed behavior; policy YAML prohibits inference/missed-dose advice.
-
-**Acceptance / verification boundary:** Planner safety tests plus MIRA 2.0 sandbox regimen provenance/readback and explicit activation. Actual notification delivery is separate evidence. No legacy personal regimen data is imported during development.
-
----
+**Requirement:** required safety boundary. **Evidence:** `test_verified` deterministic safety planner; MIRA 2.0 regimen authority/projection/delivery unverified. **Dependencies:** regimen authority/provenance, stable ID, timezone, activation, delivery adapter.
 
 ### `REMIND-002` — Explicit opt-in caregiver reminder sharing
 
-**Description:** Reminder audience defaults to the user only. Caregiver sharing is disabled by default and requires explicit activation plus a specific recipient identity. When enabled, only the configured reminder output is shared; enabling a reminder service does not imply permission to share it. The deterministic planner refuses sharing when the recipient field is absent.
+**Description:** Reminder audience defaults to the user. Caregiver sharing is default-off and requires explicit activation plus a specific recipient identity; service activation alone never implies sharing permission.
 
-**Why it exists / user outcome:** A user can deliberately share reminders with a trusted caregiver without MIRA assuming that family relationship equals permission to disclose private schedule or medication information.
+**Requirement:** required safety boundary. **Evidence:** `test_verified` permission/recipient-required gate; real recipient resolution/authorization/provider delivery unverified. **Dependencies:** explicit consent, recipient identity resolution, source reminder, privacy-scoped delivery adapter.
 
-**Requirement status:** `required safety boundary`.
+## Audited appointment/mail communication-safety features
 
-**Delivery/evidence:** `test_verified` for opt-in/default-off behavior and required recipient field. **Exact private-recipient identity resolution, authorization, provider delivery and readback are not verified by the legacy unit test and remain MIRA 2.0 integration requirements.**
+### `CAL-004` — Context-aware appointment visibility without fabricated confirmation state
 
-**Hard dependencies:** explicit sharing consent; exact recipient identity resolution; `CAL-002`/`CAL-003` and/or `REMIND-001` as source reminder; privacy-scoped delivery adapter.
+**Description:** MIRA selects appointment visibility from deterministic brief-slot/calendar windows and current configured context rules without inventing or exposing a hidden “confirmed with user” state. Appointment presentation may include supported title, time and preparation evidence, but the system must not imply that the user has acknowledged, confirmed, accepted, or dismissed an appointment unless an authoritative source explicitly records that fact. Malformed/duplicate/unavailable appointment evidence is isolated rather than guessed into a valid event.
 
-**Enables:** consented caregiver notification without changing canonical reminder ownership.
+**Why it exists / user outcome:** The brief should show the right appointments without quietly manufacturing social state such as “confirmed” merely because the event exists or appeared in a prior brief.
 
-**Legacy evidence:** feature-ledger category B row 5; `reminder_policy.py` defaults audience to user and requires recipient when sharing is enabled; `test_reminder_policy.py` verifies default/opt-in gate; `SKILL.md` requires explicit sharing consent and exact private recipient identity.
+**Requirement status:** `required`.
 
-**Acceptance / verification boundary:** Unit tests prove the gate, not the person. Integration verification requires resolving an approved private recipient, projecting only the intended reminder, provider readback, and proving disabling/revoking sharing stops future caregiver delivery without disabling the user's own reminder.
+**Delivery/evidence:** deterministic appointment windows, filtering, duplicate/range isolation and mode-independent rendering are `test_verified`; the specific no-misleading-confirmation rule is `specified` in legacy policy rather than independently proven by a dedicated confirmation-state test. **MIRA 2.0 Calendar integration remains unverified.**
+
+**Hard dependencies:** `CAL-001`/`CAL-002` appointment-window semantics; canonical appointment evidence; `RECOVERY-002` for malformed/unavailable Calendar isolation.
+
+**Enables:** trustworthy appointment sections and future Calendar/reminder projections without hidden anti-nag state leaking into user-facing claims.
+
+**Legacy evidence:** feature-ledger category B row 6; `brief-run.md` appointment rendering contract; `ops_policy.py` appointment filtering; `test_ops_policy.py` window and malformed/duplicate-event isolation.
+
+**Acceptance / verification boundary:** Add/retain tests proving hidden acknowledgement/confirmation metadata cannot change the user-visible appointment claim unless that state is an explicit authoritative field; then verify a MIRA 2.0 sandbox Calendar read with malformed/unavailable evidence degrading only the appointment module.
+
+---
+
+### `MAIL-001` — Evidence-grounded important-mail triage
+
+**Description:** MIRA performs a bounded important-mail pass for materially relevant school/education, employer/work, job/career, financial, medical, vendor/service, fraud and security messages. It reads materially relevant threads completely before conclusions, surfaces concise actionable changes, and avoids treating Promotions/sales noise as important by default. Email remains evidence, not the sole canonical record of downstream business facts.
+
+**Why it exists / user outcome:** The user gets the few messages that actually matter without receiving an “AI summary” of the entire inbox or losing important context from half-read threads.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `specified`/skill-workflow. The legacy policy defines bounded searches, complete-thread reading and material categories, but this audit found no dedicated deterministic classifier test suite sufficient to promote general mail triage to `test_verified`. **MIRA 2.0 Gmail integration is unverified.**
+
+**Hard dependencies:** connected mail/evidence adapter; bounded query policy; `RECOVERY-002` for mail-adapter failure isolation; canonical downstream authorities when a message changes orders, appointments, finance, etc.
+
+**Enables:** Important Email brief section, archive-review queue, job-watch inputs and evidence-driven downstream reconciliation.
+
+**Legacy evidence:** feature-ledger category B row 7; `brief-run.md` Gmail bounded-evidence pass; `email-reconciliation.md` complete-message/evidence rules and `Ops/Archive Approval` behavior; `SKILL.md` important-mail categories.
+
+**Acceptance / verification boundary:** Before `test_verified`, add deterministic fixtures covering material/nonmaterial classification, thread completeness, duplicate/repeated evidence and unsupported ambiguity. Integration verification requires bounded reads against a synthetic/test mailbox or approved non-production fixture with no private mail committed to Git.
+
+---
+
+### `MAIL-002` — Explicit per-message approval for outbound contact
+
+**Description:** MIRA may investigate an external-contact need, validate the recipient/channel, and draft the complete proposed message, but it must never send email or contact a vendor/employer/service automatically. Every send requires explicit approval for the exact current recipient/message/attachments. Before proposing contact, MIRA checks From/Reply-To/body/footer for unmonitored/no-reply instructions and uses an authoritative alternate support channel when needed. Any material change after approval requires fresh approval. The user-facing confirmation request is `Do you want me to send this email?`.
+
+**Why it exists / user outcome:** MIRA can do the tedious research and drafting without becoming the sort of autonomous assistant that emails a vendor at 3 AM because it felt “confident.”
+
+**Requirement status:** `required safety invariant`.
+
+**Delivery/evidence:** `specified`/skill contract. The safety rule is explicit and repeated across legacy policy; this audit does not claim a complete test-verified send gate or MIRA 2.0 provider integration.
+
+**Hard dependencies:** explicit user approval; validated recipient/channel; current issue evidence; outbound provider capability only after approval; audit/event recording after send.
+
+**Enables:** safe vendor/employer/service contact proposals and later bounded outbound integrations.
+
+**Legacy evidence:** feature-ledger category B row 8; `vendor-contact.md`; `email-reconciliation.md` contact-safety section; `SKILL.md` no-auto-email invariant.
+
+**Acceptance / verification boundary:** Dedicated tests must prove no-send without approval, stale approval cannot authorize changed recipient/body/attachments, no-reply/unmonitored routes are rejected, and a permitted send uses exactly the approved payload. Integration verification requires provider readback after an explicitly approved synthetic/test send; no production send is part of this audit.
+
+---
+
+### `MAIL-003` — Explicit archive-approval queue with repeat-on-silence
+
+**Description:** Important or decision-bearing mail remains in the inbox under the archive-review queue until the user explicitly approves archival. The brief groups the pending decisions compactly and ends the section with the exact prompt `Is it OK to archive these emails?`. Silence, failure to answer, or appearance in a previous brief is never approval; the unresolved queue repeats unchanged on later runs. Narrow separately-authorized retention/deletion policies do not override messages currently held for archive approval.
+
+**Why it exists / user outcome:** MIRA can keep the inbox clean without silently hiding messages the user still needs to decide about.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `specified`/skill-workflow. The exact prompt and silence behavior are explicit in legacy run policy, but MIRA 2.0 Gmail label/archive mutation and readback are unverified.
+
+**Hard dependencies:** `MAIL-001`; mail adapter with label/archive readback; explicit user approval identity/scope; `RECOVERY-002` for filing failure isolation.
+
+**Enables:** safe inbox cleanup and durable archive decisions without auto-archiving important mail.
+
+**Legacy evidence:** feature-ledger category B row 9; `brief-run.md` Important Email output contract; `email-reconciliation.md` important/unknown-mail section and Gmail filing order.
+
+**Acceptance / verification boundary:** Tests must prove silence/repeated runs do not change archive state, approval is bounded to the displayed queue, and filing failure leaves messages pending. Integration verification requires synthetic/test-mail label/archive mutation plus provider readback.
+
+---
+
+### `CAREER-001` — Optional qualified job watch with realistic fit filtering
+
+**Description:** MIRA can run an optional career/job-monitoring service that searches configured opportunity sources and evaluates candidate fit only against owner-approved canonical qualifications/settings. Mandatory requirements can reject a role; preferred qualifications alone cannot. Ambiguous postings become `Needs Review` rather than guessed. The service deduplicates by source/application/employer-title-location identity, reports only new realistic fits or specific review blockers, never applies/contacts anyone automatically, and normally runs as a phase of an existing MIRA control cycle rather than as a duplicate scheduler.
+
+**Why it exists / user outcome:** The user sees realistic opportunities instead of a firehose of jobs whose title merely contains “IT,” while MIRA does not quietly rewrite the user's qualifications to make a posting look attractive.
+
+**Requirement status:** `required personal service` for the legacy deployment; **optional per-user capability** in the general MIRA product.
+
+**Delivery/evidence:** `specified`/skill workflow with explicit state/dedupe/fit rules. The audit found no dedicated executable fit-engine test suite sufficient to mark the general capability `test_verified`. **MIRA 2.0 mail/search/provider integration is unverified.**
+
+**Hard dependencies:** explicit service activation; canonical candidate configuration/qualification authority; mail/search evidence adapter; stable Job Watch identity/state; `MAIL-002` for any later external contact; `RECOVERY-002` for module failure isolation.
+
+**Enables:** compact PM career opportunities and review decisions without separate task/scheduler proliferation.
+
+**Legacy evidence:** feature-ledger category B row 10; `qualified-job-watch.md`; `SKILL.md` consolidated-control-cycle routing.
+
+**Acceptance / verification boundary:** Before `test_verified`, add deterministic fixtures for mandatory-vs-preferred requirements, seniority/role exclusions, experience ceilings, ambiguity, dedupe and no-contact behavior. Integration verification requires a synthetic/approved opportunity source plus canonical settings readback. The feature must remain disabled/unconfigured for users who do not opt in.
+
+## Category B consistency result
+
+Category B is fully audited through row 10.
+
+- Appointment visibility (`CAL-*`) is distinct from reminder delivery/safety (`REMIND-*`).
+- Mail triage (`MAIL-001`) does not itself authorize filing or contact.
+- Outbound-contact permission (`MAIL-002`) is provider-independent and remains an explicit per-action gate even if Gmail is later replaced or supplemented.
+- Archive approval (`MAIL-003`) treats silence as no permission and remains separate from narrow retention/deletion exceptions.
+- Job watch (`CAREER-001`) is an optional personal service and cannot become a universal default merely because it existed in the legacy deployment.
+- No category-B feature is promoted to MIRA 2.0 integration/live verification from legacy provider state.
 
 ## Audit status
 
 - Category A is complete through `M2-G0-002D`.
-- `M2-G0-003A` audited category-B rows 1-5: `CAL-001`, `CAL-002`, `CAL-003`, `REMIND-001`, `REMIND-002`.
-- The complete historical feature inventory is still in progress.
-- The next bounded audit begins with category-B row 6: context-aware appointment windows without exposing misleading confirmation state, then mail/communication-safety rows through row 10.
+- `M2-G0-003A` audited category-B rows 1-5.
+- `M2-G0-003B` audited category-B rows 6-10.
+- **Category B is complete.**
+- The next audit category is C: orders, shipments, receipts, payments and spending, which must be split into bounded packets before work begins.
