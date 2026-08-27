@@ -1317,9 +1317,78 @@ Category E is complete through all 26 historical rows. The final authority/depen
 - Legacy deterministic tests establish strong implementation evidence for several E features, but no category-E feature is promoted to MIRA 2.0 integration/live verification until the new source/runtime/provider path is exercised with synthetic state and read back.
 - No live Google production state was touched during category-E audit and no executable MIRA 2.0 product behavior was changed.
 
+## Audited core life-service composition features
+
+### `SERVICE-002` — Activatable service bundles over canonical behaviors with dependency-derived readiness
+
+**Description:** A MIRA life service is an activatable, user-facing bundle over already-canonical behaviors, authorities and capabilities rather than a duplicate implementation of those behaviors. `SERVICE-001` owns whether the user has enabled, disabled, deferred or left the service unresolved. `SERVICE-002` owns what an enabled/catalogued service depends on and how readiness is derived. Required child behavior/capability/authority failure blocks only that service and its dependents; optional failure degrades only that service path. Service dependency evaluation never installs a dependency, enables another behavior, mutates provider state or treats a recommendation as activation. The catalog and dependency map must remain complete, cycle-safe and semantically aligned with the canonical feature registry.
+
+**Why it exists / user outcome:** MIRA can expose simple choices such as “Briefs,” “Email triage” or “Orders” while still knowing exactly which underlying behaviors have to work. A friendly service name does not get to hide missing safety, provider or data dependencies behind a green toggle.
+
+**Requirement status:** `required for modular service composition`.
+
+**Delivery/evidence:** the generic legacy service-composition/dependency core is `test_verified`. `behavior-dependencies.json` models category-F services as aggregate behaviors with `requires_behaviors`/`optional_behaviors`; `behavior_dependency_check.py` validates unknown references, required dependency cycles and the fail-isolated block/degrade policy, recursively derives dependency status, and explicitly forbids automatic dependency installation or behavior enablement. `test_behavior_dependency_check.py` proves every forensic catalog row has one dependency assignment and directly proves aggregate service `f-05` blocks when required child `c-06` is unavailable while unrelated workflows remain unchanged. `onboarding_profile_router.py` and its tests separately prove finite service activation and implementation-capability status. MIRA 2.0 has not yet persisted/read back service state or run an end-to-end activation → dependency-readiness transaction.
+
+**Hard dependencies:** `SERVICE-001`; canonical behavior/dependency registry; `RECOVERY-002`; `PROVIDER-001`/Integration Registry for live capability evidence; exact service-to-behavior mappings.
+
+**Enables:** all category-F life-service modules, capability-aware onboarding, role-based recommendations, honest blocked/degraded service status and modular future services without duplicating domain logic.
+
+**Legacy evidence:** category-F aggregate dependency assignments; `starter/MODULE_CATALOG.md`; `starter/behavior-dependencies.json`; `starter/tools/behavior_dependency_check.py`; `starter/tools/integration_dependency_router.py`; `starter/tools/onboarding_profile_router.py`; `starter/tests/test_behavior_dependency_check.py`; `starter/tests/test_integration_dependency_router.py`; `starter/tests/test_onboarding_profile_router.py`.
+
+**Acceptance / verification boundary:** Port the catalog/dependency/activation contracts to MIRA 2.0 and prove with synthetic service state that an enabled service derives readiness only from its declared canonical behaviors and verified authorities/capabilities, a missing required dependency blocks only affected services, optional dependency failure degrades only affected paths, disabled services stay disabled, and no dependency remediation changes state without explicit authorization/readback.
+
+## F1 service mappings
+
+### F row 1 — Briefs/action digest
+
+**Canonical mapping:** service key `briefs` → `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, `RECOVERY-002`, governed by `SERVICE-001` + `SERVICE-002`. The legacy `f-01` aggregate maps to A1/A3/A4/A15/A16.
+
+**Evidence ceiling:** aggregate service is catalogued as executable/CI-evidenced and its underlying scheduling/recovery cores carry their already-audited evidence levels. The service wrapper itself inherits only the generic `SERVICE-002` test evidence until MIRA 2.0 service-state/readiness integration is proven.
+
+**Dependency defect:** legacy `f-01` omits A2 / `OPS-002`. MIRA 2.0 Brief-service readiness must require the canonical single-dispatcher/no-duplicate-schedules invariant rather than permitting a service to appear ready while parallel legacy schedules exist.
+
+### F row 2 — Next-action planner
+
+**Canonical mapping:** service key `next_actions` → `TASK-001`, `TASK-002`, governed by `SERVICE-001` + `SERVICE-002`. Legacy `f-02` requires A13/A14.
+
+**Evidence ceiling:** service is workflow/documented at the historical F layer. `TASK-001` is test-verified; `TASK-002` remains specification/skill-level. The aggregate service cannot outrank its weakest required canonical behavior.
+
+### F row 3 — Email triage
+
+**Canonical mapping:** service key `email_triage` → `MAIL-001`, `MAIL-002`, `MAIL-003`, governed by `SERVICE-001` + `SERVICE-002`. Legacy `f-03` requires B7/B8/B9.
+
+**Evidence ceiling:** service is workflow/documented. This mapping correctly includes the no-automatic-outbound-contact safety invariant and explicit archive-approval behavior; enabling triage never grants email-send authority.
+
+### F row 4 — Orders/shipments
+
+**Canonical mapping:** service key `orders_shipments` → `ORDER-001`, `ORDER-002`, `ORDER-003`, `ORDER-005`, governed by `SERVICE-001` + `SERVICE-002`. Legacy `f-04` requires C1/C2/C3/C5.
+
+**Evidence ceiling:** historical aggregate is executable/documented and underlying order cores have mixed test/specification evidence already recorded in category C. Service readiness must reflect those actual child levels rather than the old aggregate label.
+
+**Dependency defect:** legacy `f-04` omits C4 / `ORDER-004`. MIRA 2.0 Orders/shipments readiness must include replacement/supersession correctness so a service cannot be called ready while replacement transactions can duplicate spend or state.
+
+### F row 5 — Receipt archive
+
+**Canonical mapping:** service key `receipt_archive` → `RECEIPT-001`, `RECEIPT-002`, `RECEIPT-003`, governed by `SERVICE-001` + `SERVICE-002`. Legacy `f-05` requires C6/C7/C9.
+
+**Evidence ceiling:** historical aggregate is executable/documented. The generic aggregate-block behavior has direct test coverage using `f-05`, but `RECEIPT-003` remains specification-level, so complete MIRA 2.0 Receipt-archive service readiness remains unproven until that required child behavior exists and service integration is tested.
+
+## Category F1 consistency findings
+
+- The first five category-F rows are service compositions, not new copies of `OPS-*`, `TASK-*`, `MAIL-*`, `ORDER-*` or `RECEIPT-*` behavior.
+- `SERVICE-001` answers **whether the user enabled the service**. `SERVICE-002` answers **what that service requires and whether those requirements are currently ready**. Neither concept may substitute for the other.
+- Service readiness is derived from canonical child behavior plus verified authority/capability state. A historical aggregate label such as `executable` cannot raise a weak/unimplemented child behavior to a higher evidence level.
+- Briefs must add `OPS-002` to its required dependency bundle when MIRA 2.0 ports the legacy map.
+- Orders/shipments must add `ORDER-004` to its required dependency bundle when MIRA 2.0 ports the legacy map.
+- Legacy `order_lifecycle_enabled` is only a compatibility input mapped to `orders_shipments` even though its onboarding prompt says “receipt and order lifecycle.” Canonical MIRA 2.0 keeps `orders_shipments` and `receipt_archive` separately activatable; compatibility migration must not silently enable/disable or misstate the other service.
+- Email triage explicitly includes `MAIL-002`; service activation therefore never implies outbound-send permission.
+- Orders/shipments and Receipt archive remain separate service bundles over related but distinct fulfillment, purchase/evidence and classification authorities. Neither bundle absorbs financial settlement by implication.
+- `RECOVERY-002` failure isolation applies at service composition boundaries: missing requirements block/degrade only affected services and their explicit dependents.
+- No F1 service receives MIRA 2.0 integration/live verification from legacy catalog labels, skill prose or deterministic legacy tests alone.
+
 ## Audit status
 
 - Categories A, B, C, D and E are complete.
-- Category E is closed through all 26 historical rows by `M2-G0-006A` through `M2-G0-006F`.
-- The complete historical feature inventory remains in progress because categories F and G are still unaudited.
-- The next bounded audit is `M2-G0-007A`, beginning category F only after the E6 PR is merged and remotely read back.
+- Category F is in progress. Rows F1-F5 are audited in `M2-G0-007A`; row F6 **Personal finance organization** is the next unaudited category-F behavior.
+- Category G remains unaudited.
+- The complete historical feature inventory remains in progress until F and G are closed.
