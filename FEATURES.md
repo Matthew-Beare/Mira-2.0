@@ -17,7 +17,7 @@ ID families include:
 - `WEATHER-*` — context-aware weather and route-hazard gating;
 - `MILE-*` — paid-mileage occurrences, pay calculations and mileage authority;
 - `TASK-*` — task taxonomy, next actions and completion evidence;
-- `RECOVERY-*` — run evidence, checkpoints, resumability and circuit breakers;
+- `RECOVERY-*` — run evidence, checkpoints, resumability, circuit breakers and failure isolation;
 - `CAL-*` — calendar, appointments, reminders;
 - `MAIL-*` — email triage, communication safety, evidence ingestion;
 - `ORDER-*` — orders, shipments, replacements, returns, refunds;
@@ -94,330 +94,341 @@ MIRA uses canonical vector source assets for symbol, wordmark, square lockup, wi
 ## Audited operational features
 
 ### `OPS-001` — Canonical twice-daily Ops Brief schedule
+**Description:** MIRA's canonical Ops Brief schedule produces exactly two scheduled brief opportunities per calendar day at **02:45** and **14:45** in named IANA timezone `America/New_York`. Device/travel/session timezone and fixed UTC offsets do not reinterpret those wall-clock times. Manual invocation is separate.
 
-**Description:** MIRA's canonical Ops Brief schedule produces exactly two scheduled brief opportunities per calendar day at **02:45** and **14:45** in the named IANA timezone `America/New_York`. Travel location, device timezone, session timezone, and fixed UTC offsets must not reinterpret those wall-clock times. Manual brief invocation is a separate on-demand path and does not count as an extra scheduled brief.
-
-**Why it exists / user outcome:** Predictable briefs tied to the operating schedule rather than whatever timezone a device, cloud worker, or model happens to infer.
+**Why it exists / user outcome:** Predictable briefs tied to the operating schedule.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** `test_verified` for repository policy/runtime slot semantics; **live scheduler configuration and actual 02:45/14:45 firing are not yet MIRA 2.0 live-verified**.
+**Delivery/evidence:** `test_verified` for runtime slot semantics; live scheduler configuration/firing remains unverified in MIRA 2.0.
 
-**Hard dependencies:** named-timezone scheduler/provider readback; `OPS-003`; `OPS-004`.
+**Hard dependencies:** named-timezone scheduler/readback; `OPS-003`; `OPS-004`.
 
-**Enables:** appointment-slot semantics, scheduled brief delivery, Run Log proof, recurring operational reconciliation.
+**Enables:** scheduled briefs, appointment-slot semantics and Run Log proof.
 
-**Legacy evidence:** `skill/ops-brief-policy/scripts/ops_policy.py`; `references/brief-run.md`; `SKILL.md`; legacy feature-ledger category A row 1; PR #31 candidate `MIRA-F009`.
+**Legacy evidence:** `ops_policy.py`; `brief-run.md`; `SKILL.md`; feature-ledger row 1; PR #31 `MIRA-F009`.
 
-**Acceptance / verification boundary:** Scheduler readback must prove recurrence/TZID and observed AM/PM firings must produce canonical run evidence in the correct slots.
+**Acceptance / verification boundary:** Scheduler readback plus observed AM and PM canonical-slot firings.
 
-**Compatibility notes:** Future user-configurable timezones still use named-IANA semantics, never fixed UTC math.
+**Compatibility notes:** Future user-configurable timezones still use IANA semantics.
 
 ---
 
 ### `OPS-002` — Single canonical dispatcher and prohibited duplicate schedules
+**Description:** Scheduled Ops work uses one canonical dispatcher rather than parallel legacy, retry, child, diagnostic, shifted or device-local duplicates. Compatible scheduled work should consolidate when safe.
 
-**Description:** Scheduled Ops work uses one canonical dispatcher/control-cycle rather than parallel legacy, retry, child, diagnostic, UTC-shifted, 3:00, noon/midnight, or device-local duplicate schedules. Compatible scheduled work should be consolidated when safe.
+**Why it exists / user outcome:** Prevent duplicate briefs, contradictory mutations and scheduler confusion.
 
-**Why it exists / user outcome:** Prevent duplicate briefs, contradictory mutations, stale output and wasted scheduler slots.
+**Requirement status:** `required`.
 
-**Requirement status:** `required`; supersedes historical duplicate/shifted schedule states.
+**Delivery/evidence:** `specified`; provider-wide uniqueness remains unverified.
 
-**Delivery/evidence:** `specified`; **provider-wide duplicate enumeration remains unverified in MIRA 2.0**.
+**Hard dependencies:** `OPS-001`; provider enumeration/readback; stable dispatcher identity.
 
-**Hard dependencies:** `OPS-001`; provider task enumeration/readback; stable dispatcher identity.
+**Enables:** reliable scheduled behavior and incident diagnosis.
 
-**Enables:** deduplicated scheduled behavior and reliable scheduler incident diagnosis.
+**Legacy evidence:** feature-ledger row 2; `SKILL.md`; PR #31 `MIRA-F009`; scheduler planner contract.
 
-**Legacy evidence:** feature-ledger category A row 2; `SKILL.md`; PR #31 `MIRA-F009`; PR #31 `starter/scheduler-planner-contract.json`.
-
-**Acceptance / verification boundary:** Provider enumeration/readback must prove exactly one canonical enabled dispatcher and absence/disablement of prohibited variants.
+**Acceptance / verification boundary:** Provider enumeration must prove exactly one intended dispatcher and no prohibited active duplicates.
 
 ---
 
 ### `OPS-003` — Canonical runtime clock gate with DST-safe slot matching
+**Description:** Scheduled entry uses the runtime's own offset-aware clock, converts through IANA timezone rules, handles DST, records dispatch delay and accepts only bounded intended-slot entry. Model/device/travel clocks are not production authority.
 
-**Description:** Scheduled MIRA entry uses the executable runtime's own offset-aware system clock, converts it through the deployment's IANA timezone, handles DST transitions, records dispatch delay, and accepts only the intended logical slot within bounded grace. Model, prompt, device, travel, session, or naive timestamps are not production clock authority.
-
-**Why it exists / user outcome:** Scheduled execution needs evidence of when it actually ran, not an Eastern-looking timestamp produced by wishful thinking.
+**Why it exists / user outcome:** Prove when scheduled execution actually ran.
 
 **Requirement status:** `required by failure evidence`.
 
-**Delivery/evidence:** `test_verified`; MIRA 2.0 live scheduler entry remains integration/live-unverified.
+**Delivery/evidence:** `test_verified`; live MIRA 2.0 scheduler path remains unverified.
 
-**Hard dependencies:** runtime clock; IANA timezone database; `OPS-001`.
+**Hard dependencies:** runtime clock; timezone database; `OPS-001`.
 
-**Enables:** scheduler-integrity circuit breaking, correct slot derivation and trustworthy Run Log timestamps.
+**Enables:** scheduler-integrity gating, slot derivation and trustworthy logging.
 
-**Legacy evidence:** `ops_policy.py` canonical/live slot functions; `test_ops_policy_entry.py`; `brief-run.md`; feature-ledger row 3.
+**Legacy evidence:** canonical/live slot functions and regression tests; `brief-run.md`; feature-ledger row 3.
 
-**Acceptance / verification boundary:** Repository DST/offset/grace tests plus an actual scheduler run through the runtime-clock path.
+**Acceptance / verification boundary:** DST/offset/grace tests plus actual scheduler invocation through runtime-clock path.
 
 ---
 
 ### `OPS-004` — Fresh standalone run delivery with deterministic Run ID
+**Description:** Each scheduled brief starts fresh from the saved dispatcher and uses deterministic `OPS-YYYY-MM-DD-AM|PM` identity for delivered output and idempotent Run Log updates.
 
-**Description:** Every scheduled brief starts as a fresh run from the saved dispatcher. Scheduled identity is `OPS-YYYY-MM-DD-AM|PM`; delivered output begins with that identity and the same ID is used for idempotent Run Log updates.
-
-**Why it exists / user outcome:** Distinguish current output from stale chat output and distinguish “scheduler never entered” from downstream failure.
+**Why it exists / user outcome:** Distinguish current output from stale chat output and scheduler-entry failure from downstream failure.
 
 **Requirement status:** `required by stale-response incident`.
 
-**Delivery/evidence:** `test_verified` for deterministic ID generation; fresh provider standalone delivery and live Run Log evidence are unverified in MIRA 2.0.
+**Delivery/evidence:** `test_verified` for ID generation; provider standalone delivery/live logging unverified.
 
-**Hard dependencies:** `OPS-003`; `RECOVERY-001`; scheduler/provider fresh-run invocation.
+**Hard dependencies:** `OPS-003`; `RECOVERY-001`; scheduler fresh-run capability.
 
-**Enables:** idempotent logging, scheduler diagnosis, self-identifying notifications.
+**Enables:** self-identifying notifications and scheduler diagnosis.
 
-**Legacy evidence:** `ops_policy.py`; `test_ops_policy.py`; `brief-run.md`; `SKILL.md`; feature-ledger row 4.
+**Legacy evidence:** `ops_policy.py`; tests; `brief-run.md`; `SKILL.md`; feature-ledger row 4.
 
-**Acceptance / verification boundary:** A real scheduled provider run must start fresh, create/update the matching Run Log record and deliver output beginning with the expected Run ID.
+**Acceptance / verification boundary:** Real scheduled run creates/updates expected Run Log identity and delivers current output.
 
 ---
 
 ### `OPS-005` — Deterministic HOME/ROAD context with explicit overrides
+**Description:** Base HOME/ROAD state comes from canonical weekly transitions and explicit overrides with stable identity/conflict/expiry semantics. Generic contexts and active Trip forcing are separate capabilities.
 
-**Description:** MIRA resolves base HOME/ROAD state from canonical weekly transitions and explicit override records, with inclusive starts, exclusive expiries, stable identity, conflict detection and deterministic precedence. Generic context labels and active-trip forcing are separate capabilities.
-
-**Why it exists / user outcome:** Mode-sensitive work must use canonical state instead of conversational guesses.
+**Why it exists / user outcome:** Context-sensitive work uses state, not chat guesses.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** `test_verified` for legacy deterministic policy logic; MIRA 2.0 canonical-state integration is unverified.
+**Delivery/evidence:** `test_verified`; MIRA 2.0 state integration unverified.
 
 **Hard dependencies:** canonical settings/state; override records; timezone-aware parsing.
 
-**Enables:** mode-specific tasks and weather/travel behavior.
+**Enables:** mode-specific tasks and travel/weather behavior.
 
-**Legacy evidence:** `ops_policy.py`; `test_ops_policy.py`; `test_ops_policy_entry.py`; `SKILL.md`; feature-ledger row 5.
+**Legacy evidence:** `ops_policy.py`; tests; `SKILL.md`; feature-ledger row 5.
 
-**Acceptance / verification boundary:** Deterministic tests plus MIRA 2.0 sandbox state read/write/readback of transitions and overrides.
+**Acceptance / verification boundary:** Tests plus MIRA 2.0 sandbox transition/override read-write-readback.
 
 ---
 
 ### `CTX-001` — Configurable operating-context pairs
+**Description:** MIRA supports a two-label operating-context model when environment changes actionable work. Patterns include HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/CAMPUS, HOME/AWAY and user-defined labels; HOME/OFFICE is valid via custom labels. Context is mutable state, not identity or timezone.
 
-**Description:** MIRA may use a two-label operating-context model when environment materially changes tasks, equipment, evidence, connectivity, notifications, routes, weather, or routines. Patterns include `HOME / ROAD`, `HOME / TRUCK`, `HOME / FIELD`, `HOME / CAMPUS`, `HOME / AWAY`, and user-defined labels. `HOME / OFFICE` is valid through explicit/custom labels even though the audited legacy heuristic has no dedicated OFFICE recommendation rule. Context is mutable state, not identity or scheduling timezone.
-
-**Why it exists / user outcome:** Different users get useful operating boundaries without inheriting somebody else's hard-coded HOME/ROAD model.
+**Why it exists / user outcome:** Users get useful operating boundaries without inheriting one hard-coded lifestyle.
 
 **Requirement status:** `accepted direction`.
 
-**Delivery/evidence:** `test_verified` in the legacy onboarding/context-router candidate; MIRA 2.0 state integration is unverified.
+**Delivery/evidence:** `test_verified` in legacy router candidate; MIRA 2.0 integration unverified.
 
-**Hard dependencies:** mutable profile/context authority; explicit selection state; contract-driven downstream consumers.
+**Hard dependencies:** profile/context authority; explicit selection state; downstream context contract.
 
-**Enables:** reusable context-specific behavior across work, family, school and other profiles.
+**Enables:** reusable context-specific behavior.
 
-**Legacy evidence:** feature-ledger row 6; `starter/PROFILE_AND_CONTEXT_MODES.md`; `starter/tools/onboarding_profile_router.py`; `starter/tests/test_onboarding_profile_router.py`.
+**Legacy evidence:** feature-ledger row 6; profile/context contract; onboarding router/tests.
 
-**Acceptance / verification boundary:** Store/read back selected labels in MIRA 2.0 sandbox and prove a downstream module consumes them without changing canonical timezone.
+**Acceptance / verification boundary:** Sandbox selected-label readback plus downstream consumption without timezone mutation.
 
 ---
 
 ### `CTX-002` — Evidence-gated context recommendation and explicit activation
+**Description:** Job title/duties may recommend context but never silently enable it. Explicit user confirmation/labels control activation; ambiguity remains unresolved/needs-confirmation.
 
-**Description:** Job title/duties may inform context recommendations but never silently enable a context split. Explicit no bypasses it, explicit yes permits a still-confirmable recommendation, unresolved evidence remains unresolved/needs-confirmation, and explicit user labels outrank recommendations.
-
-**Why it exists / user outcome:** Helpful onboarding without MIRA inventing a user's lifestyle from a job title.
+**Why it exists / user outcome:** Helpful onboarding without invented lifestyle state.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** `test_verified` in the legacy candidate router; MIRA 2.0 onboarding/readback remain unverified.
+**Delivery/evidence:** `test_verified` in legacy router candidate; MIRA 2.0 onboarding/readback unverified.
 
-**Hard dependencies:** profile/job/duties intake; `CTX-001`; activation/confirmation state.
+**Hard dependencies:** profile intake; `CTX-001`; confirmation state.
 
-**Enables:** safe low-friction onboarding.
+**Enables:** safe onboarding.
 
-**Legacy evidence:** feature-ledger row 7; profile/context contract; onboarding router and tests including the Broadway false-match regression.
+**Legacy evidence:** feature-ledger row 7; router contract/code/tests including false-match regression.
 
-**Acceptance / verification boundary:** MIRA 2.0 onboarding must prove recommendation cannot become active canonical context without explicit confirmation/readback.
+**Acceptance / verification boundary:** Recommendation cannot become active state without explicit confirmation/readback.
 
 ---
 
 ### `TRIP-001` — Independent trip occurrence lifecycle
+**Description:** Each Trip occurrence is separate from Route knowledge, context and paid mileage, with stable identity and Planned/Active/Arrived/Cancelled states. Context changes/Route learning do not manufacture Trip or Mileage rows.
 
-**Description:** MIRA tracks each trip occurrence separately from reusable route knowledge, operating context and paid-mileage accounting. Trips have stable identity and Planned/Active/Arrived/Cancelled lifecycle states. Active trip state may affect context precedence, but context changes and route learning do not manufacture Trip or Mileage occurrences.
-
-**Why it exists / user outcome:** Related travel facts stay linked without collapsing route knowledge, current travel, and payroll into one mutable blob.
+**Why it exists / user outcome:** Related travel facts stay linked without collapsing distinct state domains.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** `test_verified` for core legacy separation/precedence; MIRA 2.0 persistence/readback unverified.
+**Delivery/evidence:** `test_verified` for core legacy separation/precedence; MIRA 2.0 persistence unverified.
 
-**Hard dependencies:** canonical trip authority; stable IDs; context precedence contract.
+**Hard dependencies:** Trip authority; stable IDs; context precedence.
 
-**Enables:** route/weather watches, ETA/location, multi-leg work cycles and mileage linkage.
+**Enables:** weather watches, ETA/location, multi-leg cycles and mileage linkage.
 
-**Legacy evidence:** feature-ledger row 8; `state-maintenance.md`; `route-weather.md`; `test_ops_policy_entry.py`.
+**Legacy evidence:** feature-ledger row 8; state-maintenance/route-weather policy; entry tests.
 
-**Acceptance / verification boundary:** MIRA 2.0 sandbox Trip lifecycle must round-trip independently of context and mileage.
+**Acceptance / verification boundary:** Sandbox Trip lifecycle round-trip independent of context/mileage.
 
 ---
 
 ### `ROUTE-001` — Learned routes, directional runtime, location and ETA inference
+**Description:** Reusable endpoint-pair Route knowledge is separate from Trip occurrences; supports directional route/runtime, runtime-derived ETA when stronger ETA is absent, location/time evidence and bounded progress primitives. Multi-leg work remains separate Trips.
 
-**Description:** MIRA keeps reusable route knowledge separate from trip occurrences. Endpoint-pair routes support directional overviews/runtime; stored runtime can derive ETA when no stronger explicit ETA exists; user-reported location/time is preserved; bounded time-progress may support corridor reasoning. Explicit corrections outrank older learned values. Multi-leg work remains separate trip occurrences.
-
-**Why it exists / user outcome:** Recurrent travel can be learned without replacing real operating history with naive map-distance math.
+**Why it exists / user outcome:** Reuse actual operating knowledge without substituting map distance for real history.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** `test_verified` for route-average ETA and related primitives; human-facing ahead/behind interpretation and MIRA 2.0 authority integration are not independently verified.
+**Delivery/evidence:** `test_verified` for route-average ETA/primitives; human-facing ahead/behind and MIRA 2.0 integration unverified.
 
-**Hard dependencies:** `TRIP-001`; stable route IDs/endpoint normalization; supported departure/location evidence.
+**Hard dependencies:** `TRIP-001`; stable Route IDs/endpoints; supported time/location evidence.
 
-**Enables:** ETA/status, route-weather scoping, runtime learning and later paid-mile association.
+**Enables:** ETA/status, route-weather and runtime learning.
 
-**Legacy evidence:** feature-ledger row 9; `route-weather.md`; `state-maintenance.md`; `ops_policy.py`; `test_ops_policy.py`.
+**Legacy evidence:** feature-ledger row 9; route/state policy; runtime/tests.
 
-**Acceptance / verification boundary:** Unit coverage for route direction/ETA/location/progress and MIRA 2.0 Route+Trip read/write/readback. Ahead/behind remains labeled inference until supported by observed evidence.
+**Acceptance / verification boundary:** Direction/ETA/location/progress tests plus Route+Trip sandbox round-trip; ahead/behind remains inference until evidenced.
 
 ---
 
 ### `WEATHER-001` — Context-gated HOME and ROAD weather intelligence
+**Description:** HOME permits relevant home weather; ROAD may activate bounded route/corridor weather and official road-condition checks tied to Trip/watch state. Watches expire deterministically; forecast/observed restriction/inferred position remain distinct.
 
-**Description:** HOME context permits home-location weather when useful; ROAD context can activate bounded route/corridor weather and official road-condition checks tied to Trip/watch state. Watches expire deterministically. Forecasts, observed restrictions and estimated corridor position remain distinguishable.
-
-**Why it exists / user outcome:** Relevant weather rather than a generic forecast sprayed into every brief.
+**Why it exists / user outcome:** Relevant weather rather than indiscriminate forecast dumping.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** `test_verified` for deterministic gates/watch expiry; external NWS/DOT/511 workflow is `specified`, not MIRA 2.0 integration/live verified.
+**Delivery/evidence:** `test_verified` for deterministic gates/expiry; external NWS/DOT/511 is specified but not MIRA 2.0 integration-verified.
 
-**Hard dependencies:** context; `TRIP-001`; `ROUTE-001`; authoritative external sources for hazard claims.
+**Hard dependencies:** context; `TRIP-001`; `ROUTE-001`; authoritative sources; `RECOVERY-002` for scoped external-evidence failure behavior.
 
-**Enables:** home-weather decisions and route hazard warnings.
+**Enables:** home decisions and route hazard warnings.
 
-**Legacy evidence:** feature-ledger row 10; `ops_policy.py`; `test_ops_policy.py`; `route-weather.md`; `brief-run.md`.
+**Legacy evidence:** feature-ledger row 10; runtime/tests; route-weather and brief-run policy.
 
-**Acceptance / verification boundary:** Deterministic gate tests plus MIRA 2.0 sandbox state and source-grounded external evidence. Weather-provider failure must not corrupt unrelated modules.
+**Acceptance / verification boundary:** Gate tests plus sandbox state/source-grounded external pass. Provider failure degrades weather only.
 
 ---
 
 ### `MILE-001` — Company-paid mileage and deterministic gross-pay reporting
+**Description:** MIRA records/reports company-paid miles, not map/odometer distance, and computes estimated gross from verified applicable rate. Both Thursday brief slots report the closed work cycle; Final/Estimated/Voided states, corrections and missing evidence are handled explicitly.
 
-**Description:** MIRA records and reports **company-paid miles**, not map distance or odometer distance, and computes estimated gross pay from the verified rate attached to or applicable to those mileage records. The canonical reporting behavior produces the closed work-cycle mileage/pay summary on both Thursday Ops Brief slots, validates mileage/rate inputs, distinguishes Final/Estimated/Voided state, preserves corrections, and surfaces missing required paid-mile evidence rather than fabricating a number.
-
-**Why it exists / user outcome:** The user needs a useful weekly pay estimate based on what the employer actually pays, not an attractive but financially meaningless route-distance calculation.
+**Why it exists / user outcome:** Useful weekly pay estimate from employer-paid miles rather than meaningless route distance.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** `test_verified` in the legacy deterministic runtime for Thursday totals, gross calculation, pay-week boundaries, status splits, zero/empty weeks, missing-entry actions and section-scoped tracker failure. **MIRA 2.0 canonical mileage persistence and live Thursday delivery remain unverified.**
+**Delivery/evidence:** `test_verified` for totals, gross, pay-week boundaries, status splits, zero weeks, missing-mile actions and scoped tracker failure; MIRA 2.0 persistence/live Thursday delivery unverified.
 
-**Hard dependencies:** `TRIP-001` for occurrence linkage when trip tracking is enabled; `MILE-002` authoritative tracker/settings; verified rate and company-paid-mile evidence; Thursday/brief slot semantics from `OPS-001`.
+**Hard dependencies:** `TRIP-001` when occurrence-linked; `MILE-002`; verified rate/paid-mile evidence; `OPS-001`; `RECOVERY-002` for scoped tracker failure during broader runs.
 
-**Enables:** weekly mileage/pay reporting, work-cycle closeout, later payroll reconciliation and trend history.
+**Enables:** weekly reporting, work-cycle closeout, payroll reconciliation/trends.
 
-**Legacy evidence:**
-- feature-ledger category A row 11;
-- `policy/ops-brief-policy.yaml` declares verified-live rate source, Thursday summary, confirmed-HOME accrual close and failure isolation;
-- `skill/ops-brief-policy/scripts/ops_policy.py` implements mileage parsing/validation, pay-week selection and deterministic summary/gross calculation;
-- `skill/ops-brief-policy/scripts/test_ops_policy.py` verifies Thursday paid-mile/gross totals, non-Thursday suppression, status splits, missing-mile actions, explicit zero weeks and degraded tracker behavior;
-- `skill/ops-brief-policy/scripts/test_ops_policy_entry.py` verifies Thursday mileage summary remains due even in HOME context.
+**Legacy evidence:** feature-ledger row 11; policy YAML; runtime; mileage tests and Thursday HOME regression.
 
-**Acceptance / verification boundary:** MIRA 2.0 must round-trip synthetic mileage/settings state through its sandbox, reproduce deterministic totals from supported inputs, reject/flag invalid evidence, and demonstrate both Thursday slots consume the same closed work-cycle authority. A live employer/settlement import, if later added, is a separate provider-evidence boundary.
+**Acceptance / verification boundary:** Synthetic sandbox mileage/settings round-trip, deterministic totals/validation and both Thursday slots reading one closed-cycle authority.
 
-**Compatibility notes:** The historical per-mile rate is mutable deployment data and must never be hard-coded into public source. Each historical mileage record should retain the applicable rate so future rate changes do not rewrite past estimates.
+**Compatibility notes:** Historical rates are mutable state and must not be hard-coded in public source.
 
 ---
 
 ### `MILE-002` — Separate authoritative Miles & Pay tracker
+**Description:** Mileage/pay state lives in a dedicated logical authority rather than Route geometry, chat or Git. It preserves stable occurrences, pay-week history, paid miles, applicable rate, gross, source/status and corrections. Storage is an adapter choice.
 
-**Description:** Mileage/pay state lives in a dedicated canonical tracker/authority rather than being inferred from route geometry, buried in chat history, or duplicated in Git. The tracker preserves stable mileage occurrence identity, work-cycle/pay-week history, paid miles, applicable rate, gross estimate, source/status and corrections. Other MIRA modules read it through an authority contract and treat its failure as a scoped dependency rather than silently creating shadow data.
-
-**Why it exists / user outcome:** Pay history needs to remain queryable and correct over time even when routes, chat sessions, brief rendering or software versions change.
+**Why it exists / user outcome:** Queryable pay history survives software, route and backend changes.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** legacy deployment evidence records a **live external authority**, and repository policy/contracts are `specified`/implemented around it. **MIRA 2.0 has not created or read back its own sandbox Miles & Pay authority, so it is not MIRA 2.0 live-verified.**
+**Delivery/evidence:** historical deployment records a live external authority; MIRA 2.0 has not provisioned/read back its own sandbox tracker.
 
-**Hard dependencies:** MIRROR structured-state/authority contract; stable mileage IDs; provenance; `MILE-001` for deterministic reporting semantics.
+**Hard dependencies:** MIRROR structured-state authority; stable mileage IDs/provenance; `MILE-001`.
 
-**Enables:** historical pay queries, weekly summaries, correction/void preservation and eventual provider migration without rewriting business semantics.
+**Enables:** historical pay queries and provider migration.
 
-**Legacy evidence:** feature-ledger category A row 12; `state-maintenance.md` mileage rules; `brief-run.md` exact Mileage & Pay Tracker ranges and scoped failure behavior; `policy/ops-brief-policy.yaml` resolves the authority through private deployment state.
+**Legacy evidence:** feature-ledger row 12; state-maintenance/brief-run policy; policy YAML.
 
-**Acceptance / verification boundary:** MIRA 2.0 must provision a separate synthetic tracker through the selected MIRROR adapter, write/read back a mileage occurrence and settings, preserve immutable identity/corrections, and prove reporting consumes that authority. Legacy production rows are migration evidence only and are never copied into Git.
-
-**Compatibility notes:** The logical authority is the feature. Google Sheets may be the initial adapter; a later database adapter must preserve the same IDs, semantics and provenance rather than becoming a second source of truth.
+**Acceptance / verification boundary:** Provision synthetic tracker, write/read back occurrence/settings, preserve identity/corrections and prove reporting consumes it.
 
 ---
 
 ### `TASK-001` — Structured task hierarchy and one-action-per-item rendering
+**Description:** Canonical tasks use stable identity and priority tier → classification → optional subsystem → individual task. High/Medium/Low are normal tiers, Persistent is available for explicitly always-visible items. Each task is an independent record/bullet; context/windows affect actionability, not identity.
 
-**Description:** Canonical tasks carry stable identity and a structured hierarchy of priority tier → classification → optional subsystem → individual task. Normal priority tiers are High, Medium and Low, with Persistent available for explicitly always-visible items. Each task remains an independent canonical record and renders as its own bullet rather than combining unrelated actions into prose. Context/visibility and active/scheduled windows determine whether a task is currently actionable without changing its identity.
-
-**Why it exists / user outcome:** The brief should be scannable and queryable. A task database becomes useless surprisingly quickly when five unrelated chores are stuffed into one cell because a language model felt literary.
+**Why it exists / user outcome:** Scannable, queryable task state rather than prose blobs.
 
 **Requirement status:** `required`.
 
-**Delivery/evidence:** `test_verified` for the legacy task schema, validation, context visibility and deterministic tier/classification/subsystem grouping. **MIRA 2.0 task-state persistence/readback remains unverified.**
+**Delivery/evidence:** `test_verified` for schema, validation, visibility and grouping; MIRA 2.0 task persistence unverified.
 
-**Hard dependencies:** canonical task authority; stable Task IDs; context contract when visibility is used.
+**Hard dependencies:** task authority; stable Task IDs; context when visibility is used.
 
-**Enables:** compact Ops Brief task rendering, filtering/search, next-action selection, project/routine decomposition and later Android task mutation.
+**Enables:** brief rendering, filtering/search, next actions and Android task mutation.
 
-**Legacy evidence:** feature-ledger category A row 13; `ops_policy.py` `TASK_KEYS`, task validation, `_group_rows`, `_render_grouped` and `task_output`; `test_ops_policy.py` verifies mode visibility, Persistent behavior and task eligibility; `state-maintenance.md` requires task changes to update canonical state rather than chat memory.
+**Legacy evidence:** feature-ledger row 13; runtime task/grouping functions; tests; state-maintenance policy.
 
-**Acceptance / verification boundary:** MIRA 2.0 must round-trip independent synthetic Task records, preserve IDs and hierarchy, render each actionable task separately, and reject materially malformed records rather than guessing required classification.
-
-**Compatibility notes:** Classification/subsystem vocabulary should remain user/configuration driven. Priority is not permission to infer completion or urgency.
+**Acceptance / verification boundary:** Sandbox task round-trip and deterministic separate rendering/rejection of malformed required classification.
 
 ---
 
 ### `TASK-002` — Evidence-grounded next actions and honest completion state
+**Description:** MIRA selects the smallest useful next action from canonical open work, real deadlines, prerequisites, blocks, context and available time. Planned/partial/completed/missed/removed/blocked state follows evidence. Silence never means Done.
 
-**Description:** MIRA can turn goals, projects, routines and task queues into the smallest useful next action by reading canonical open state, deadlines, prerequisites, blocks, context and available time. It must distinguish planned, partial, completed, missed, removed and blocked work from actual evidence. Silence, lack of reminders, or conversational optimism never counts as completion. When evidence is partial, state remains partial rather than being promoted to Done.
+**Why it exists / user outcome:** Useful coaching without fictional completion.
 
-**Why it exists / user outcome:** MIRA should help decide what to do next without lying about what has already been done. A planner that quietly completes work because nobody complained is just an extremely confident fiction generator.
+**Requirement status:** `accepted` and reinforced as integrity behavior.
 
-**Requirement status:** `accepted` and repeatedly reinforced as an integrity rule.
+**Delivery/evidence:** `specified`/skill workflow; generic cross-domain next-action engine not yet test-verified.
 
-**Delivery/evidence:** `specified`/skill-workflow behavior. The legacy life-planning contract defines deterministic ranking and completion-evidence rules, but there is not enough audited evidence in this slice to claim a fully test-verified general next-action engine across all domains.
+**Hard dependencies:** `TASK-001`; canonical planning state; supported deadlines/prerequisites/context as used.
 
-**Hard dependencies:** `TASK-001`; canonical goal/task/routine/project state; verified deadlines/prerequisites where used; context state when actionability depends on environment.
+**Enables:** coaching, study, routines, projects and honest brief status.
 
-**Enables:** coaching, study planning, routine accountability, project next steps and honest brief status.
+**Legacy evidence:** feature-ledger row 14; life-planning-accountability and state-maintenance policy.
 
-**Legacy evidence:** feature-ledger category A row 14; `references/life-planning-accountability.md` defines next-action ordering, partial/miss handling, anti-nag rules and the prohibition on inferred completion; `state-maintenance.md` requires Done/Removed to be explicit canonical state and prohibits inferring completion from silence.
-
-**Acceptance / verification boundary:** Before promotion to `test_verified`, MIRA 2.0 needs deterministic tests showing blocked/context-incompatible/completed items are excluded correctly, smallest supported next actions are selected, partial evidence stays partial, and silence cannot transition state to Done. Integration verification then requires canonical state mutation/readback from explicit completion evidence.
-
-**Compatibility notes:** This is a generic planning capability, not permission for MIRA to invent deadlines, health constraints, academic proof, or hidden priority models.
+**Acceptance / verification boundary:** Dedicated tests for blocked/context/completed exclusion, smallest-action selection, partial evidence and no completion-from-silence; then state-mutation readback.
 
 ---
 
 ### `RECOVERY-001` — Phase-aware Run Log, durable checkpoints and circuit-breaker recovery
+**Description:** MIRA keeps durable execution/recovery evidence so interrupted or failed work resumes from known-good state. Deterministic Run IDs own one Run Log record with phase/status/timestamp/health/mutation evidence. Circuit-breaker conditions bound retries, preserve/read back verified state and provide one specific recovery action.
 
-**Description:** MIRA records durable execution/recovery evidence so interrupted or failed work can resume from known-good state instead of from assistant memory. For scheduled control cycles, a deterministic Run ID owns one Run Log record that moves through phase/status evidence such as Running, policy-resolved, Degraded, OK or Error and preserves timestamps, input/module health and stable mutation evidence. Repeated identical failures, no-forward-progress loops, permission/dependency failures, ambiguous partial writes, integrity failures, scheduler misses and unchanged CI loops trip a bounded circuit breaker. The affected module stops writes, verified state is preserved/read back, unrelated healthy work may continue, and recovery gets one specific next action.
-
-**Why it exists / user outcome:** A failed workflow should leave a precise recovery point, not twenty minutes of vanished progress followed by another heroic attempt to remember what happened.
+**Why it exists / user outcome:** Failed work leaves a precise recovery point instead of vanished progress and reconstructed memory.
 
 **Requirement status:** `required by repeated stalls and integrity incidents`.
 
-**Delivery/evidence:** `test_verified` for core Run ID/Run Log field generation and selected degraded/error paths; the Module Circuit Breaker transaction and recovery contract are strongly `specified`. Historical claims of installed private-deployment artifacts are **not** treated as MIRA 2.0 live evidence. The next actual scheduled MIRA 2.0 Run Log entry remains unverified.
+**Delivery/evidence:** `test_verified` for core Run ID/Run Log fields and selected degraded/error paths; broader circuit-breaker transaction is strongly specified; live MIRA 2.0 scheduled Run Log evidence unverified.
 
-**Hard dependencies:** stable run/work IDs; canonical mutable Run Log/recovery authority; `OPS-003` clock evidence for scheduled runs; idempotent provider readback for affected modules.
+**Hard dependencies:** stable run/work IDs; Run Log/recovery authority; `OPS-003`; provider readback.
 
-**Enables:** resumable scheduled work, failure diagnosis, safe bounded retries, partial-write reconciliation, scheduler proof, and the same engineering philosophy used by MIRA 2.0 `CURRENT_WORK` packets.
+**Enables:** resumability, bounded retry, partial-write reconciliation and scheduler proof.
+
+**Legacy evidence:** feature-ledger row 15; runtime/tests; brief-run; module-circuit-breaker-report; state-maintenance.
+
+**Acceptance / verification boundary:** Same-run/phase/fail-degrade tests plus sandbox Run Log write/readback. Live scheduler proof requires actual canonical-slot entry.
+
+**Compatibility notes:** This is workflow recovery; `DEV-002` is development-packet recovery.
+
+---
+
+### `RECOVERY-002` — Explicit module dependency boundaries and failure isolation
+
+**Description:** MIRA treats modules and canonical authorities as separate failure domains unless a workflow explicitly declares a shared dependency. A malformed or unavailable optional input/adapter degrades only the affected module; healthy unrelated modules continue. A required core authority or invariant may block the owning module or whole run only when continuing would make its result invalid or unsafe. Cross-authority projection failure does not roll back verified canonical source state; the failed projection is marked degraded/pending and can be re-derived idempotently later.
+
+**Why it exists / user outcome:** One bad spreadsheet range, calendar item, weather adapter, connector or projection should not make the entire assistant useless, nor should MIRA respond to partial failure by inventing shadow state or undoing known-good work.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `test_verified` for several legacy deterministic failure boundaries, including malformed/missing mileage input, Thursday degraded mileage behavior, invalid/duplicate appointment isolation, route/watch/settings degradation and healthy context/travel behavior continuing despite optional mileage failure. External-provider isolation is additionally `specified` in the policy/circuit-breaker contracts. **MIRA 2.0 cross-provider integration isolation remains unverified.**
+
+**Hard dependencies:** explicit dependency/authority declarations; `RECOVERY-001` for failure recording/recovery; idempotent canonical source and provider readback for mutable cross-authority workflows.
+
+**Enables:** reliable Ops Briefs, partial-service operation during provider outages, safe projection retry, weather/mail/calendar independence and future provider portability.
+
+**Milestone:** foundational reliability prerequisite for every user-visible multi-module vertical slice.
 
 **Legacy evidence:**
-- feature-ledger category A row 15;
-- `ops_policy.py` emits deterministic `run_log_fields` including Run ID, timestamps, phase/status, canonical clock and module/input health;
-- `test_ops_policy.py`/`test_ops_policy_entry.py` verify Run Log identity/status and degraded module outcomes;
-- `brief-run.md` requires the same Run ID row to be written `Running` before downstream mutations and finalized rather than duplicated;
-- `references/module-circuit-breaker-report.md` defines trip conditions, retry budget, state-preservation transaction, scheduler/CI boundaries and exact recovery behavior;
-- `state-maintenance.md` requires canonical-state recovery and prohibits shadow state/chat reconstruction.
+- feature-ledger category A row 16;
+- `skill/ops-brief-policy/SKILL.md` failure-domain map and source-first cross-authority projection contract;
+- `references/module-circuit-breaker-report.md` requires localized write stops while healthy modules continue;
+- `scripts/test_ops_policy_entry.py` proves bad mileage input does not destroy ROAD/trip context and Thursday mileage failure degrades rather than globally errors;
+- `scripts/test_ops_policy.py` proves missing optional mileage ranges degrade only that module and invalid/duplicate appointments are isolated;
+- `brief-run.md` explicitly scopes mileage and non-authoritative Calendar failures instead of treating them as global prerequisites.
 
-**Acceptance / verification boundary:** Repository tests must verify deterministic same-run identity, phase/status transitions and fail/degrade boundaries. Integration verification requires MIRA 2.0 sandbox Run Log write/readback before and after a bounded workflow. Live scheduler verification requires an actual scheduled entry to create the expected Run Log row in the canonical slot. A circuit-breaker incident is cleared only after changed underlying conditions plus verified recovery readback.
+**Acceptance / verification boundary:** Unit tests must cover representative independent failure domains and required-vs-optional dependency behavior. Integration verification requires a MIRA 2.0 sandbox run where one external adapter/projection is deliberately unavailable or fails after canonical source commit, while unrelated healthy modules complete and the failed target remains safely recoverable. No feature may claim full multi-module live reliability from unit tests alone.
 
-**Compatibility notes:** `RECOVERY-001` is user/workflow recovery, while `DEV-002` governs software-development packet recovery. They intentionally use the same principles but are distinct authorities and evidence domains.
+**Compatibility notes:** `RECOVERY-001` answers “how do we record, stop and recover from failure?” `RECOVERY-002` answers “what is actually allowed to fail without taking everything else down?” Keeping them separate prevents every module from becoming an accidental global dependency.
+
+## Category A consistency result
+
+Category A is now fully audited through behavior 16. The bounded consistency pass found these architectural relationships:
+
+- `OPS-001` schedule semantics depend on `OPS-003` runtime clock integrity and `OPS-004` fresh-run identity; live scheduling still requires provider evidence.
+- `OPS-004` depends on `RECOVERY-001` for durable same-run evidence.
+- `OPS-005` remains the current deployment's deterministic HOME/ROAD semantics while `CTX-001`/`CTX-002` provide generalized labels and safe recommendation/activation.
+- `TRIP-001`, `ROUTE-001` and `MILE-*` are explicitly distinct state authorities linked by IDs rather than implicit co-creation.
+- `WEATHER-001` and `MILE-001` depend on `RECOVERY-002` when they participate as modules in a broader run so their failures remain scoped.
+- `TASK-002` remains below `test_verified` pending dedicated generic next-action/completion tests; no other category-A record was found to exceed its audited evidence.
+- Legacy live-provider claims remain legacy evidence only. No MIRA 2.0 feature is promoted to `integration_verified` or `live_verified` merely because the prior system once used a live Google authority.
 
 ## Audit status
 
-- `M2-G0-002A` audited legacy category-A behaviors 1-5: `OPS-001` through `OPS-005`.
-- `M2-G0-002B` audited category-A behaviors 6-10: `CTX-001`, `CTX-002`, `TRIP-001`, `ROUTE-001`, `WEATHER-001`.
-- `M2-G0-002C` audited category-A behaviors 11-15: `MILE-001`, `MILE-002`, `TASK-001`, `TASK-002`, `RECOVERY-001`.
-- The complete historical feature inventory is **not yet imported**. Do not infer absence from this file.
-- The next bounded audit begins with category-A behavior 16: optional-module failure isolation, followed by final Slice-A dependency/evidence consistency reconciliation.
+- `M2-G0-002A` audited category-A behaviors 1-5.
+- `M2-G0-002B` audited category-A behaviors 6-10.
+- `M2-G0-002C` audited category-A behaviors 11-15.
+- `M2-G0-002D` audited category-A behavior 16 and completed the Slice-A consistency pass.
+- **Category A is complete.**
+- The complete historical feature inventory is still in progress; category B begins next with calendar/reminder/mail safety features.

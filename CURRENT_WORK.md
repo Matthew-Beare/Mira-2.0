@@ -2,16 +2,6 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
-
-### `M2-G0-002C` — Feature Audit Slice A3 — mileage/tasks/recovery foundations
-
-- **Merged PR:** #3
-- **Merge SHA:** `d0ba12f59373c88811c0970b2be3582de3b2e917`
-- **Audited features:** `MILE-001`, `MILE-002`, `TASK-001`, `TASK-002`, `RECOVERY-001`
-- **Live Google production touched:** no.
-- **Executable product behavior changed:** no.
-
 ## Active packet
 
 - **Packet ID:** `M2-G0-002D`
@@ -19,35 +9,48 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-002d-failure-isolation-close-a`
-- **Base audit-state SHA:** `d0ba12f59373c88811c0970b2be3582de3b2e917`
-- **Objective:** Audit the final legacy category-A capability, optional-module failure isolation, then perform a bounded dependency/evidence consistency pass across all category-A features and formally close Slice A without implementing product behavior.
+- **Base main SHA:** `60ebe9dd7f0e00a9a306267bf4a16f2242b8bd39`
+- **Feature audit commit:** `7d00f0ebc3ef2b1edb6007e639218fb3f36a1652`
+- **Backlog checkpoint commit:** `d0803ffce40d05ce2588762f63c3a938a02a362c`
+- **Status:** acceptance work complete; PR/merge/readback pending.
 
-## Audit scope
+## Completed acceptance evidence
 
-1. Audit legacy category-A behavior 16: **Optional module failure isolation**.
-2. Verify category-A feature IDs, dependencies, evidence levels and compatibility notes are internally consistent.
-3. Resolve contradictions only within already-audited Slice-A records; do not add category-B calendar/mail features here.
-4. Update `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` only.
+1. Assigned `RECOVERY-002` to optional-module dependency/failure isolation.
+2. Separated failure-domain scope from `RECOVERY-001` circuit-breaker/recovery mechanics.
+3. Reconciled test evidence showing malformed/missing mileage data can degrade without destroying healthy context/travel output, Thursday mileage failure degrades rather than globally errors, missing optional inputs remain module-scoped, and malformed/duplicate appointment records can be isolated.
+4. Recorded external-adapter/projection isolation as specified but not MIRA 2.0 integration-verified.
+5. Performed Slice-A dependency/evidence consistency pass across all audited category-A families.
+6. Added explicit dependencies from `WEATHER-001` and `MILE-001` to `RECOVERY-002` when participating in broader multi-module workflows.
+7. Confirmed `TASK-002` remains below `test_verified`; no category-A feature was found to exceed its evidence.
+8. Confirmed legacy live provider claims remain legacy evidence only; none promotes MIRA 2.0 to integration/live verification.
+9. Marked category A complete in `FEATURES.md` and `BACKLOG.md`.
+10. Pre-sized category B into `AUDIT-B1` reminder/safety rows 1-5 and `AUDIT-B2` appointment/mail rows 6-10.
+11. Touched no live Google production state and changed no executable product behavior.
 
-## Acceptance criteria
+## Blockers
 
-1. Behavior 16 receives a stable MIRA 2.0 semantic feature ID and complete feature record.
-2. Failure isolation is distinguished from generic recovery/circuit-breaker semantics where its contract applies to module dependency boundaries.
-3. Evidence from mileage, appointment, travel/settings and unavailable-adapter failure tests is reconciled without overclaiming live integration.
-4. Every category-A record has valid referenced dependencies among known/audited features or clearly labeled future dependencies.
-5. No category-A feature is marked at a higher evidence level than its audited proof supports.
-6. Slice-A backlog status is changed to complete only after the consistency pass.
-7. A small PR is scope-verified, merged and remotely read back.
-8. `CURRENT_WORK.md` advances to `M2-G0-003A`, the first bounded category-B audit packet, before completion.
-9. No live Google production state and no executable product behavior is changed.
+None. PR/merge/readback is the remaining packet release step.
 
 ## Exact next action
 
-Create/confirm branch `audit/g0-002d-failure-isolation-close-a`. Inspect the legacy failure-domain contract plus tests showing mileage, appointments, travel/settings or unavailable adapters can degrade independently without corrupting healthy modules. Assign behavior 16 a stable feature ID, then run the bounded Slice-A dependency/evidence consistency pass.
+Open a pull request from `audit/g0-002d-failure-isolation-close-a` to `main`, require changed-file scope to remain `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back category-A closure, then activate `M2-G0-003A` on main and create its audit branch.
 
-## Next packet boundary
+## Next packet after merge
 
-If `M2-G0-002D` completes, begin `M2-G0-003A` with the first bounded category-B calendar/reminder/mail audit rows. Packet sizing for category B must be decided by the developer from the ledger/evidence before implementation.
+### `M2-G0-003A` — Feature Audit Slice B1 — appointment/reminder safety foundations
+
+Audit exactly category-B rows 1-5:
+
+1. Saturday 2:45 AM ROAD appointment lookahead for the next week.
+2. Appointment reminder day before and morning of.
+3. Appointment reminder one hour before.
+4. Medication reminders only from explicit owner/prescription-label/pharmacy/clinician evidence.
+5. Caregiver reminder sharing with explicit opt-in and exact recipient identity.
+
+Do not expand B1 into general mail triage, auto-email rules, archive approval or job-watch behavior.
+
+The exact first unaudited behavior is **Saturday 2:45 AM ROAD appointment lookahead for the next week**.
 
 ## Recovery protocol
 
