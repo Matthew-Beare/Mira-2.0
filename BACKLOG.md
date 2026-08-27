@@ -23,14 +23,14 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual retention; technical specs; shopping intent; inventory identity; hierarchical locations. | AUDIT-D1 | complete in `M2-G0-005B` |
 | `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; inventory query; par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | complete in `M2-G0-005C` |
 | `AUDIT-D4` | PREREQUISITE | D row 16: recipe library; meal planning; missing-ingredient shopping linkage; category-D closure. | AUDIT-D3 | complete in `M2-G0-005D`; `RECIPE-001`, `MEAL-001` |
-| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | **in progress; E1-E5 complete, E6 next** |
+| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | **complete through `M2-G0-006F`** |
 | `AUDIT-E1` | PREREQUISITE | E rows 1-5: sanitized generic starter; bounded four-question first boot; AI/job/pain-point/app discovery; cadence/timezone intake; explicit service activation states. | AUDIT-D | complete in `M2-G0-006A`; `ONBOARD-002`, `ONBOARD-003`, `ONBOARD-004`, `ONBOARD-005`, `SERVICE-001` |
 | `AUDIT-E2` | PREREQUISITE | E rows 6-10: working/self-employed; retired; nonworking; parent/guardian; dependent-minor profile foundations. | AUDIT-E1 | complete in `M2-G0-006B`; `PROFILE-001` through `PROFILE-005` |
 | `AUDIT-E3` | PREREQUISITE | E rows 11-15: caregiver/household-manager; student/HOME-CAMPUS; mixed/custom roles; older-adult usability; “Boomer mode” nickname/exclusion boundary. | AUDIT-E2 | complete in `M2-G0-006C`; `PROFILE-006` through `PROFILE-011` |
 | `AUDIT-E4` | PREREQUISITE | E rows 16-20: Person/relationship identity and permission scopes; private/upstream feature sharing; clean distribution boundary; custom skill builder; instruction-update behavior. | AUDIT-E3 | complete in `M2-G0-006D`; `PROFILE-012`, `PROFILE-013`, `DIST-001`, `DIST-002`, `DEV-004`, `ONBOARD-001` refinement |
-| `AUDIT-E5` | PREREQUISITE | E rows 21-24: browser-only nontechnical installation; independent source read/write gates; provider-neutral AI-runtime routing; personal/organization/managed/no-Git source lanes. | AUDIT-E4 | **complete in `M2-G0-006E`**; `ONBOARD-006`, `SOURCE-001`, `PROVIDER-001`, `SOURCE-002` |
-| `AUDIT-E6` | PREREQUISITE | E rows 25-26: browser-only Google/Microsoft/Apple/alternative-AI onboarding; installable provider-neutral MIRA skill + deterministic Personal Google bootstrap; category-E closure. | AUDIT-E5 | **next packet `M2-G0-006F`** |
-| `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | queued |
+| `AUDIT-E5` | PREREQUISITE | E rows 21-24: browser-only nontechnical installation; independent source read/write gates; provider-neutral AI-runtime routing; personal/organization/managed/no-Git source lanes. | AUDIT-E4 | complete in `M2-G0-006E`; `ONBOARD-006`, `SOURCE-001`, `PROVIDER-001`, `SOURCE-002` |
+| `AUDIT-E6` | PREREQUISITE | E rows 25-26: browser-only provider account/resource onboarding; installable provider-neutral MIRA skill; deterministic Personal Google bootstrap; category-E closure. | AUDIT-E5 | **complete in `M2-G0-006F`; `PROVIDER-002`, `ONBOARD-007`, `PROVIDER-003`** |
+| `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | **next after E6 merge/readback** |
 | `AUDIT-G` | PREREQUISITE | ChatGPT/Android/web/desktop/CLI/device surfaces. | AUDIT-F | queued |
 | `AUDIT-LEGACY` | HARDENING | Reconcile PR #31 plus meaningful legacy branches/repos against stable MIRA 2.0 features. | audits A-G | queued; inspect earlier only when materially relevant |
 | `DEP-GRAPH` | PREREQUISITE | Build complete dependency/enables graph, dedupe/supersession map, and ranked engineering backlog. | completed forensic registry | queued |
@@ -39,7 +39,10 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
-| `NONTECH-INSTALL-001` | PREREQUISITE | Port/prove `ONBOARD-006` browser-only MIRA 2.0 installer contract with private template/source creation, exact readback, explicit blocked states and zero CLI/local-tool fallback in the ordinary-user lane. | `ONBOARD-006`, `DIST-STARTER-001`, `SOURCE-GATES-001` | queued; legacy browser contract/tests are test-verified, MIRA 2.0 browser install unverified |
+| `MIRA-SKILL-001` | PREREQUISITE | Port/prove `ONBOARD-007` as the canonical provider-neutral installable MIRA orchestration skill, preserving dependency preflight, Integration Registry routing, compatibility-only legacy package ID and strict separation from reference-deployment personal state. | `ONBOARD-007`, `DIST-STARTER-001`, `SOURCE-GATES-001`, `RUNTIME-ROUTER-001` | queued; legacy package exists and installation gate is test-verified, MIRA 2.0 installed-skill runtime smoke unverified |
+| `PROVIDER-ONBOARD-001` | PREREQUISITE | Port/prove `PROVIDER-002` browser provider-account/resource onboarding with exact identity/resource/scope, bounded read/write/readback, explicit regulated approval gates and honest Apple/manual degradation rather than fabricated automation. | `PROVIDER-002`, `ONBOARD-006`, `RUNTIME-ROUTER-001`, provider adapters/Authority Registry | queued; legacy browser contract is test-verified, actual MIRA 2.0 provider transactions unverified |
+| `GOOGLE-BOOTSTRAP-001` | PREREQUISITE | Port/prove `PROVIDER-003` deterministic Personal Google blueprint/plan/verifier with module-scoped resources, exact source SHA/identity/timezone/schema/seed drift rejection and optional Gmail/Calendar/scheduler degradation. Integration proof must use only a separate synthetic MIRA 2.0 Google namespace. | `PROVIDER-003`, `MIRA-SKILL-001`, `PROVIDER-ONBOARD-001`, `SOURCE-GATES-001` | queued; legacy deterministic core is test-verified, MIRA 2.0 Google provisioning/readback unverified |
+| `NONTECH-INSTALL-001` | PREREQUISITE | Port/prove `ONBOARD-006` browser-only MIRA 2.0 installer contract with private template/source creation, exact readback, explicit blocked states and zero CLI/local-tool fallback in the ordinary-user lane. | `ONBOARD-006`, `DIST-STARTER-001`, `SOURCE-GATES-001`, `MIRA-SKILL-001`, `PROVIDER-ONBOARD-001` | queued; legacy browser contract/tests are test-verified, MIRA 2.0 browser install unverified |
 | `SOURCE-GATES-001` | PREREQUISITE | Port/prove `SOURCE-001` independent source read/write/remote-readback gates against exact source targets; read-only access must never satisfy write, and successful source mutation requires remote commit/state readback. | `SOURCE-001`, source connector/runtime capability | queued; legacy deterministic gates are test-verified |
 | `RUNTIME-ROUTER-001` | PREREQUISITE | Port/prove `PROVIDER-001` provider-neutral runtime capability manifest/router with fail-closed unknown inputs, exact data/approval gates and module-scoped block/degrade semantics. | `PROVIDER-001`, `SOURCE-GATES-001`, data-classification/approval state | queued; legacy deterministic router/tests are test-verified |
 | `SOURCE-LANES-001` | PREREQUISITE | Port/prove `SOURCE-002` personal Git, organization Git, managed-central and no-Git/manual lanes without forcing personal accounts or claiming durable source/automation in manual mode. | `SOURCE-002`, `SOURCE-GATES-001`, `RUNTIME-ROUTER-001`, `DIST-STARTER-001` | queued; legacy mode routing/tests are test-verified |
@@ -84,7 +87,7 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `SUBSCRIPTION-TRACK-001` | LATER | Specify/implement opt-in `SUB-001` only if promoted by product priority. | stable receipt/finance evidence + explicit activation | deferred optional |
 | `FINANCE-CONNECTOR-001` | LATER | Design/implement `FIN-001` authorized complete-account ingestion with coverage/sync/readback/privacy semantics. | provider abstraction + privacy model + authorization | deferred infrastructure |
 | `DATA-SANDBOX` | PREREQUISITE | Create separate MIRA 2.0 Google/MIRROR sandbox with synthetic data and prove no legacy production modification. | G0 audit + canonical state contract | queued |
-| `CORE-ROUNDTRIP` | VERTICAL | Stock ChatGPT create/read/mutate/dedupe/read-back one canonical Google-backed MIRROR entity. | dependency graph + sandbox | provisional |
+| `CORE-ROUNDTRIP` | VERTICAL | Stock ChatGPT create/read/mutate/dedupe/read-back one canonical Google-backed MIRROR entity. | dependency graph + `DATA-SANDBOX` + `GOOGLE-BOOTSTRAP-001` | provisional |
 | `ANDROID-SYNC` | VERTICAL | Android reads/mutates same canonical entity without second authority. | CORE-ROUNDTRIP | provisional |
 | `OPS-BRIEF-VSLICE` | VERTICAL | Generate/deliver one real MIRA Ops Brief from canonical MIRA 2.0 state. | core + audited prerequisites | provisional |
 | `BRAND-ASSETS` | ENHANCEMENT | Integrate approved MIRA source artwork and generated platform derivatives. | branding source delivered | queued |
@@ -96,7 +99,7 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
-## Category-E1/E2/E3/E4/E5 dependency findings
+## Category-E1/E2/E3/E4/E5/E6 dependency findings
 
 - `ONBOARD-002` is a privacy/lineage prerequisite. New deployments begin generic and synthetic; protected legacy state remains outside portable/public source.
 - `ONBOARD-003` owns bounded interview pacing and durable resume state, not service activation.
@@ -121,11 +124,15 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 - `PROVIDER-001` routes by observed capability, data classification and approval evidence rather than AI/provider name; unknown claims fail closed.
 - `SOURCE-002` supports personal Git, organization Git, managed-central and no-Git/manual lanes. Institutional/manual users are never forced into personal Git/shadow accounts.
 - Managed/no-Git source lanes never move mutable personal state into source or fabricate unattended automation/write capability.
+- `PROVIDER-002` owns exact provider account/resource onboarding and bounded provider read/write/readback; it is separate from source setup and AI-runtime capability routing.
+- `ONBOARD-007` is the portable MIRA orchestration package. Its legacy package identifier is compatibility-only, and it must never install the developer/reference deployment’s private Ops state for another user.
+- `PROVIDER-003` is the first deterministic Personal Google adapter beneath MIRA’s provider-neutral contracts. Google resource shapes do not become universal MIRROR architecture.
+- Apple/iCloud stays manual/user-mediated unless a verified adapter proves more; a file exchange or ICS handoff is not background synchronization.
 - Legacy unsafe/rejected universal-onboarding behavior stays rejected and cannot become a default through old branch/code resurrection.
 
 ## Prior-category closure
 
-Categories A-D are complete. Category E is complete through row 24. Their recorded implementation gaps/evidence levels remain authoritative. E6 finishes provider onboarding/bootstrap and closes category E before category F begins.
+Categories A-E are complete. Their recorded implementation gaps/evidence levels remain authoritative. Category F is the next forensic boundary after E6 merge/readback; no category-E legacy evidence is promoted to MIRA 2.0 integration/live status merely because deterministic legacy tests exist.
 
 ## New-idea triage rule
 
