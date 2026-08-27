@@ -20,6 +20,7 @@ ID families include:
 - `RECOVERY-*` — run evidence, checkpoints, resumability, circuit breakers and failure isolation;
 - `CAL-*` — calendar, appointments and appointment-window semantics;
 - `REMIND-*` — reminder planning, medication reminder safety and sharing boundaries;
+- `HEALTH-*` — non-clinical administrative health organization and safety boundaries;
 - `MAIL-*` — email triage, communication safety, evidence ingestion;
 - `CAREER-*` — optional career/job monitoring and fit evaluation;
 - `ORDER-*` — orders, fulfillment, shipments, replacements, returns, refunds and order-lifecycle evidence;
@@ -1337,6 +1338,8 @@ Category E is complete through all 26 historical rows. The final authority/depen
 
 **Acceptance / verification boundary:** Port the catalog/dependency/activation contracts to MIRA 2.0 and prove with synthetic service state that an enabled service derives readiness only from its declared canonical behaviors and verified authorities/capabilities, a missing required dependency blocks only affected services, optional dependency failure degrades only affected paths, disabled services stay disabled, and no dependency remediation changes state without explicit authorization/readback.
 
+**F2 refinement — selected goal/module dependencies:** An umbrella service may expose multiple independently selected goals or submodules. `SERVICE-002` therefore derives readiness only for the goals/submodules the user actually selected, with each selected path declaring its own required and optional canonical behaviors/capabilities. An unsupported or unselected adjacent goal must not block a selected working path, and the umbrella service must not report an unavailable adjacent capability as ready merely because another child path works. Goal selection still does not enable child services, grant provider permissions or mutate provider state.
+
 ## F1 service mappings
 
 ### F row 1 — Briefs/action digest
@@ -1386,9 +1389,101 @@ Category E is complete through all 26 historical rows. The final authority/depen
 - `RECOVERY-002` failure isolation applies at service composition boundaries: missing requirements block/degrade only affected services and their explicit dependents.
 - No F1 service receives MIRA 2.0 integration/live verification from legacy catalog labels, skill prose or deterministic legacy tests alone.
 
+## Audited F2 finance, appointment/calendar and administrative-health service boundaries
+
+### F row 6 — Personal finance organization
+
+**Canonical mapping:** service key `finance` is goal-scoped under `SERVICE-001` + `SERVICE-002`, not one monolithic implementation. Spending-visibility goals may require `SPEND-001`; merchant-settlement/expected-charge goals require `PAYMENT-001`; beneficiary/household reimbursement goals require `REIMB-001`; optional recurring-commitment tracking may select `SUB-001`; complete connected-account evidence may select `FIN-001` when that provider capability exists. Budgeting, savings, debt reduction and broad cash-flow planning are not considered implemented merely because `FIN-001` or another finance child exists; any distinct engine needed for those goals must earn its own canonical feature/evidence later.
+
+**Evidence ceiling:** mixed. `PAYMENT-001` has a deterministic test-verified reconciliation core. `SPEND-001` and `REIMB-001` are specified with queued deterministic work. `SUB-001` is optional/deferred and absent. `FIN-001` is future/infrastructure-deferred. Therefore the umbrella finance service cannot honestly receive a single `implemented` evidence label.
+
+**Dependency defect:** legacy `f-06` requires only historical C10 and makes C12 optional. That collapses now-separate payment/reimbursement boundaries, omits spending visibility, and cannot represent optional subscriptions or unavailable broader finance goals. MIRA 2.0 must evaluate selected finance goals individually and report unsupported goals as unavailable/degraded rather than promoting the umbrella service.
+
+### `CAL-005` — Evidence-safe appointment and provider identity reconciliation
+
+**Description:** MIRA reconciles one canonical appointment occurrence from exact source authority/record identity and links it to a durable provider/service entity when supported. Provider identity may resolve from verified cached aliases/source bindings, sufficiently supported public research, or explicit owner correction. Low-confidence or ambiguous matches remain unresolved and must not invent specialty, diagnosis or provider identity. Revisions to evidence enrich/correct the same canonical appointment/provider linkage rather than manufacturing duplicate appointments merely because a source title changed.
+
+**Why it exists / user outcome:** An appointment email can become one durable appointment with the correct clinic/provider identity without repeated research or MIRA deciding that a vague office name secretly proves a diagnosis.
+
+**Requirement status:** `required for the appointments/calendar service`.
+
+**Delivery/evidence:** the provider/service identity subcore is `test_verified` in legacy `appointment_identity.py` and `test_appointment_identity.py` for cached resolution, supported-research caching, low-confidence refusal, owner correction and ambiguous-alias failure. The broader canonical appointment persistence/lifecycle and MIRA 2.0 provider integration remain unverified.
+
+**Hard dependencies:** canonical appointment/source identity; evidence/provenance; provider/service entity identity; explicit owner correction semantics; provider/source read access when ingestion is enabled.
+
+**Enables:** `CAL-006`, appointment reminders, context-aware visibility, appointment-type presentation and evidence-grounded appointment queries.
+
+**Legacy evidence:** category-F row 7; `starter/tools/appointment_identity.py`; `starter/tests/test_appointment_identity.py`; `starter/MODULE_CATALOG.md` appointment reconciliation contract.
+
+**Acceptance / verification boundary:** Preserve deterministic identity/research/correction/ambiguity fixtures and add canonical appointment replay/revision/cancellation tests. MIRA 2.0 integration must ingest synthetic appointment evidence, preserve one appointment identity across revision, and read back the linked provider/service identity without unsupported medical inference.
+
+### `CAL-006` — Idempotent linked Calendar projection, update and exact provider readback
+
+**Description:** An enabled Calendar projection creates or updates exactly one provider Calendar event for one canonical MIRA appointment, preserving stable source linkage and target-calendar identity. Revision, reschedule, reminder-profile change or cancellation updates the linked event instead of creating a duplicate. Success requires provider readback of the exact event ID, title/type, date/time/timezone, target calendar, configured reminders and canonical source linkage. Projection failure does not erase canonical appointment state, and a readable Calendar or connection badge is not write/readback proof. Appointment reminders remain separately activatable from Calendar projection.
+
+**Why it exists / user outcome:** Changing an appointment should update the same calendar event instead of leaving a trail of stale duplicates and cheerful but unverified “done” messages.
+
+**Requirement status:** `required for automatic appointments/calendar projection`.
+
+**Delivery/evidence:** `specified` strongly in the legacy module catalog/provider contracts. Deterministic reminder planning exists separately, but no dedicated audited Calendar write/update/readback implementation earns `test_verified` or integration credit. PR #31 contains generic Calendar capability/readback language only as unmerged reference evidence.
+
+**Hard dependencies:** `CAL-005`; exact Calendar provider/resource identity; provider Calendar write + readback capability; IANA timezone semantics; `RECOVERY-002`; explicit permission scope where another person/shared calendar is involved.
+
+**Enables:** provider-backed appointment synchronization, verified revision/cancellation updates, Calendar-native event reminders and later cross-provider projection.
+
+**Legacy evidence:** category-F row 7; `starter/MODULE_CATALOG.md`; provider onboarding/capability contracts; PR #31 Google-native skill as unmerged reference only.
+
+**Acceptance / verification boundary:** Add deterministic adapter-contract tests for create/replay/update/reschedule/cancel/dedupe and wrong-target/wrong-readback failure. Integration verification requires a synthetic provider Calendar transaction with exact event readback and proof that retry/revision does not create a second event.
+
+### F row 7 — Appointments/calendar/reminders
+
+**Canonical mapping:** `appointments_calendar` → required `CAL-005` + `CAL-006`, with `CAL-004` conditional when context-aware presentation is selected. `appointment_reminders` remains a separate service activation and maps to `CAL-002` + `CAL-003` plus canonical appointment state. `CAL-001` is a specific Brief/personal-policy projection and is not a universal prerequisite for the appointments/calendar service.
+
+**Evidence ceiling:** appointment/provider identity has a test-verified legacy subcore; reminder timing is test-verified; Calendar provider mutation/readback is only strongly specified. The service therefore cannot be promoted above its weakest selected required path.
+
+**Dependency defect:** legacy `f-07` hard-requires `b-01` Saturday 02:45 AM lookahead and bundles reminder behavior with appointment/calendar behavior. MIRA 2.0 removes that deployment-specific brief dependency from universal readiness and keeps the two service keys independently activatable.
+
+### `HEALTH-001` — Non-clinical administrative health organization
+
+**Description:** MIRA may organize user-authorized administrative health information and work such as appointment-related evidence, records/documents, administrative tasks and reminder/service linkage without acting as a diagnostic or treatment system. The feature may classify or relate evidence only to the degree supported by the source and user configuration; provider specialty is not diagnosis. It never invents or changes medication dose/timing, gives missed-dose advice, recommends treatment, infers diagnosis, or grants caregiver/family access. Medication reminders and caregiver sharing are separate opt-in surfaces governed by `REMIND-001`, `REMIND-002` and explicit permission scopes.
+
+**Why it exists / user outcome:** MIRA can help keep health administration organized without quietly crossing from filing and reminders into practicing medicine or exposing sensitive state to someone because they have a relationship label.
+
+**Requirement status:** `proposed / accepted direction`.
+
+**Delivery/evidence:** `specified` only. The audited repository contains medication-reminder safety and appointment identity/reminder components, but no dedicated broader administrative-health engine or deterministic suite. PR #31 does not supply a qualifying implementation. No implementation, integration or live credit is inherited from narrower reminder features.
+
+**Hard dependencies:** explicit user activation; privacy/minimum-necessary state; `PROFILE-013` permission scopes for any sharing; `CAL-005` when appointment organization is selected; retained evidence authority when documents are stored; `REMIND-001`/`REMIND-002` only when those separate services are explicitly enabled.
+
+**Enables:** a bounded health-administration service without clinical inference, plus later provider/document workflows if separately authorized and verified.
+
+**Legacy evidence:** category-F row 8; feature ledger; `starter/MODULE_CATALOG.md`; existing `REMIND-001`/`REMIND-002` safety boundaries.
+
+**Acceptance / verification boundary:** Define a minimum-necessary administrative schema and deterministic tests proving source-grounded organization, no diagnosis/treatment/dose inference, no implicit medication-reminder activation, and no relationship-derived sharing. Any provider/shared-state integration must use synthetic data and explicit permission/readback before promotion.
+
+### F row 8 — Administrative health organization
+
+**Canonical mapping:** `health_organization` → `HEALTH-001` under `SERVICE-001` + `SERVICE-002`. `medication_reminders` remains separately activatable and maps to `REMIND-001`. Caregiver reminder sharing remains optional `REMIND-002` and requires exact recipient identity plus explicit permission/activation; it is not a property of the health service.
+
+**Evidence ceiling:** `HEALTH-001` is specification-level. `REMIND-001` and the opt-in gate in `REMIND-002` are test-verified narrower capabilities, but they cannot raise the broader health-organization service to implemented status.
+
+**Dependency defect:** legacy `f-08` makes medication reminders the required child of broader health organization. MIRA 2.0 reverses that coupling: health administration may exist without medication reminders, and medication reminders may be enabled without granting a broader health-administration or caregiver-sharing scope.
+
+## Category F2 consistency findings
+
+- Umbrella service readiness is goal/module-scoped. A working child path cannot make unsupported adjacent finance/health/calendar goals appear ready.
+- `finance` is a service composition over independently evidenced capabilities, not a new financial authority and not proof of budgeting, debt, savings, cash-flow or full-account support.
+- `CAL-005` owns evidence-safe appointment/provider identity. `CAL-006` owns provider Calendar mutation/readback. Those are separate failure and verification domains.
+- `appointments_calendar` and `appointment_reminders` are separate activation surfaces. Enabling one does not silently enable the other.
+- `CAL-001` Saturday lookahead remains a specific Brief/policy projection rather than a universal appointment dependency.
+- `HEALTH-001` is non-clinical administrative organization only. It cannot diagnose, recommend treatment, infer dose/timing, give missed-dose advice or infer caregiver access.
+- `health_organization`, `medication_reminders` and caregiver sharing remain independent activation/permission surfaces.
+- Provider mutation for Calendar or financial state requires exact target identity/scope and readback; source/provider connection alone is not success evidence.
+- No F2 service receives MIRA 2.0 integration/live credit from legacy deterministic subcores, skill prose or unmerged PR #31 evidence alone.
+
 ## Audit status
 
 - Categories A, B, C, D and E are complete.
-- Category F is in progress. Rows F1-F5 are audited in `M2-G0-007A`; row F6 **Personal finance organization** is the next unaudited category-F behavior.
+- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 are audited in `M2-G0-007B`. Row F9 **Shopping/procurement** is the next unaudited category-F behavior.
 - Category G remains unaudited.
 - The complete historical feature inventory remains in progress until F and G are closed.
