@@ -23,9 +23,10 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual retention; technical specs; shopping intent; inventory identity; hierarchical locations. | AUDIT-D1 | complete in `M2-G0-005B` |
 | `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; inventory query; par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | complete in `M2-G0-005C` |
 | `AUDIT-D4` | PREREQUISITE | D row 16: recipe library; meal planning; missing-ingredient shopping linkage; category-D closure. | AUDIT-D3 | complete in `M2-G0-005D`; `RECIPE-001`, `MEAL-001` |
-| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | **in progress; E1 complete, E2 next** |
-| `AUDIT-E1` | PREREQUISITE | E rows 1-5: sanitized generic starter; bounded four-question first boot; AI/job/pain-point/app discovery; cadence/timezone intake; explicit service activation states. | AUDIT-D | **complete in `M2-G0-006A`**; `ONBOARD-002`, `ONBOARD-003`, `ONBOARD-004`, `ONBOARD-005`, `SERVICE-001` |
-| `AUDIT-E2` | PREREQUISITE | E rows 6-10: working/self-employed profile behavior; retired profile; nonworking profile; parent/guardian profile; dependent child/minor profile. | AUDIT-E1 | **next packet `M2-G0-006B`** |
+| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | **in progress; E1-E2 complete, E3 next** |
+| `AUDIT-E1` | PREREQUISITE | E rows 1-5: sanitized generic starter; bounded four-question first boot; AI/job/pain-point/app discovery; cadence/timezone intake; explicit service activation states. | AUDIT-D | complete in `M2-G0-006A`; `ONBOARD-002`, `ONBOARD-003`, `ONBOARD-004`, `ONBOARD-005`, `SERVICE-001` |
+| `AUDIT-E2` | PREREQUISITE | E rows 6-10: working/self-employed; retired; nonworking; parent/guardian; dependent-minor profile foundations. | AUDIT-E1 | **complete in `M2-G0-006B`**; `PROFILE-001` through `PROFILE-005` |
+| `AUDIT-E3` | PREREQUISITE | E rows 11-15: caregiver/household-manager; student/HOME-CAMPUS; mixed/custom roles; older-adult usability; “Boomer mode” nickname/exclusion boundary. | AUDIT-E2 | **next packet `M2-G0-006C`** |
 | `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | queued |
 | `AUDIT-G` | PREREQUISITE | ChatGPT/Android/web/desktop/CLI/device surfaces. | AUDIT-F | queued |
 | `AUDIT-LEGACY` | HARDENING | Reconcile PR #31 plus meaningful legacy branches/repos against stable MIRA 2.0 features. | audits A-G | queued; inspect earlier only when materially relevant |
@@ -35,6 +36,11 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
+| `PROFILE-MINOR-001` | PREREQUISITE | Port/prove `PROFILE-005` dependent-minor routing plus minimum-necessary private data, explicit relationship/permission scopes and shared-authority readback before any dependent-minor feature is promoted. | `PROFILE-005`, `SERVICE-001`, explicit Person/relationship permission authority (E4 pending) | queued; role/context safety is test-verified, custody/sharing authorization is not |
+| `PROFILE-PARENT-001` | PREREQUISITE | Port/prove `PROFILE-004` parent/guardian composition and synthetic family relationship state while demonstrating relationship labels never grant calendar/school/health/finance/sharing access. | `PROFILE-004`, `SERVICE-001`, explicit Person/relationship permission authority (E4 pending) | queued; core router tested, family-service/provider permission integration unverified |
+| `PROFILE-WORK-001` | HARDENING | Port/test `PROFILE-001` working/self-employed role semantics with dedicated self-employed and mixed-role fixtures, primary-role persistence/readback and no recommendation-driven activation. | `PROFILE-001`, `ONBOARD-004`, `SERVICE-001`, `CTX-002` | queued; working context paths tested, self-employed path lacks dedicated audited fixture |
+| `PROFILE-RETIRED-001` | HARDENING | Port/prove `PROFILE-002` retired role, respectful presentation, context bypass, non-inference and opt-in reminder/service semantics in MIRA 2.0 canonical profile state. | `PROFILE-002`, `SERVICE-001` | queued; legacy deterministic core is test-verified |
+| `PROFILE-NONWORKING-001` | HARDENING | Port/test `PROFILE-003` nonworking/between-jobs classification, recommendations and transitions among working/nonworking/retired without silent service mutation or state deletion. | `PROFILE-003`, `SERVICE-001` | queued; distinction test exists, full transition/persistence flow unverified |
 | `STARTER-SANITIZE-001` | PREREQUISITE | Port/prove `ONBOARD-002` privacy/history audit gates for the MIRA 2.0 starter/distribution and verify synthetic clean lineage with no inherited legacy production state. | `ONBOARD-002`, distribution/starter source | queued; legacy source has CI-enforced scanner but MIRA 2.0 distribution proof is unverified |
 | `FIRSTBOOT-CORE-001` | PREREQUISITE | Implement/test `ONBOARD-003` exact ≤4 kickoff flow, durable Interview Ledger resume/defer/silence semantics and Minimum Useful Setup before exhaustive discovery. | `ONBOARD-002`, canonical onboarding state | queued; strong workflow artifacts, complete deterministic flow not test-verified |
 | `DISCOVERY-CORE-001` | HARDENING | Implement/test structured `ONBOARD-004` AI-use/pain-point/job/app/constraint discovery with capability reuse, no unsupported claims and recommendation-not-activation semantics. | `ONBOARD-003`, `SERVICE-001`, capability router | queued; important sub-boundaries are tested, full discovery flow is not |
@@ -72,18 +78,22 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
-## Category-E1 dependency findings
+## Category-E1/E2 dependency findings
 
 - `ONBOARD-002` is a privacy/lineage prerequisite. New deployments begin generic and synthetic; protected legacy state remains outside portable/public source.
 - `ONBOARD-003` owns bounded interview pacing and durable resume state, not service activation.
 - `ONBOARD-004` owns discovery/recommendation. Job titles, duties, existing apps and AI-use evidence may inform recommendations but cannot silently enable services or permissions.
 - `ONBOARD-005` owns new-user cadence/timezone capture; scheduler runtime semantics remain under `OPS-*`, and an existing deployment’s schedule is never inherited as a default.
 - `SERVICE-001` owns activation state and explicitly separates `unresolved/enabled/disabled/not_applicable/deferred` from capability availability, catalog presence and recommendation.
+- `PROFILE-001` through `PROFILE-005` are routing/profile facts, not authorization. Role recommendations cannot mutate service activation.
+- Retirement and nonworking remain distinct; neither may imply age, health, disability, financial or competence facts.
+- Parent/guardian and dependent-minor labels do not grant custody, calendar, school, health, financial or sharing authority. Permission-scoped relationship state is a separate prerequisite that will be audited in a later category-E slice.
+- Dependent-minor recurring away-context behavior requires explicit approval rather than inference from student/school labels.
 - Legacy unsafe/rejected universal-onboarding behavior stays rejected and cannot become a default through old branch/code resurrection.
 
 ## Prior-category closure
 
-Categories A-D are complete. Category E is complete through row 5. Their recorded implementation gaps/evidence levels remain authoritative.
+Categories A-D are complete. Category E is complete through row 10. Their recorded implementation gaps/evidence levels remain authoritative.
 
 ## New-idea triage rule
 

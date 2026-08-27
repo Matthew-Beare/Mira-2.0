@@ -783,9 +783,120 @@ Category D is complete through all 16 historical rows. The repaired authority/de
 - The rejected/unsafe universal-onboarding experiment remains rejected evidence. Its existence cannot override current bounded, explicit, browser/nontechnical-safe onboarding rules.
 - No E1 feature is promoted to MIRA 2.0 integration/live status merely because the legacy starter or tests exist.
 
+## Audited role/profile foundation features
+
+### `PROFILE-001` — Composable working and self-employed roles with evidence-gated work-context routing
+
+**Description:** MIRA represents `working` and `self_employed` as explicit composable profile roles rather than a universal “work mode.” A person may hold either role alongside other roles such as parent/guardian, with an explicit primary role when multiple non-minor roles apply. Working uses a work-and-personal operations presentation; self-employed may surface business/personal operations and finance-oriented focus, but neither role silently enables email, finance, work-trip tracking, briefs or a context split. Exact job title/duties and recurring work-away evidence may recommend HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/AWAY or custom labels under `CTX-002`; explicit user configuration controls activation. Being employed does not prove travel, and being self-employed does not grant business-account permissions or make every finance feature applicable.
+
+**Why it exists / user outcome:** MIRA can adapt to ordinary employment or self-employment without assuming that every worker travels, every contractor runs the same business workflow, or a job title is permission to rearrange the user’s life.
+
+**Requirement status:** `accepted`.
+
+**Delivery/evidence:** the legacy deterministic profile router implements both role tokens, distinct public labels/templates, composability, service recommendations and work-context routing. Working-role context behavior has direct regression tests covering confirmed-away, explicitly-not-away, ambiguous field work, custom labels and no silent selection. The self-employed route exists in executable code but the audited suite does not contain a dedicated self-employed fixture proving all of its distinctions, so the combined feature is `implemented` with important working-role subpaths `test_verified`, not fully test-verified end to end.
+
+**Hard dependencies:** `ONBOARD-004`; `SERVICE-001`; `CTX-002`; canonical profile/configuration authority; explicit role/primary-role input when required.
+
+**Enables:** work-aware briefs/next actions, optional work-trip/finance/email recommendations, later work profiles without hard-coded trucking behavior.
+
+**Legacy evidence:** category-E row 6; `starter/tools/onboarding_profile_router.py`; `starter/tests/test_onboarding_profile_router.py`; `questions.profile-and-stock-services.json`.
+
+**Acceptance / verification boundary:** Add dedicated self-employed and mixed-role fixtures, prove recommendations never mutate activation, preserve explicit primary-role handling, and persist/read back role/context configuration in the MIRA 2.0 sandbox without importing deployment-specific job data into public source.
+
+---
+
+### `PROFILE-002` — Retired role distinct from nonworking with respectful, opt-in support
+
+**Description:** `retired` is a first-class composable role with public label `Retired` and support template `Personal Schedule & Wellbeing`. Retirement is not shorthand for unemployment, old age, disability, reduced competence, illness or medication use. Work-away context routing is bypassed by default unless independently justified. The role may recommend appointments, appointment reminders, medication reminders, household/admin, routines, travel and knowledge workflows, but recommendations remain unresolved until explicitly enabled under `SERVICE-001`. Medication schedules remain evidence-gated under `REMIND-001`, caregiver sharing is off until explicit opt-in, and age/ability inference is prohibited.
+
+**Why it exists / user outcome:** A retired user gets useful schedule, household, travel and project support without MIRA deciding that retirement means frailty, medical dependence, or “basically unemployed but older.”
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** the legacy router and tests `test_verified` the retired/nonworking distinction, retired public label/template, work-context bypass, appointment/medication recommendations remaining unactivated, private profile alias storage, explicit reminder activation and prohibited age/ability inference. Provider delivery and MIRA 2.0 canonical profile persistence remain unverified.
+
+**Hard dependencies:** `SERVICE-001`; `REMIND-001`/`REMIND-002` when reminder features are selected; canonical profile authority; `CTX-002` for any separately justified context mode.
+
+**Enables:** retiree-friendly onboarding and briefs, hobbies/projects/travel/household focus, opt-in appointment/reminder workflows.
+
+**Legacy evidence:** category-E row 7; `onboarding_profile_router.py`; `test_onboarding_profile_router.py`; `questions.profile-and-stock-services.json` retiree support prompt.
+
+**Acceptance / verification boundary:** Preserve deterministic role/recommendation/non-inference tests. MIRA 2.0 sandbox must persist/read back retired role separately from employment state and prove role changes do not activate health/sharing features or infer age/ability.
+
+---
+
+### `PROFILE-003` — Nonworking/between-jobs role distinct from retirement
+
+**Description:** `nonworking` represents a current not-working, between-jobs, not-employed or equivalent state without collapsing it into retirement. It uses a `Not currently working` presentation and may emphasize next actions, personal priorities, household/admin, routines or skill-building. Work-away machinery is bypassed by default because employment/context state is absent, while future job-search/career features remain separate opt-in services. The role does not imply financial distress, unemployment-benefit status, job-seeking intent, disability, retirement, caregiving or any other unsupported circumstance.
+
+**Why it exists / user outcome:** Someone between jobs should not be treated as retired, and someone retired should not be treated as temporarily unemployed. Apparently nouns still need schemas because software enjoys category mistakes.
+
+**Requirement status:** `accepted`.
+
+**Delivery/evidence:** the legacy router implements aliases for `not working`, `between jobs`, `not employed`, `nonworking` and `unemployed`, a distinct presentation/template, separate recommendations and default context bypass. Regression tests directly prove retired versus nonworking classification, while the full nonworking recommendation/persistence flow is not independently integration-verified.
+
+**Hard dependencies:** `SERVICE-001`; canonical profile authority; `ONBOARD-004` for current-life-pattern discovery.
+
+**Enables:** personal-priority/next-action support without inappropriate work machinery and later explicit career/job-search activation when wanted.
+
+**Legacy evidence:** category-E row 8; `onboarding_profile_router.py`; `test_onboarding_profile_router.py` retired/nonworking distinction.
+
+**Acceptance / verification boundary:** Add dedicated nonworking recommendation and role-transition fixtures, persist/read back the role in MIRA 2.0, and prove transitions among working/nonworking/retired do not silently activate or delete unrelated services/state.
+
+---
+
+### `PROFILE-004` — Parent/guardian as a first-class composable role with permission-scoped recommendations
+
+**Description:** `parent_guardian` is a first-class composable role rather than an inferred household property. It may coexist with working, retired or other roles; when multiple non-minor roles apply the user explicitly selects the primary routing role. Parent/guardian may surface family/school, appointments, household/admin, next actions and shopping recommendations, but recommendation is not activation and the relationship label itself grants no calendar, school, health, financial, custody or sharing authority. Family access uses explicit owner-approved whole-authority or scoped shared-authority grants with provider/API readback. Private friendly aliases stay in mutable private state, not portable public source.
+
+**Why it exists / user outcome:** MIRA can help coordinate family life without interpreting “parent” as a master password to another person’s calendar, school records or health information.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** the legacy router/test suite `test_verified` first-class parent composition with working and mixed-profile behavior, explicit-primary-role enforcement, family/school brief focus, contradiction failure and recommendation/activation separation. The state-authority model strongly specifies explicit sharing grants and never-infer-family-access behavior. Dedicated family-school service execution, custody/permission enforcement and MIRA 2.0 provider readback are not integration-verified.
+
+**Hard dependencies:** `SERVICE-001`; canonical Person/profile identity; explicit relationship records; scoped authority/sharing model; provider/API authorization and readback for shared state.
+
+**Enables:** family/school coordination, household and appointment recommendations, later scoped shared household authorities.
+
+**Legacy evidence:** category-E row 9; `onboarding_profile_router.py`; `test_onboarding_profile_router.py`; `questions.profile-and-stock-services.json`; `STATE_AUTHORITY_MODEL.md` sharing contract.
+
+**Acceptance / verification boundary:** Preserve role-composition tests; add permission fixtures proving relationship labels cannot grant access, explicit shared scopes are required/read back, disabled/not-applicable family services stay inactive, and MIRA 2.0 profile/relationship persistence uses synthetic people only.
+
+---
+
+### `PROFILE-005` — Dependent-minor role with primary routing and explicit privacy/permission gates
+
+**Description:** `dependent_minor` is an explicit profile role and, when present with another role such as student, remains the primary routing role rather than being flattened into a generic mixed profile. By default recurring away-context routing is bypassed; custom HOME/CAMPUS or other away contexts require explicit approval/evidence instead of being inferred from school/student labels. Recommended services are limited to appropriate categories such as education, family/school and routines, while every service still retains independent activation/capability state. The minor/dependent relationship itself grants no guardian, custody, school, calendar, health, financial or sharing permission. Store only minimum necessary private data in the selected authority, and require explicit scoped grants/readback for any shared state.
+
+**Why it exists / user outcome:** MIRA can support a dependent’s school/routine coordination without using “minor” as permission to expose everything to everyone who happens to have a family label.
+
+**Requirement status:** `accepted direction / privacy-sensitive`.
+
+**Delivery/evidence:** the legacy router and tests `test_verified` dependent-minor primary-role precedence, non-mixed routing, default away-context bypass and explicit approval before custom away context. The question bank requires dependent-minor primary routing and explicit answers for preferences/activation; the authority model forbids inferred family access. Dedicated family-school execution, minimum-necessary data schema, custody/guardian authorization and provider sharing readback remain specification/integration gaps.
+
+**Hard dependencies:** `SERVICE-001`; canonical Person/profile identity; explicit relationship/permission scopes; sharing/authorization model; `CTX-002`; privacy/minimum-necessary data policy.
+
+**Enables:** safe dependent/student routing and later family-school coordination without implicit access rights.
+
+**Legacy evidence:** category-E row 10; `onboarding_profile_router.py`; `test_onboarding_profile_router.py` dependent-minor fixtures; `questions.profile-and-stock-services.json`; `STATE_AUTHORITY_MODEL.md` sharing contract.
+
+**Acceptance / verification boundary:** Preserve primary/context tests; implement deterministic permission/minimum-data fixtures, prove no relationship label grants access, require explicit shared-scope readback, and use only synthetic dependent/guardian records until privacy/authorization behavior is integration-verified.
+
+## Category E2 consistency findings
+
+- Roles are descriptive/routing inputs, not permissions and not service activation.
+- `PROFILE-001` may recommend work/context behavior, but job title/duties never silently select context or enable a service.
+- `PROFILE-002` retirement and `PROFILE-003` nonworking are distinct states; neither implies health, age, disability, financial or competence facts.
+- `PROFILE-004` parent/guardian composes with other roles but grants no custody, calendar, school, health, finance or sharing authority by itself.
+- `PROFILE-005` dependent-minor remains primary for safety-oriented routing; explicit approval is required before recurring away-context selection.
+- Family sharing is an authority/permission operation with explicit scope and readback, never an implication of a profile relationship.
+- Legacy router implementation/tests establish useful deterministic evidence, but MIRA 2.0 profile persistence, provider sharing and family-service integration remain unverified.
+
 ## Audit status
 
 - Categories A, B, C and D are complete.
-- `M2-G0-006A` audited category-E rows 1-5 as `ONBOARD-002`, `ONBOARD-003`, `ONBOARD-004`, `ONBOARD-005`, and `SERVICE-001`.
+- Category E rows 1-5 are complete in `M2-G0-006A`.
+- `M2-G0-006B` audited category-E rows 6-10 as `PROFILE-001` through `PROFILE-005`.
 - The complete historical feature inventory is still in progress.
-- The next bounded audit begins category-E row 6 with working/self-employed profile behavior; role/profile implementation is not part of E1.
+- The next bounded audit begins category-E row 11 with caregiver and household-manager profile behavior; no later profile, accessibility, provider or distribution behavior is audited by E2.
