@@ -4,64 +4,66 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 ## Completed packet before this branch
 
-### `M2-G0-007C` — Feature Audit Slice F3 — shopping and food-service composition
+### `M2-G0-007D` — Feature Audit Slice F4 — household administration and laundry routines
 
-- **Merged PR:** #22
-- **Merge SHA:** `f1c1345cdf0e60872df7433771926a26611d3bb1`
-- **Main handoff commit activating F4:** `0b8ec443effb758f4c1944863125b64eda21737d`
-- **Audited rows:** F9-F10 — Shopping/procurement; Recipes/meals/groceries.
-- **Result:** `shopping` maps to `SHOP-001`; `recipes_meals` uses selected recipe-library versus pantry-aware meal-planning submodules over `RECIPE-001`, `MEAL-001`, and `GROCERY-001`; legacy `recipe_library_enabled` cannot silently enable the whole food stack.
-- **Remote readback:** F3 `FEATURES.md` and `BACKLOG.md` were verified on `main` after merge.
+- **Merged PR:** #23
+- **Merge SHA:** `c5a57a3c6c2896ad7c0bd47f889fa9832d387877`
+- **Audited rows:** F11-F12 — Household/errands/admin/maintenance; Laundry stages and drop-off/pickup reminders.
+- **Result:** `household_admin` maps to `TASK-001`/`TASK-002`; `ROUTINE-001` owns recurring/staged routine truth; `REMIND-003` owns consolidated reminder projection; sibling service activation and ownership inference are prohibited.
+- **Backlog:** added only `AUDIT-F4`, `SERVICE-DEPS-004`, `ROUTINE-CORE-001`, and `ROUTINE-REMINDER-001`.
+- **Remote readback:** F4 `FEATURES.md` and `BACKLOG.md` were verified on `main` after merge.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-007D`
-- **Name:** Feature Audit Slice F4 — household administration and laundry routines
+- **Packet ID:** `M2-G0-007E`
+- **Name:** Feature Audit Slice F5 — routines/accountability and education/study services
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-007d-household-laundry-services`
-- **Branch start SHA:** `0b8ec443effb758f4c1944863125b64eda21737d`
-- **Research checkpoint commit:** `ae33bf7068794d5871d2e8795f5f738860246310`
-- **Feature registry commit:** `c54f0da1077c6afbf9a2d5d2c0169dcf4bc3e1bd`
-- **Backlog checkpoint commit:** `f16e5d58b4f3fd1cd40caba670b45e44affa9ea3`
-- **Status:** acceptance complete; bounded PR/merge/readback pending.
+- **Branch:** `audit/g0-007e-routines-education-services`
+- **Base merge SHA:** `c5a57a3c6c2896ad7c0bd47f889fa9832d387877`
+- **Status:** activated; forensic evidence pass next.
 
-## Audited F4 rows
+## Exact category-F scope in this packet
 
-11. **Household/errands/admin/maintenance**.
-12. **Laundry stages and drop-off/pickup reminders**.
+Audit exactly legacy category-F rows 13-14:
 
-## Completed acceptance evidence
+13. **Routines/fitness/accountability** — REQUIRED for the reference user; optional stock service; legacy skill workflow plus task-state and optional wearable profile.
+14. **Education/study/deadlines/offline road preparation** — REQUIRED for the reference user; optional stock service; legacy skill workflow plus task-state, optional Calendar projection and retained evidence/source-material profile.
 
-1. F11 `household_admin` is normalized as a service composition over `TASK-001` + `TASK-002`; no duplicate household task database or identity authority was created.
-2. Asset maintenance evidence/history remains optional under `ASSET-002` and `SPEC-001`; the word “maintenance” in the service label does not make those universal household-admin dependencies.
-3. `household_admin` and `household_routines` remain independent activation choices under `SERVICE-001`/`SERVICE-002`.
-4. Added `ROUTINE-001` for recurring/staged routine definitions and occurrence lifecycle because generic task records do not prove stable routine/occurrence identity, stages, history, skip/reschedule/miss or responsibility semantics.
-5. `ROUTINE-001` keeps reusable routine definition separate from each occurrence, preserves historical occurrences across cadence/responsibility edits, and requires supported evidence or explicit action for completion/stage advancement.
-6. Added `REMIND-003` for consolidated routine/stage reminder planning and projection; reminder delivery is a separate failure domain from canonical routine truth.
-7. `REMIND-003` prohibits one permanent scheduler/automation per chore, stage or occurrence and uses deterministic/replay-safe reminder identity with consolidated notification/brief/optional Calendar projection.
-8. Delivery success/failure cannot mark routine stages complete, erase routine occurrences or create a second routine authority. Provider mutation requires exact target readback.
-9. Legacy F12→F11 aggregate dependency is normalized to shared `TASK-001`/`TASK-002` behaviors rather than sibling-service activation. `household_routines` may be enabled while `household_admin` remains disabled or unresolved.
-10. Legacy `household_routines_enabled` is semantically narrow enough to map only to `household_routines`; no migration-ambiguity ticket was manufactured. It does not authorize `household_admin`, Calendar projection or person responsibility/ownership.
-11. Household-manager role, service activation and observed completion cannot infer future responsibility or ownership for one person.
-12. The legacy household-routine router regression proves explicit activation, representative washer-to-dryer/pickup examples, consolidated delivery intent and prohibited ownership inference, but does not promote the missing routine lifecycle or household reminder planner/provider adapters to `test_verified`.
-13. Legacy appointment-centric `reminder_delivery.py` is not evidence of household/stage reminder implementation merely because both concepts use reminders.
-14. Added only the missing F4 work: `AUDIT-F4`, `SERVICE-DEPS-004`, `ROUTINE-CORE-001`, and `ROUTINE-REMINDER-001`; existing task/profile/asset/provider work remains authoritative rather than duplicated.
-15. `FEATURES.md` replacement was verified against the research checkpoint: one file only, 71 additions and two intended replacements; F4 text and the new `ROUTINE-*` identity family were remotely inspected.
-16. `BACKLOG.md` replacement was verified against the feature commit: one file only, 18 additions and one intended prior-category closure replacement.
-17. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
+Do not expand this packet into F15 Parent/child school coordination, family permissions, travel, work-trip tracking, assets/knowledge, backup/recovery, custom skill building, activity/wearable ingestion itself, weather onboarding, category G, or executable MIRA 2.0 coding.
+
+## Packet-boundary rationale
+
+- F13 and F14 are both user-facing planning/accountability compositions over task/routine state with optional projections/integrations.
+- F15 immediately introduces Person/relationship identity plus family/school permission-sensitive behavior (`e-09`, `e-10`, `e-16`), so it begins a different dependency and privacy slice.
+- Wearable data ingestion remains F22; F13 may consume an optional verified wearable capability later but cannot claim that integration merely because fitness/accountability exists.
+
+## Acceptance criteria
+
+1. Account for F13-F14 with stable canonical mappings and create new IDs only when generic `TASK-*`/`ROUTINE-*`/evidence/calendar features cannot honestly represent the required lifecycle.
+2. Determine whether F13 is fully covered by `ROUTINE-001` + `TASK-001`/`TASK-002` plus optional future wearable capability, without manufacturing a fitness database by label alone.
+3. Preserve explicit completion/miss/reschedule evidence and never infer exercise/routine completion from elapsed time, reminder delivery or wearable absence.
+4. Keep wearable ingestion optional and outside this packet; F13 cannot depend on F22 being implemented for basic readiness.
+5. Determine whether education/study needs a distinct canonical education/course/deadline authority or can safely compose generic tasks/routines/evidence without losing identity/lifecycle semantics.
+6. Preserve verified deadlines, prerequisites, source materials, home/away/offline constraints and accountability cadence without fabricating completed work, grades or attendance.
+7. Calendar projection for study/deadline state remains optional and provider-readback-gated; Calendar failure cannot erase canonical education/task state.
+8. Retained source materials/evidence remain separate from task completion and should reuse canonical evidence/knowledge behavior where possible.
+9. Record requirement status separately from implementation/test/integration/live evidence and do not promote skill prose to executable proof.
+10. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`.
+11. Open a bounded PR, verify scope, merge and remotely read back before advancing to F6.
+12. Touch no legacy Google production state and change no executable MIRA 2.0 product behavior.
 
 ## Exact next action
 
-Compare `audit/g0-007d-household-laundry-services` against `main` and verify the final packet is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` with the branch zero commits behind. Open a pull request to `main`, verify the server-side changed-file list and mergeability, merge using the exact PR head SHA, remotely read back the F4 feature/backlog state from `main`, then inspect authoritative category-F evidence beginning with F13 **Routines/fitness/accountability** and activate `M2-G0-007E` from the resulting main handoff commit.
+Create branch `audit/g0-007e-routines-education-services` from this main handoff commit. Inspect authoritative F13 evidence across the feature ledger, `behavior-dependencies.json`, module catalog, onboarding/profile routing and any dedicated routine/accountability implementation/tests. Decide whether F13 creates any new canonical feature beyond `ROUTINE-001`/`TASK-*`; checkpoint that evidence in this file before auditing F14.
 
-## Next packet after F4
+## Next packet after F5
 
-### `M2-G0-007E` — Feature Audit Slice F5
+### `M2-G0-007F` — Feature Audit Slice F6
 
-Begin with category-F row 13 **Routines/fitness/accountability**. Determine the remainder of the bounded F5 slice from authoritative ledger/dependency evidence only after F4 is merged/read back. Do not pre-expand from conversational memory.
+Begin with category-F row 15 **Parent/child school coordination** and determine the remainder of the bounded F6 slice from authoritative dependency evidence after F5 closes.
 
 ## Recovery protocol
 
