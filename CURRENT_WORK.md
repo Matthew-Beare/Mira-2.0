@@ -2,79 +2,70 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet before this branch
+## Completed packet
 
-### `M2-G0-006E` — Feature Audit Slice E5 — nontechnical source/runtime onboarding
+### `M2-G0-006F` — Feature Audit Slice E6 — provider onboarding/bootstrap and category-E closure
 
-- **Merged PR:** #18
-- **Merge SHA:** `b8ca9f03634c3ca5764549bc18603b4cab3b04c5`
-- **Main handoff commit activating E6:** `499786a9a48667fdbb83333a6a20a9a492c08f40`
+- **Merged PR:** #19
+- **Merge SHA:** `2adf361c86731d76819acc7b24b025c47bb3a730`
+- **Audited features:** `PROVIDER-002`, `ONBOARD-007`, `PROVIDER-003`.
+- **Result:** all 26 historical category-E rows are accounted for; browser/provider/source/runtime/orchestration boundaries are separated; Personal Google is a deterministic adapter rather than MIRA architecture.
+- **Remote readback:** `FEATURES.md` on `main` contains all three E6 features and explicitly marks categories A-E complete.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-006F`
-- **Name:** Feature Audit Slice E6 — provider onboarding/bootstrap and category-E closure
+- **Packet ID:** `M2-G0-007A`
+- **Name:** Feature Audit Slice F1 — core life-service module boundaries
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-006f-provider-bootstrap-category-e-closure`
-- **Branch start SHA:** `499786a9a48667fdbb83333a6a20a9a492c08f40`
-- **Research checkpoint commit:** `fde54ab0fba1bb90ac65fad210fe08a13905a604`
-- **Feature registry commit:** `9fa959c3a8dd9a8046cedab85329c8f6e6e524cf`
-- **Backlog checkpoint commit:** `bad393ca23cb91f021f5c3a0d1e763db5f00381b`
-- **Status:** acceptance work complete; PR/merge/readback pending.
+- **Branch:** `audit/g0-007a-core-life-services`
+- **Base merge SHA:** `2adf361c86731d76819acc7b24b025c47bb3a730`
+- **Status:** active; branch creation and forensic evidence pass next.
 
-## Completed acceptance evidence
+## Exact category-F scope in this packet
 
-1. Assigned stable semantic feature IDs for the two remaining historical category-E rows while splitting row 26 only where authority/capability boundaries require it:
-   - `PROVIDER-002` — browser-only provider account/resource onboarding with exact identity/resource/action readback;
-   - `ONBOARD-007` — installable provider-neutral MIRA orchestration skill package;
-   - `PROVIDER-003` — deterministic Personal Google bootstrap adapter with strict drift/readback verification.
-2. Preserved provider-account/resource onboarding separately from AI-runtime capability routing (`PROVIDER-001`) and durable source mode/capability (`SOURCE-001`/`SOURCE-002`).
-3. Preserved ordinary-user browser/no-terminal behavior. Missing provider/runtime/source capability remains blocked or explicit manual/degraded state rather than triggering a CLI workaround.
-4. Recorded Google, Microsoft 365/OneDrive/SharePoint, Apple/iCloud and alternative-AI onboarding differences honestly. Apple/iCloud remains user-mediated/manual unless an exact adapter proves unattended actions.
-5. Recorded exact provider onboarding evidence requirements: signed-in identity/tenant where relevant, narrowly scoped resource, provider ID/URL, action scope, bounded read, approved synthetic write when needed and readback of the exact provider record.
-6. Preserved regulated-sensitive data gating behind current organization approval for the exact runtime, storage, purpose and action set.
-7. Established `ONBOARD-007` as the provider-neutral portable MIRA orchestration package. The historical `life-planner` ID is compatibility-only and must not become product branding or a route to the developer/reference deployment’s personal Ops state.
-8. Established `PROVIDER-003` as a provider adapter beneath MIRA rather than product architecture. Google resource shapes are not universal MIRROR schema requirements.
-9. Verified the legacy Personal Google deterministic core is genuinely test-verified for selected-module planning, exact source repo/SHA, UUID/IANA-timezone/config validation, plan hashing, provider identity/resource/header/seed/timezone drift, optional Gmail/Calendar/scheduler degradation and strict failure behavior.
-10. Preserved module-scoped provisioning: one required core authority plus only explicitly selected optional modules/failure domains.
-11. Preserved the bootstrap readiness distinction between manual readiness and scheduled readiness; a selected recurring schedule is not fully proven until an observed firing exists.
-12. Added ranked MIRA 2.0 implementation work:
-   - `MIRA-SKILL-001`;
-   - `PROVIDER-ONBOARD-001`;
-   - `GOOGLE-BOOTSTRAP-001`.
-13. Updated `NONTECH-INSTALL-001` and `CORE-ROUNDTRIP` dependencies so the future personal Google vertical cannot bypass portable-skill/provider/bootstrap prerequisites.
-14. Reconciled all 26 historical category-E rows. Combined historical rows were split only where different identity, authorization, runtime, source, provider or adapter verification boundaries require it.
-15. Marked category E complete in `FEATURES.md` and `BACKLOG.md`; categories F and G remain unaudited.
-16. Verified the `FEATURES.md` normalization diff is bounded: 80 additions and 8 deletions, with the deletions limited to the stale pre-E6 audit-status block.
-17. Touched no live Google production state and changed no executable MIRA 2.0 product behavior.
+Audit exactly the first five rows of legacy category F, **Life-service modules discussed or catalogued**:
 
-## Key category-E closure findings
+1. Briefs/action digest — REQUIRED; executable + skill workflow.
+2. Next-action planner — REQUIRED/ACCEPTED; skill workflow.
+3. Email triage — REQUIRED; skill workflow.
+4. Orders/shipments — REQUIRED; executable + skill workflow.
+5. Receipt archive — REQUIRED; skill workflow + partial executables.
 
-- Profile/relationship identity, authorization, source access, runtime capability, provider-resource access and service activation are distinct facts.
-- Browser installation does not prove source write or provider mutation.
-- Source read does not prove source write; source write does not prove provider-state mutation.
-- AI/provider names and connection badges do not prove capability or organization approval.
-- The portable MIRA skill owns orchestration behavior; provider adapters implement exact external-resource transactions beneath it.
-- Personal Google is the current first provider vertical, not the universal MIRA/MIRROR architecture.
-- Manual portability is allowed to be manual. MIRA must not relabel import/export or ICS handoff as unattended synchronization.
-- Legacy deterministic tests can justify `test_verified` core/contract evidence, but MIRA 2.0 integration/live status still requires synthetic new-repo/runtime/provider execution and remote readback.
+Do not expand this packet into personal finance, calendar/reminders, health organization, shopping, meals, household routines or later category-F rows. Do not reopen category A-C behavior semantics unless required to distinguish service-module composition from already-audited behavior features.
 
-## Blockers
+## Packet objective
 
-None inside this forensic packet. The newly ranked provider/skill/bootstrap work remains post-audit prerequisite implementation and does not block closing the historical category-E audit.
+Reconstruct what these first five category-F rows mean as MIRA service modules, map them to existing canonical behavior features without duplicate IDs, identify any missing service-layer contract needed for activation/dependency/failure-isolation/composition, record actual evidence levels and rank only genuine gaps.
+
+Category F is a service-catalog/composition audit, not permission to duplicate earlier behavior features merely because the ledger lists them again under service names.
+
+## Acceptance criteria
+
+1. Account for all five F1 ledger rows with stable semantic mapping.
+2. Reuse existing canonical feature IDs where the F row is only a service projection/composition of already-audited behavior; create a new stable feature only if the service layer has distinct behavior/authority not represented elsewhere.
+3. Keep service activation (`SERVICE-001`) separate from behavior implementation, provider capability and recommendation.
+4. Record each service’s required/optional behavior dependencies and failure-domain boundary.
+5. Preserve optional/module failure isolation under `RECOVERY-002`; one unavailable service/provider path must not falsify or disable unrelated service state.
+6. Preserve communication safety: email triage cannot imply outbound-send authority.
+7. Preserve canonical commerce boundaries: orders/shipments and receipt archive are related services but must not merge fulfillment state, receipt/purchase identity or financial settlement authorities.
+8. Record actual legacy implementation/test/workflow evidence and MIRA 2.0 verification gaps without promoting contract/skill prose to executable evidence.
+9. Reconcile relevant PR #31 candidates only as evidence/salvage reference; never merge wholesale or inherit integration/live status.
+10. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` unless a hard audit dependency requires another authority-file change.
+11. Open a bounded PR, verify changed-file scope, merge and remotely read back before advancing to F2.
+12. Touch no live Google production state and change no executable MIRA 2.0 product behavior.
 
 ## Exact next action
 
-Open a pull request from `audit/g0-006f-provider-bootstrap-category-e-closure` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back category-E closure on `main`, then inspect the authoritative legacy forensic ledger for category F and activate `M2-G0-007A` from current `main` with the exact first bounded F rows recorded in `CURRENT_WORK.md` before creating its audit branch.
+Create branch `audit/g0-007a-core-life-services` from this exact activation commit. Then inspect the legacy service/module catalog, behavior dependency database, installable MIRA skill/service activation router and tests for F row 1 **Briefs/action digest**. Determine whether F row 1 is fully represented by `OPS-*` + `SERVICE-001` or whether a distinct service-composition feature exists before proceeding to row 2.
 
-## Next packet after merge
+## Next packet after F1
 
-### `M2-G0-007A` — Feature Audit Slice F1
+### `M2-G0-007B` — Feature Audit Slice F2
 
-Begin category F only after E6 is merged and remotely read back as complete. Determine the exact F1 rows/scope from the authoritative forensic ledger at handoff rather than from conversational memory. Do not expand into category G or executable MIRA 2.0 product coding.
+Begin with category-F row 6 **Personal finance organization** and continue only through the next bounded coherent service slice determined during F1 closure. Do not pre-expand F2 from memory.
 
 ## Recovery protocol
 
