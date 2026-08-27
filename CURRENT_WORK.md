@@ -8,9 +8,9 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 - **Merged PR:** #19
 - **Merge SHA:** `2adf361c86731d76819acc7b24b025c47bb3a730`
+- **Main handoff commit activating F1:** `ac44f475b25d3245fceeaade198f3cc2a45d567d`
 - **Audited features:** `PROVIDER-002`, `ONBOARD-007`, `PROVIDER-003`.
-- **Result:** all 26 historical category-E rows are accounted for; browser/provider/source/runtime/orchestration boundaries are separated; Personal Google is a deterministic adapter rather than MIRA architecture.
-- **Remote readback:** `FEATURES.md` on `main` contains all three E6 features and explicitly marks categories A-E complete.
+- **Result:** all 26 historical category-E rows are accounted for and remotely read back on `main`.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
@@ -21,8 +21,8 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-007a-core-life-services`
-- **Base merge SHA:** `2adf361c86731d76819acc7b24b025c47bb3a730`
-- **Status:** active; branch creation and forensic evidence pass next.
+- **Branch start SHA:** `ac44f475b25d3245fceeaade198f3cc2a45d567d`
+- **Status:** forensic evidence pass complete; feature/backlog normalization next.
 
 ## Exact category-F scope in this packet
 
@@ -34,13 +34,37 @@ Audit exactly the first five rows of legacy category F, **Life-service modules d
 4. Orders/shipments — REQUIRED; executable + skill workflow.
 5. Receipt archive — REQUIRED; skill workflow + partial executables.
 
-Do not expand this packet into personal finance, calendar/reminders, health organization, shopping, meals, household routines or later category-F rows. Do not reopen category A-C behavior semantics unless required to distinguish service-module composition from already-audited behavior features.
+Do not expand this packet into personal finance, calendar/reminders, health organization, shopping, meals, household routines or later category-F rows.
 
-## Packet objective
+## Research findings
 
-Reconstruct what these first five category-F rows mean as MIRA service modules, map them to existing canonical behavior features without duplicate IDs, identify any missing service-layer contract needed for activation/dependency/failure-isolation/composition, record actual evidence levels and rank only genuine gaps.
-
-Category F is a service-catalog/composition audit, not permission to duplicate earlier behavior features merely because the ledger lists them again under service names.
+1. Category F is a service-catalog/composition layer over behavior already audited in categories A-E. F1 must not manufacture duplicate Brief, Task, Mail, Order or Receipt feature IDs.
+2. `starter/MODULE_CATALOG.md` presents Briefs/action digest, Next-action planner, Important-mail triage, Orders/shipment lifecycle and Receipt database as user-discoverable modules/services and explicitly says optional modules are not silently enabled.
+3. `starter/tools/onboarding_profile_router.py` has stable service keys `briefs`, `next_actions`, `email_triage`, `orders_shipments`, and `receipt_archive` inside a finite service catalog. All default to `unresolved`; explicit activation is separate from catalog presence and implementation capability.
+4. `starter/tests/test_onboarding_profile_router.py` directly verifies the service catalog never claims unverified implementation, never silently activates services, accepts explicit activation/disablement, rejects unknown services and rejects conflicting legacy/current activation state.
+5. `starter/behavior-dependencies.json` represents F services as aggregate behaviors with required child behaviors rather than copied implementation:
+   - `f-01` requires `a-01`, `a-03`, `a-04`, `a-15`, `a-16`;
+   - `f-02` requires `a-13`, `a-14`;
+   - `f-03` requires `b-07`, `b-08`, `b-09`;
+   - `f-04` requires `c-01`, `c-02`, `c-03`, `c-05`;
+   - `f-05` requires `c-06`, `c-07`, `c-09`.
+6. `behavior_dependency_check.py` validates dependency references/cycles, evaluates transitive required/optional behavior readiness, blocks only affected behavior, degrades only affected optional paths, and has hard policy gates forbidding automatic dependency installation and automatic behavior enablement.
+7. `test_behavior_dependency_check.py` proves every forensic catalog row has one dependency assignment and directly proves an aggregate service (`f-05`) blocks if a required child behavior is unavailable while unrelated workflows remain unchanged.
+8. `integration_dependency_router.py`/tests build readiness only from verified capabilities/authorities and preserve explicit-user-goal/no-auto-enable remediation behavior.
+9. The distinct missing canonical concept is therefore a generic service-composition contract, provisionally `SERVICE-002`: an activated/catalogued service is a dependency bundle over canonical behaviors, with derived readiness/degradation and failure isolation. The F1 rows are instances/mappings of that contract, not five new behavior implementations.
+10. F1 underlying canonical mappings are:
+   - Briefs/action digest → `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, `RECOVERY-002` plus service activation/composition;
+   - Next-action planner → `TASK-001`, `TASK-002` plus service activation/composition;
+   - Email triage → `MAIL-001`, `MAIL-002`, `MAIL-003` plus service activation/composition;
+   - Orders/shipments → `ORDER-001`, `ORDER-002`, `ORDER-003`, `ORDER-005` plus service activation/composition;
+   - Receipt archive → `RECEIPT-001`, `RECEIPT-002`, `RECEIPT-003` plus service activation/composition.
+11. Two semantic dependency defects were found in the legacy bundle map:
+   - `f-01` omits `a-02` / `OPS-002`, so aggregate Brief readiness does not explicitly require single-dispatcher/no-duplicate-schedule safety;
+   - `f-04` omits `c-04` / `ORDER-004`, so aggregate Orders/shipments readiness does not explicitly require replacement/supersession correctness.
+12. A compatibility/UI coupling defect also exists: legacy `order_lifecycle_enabled` maps only to `orders_shipments` although the question text says “receipt and order lifecycle.” The canonical service model already contains separate `orders_shipments` and `receipt_archive`; MIRA 2.0 should not let that legacy convenience field silently couple or misstate the two services.
+13. The generic service activation/dependency/failure-isolation machinery has real deterministic legacy test evidence. Individual F1 bundle mappings are machine-readable and catalog/CI-validated, but the two omissions above prevent treating every mapping as semantically complete.
+14. No MIRA 2.0 service-catalog persistence/readback or end-to-end service activation → dependency-readiness integration is yet verified.
+15. No live Google production state was touched and no executable MIRA 2.0 product behavior was changed.
 
 ## Acceptance criteria
 
@@ -59,7 +83,7 @@ Category F is a service-catalog/composition audit, not permission to duplicate e
 
 ## Exact next action
 
-Create branch `audit/g0-007a-core-life-services` from this exact activation commit. Then inspect the legacy service/module catalog, behavior dependency database, installable MIRA skill/service activation router and tests for F row 1 **Briefs/action digest**. Determine whether F row 1 is fully represented by `OPS-*` + `SERVICE-001` or whether a distinct service-composition feature exists before proceeding to row 2.
+Normalize `SERVICE-002` and the five F1 service-to-feature mappings in `FEATURES.md` without duplicating existing OPS/TASK/MAIL/ORDER/RECEIPT features. Add ranked service-dependency hardening for the missing `OPS-002` and `ORDER-004` edges plus legacy order/receipt activation coupling, then update `BACKLOG.md` and close F1 acceptance state.
 
 ## Next packet after F1
 
