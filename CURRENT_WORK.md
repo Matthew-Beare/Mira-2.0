@@ -2,73 +2,27 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet before this branch
+## Completed packet
 
-### `M2-G0-006D` — Feature Audit Slice E4 — identity, sharing and self-extension foundations
+### `M2-G0-006E` — Feature Audit Slice E5 — nontechnical source/runtime onboarding
 
-- **Merged PR:** #17
-- **Merge SHA:** `5027bb4882e3455b47b8c0a0957f972296bb51fe`
-- **Main handoff commit activating E5:** `e4c6be90887d716f99c421b1e1f5ec1c60fcb511`
+- **Merged PR:** #18
+- **Merge SHA:** `b8ca9f03634c3ca5764549bc18603b4cab3b04c5`
+- **Audited features:** `ONBOARD-006`, `SOURCE-001`, `PROVIDER-001`, `SOURCE-002`.
+- **Result:** browser-only ordinary-user installation, independent source read/write/readback gates, provider-neutral runtime capability routing and explicit personal/organization/managed/no-Git source lanes are normalized at their actual evidence levels.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-006E`
-- **Name:** Feature Audit Slice E5 — nontechnical source/runtime onboarding
+- **Packet ID:** `M2-G0-006F`
+- **Name:** Feature Audit Slice E6 — provider onboarding/bootstrap and category-E closure
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-006e-nontechnical-source-runtime-onboarding`
-- **Branch start SHA:** `e4c6be90887d716f99c421b1e1f5ec1c60fcb511`
-- **Research checkpoint commit:** `1e609fa4babc84c44a618ab97f1683ff7111eda2`
-- **Feature registry commit:** `afcf9c8f5670fb7e89aef24a44fa1c62d1607a0a`
-- **Backlog checkpoint commit:** `7a08ab8d10278eb51b3c5167e83d28641a9671e1`
-- **Status:** acceptance work complete; PR/merge/readback pending.
+- **Branch:** `audit/g0-006f-provider-bootstrap-category-e-closure`
+- **Status:** active; forensic evidence pass not yet complete.
 
-## Completed acceptance evidence
-
-1. Added the `SOURCE-*` semantic family for durable source modes and source read/write/readback capability, distinct from storage-provider portability and internal dev governance.
-2. Assigned four stable semantic features for category-E rows 21-24:
-   - `ONBOARD-006` browser-only nontechnical installation with no terminal fallback;
-   - `SOURCE-001` independent source read, source write and remote-readback gates;
-   - `PROVIDER-001` provider-neutral AI runtime capability routing from observed evidence;
-   - `SOURCE-002` explicit personal Git, organization Git, managed-central and no-Git/manual source lanes.
-3. Verified `ONBOARD-006` has direct legacy regression coverage for no Command Prompt/PowerShell/Terminal/Git/GitHub CLI fallback, private GitHub-template creation, blocked-template behavior, mandatory readback fields and browser-only enterprise/alternative-runtime lanes.
-4. Verified missing browser/template/runtime/source capability stays blocked; the installer does not substitute a fork, Codespace, download, local clone or terminal instructions.
-5. Verified `SOURCE-001` through machine-readable gates and tests: ChatGPT GitHub read is independent from Codex/source write, and durable source mutation requires source write plus remote readback against the exact target.
-6. Verified `PROVIDER-001` through deterministic router/tests: provider/runtime names are never proof; observed capabilities, data classification, exact organization approval evidence, source mode and requested module capabilities drive ready/degraded/blocked results.
-7. Verified Claude/Microsoft runtime labels cannot bypass missing source-write evidence and regulated-sensitive data is blocked without current approval evidence/reference.
-8. Verified unknown capability/request keys fail closed rather than being silently ignored.
-9. Verified `SOURCE-002` explicitly supports `user-git`, `organization-git`, `managed-central`, and `none` source modes with distinct behavior.
-10. Verified managed-central source can serve organization users without a personal Git account while personal source changes remain blocked or enter a managed change process.
-11. Verified no-Git/manual portability cannot claim durable personal source mutation, unattended synchronization or automated writes.
-12. Added ranked MIRA 2.0 work items `NONTECH-INSTALL-001`, `SOURCE-GATES-001`, `RUNTIME-ROUTER-001`, and `SOURCE-LANES-001`.
-13. Rewired feature sharing, skill builder and discovery dependencies to the now-canonical source/runtime gate work where appropriate.
-14. Recorded all four E5 features as legacy `test_verified` at the deterministic contract/core level while preserving MIRA 2.0 integration/live status as unverified.
-15. Touched only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` on this packet branch.
-16. Touched no live Google production state and changed no executable MIRA 2.0 product behavior.
-
-## Key audit findings
-
-- Nontechnical installation UX is separate from the capabilities that make it work.
-- Source read, source write and source remote readback are separate facts.
-- ChatGPT-read/Codex-write is an adapter arrangement, not a universal architecture baked into MIRA.
-- AI runtime/provider labels never imply feature parity, organization approval or write capability.
-- Personal Git is one supported source lane, not a universal prerequisite.
-- Managed/no-Git lanes must degrade honestly rather than creating personal-account workarounds or pretending to have durable source mutation.
-- Browser-only means browser-only. Missing capability is a blocked state, not an excuse to smuggle in a shell tutorial.
-
-## Blockers
-
-None inside this forensic packet. `SOURCE-GATES-001`, `RUNTIME-ROUTER-001`, `SOURCE-LANES-001`, and `NONTECH-INSTALL-001` are ranked post-audit prerequisites for future onboarding/release proof.
-
-## Exact next action
-
-Open a pull request from `audit/g0-006e-nontechnical-source-runtime-onboarding` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back E5, then activate `M2-G0-006F` on current `main` and create branch `audit/g0-006f-provider-bootstrap-category-e-closure`.
-
-## Next packet after merge
-
-### `M2-G0-006F` — Feature Audit Slice E6 — provider onboarding/bootstrap and category-E closure
+## Audit rows in this packet
 
 Audit exactly category-E rows 25-26:
 
@@ -78,7 +32,30 @@ Audit exactly category-E rows 25-26:
 
 Do not expand this packet to category F provider/platform architecture, category G client surfaces or executable MIRA 2.0 product coding.
 
-The exact first unaudited behavior is **Browser-only Google, Microsoft 365/OneDrive, Apple/iCloud and alternative-AI onboarding**.
+## Acceptance criteria
+
+1. Assign stable semantic feature IDs for both remaining category-E rows without duplicating E5 runtime/source features.
+2. Separate provider-account/resource onboarding from AI-runtime capability routing and source-control setup.
+3. Preserve browser-only/no-terminal behavior for ordinary users.
+4. Require exact identity, resource, permission, bounded write and readback evidence for provider setup; unsupported automation remains manual/degraded rather than fabricated.
+5. Preserve Google/Microsoft/Apple differences honestly, especially Apple/iCloud manual-bridge limitations unless a verified adapter proves more.
+6. Normalize the installable MIRA skill/bootstrap as portable/provider-neutral behavior with Personal Google as one deterministic adapter, not the product architecture itself.
+7. Preserve module-scoped provisioning, Authority Registry/Interview Ledger seeding, header/schema/provider/identity drift rejection and no installation of the developer’s reference deployment state for another user.
+8. Record actual legacy evidence levels and MIRA 2.0 verification gaps.
+9. Perform category-E consistency closure, reconcile dependencies, and mark `AUDIT-E` complete only if all 26 rows are accounted for.
+10. Touch only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` unless a hard audit dependency requires another authority-file change.
+11. Open a small PR, verify scope, merge and remotely read back before moving to category F.
+12. Touch no live Google production state and change no executable MIRA 2.0 product behavior.
+
+## Exact next action
+
+Inspect legacy provider-specific onboarding contracts/tests for Google Workspace, Microsoft 365/OneDrive, Apple/iCloud and alternative AI runtimes. Then inspect the installable new-user MIRA skill, Personal Google bootstrap blueprint/validator/tests and exact provisioning/readback semantics. Establish evidence ceilings before normalizing the two final category-E features.
+
+## Next packet after merge
+
+### `M2-G0-007A` — Feature Audit Slice F1
+
+Begin category F only after E6 is merged and category E is remotely read back as complete. Exact F1 rows/scope are determined from the forensic ledger at handoff.
 
 ## Recovery protocol
 
