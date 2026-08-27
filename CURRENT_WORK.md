@@ -2,76 +2,70 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
-
-### `M2-G0-001` — Governance and branding baseline
-
-Completed outcomes:
-- initialized clean `Matthew-Beare/Mira-2.0` repository;
-- established MIRA as primary brand and **Modular Intelligence & Reasoning Assistant** expansion;
-- defined MIRROR as MIRA's companion reality database;
-- added full-replacement Project Instructions;
-- installed customer/developer ownership, packet scope, dependency-ranked backlog, recovery-tag, privacy, and legacy-data-preservation rules;
-- added ROADMAP, FEATURES, BACKLOG, and work-packet policy;
-- added canonical brand-asset integration specification;
-- checkpointed displaced legacy-repository work before switching authority.
-
 ## Active packet
 
 - **Packet ID:** `M2-G0-002A`
 - **Name:** Feature Audit Slice A1 — scheduler/context foundations
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `main`
-- **Start SHA:** `3a1e8522352bea7d939cc1a91ad1b2f08fd04365`
-- **Objective:** Reconstruct the first bounded set of historical MIRA operational features from legacy evidence, assign stable semantic feature IDs, and document descriptions, dependencies, evidence level, and compatibility notes without implementing product behavior.
+- **Branch:** `audit/g0-002a-scheduler-context`
+- **Base SHA:** `e119bba05be7b074c3de4760fbf5998c3c5be402`
+- **Evidence feature commit:** `fdd68b15079797149e70f84588b812089eb30bd6`
+- **Backlog checkpoint commit:** `99947a89b5c2eb5a2960e2ecfd044b0628f4e8cc`
+- **Status:** acceptance work complete; PR/merge/readback pending.
 
-## Primary legacy sources
+## Objective
 
-- legacy repo `Matthew-Beare/MIRA-Personal-Production`;
-- `docs/feature-ledger-2026-08-24.md`, category A;
-- generated legacy feature catalog and evidence paths;
-- relevant current/legacy tests and policy code;
-- matching newer requirements/implementation candidates from PR #31 and meaningful branches only where they materially change these features.
+Reconstruct the first bounded set of historical MIRA operational features from legacy evidence, assign stable semantic feature IDs, and document descriptions, dependencies, evidence level, and compatibility notes without implementing product behavior.
 
-## Audit rows in this packet
+## Completed acceptance evidence
 
-Audit exactly these five legacy-ledger behaviors first:
+1. Assigned stable feature IDs `OPS-001` through `OPS-005` to the five scoped legacy behaviors.
+2. Added full user-facing descriptions, rationale, requirement status, evidence boundaries, dependencies, downstream enables, milestone context, evidence paths and compatibility notes to `FEATURES.md`.
+3. Separated repository test evidence from provider/live evidence instead of promoting historical implementation claims to MIRA 2.0 completion.
+4. Reconciled relevant PR #31 evidence:
+   - candidate `MIRA-F009` confirms the two New York brief slots and prohibited schedule variants;
+   - `starter/scheduler-planner-contract.json` supports consolidating compatible scheduled work rather than creating feature-specific tasks;
+   - neither source is treated as live provider proof.
+5. Preserved active-trip forcing and generic context pairs as later separate features instead of silently absorbing them into `OPS-005`.
+6. Updated `BACKLOG.md` with `AUDIT-A1` complete, `AUDIT-A2` next, and dependency findings from this slice.
+7. Touched no live Google state and implemented no product behavior.
 
-1. Exactly two briefs at 2:45 AM and 2:45 PM `America/New_York`.
-2. No UTC-shifted, relative, duplicate, 3:00, noon/midnight, or extra diagnostic schedules.
-3. Canonical-clock guard with DST-safe slot matching and bounded dispatch grace.
-4. Standalone scheduled delivery with deterministic Run ID header.
-5. Deterministic HOME/ROAD context with explicit overrides.
+## Key audit findings
 
-Do not expand this packet to the rest of category A merely because evidence is nearby.
+- `OPS-001` canonical two-slot semantics are test-supported, but actual MIRA 2.0 scheduler configuration/firing remains unverified.
+- `OPS-002` uniqueness/no-duplicate behavior is policy-specified and requires future provider enumeration/readback for verification.
+- `OPS-003` canonical runtime clock/DST/grace logic is genuinely test-verified in legacy code.
+- `OPS-004` deterministic Run ID generation is test-verified, while fresh standalone provider delivery and Run Log integration remain unverified.
+- `OPS-005` HOME/ROAD weekly transitions and explicit override semantics are test-verified in legacy code; live MIRA 2.0 canonical-state integration is not.
 
-## Acceptance criteria
+## Blockers
 
-1. Each of the five behaviors receives a stable MIRA 2.0 semantic feature ID.
-2. Each feature gets a complete user-facing description and rationale.
-3. Requirement status is separated from implementation/evidence status.
-4. Known hard dependencies and downstream enables are recorded.
-5. Relevant legacy source/test/evidence paths are recorded without copying private production data.
-6. Newer matching PR #31/branch evidence is reconciled as candidate/implemented/tested/live evidence rather than blindly promoted.
-7. Duplicates/superseded wording among the five behaviors is resolved without losing historical constraints.
-8. `FEATURES.md` and `BACKLOG.md` are updated and committed.
-9. `CURRENT_WORK.md` is advanced to the next exact unaudited behavior before ending the packet.
-10. No live Google production data and no executable product behavior is changed.
+None inside the audit packet. Merge/readback is the remaining release step for this bounded documentation packet.
 
 ## Exact next action
 
-Read legacy category-A evidence for behavior 1: **Exactly two briefs at 2:45 AM and 2:45 PM `America/New_York`**. Inspect its mapped policy/test evidence and any newer matching PR #31 scheduler changes. Assign its stable MIRA 2.0 feature ID and draft its audited feature record before moving to behavior 2.
+Open a pull request from `audit/g0-002a-scheduler-context` to `main`, verify the changed-file scope is limited to the audit documentation/control files, merge the packet, remotely read back `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, then update `CURRENT_WORK.md` on `main` to activate `M2-G0-002B`.
 
-## Next packet boundary
+## Next packet after merge
 
-If `M2-G0-002A` completes, the next audit packet begins with legacy category-A behavior 6: **Generic context pairs: HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/CAMPUS, HOME/OFFICE, HOME/AWAY, custom**.
+### `M2-G0-002B` — Feature Audit Slice A2 — generalized context/travel foundations
+
+Audit exactly legacy category-A behaviors 6-10:
+
+1. Generic context pairs: HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/CAMPUS, HOME/OFFICE, HOME/AWAY, custom.
+2. Job title/duties inform context recommendation but never silently enable it.
+3. Active trip tracking separate from context and paid-work tracking.
+4. Multi-leg routes, learned runtime, current location, ETA, ahead/behind inference.
+5. ROAD severe-weather/route-condition watch; HOME local weather only.
+
+The first exact unaudited behavior is **Generic context pairs: HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/CAMPUS, HOME/OFFICE, HOME/AWAY, custom**.
 
 ## Recovery protocol
 
 On any new conversation/session:
 1. read this file first;
-2. verify the repository/branch/head when tools permit;
+2. verify repository/branch/head when tools permit;
 3. continue from the exact next action;
 4. do not broaden scope from chat history;
 5. capture new customer ideas in BACKLOG unless required for acceptance or explicitly reprioritized;
