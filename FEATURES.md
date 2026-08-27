@@ -89,9 +89,9 @@ Legacy MIRA Google spreadsheets, Drive artifacts, briefs, schedules and automati
 **Evidence:** Project Instructions and roadmap.
 
 ### `ONBOARD-001` — Full-replacement instruction delivery
-MIRA supplies whole copy/paste replacement blocks plus nontechnical UI instructions whenever ChatGPT Project/Custom Instructions must change.
+MIRA supplies whole copy/paste replacement blocks plus nontechnical UI instructions whenever ChatGPT Project/Custom Instructions must change. Direct mutation of Project Instructions, global Custom Instructions or an equivalent instruction surface is never assumed from runtime identity or general account access; it must be capability-proven and read back. When direct write is unavailable or unverified, the supported behavior is a complete source-backed replacement block, clearly naming which existing instruction block must be fully replaced and giving simple nontechnical UI steps. Partial “add this line” patches are prohibited unless the user explicitly asks for a patch.
 
-**Evidence:** Project Instructions; onboarding implementation pending audit/design.
+**Evidence:** current MIRA Project Instructions plus legacy `project/INSTRUCTIONS.md.tmpl`; process/specification implemented as governance. Direct Project/Custom Instructions UI mutation remains unverified and capability-gated.
 
 ### `BRAND-001` — Canonical MIRA brand asset system
 Canonical vector masters drive symbol, wordmark, lockups, banners, adaptive icon and generated platform derivatives.
@@ -1024,11 +1024,137 @@ Category D is complete through all 16 historical rows. The repaired authority/de
 - Public “Boomer mode” remains rejected. A private user-selected alias is harmless presentation state only and cannot change capabilities, permissions or safety policy.
 - No E3 feature is promoted to MIRA 2.0 integration/live verification from legacy router code alone.
 
+## Audited identity, sharing and self-extension foundation features
+
+### `PROFILE-012` — Canonical per-person identity and explicit relationship graph
+
+**Description:** Every person represented in MIRROR has one private immutable Person UUID that survives display-name changes, provider changes and backend migration. Household, spouse/partner, parent, guardian, dependent, beneficiary, caregiver, household-member and other configured relationships are explicit relationship records between Person UUIDs with their own type, provenance/status and lifecycle semantics. Relationship labels describe reality; they are not permission grants. Ownership/beneficiary links used by orders, reimbursements, household state or shared services reference canonical Person UUIDs rather than names or chat-local identity. Duplicate people, uncertain matches and relationship changes must be reconciled explicitly rather than silently merged from similar names.
+
+**Why it exists / user outcome:** MIRA can know who a person is and how people are related without using a display name as an identifier or turning “spouse,” “parent,” “guardian,” “caregiver” or “beneficiary” into an accidental access-control system.
+
+**Requirement status:** `accepted / foundational prerequisite`.
+
+**Delivery/evidence:** the legacy state-authority architecture strongly specifies a `People` authority, immutable owner Person UUIDs on authority records, stable identities across backend migration and explicit household/beneficiary relationship semantics. Existing reimbursement/profile workflows depend on these concepts, but the audit did not locate a generic deterministic Person/relationship engine with enough dedicated tests for full `test_verified` status. Therefore this feature remains `specified`/data-model-workflow evidence rather than a proven MIRA 2.0 implementation.
+
+**Hard dependencies:** canonical MIRROR identity authority; provenance/source identity; privacy/minimum-necessary data policy; `PROFILE-013` for any permission-bearing use.
+
+**Enables:** parent/minor/caregiver safety, household sharing, reimbursements/beneficiaries, per-person profiles, family-school workflows and multi-person state without name-based identity drift.
+
+**Legacy evidence:** category-E row 16; `STATE_AUTHORITY_MODEL.md` `People`, owner Person UUID and sharing model; `REIMB-001` beneficiary semantics; prior profile audit boundaries.
+
+**Acceptance / verification boundary:** Implement deterministic Person/relationship identity tests covering immutable UUID allocation/replay, alias/display-name changes, duplicate/ambiguous matching, relationship add/change/remove history and exact endpoint validation. MIRA 2.0 sandbox must persist/read back synthetic people/relationships without exposing personal production data.
+
+---
+
+### `PROFILE-013` — Explicit permission and sharing scopes separate from relationship labels
+
+**Description:** Authorization is represented as explicit owner-approved grants over a named authority/data class/action scope, never inferred from family, caregiver, beneficiary, guardian or household relationships. A grant identifies the exact actor/recipient Person or service identity, authority/resource, scope, permitted actions such as read or read/write, status, provenance and last provider/API verification. Personal, whole-authority shared and scoped-shared authorities are distinct options. No relationship label grants custody, health, finance, school, calendar, email or general private-state access. Provider-side sharing changes count only after remote readback confirms the intended identity and scope; removing or narrowing access follows the same verification rule.
+
+**Why it exists / user outcome:** “This person is my spouse/parent/caregiver” and “this person may read this calendar or edit this household list” remain different facts instead of one privacy incident wearing two database columns.
+
+**Requirement status:** `required / privacy-critical prerequisite`.
+
+**Delivery/evidence:** `STATE_AUTHORITY_MODEL.md` strongly specifies explicit grants, personal/whole/scoped sharing, Authority Registry recording and provider/API readback, and explicitly forbids inferred family access. Parent/minor/caregiver audit features already depend on this boundary. The generic authorization engine and provider adapters are not yet MIRA 2.0 integration-verified, so this feature remains specification/architecture evidence rather than a completed permission system.
+
+**Hard dependencies:** `PROFILE-012`; canonical Authority Registry; provider/API identity and readback capability; privacy/security policy; least-privilege mutation boundary.
+
+**Enables:** safe household/family/caregiver collaboration, shared calendars/state, institutional scopes and downstream permission-sensitive services.
+
+**Legacy evidence:** category-E row 16; `STATE_AUTHORITY_MODEL.md` sharing/collaboration and mutation contracts; prior `PROFILE-004`, `PROFILE-005`, `PROFILE-006`, `REMIND-002` boundaries.
+
+**Acceptance / verification boundary:** Add deterministic authorization fixtures proving relationship labels alone authorize nothing, explicit grants are scope/action-specific, revoked/narrowed grants stop access, cross-authority leakage fails closed and provider/API readback is mandatory. MIRA 2.0 integration must use synthetic identities before any real shared personal data.
+
+---
+
+### `DIST-001` — Private deployment lineage and controlled upstream feature sharing
+
+**Description:** A deployment keeps one durable source lineage for behavior/configuration while mutable personal state remains in canonical runtime authorities. Personal/custom features are private and user-owned by default. Feature ownership/origin, upstream base, local revision, dependencies and rollback policy are recorded. When a private feature becomes reusable, MIRA asks exactly `Do you want to make this feature available to other people?`. A yes authorizes preparation, not publication: personal identifiers/state/provider references are removed, synthetic fixtures and declared permissions/dependencies are added, privacy/source/dependency/tests run, the exact public diff is shown, and publication/opening an upstream PR requires separate explicit publication authority. Upstream updates are deliberate proposal-only reconciliations; local user-owned behavior is preserved by default and cannot be silently deleted, overwritten, re-owned or merged merely because upstream changed.
+
+**Why it exists / user outcome:** MIRA can evolve privately and contribute reusable improvements upstream without turning the user’s life data or working customizations into collateral damage for open-source enthusiasm.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** the legacy feature-reconciliation core is `test_verified` for owner/origin tracking, no silent ownership transfer, dependency-scoped blocking/degradation, proposal-only upgrades, keep-current default, local-feature preservation and rollback-checkpoint requirements. `PERSONAL_FORK_LIFECYCLE.md` and `SHARED_FEATURE_WORKFLOW.md` strongly specify sanitization, synthetic fixtures, exact-diff review and separate publication authority. Actual MIRA 2.0 public contribution/publish readback remains integration-unverified.
+
+**Hard dependencies:** Git/managed-source capability with remote readback when source mutation is allowed; `ONBOARD-002`; feature/dependency manifests; public-source privacy audit; explicit publication authority.
+
+**Enables:** private customization, safe upstream contribution, user-owned feature longevity and later update/reconciliation workflows.
+
+**Legacy evidence:** category-E row 17; `PERSONAL_FORK_LIFECYCLE.md`; `SHARED_FEATURE_WORKFLOW.md`; `test_feature_reconciliation.py`; feature lock/dependency map contracts.
+
+**Acceptance / verification boundary:** Preserve deterministic ownership/reconciliation tests; MIRA 2.0 must prove a synthetic user feature remains locally owned across an upstream upgrade proposal, can be sanitized into a public candidate without private state, and cannot be published without explicit publication approval/readback.
+
+---
+
+### `DIST-002` — Deterministic sanitized starter/distribution from one canonical source revision
+
+**Description:** Public/personal/institutional starter distributions are generated products of one exact canonical MIRA source revision, not independent development branches or editable sources of truth. Distribution differences are limited to allowed deployment policy/configuration; portable application behavior comes from the same canonical revision. Each generated tree carries channel/source-revision identity, runs current-tree public-source/privacy audits plus distribution/manifest/dependency/feature/tests, and is remotely verified before release. A generated distribution never inherits mutable production data, secrets or private provider state and cannot silently drift from canonical source. Historical contamination in an old distribution repository is not release payload if the current generated tree is pinned to a clean canonical revision, but canonical reachable history must satisfy the publication boundary before promotion.
+
+**Why it exists / user outcome:** There is one product source instead of three cousins who all claim to be MIRA while quietly accumulating different bugs and somebody’s spreadsheet IDs.
+
+**Requirement status:** `accepted release boundary / required for distribution`.
+
+**Delivery/evidence:** the legacy `Build Distributions` workflow deterministically builds personal/institutional distributions from one exact source SHA, runs source/privacy audits, validates channel/source-revision manifests, compiles code, runs behavior/feature reconciliation and starter tests, then re-audits the generated tree. `distribution/README.md` codifies the same-code/source-of-truth invariant. This gives the legacy distribution boundary genuine `test_verified`/CI-enforced evidence. MIRA 2.0 has not yet produced and remotely verified its own release promotion, so no MIRA 2.0 integration/live credit is inherited.
+
+**Hard dependencies:** canonical clean source lineage; `ONBOARD-002`; deterministic build/promotion pipeline; distribution manifest; CI; remote repository/readback capability.
+
+**Enables:** safe public starter, personal/institutional channels, reproducible releases and later provider/runtime installation.
+
+**Legacy evidence:** category-E row 18; `distribution/README.md`; `.github/workflows/build-distributions.yml`; privacy/source/distribution validators.
+
+**Acceptance / verification boundary:** Port deterministic build/audit/manifest tests to MIRA 2.0, generate synthetic distributions from an exact commit, remotely read back source revision/channel/tree identity and require green CI before declaring release completion.
+
+---
+
+### `DEV-004` — Bounded private custom skill/feature creation with declared contracts
+
+**Description:** MIRA may help a user create a new private reusable behavior from repeated friction or an explicit request without requiring the user to design implementation details. Before building, MIRA inspects existing features/skills/dependencies to avoid duplication; defines the behavior, authority/state boundary, required/optional capabilities, permissions, failure domain and acceptance criteria; works on a feature branch; keeps private data/secrets out of portable source; records ownership/lineage/dependencies; adds executable tests and synthetic fixtures; validates/reconciles/readbacks a coherent private checkpoint; and keeps the result private by default. Packaging as a portable feature/skill and publication are separate later decisions governed by `DIST-001`.
+
+**Why it exists / user outcome:** The user can say what recurring problem should be solved while MIRA handles the tedious software-company bits, which is fortunately the arrangement humans invented computers for before assigning them meeting attendance.
+
+**Requirement status:** `proposed / accepted direction`.
+
+**Delivery/evidence:** `SHARED_FEATURE_WORKFLOW.md` defines the nontechnical creation workflow. Feature-manifest validation/tests genuinely enforce required manifest/runtime contracts, safe paths, no personal data in shared source, semantic-version/config-schema validity and executable-test/script requirements before `implemented` status. Feature-reconciliation tests add ownership/dependency safeguards. These are strong tooling primitives, but the audit did not locate a complete autonomous end-to-end custom-skill builder that executes the whole workflow without developer orchestration, so the feature is `specified/partially implemented`, not fully test-verified as a builder.
+
+**Hard dependencies:** `DEV-001`/`DEV-002`; feature/dependency registry; source-write/readback capability when enabled; privacy/source audits; `DIST-001` for optional sharing.
+
+**Enables:** safe private extensibility, future Feature Studio-style experiences and reusable user-developed modules without uncontrolled source bloat.
+
+**Legacy evidence:** category-E row 19; `SHARED_FEATURE_WORKFLOW.md`; `test_feature_manifest.py`; `test_feature_reconciliation.py`; feature manifest/dependency contracts.
+
+**Acceptance / verification boundary:** Implement a bounded MIRA 2.0 flow that takes a synthetic outcome request through duplicate inspection, contract creation, branch/checkpoint, manifest/dependency registration, tests/privacy validation and remote readback while remaining private. Publication must remain a separate explicit `DIST-001` action.
+
+---
+
+### `ONBOARD-001` E4 audit refinement — instruction updates are capability-gated full replacements
+
+Historical category-E row 20 is normalized into the existing `ONBOARD-001`, not a duplicate feature. Automatic instruction mutation is technically constrained and must never be assumed from runtime identity or unrelated connector access. Durable behavior should live in versioned policy/source where possible. When a Project Instructions, global Custom Instructions or equivalent block must change and no verified direct-write/readback capability exists, MIRA provides the **complete replacement text**, clearly states which existing block to replace, and gives simple nontechnical UI steps. Only a user-requested patch may be partial. A future direct-write path may be used only after exact capability/target verification and readback.
+
+**Requirement status:** `current required governance behavior`.
+
+**Delivery/evidence:** current MIRA Project Instructions implement the complete-replacement rule; legacy `project/INSTRUCTIONS.md.tmpl` already requires a complete `PROJECT INSTRUCTIONS UPDATE` when direct Project write capability is unavailable. No general direct ChatGPT Project/Custom Instructions mutation/readback implementation is proven, so automated UI mutation remains unverified rather than promised.
+
+**Hard dependencies:** exact instruction-surface capability discovery; source/versioned policy where applicable; user-visible full-replacement template; direct-write readback only if capability exists.
+
+**Acceptance / verification boundary:** Test the fallback output contract and target labeling; if a direct-write integration is ever introduced, separately prove exact target, bounded write and readback before suppressing the copy/paste replacement path.
+
+## Category E4 consistency findings
+
+- Person identity (`PROFILE-012`) and authorization (`PROFILE-013`) are separate authorities. A relationship edge never grants access.
+- Beneficiary/reimbursement relationships may reference the Person graph but do not imply permission or replace the general identity model.
+- Sharing mutable state and sharing reusable source/features are separate operations with separate approval/readback boundaries.
+- `DIST-001` preserves user-owned private behavior by default; publication is a separately approved sanitized operation.
+- `DIST-002` treats generated starter/distribution repositories as reproducible release products, not alternate sources of truth.
+- `DEV-004` gives MIRA a private-by-default extensibility workflow, but current validators/workflows do not justify claiming a completed autonomous builder.
+- Historical automatic instruction updates are normalized into `ONBOARD-001`; full replacement is the supported fallback, direct UI mutation remains capability-gated.
+- No E4 feature is promoted to MIRA 2.0 integration/live verification from legacy source/tests alone.
+
 ## Audit status
 
 - Categories A, B, C and D are complete.
 - Category E rows 1-5 are complete in `M2-G0-006A`.
 - Category E rows 6-10 are complete in `M2-G0-006B`.
-- `M2-G0-006C` audited category-E rows 11-15 as `PROFILE-006` through `PROFILE-011`.
+- Category E rows 11-15 are complete in `M2-G0-006C`.
+- `M2-G0-006D` audited category-E rows 16-20 as `PROFILE-012`, `PROFILE-013`, `DIST-001`, `DIST-002`, `DEV-004`, plus the E4 refinement of existing `ONBOARD-001`.
 - The complete historical feature inventory is still in progress.
-- The next bounded audit begins category-E row 16 with per-person identity, household/beneficiary relationships and permission scopes.
+- The next bounded audit begins category-E row 21 with browser-only nontechnical installation and source/runtime capability routing.
