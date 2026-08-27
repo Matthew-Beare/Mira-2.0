@@ -4,67 +4,67 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 ## Completed packet before this branch
 
-### `M2-G0-007D` — Feature Audit Slice F4 — household administration and laundry routines
+### `M2-G0-007E` — Feature Audit Slice F5 — routines/accountability and education/study services
 
-- **Merged PR:** #23
-- **Merge SHA:** `c5a57a3c6c2896ad7c0bd47f889fa9832d387877`
-- **Main handoff commit activating F5:** `80d6e5c42d1d6a746d1ab8fbcf595bd82fb4aaf1`
-- **Audited rows:** F11-F12 — Household/errands/admin/maintenance; Laundry stages and drop-off/pickup reminders.
-- **Result:** `household_admin` maps to `TASK-001`/`TASK-002`; `ROUTINE-001` owns recurring/staged routine truth; `REMIND-003` owns consolidated reminder projection; sibling service activation and ownership inference are prohibited.
-- **Remote readback:** F4 `FEATURES.md` and `BACKLOG.md` verified on `main` after merge.
+- **Merged PR:** #24
+- **Merge SHA:** `6eac4c03a91532bd9c95169284776bc7b4479e84`
+- **Audited rows:** F13-F14 — Routines/fitness/accountability; Education/study/deadlines/offline preparation.
+- **Result:** F13 reuses `ROUTINE-001` + `TASK-001` + `TASK-002` with optional `REMIND-003` and no `FITNESS-*` authority; F14 adds `EDU-001`; generic source-linked Calendar projection is `CAL-007`, with appointment-specific `CAL-006` remaining a specialization.
+- **Backlog:** added `AUDIT-F5`, `SERVICE-DEPS-005`, `EDUCATION-CORE-001`; refined existing routine and Calendar projection work instead of duplicating engines.
+- **Remote readback:** F5 `FEATURES.md` and `BACKLOG.md` verified on `main` after merge.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-007E`
-- **Name:** Feature Audit Slice F5 — routines/accountability and education/study services
-- **Class:** forensic audit / prerequisite
+- **Packet ID:** `M2-G0-007F`
+- **Name:** Feature Audit Slice F6 — family-school coordination and permission boundary
+- **Class:** forensic audit / privacy prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-007e-routines-education-services`
-- **Branch start SHA:** `80d6e5c42d1d6a746d1ab8fbcf595bd82fb4aaf1`
-- **Research checkpoint:** `2ed4d62470632deec063be1bfdd86ebf9a10deec`
-- **Feature registry commit:** `8682a5b8dc2974e72a4a3acf32337fce5bf31a59`
-- **Backlog checkpoint commit:** `bdc04b262fc74b212027915a4d37a4d4f76fb254`
-- **Status:** acceptance complete; bounded PR/merge/readback pending.
+- **Branch:** `audit/g0-007f-family-school-permissions`
+- **Base merge SHA:** `6eac4c03a91532bd9c95169284776bc7b4479e84`
+- **Status:** activated; forensic evidence pass next.
 
-## Audited F5 rows
+## Exact category-F scope in this packet
 
-13. **Routines/fitness/accountability**.
-14. **Education/study/deadlines/offline road preparation**.
+Audit exactly legacy category-F row 15:
 
-## Completed acceptance evidence
+15. **Parent/child school coordination** — CURRENT REQUIRED direction; parent/dependent role routing exists; dedicated family-school service remains specification/skill-level; legacy dependency map references parent/guardian, dependent-minor and Person identity behavior plus optional Calendar projection.
 
-1. F13 `routines_fitness` is service composition rather than a new fitness database. Basic readiness maps to `ROUTINE-001` + `TASK-001` + `TASK-002`.
-2. Optional accountability/reminder behavior reuses `REMIND-003`; reminder delivery, elapsed time, silence or missing wearable data never proves routine completion.
-3. `ROUTINE-001` was refined to permit optional session-component/result/progression/review metadata and context-valid minimum-viable variants while preserving one routine/occurrence authority and evidence-grounded completion/miss/reschedule history.
-4. `REMIND-003` was refined for acknowledgement/anti-nag and selected progression/review cadence without becoming routine truth.
-5. Wearable ingestion remains optional F22 work and is outside this packet. Basic F13 readiness cannot depend on a wearable.
-6. No `FITNESS-*` identity family or duplicate fitness engine was created because no distinct canonical lifecycle justified one.
-7. Added `EDU-001` because durable program/course/certification identity, academic-work/deadline/prerequisite state and source provenance outlive individual tasks and study sessions.
-8. `TASK-001`/`TASK-002` remain the action/next-action authority for education work; optional recurring study/accountability uses `ROUTINE-001`/`REMIND-003` instead of a second study scheduler.
-9. `EDU-001` preserves HOME/away applicability, verified deadlines/prerequisites and honest offline-readiness facts while prohibiting fabricated submissions, attendance, grades, citations or proof of completion.
-10. Retained source materials/evidence remain separate from education/task completion. Broader generic knowledge normalization is intentionally left for the later F19 audit.
-11. Added `CAL-007` for generic source-linked Calendar projection because stable Projection identity, exact provider-event linkage, update/cancel/dedupe/recreate semantics and provider readback apply beyond appointments.
-12. `CAL-006` remains the appointment-specific specialization and should reuse the generic `CAL-007` core rather than being stretched into unrelated domains or implemented as a competing projection engine.
-13. Calendar, retained/offline materials and routine/accountability are independently optional education paths; failure of those providers cannot erase or falsify canonical education/task/routine state.
-14. Offline readiness requires actual retained/downloaded evidence; a source link alone is not proof that material will work without connectivity.
-15. Legacy onboarding/router evidence proves catalog/recommendation boundaries but does not silently activate F13/F14 or prove domain implementation.
-16. Legacy `life-planning-accountability.md` provides strong workflow/specification evidence but no dedicated education, routine-progression or generic Calendar provider engine/test suite was located.
-17. PR #31 contains no qualifying F13/F14 implementation that raises MIRA 2.0 evidence to integration/live status.
-18. `FEATURES.md` whole-file replacement was diff-gated against the research checkpoint: one file only, 76 additions and four intentional replacements; `EDU-*`, `CAL-*` and F5 tail were spot-read back.
-19. `BACKLOG.md` whole-file replacement was diff-gated against the feature commit: one file only, 21 additions and four intentional replacements. It added `AUDIT-F5`, `SERVICE-DEPS-005`, `EDUCATION-CORE-001`, refined existing routine work, and reconciled existing `CALENDAR-PROJECTION-001` to the generic `CAL-007` core rather than minting duplicate work.
-20. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
+Do not expand this packet into F16 travel/vacation/outdoor planning, F17 work-trip/route/paid-work tracking, F18 assets, F19 knowledge, F20 recovery, F21 skill builder, F22 wearable/activity ingestion, F23 weather onboarding, category G, or executable MIRA 2.0 coding.
+
+## Packet-boundary rationale
+
+- F15 is privacy/authorization-sensitive because coordination may cross Person identities and expose education/calendar/school state.
+- Its relevant foundations are `PROFILE-004`, `PROFILE-005`, `PROFILE-012`, `PROFILE-013`, `EDU-001`, `SERVICE-001`/`SERVICE-002` and optional `CAL-007`.
+- F16 immediately returns to ordinary Trip/Route travel planning and has no parent/minor permission dependency. Combining them would create one packet with unrelated authority, privacy and verification boundaries.
+- Therefore F6 is deliberately one historical row only.
+
+## Acceptance criteria
+
+1. Determine whether F15 is purely a service composition over existing Person/permission/education/task/calendar authorities or whether a distinct canonical family-school coordination lifecycle genuinely requires a new feature ID.
+2. Preserve `PROFILE-012` Person/relationship identity separately from `PROFILE-013` permission/sharing grants; relationship labels never authorize access.
+3. Parent/guardian role, dependent-minor role, household membership, co-residence, school enrollment or observed calendar traffic must not silently grant school/calendar/education access.
+4. Any cross-person read/write/share path must identify exact actor/subject/resource/action scope and require explicit authority plus provider/API readback where provider sharing/mutation occurs.
+5. Minimum-necessary private data applies to dependent/minor state. Public source and synthetic fixtures must contain no real family/school/private production data.
+6. Reuse `EDU-001` for program/course/academic-work/deadline truth; family-school coordination must not create a second education database.
+7. Reuse `TASK-*`/`ROUTINE-*`/`REMIND-*` only for their existing action/routine/reminder semantics; coordination cannot infer completion, attendance, grades, custody or responsibility.
+8. Calendar projection remains independently optional through `CAL-007`; enabling family-school coordination cannot silently enable Calendar projection, invitations or attendee updates.
+9. Service recommendation remains separate from activation under `SERVICE-001`; parent/dependent profile recommendations cannot enable F15 automatically.
+10. Record requirement status separately from implementation/test/integration/live evidence and do not promote router/profile tests to permission-enforcement/provider proof.
+11. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`.
+12. Open a bounded PR, verify scope, merge and remotely read back before advancing to F7.
+13. Touch no legacy Google production state and change no executable MIRA 2.0 product behavior.
 
 ## Exact next action
 
-Compare `audit/g0-007e-routines-education-services` against `main` and verify the packet is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` with the branch zero commits behind. Open a pull request to `main`, verify GitHub's server-side changed-file list and mergeability, merge using the exact PR head SHA, remotely read back the F5 feature/backlog state from `main`, then inspect authoritative category-F evidence beginning with F15 **Parent/child school coordination** and activate `M2-G0-007F` from the resulting main handoff commit.
+Create branch `audit/g0-007f-family-school-permissions` from this main handoff commit. Inspect authoritative F15 evidence across the feature ledger, `behavior-dependencies.json`, parent/dependent/profile router and tests, `questions.profile-and-stock-services.json`, `STATE_AUTHORITY_MODEL.md`, and any family-school specific skill/code/tests. Decide first whether F15 needs any canonical feature beyond `PROFILE-012`/`PROFILE-013` + `EDU-001` + existing task/routine/calendar composition; checkpoint the finding before registry normalization.
 
-## Next packet after F5
+## Next packet after F6
 
-### `M2-G0-007F` — Feature Audit Slice F6
+### `M2-G0-007G` — Feature Audit Slice F7
 
-Begin with category-F row 15 **Parent/child school coordination**. Determine the remainder of the bounded F6 slice from authoritative ledger/dependency evidence after F5 closes. Do not pre-expand from conversational memory.
+Begin with category-F row 16 **Travel/vacation/outdoor planning** and determine the remainder of the bounded F7 slice from authoritative dependency evidence after F6 closes.
 
 ## Recovery protocol
 
