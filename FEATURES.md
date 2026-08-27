@@ -43,7 +43,9 @@ ID families include:
 - `GROCERY-*` — grocery/pantry/freezer stock and shopping-list reconciliation;
 - `RECIPE-*` — durable recipe identity, content and provenance;
 - `MEAL-*` — dated meal-plan state and ingredient-gap reconciliation;
-- `PROFILE-*` — onboarding, roles, family, customization, accessibility;
+- `ONBOARD-*` — safe starter, first boot, discovery and user configuration intake;
+- `SERVICE-*` — explicit service activation and capability-verification state;
+- `PROFILE-*` — roles, family, customization and accessibility;
 - `PROVIDER-*` — Google/Microsoft/Apple/storage/runtime portability;
 - `CLIENT-*` — ChatGPT, Android, web, desktop, CLI and device surfaces;
 - `DIST-*` — distribution, updates, releases, rollback;
@@ -671,11 +673,119 @@ Category D is complete through all 16 historical rows. The repaired authority/de
 - PR #31 contains several useful inventory/scanning/query candidates, but all remain unmerged salvage/reference evidence. The one-field relocation design conflicts with the required intended-versus-observed location model and must be repaired before salvage.
 - No category-D feature is promoted to MIRA 2.0 integration/live verification from legacy Google production state, conversation memory, or unmerged PR #31 code.
 
+## Audited safe-starter and onboarding foundation features
+
+### `ONBOARD-002` — Sanitized generic starter with no inherited personal production state
+
+**Description:** Every new MIRA/MIRROR deployment begins from portable generic source and synthetic/example configuration, never from another user’s mutable life state. Starter/distribution source must not contain production-specific personal data, non-placeholder email addresses, concrete Google resource URLs, deployment authority IDs, credentials, live schedules, private third-party facts, asset IDs, aliases, goals or other inherited operational state. Legacy production data is neither copied into public source nor silently used as a development fixture. Private mutable state is created in the new deployment’s selected authority only after onboarding/configuration. Rejected or contaminated legacy branches remain evidence, not defaults.
+
+**Why it exists / user outcome:** Installing MIRA should create *your* assistant, not a disturbingly intimate clone of whoever happened to develop the template first.
+
+**Requirement status:** `required / privacy boundary`.
+
+**Delivery/evidence:** the legacy portable starter has an executable `audit_starter_privacy.py` scanner that rejects blocklisted production markers, non-placeholder emails, concrete Google Drive/Docs URLs, authority IDs and symlinks. The canonical CI workflow runs both full-history public-source audit and starter-privacy audit before repository validation/tests, making starter sanitization a genuine `test_verified`/CI-enforced legacy-source guardrail. `START_HERE.md` also explicitly prohibits inheriting another deployment’s timezone, schedules, accounts, assets, routines, goals, IDs, configuration, aliases or state. **MIRA 2.0 has not yet integration-verified a generated starter/distribution from its new canonical repo.**
+
+**Hard dependencies:** public-source privacy policy; synthetic fixtures; `DATA-001`; clean source lineage; distribution/build pipeline when one is introduced.
+
+**Enables:** safe public template/onboarding, personal forks/deployments, later institutional distribution and migration without privacy contamination.
+
+**Legacy evidence:** category-E row 1; `scripts/audit_starter_privacy.py`; `.github/workflows/ci.yml`; `START_HERE.md`; historical clean-lineage/sanitization work.
+
+**Acceptance / verification boundary:** Preserve scanner/CI semantics in MIRA 2.0, generate a synthetic starter/distribution, run privacy and history audits against it, and prove no protected legacy identifiers/state appear in source or fixtures. Live personal state must remain outside public Git.
+
+---
+
+### `ONBOARD-003` — Four-question Minimum Useful Setup with resumable bounded interview
+
+**Description:** First boot begins with no more than four high-value kickoff questions before any deeper discovery. The canonical initial set captures system name, authoritative IANA timezone, broad current life/work pattern including job/duties/work-away details when relevant, and the biggest problems the user wants help remembering/organizing/deciding/planning/following through on. Follow-up discovery is bounded to at most four related questions at a time, persists durable Interview Ledger state, does not restart after conversational detours, never treats silence as an answer, and permits `Deferred`, `Unresolved`, `Answered`, `Resolved from evidence` and `Not applicable` progress. MIRA should synthesize a Minimum Useful Setup rather than requiring a human to complete an exhaustive life questionnaire before receiving value.
+
+**Why it exists / user outcome:** A new user gets useful MIRA behavior quickly instead of enduring an onboarding deposition conducted by an assistant with unlimited curiosity and no social instincts.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `START_HERE.md` contains an explicit four-question first-boot contract and `LIFE_INTERVIEW.md` defines bounded/resumable Interview Ledger mechanics. These are implemented workflow/source artifacts. The audit did not locate a dedicated deterministic regression test that proves the complete four-question → resumable-Minimum-Useful-Setup flow, so the full behavior remains below `test_verified` despite strong specification/implementation evidence.
+
+**Hard dependencies:** durable Interview Ledger/state authority; `ONBOARD-002`; explicit user input; capability discovery; no-silent-provisioning boundary.
+
+**Enables:** nontechnical onboarding, progressive personalization, later role/profile discovery and safe incremental configuration.
+
+**Legacy evidence:** category-E row 2; `starter/START_HERE.md`; `starter/LIFE_INTERVIEW.md`; Interview Ledger contract.
+
+**Acceptance / verification boundary:** Add deterministic conversation/state fixtures proving exactly ≤4 kickoff questions, durable resume after detours/restart, silence/defer semantics, evidence-resolved factual items, preference/permission non-inference and Minimum Useful Setup before exhaustive interview completion.
+
+---
+
+### `ONBOARD-004` — Capability, friction, AI-use and work-context discovery without silent activation
+
+**Description:** After kickoff, MIRA discovers how the user currently uses AI, recurring friction/pain points, exact job title/duties/work-away pattern when relevant, desired automations, existing apps/services/data sources and important constraints. It inspects reachable capabilities/evidence before asking the user to recreate information or reconnect tools. Discovery may recommend services, context modes or adjacent workflows, but recommendations never silently enable a service, permission, sharing scope or context. Unknown/inaccessible capabilities remain unresolved and MIRA must not promise feature parity or integrations it cannot verify. Questions are asked only when their answers can materially change workflow, dependency, schema, schedule, permission or recommendation.
+
+**Why it exists / user outcome:** MIRA learns enough about the user’s actual life and tools to suggest useful automation without forcing the user to design the system or enabling things merely because a job title matched a keyword.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `START_HERE.md`, `LIFE_INTERVIEW.md` and `CAPABILITY_DISCOVERY.md` provide strong workflow/specification evidence. Deterministic profile-router tests prove important sub-boundaries: work-away recommendations require confirmation, catalog presence does not equal implementation, recommendations do not silently activate services, malformed/unknown inputs fail closed, and context never changes canonical timezone. The broad end-to-end discovery interview itself is not independently `test_verified`.
+
+**Hard dependencies:** `ONBOARD-003`; capability/provider introspection; `SERVICE-001`; `CTX-002`; explicit consent/permission boundaries.
+
+**Enables:** adaptive configuration, role/profile routing, context recommendations, provider selection and useful automation suggestions without capability hallucination.
+
+**Legacy evidence:** category-E row 3; `START_HERE.md`; `LIFE_INTERVIEW.md`; `CAPABILITY_DISCOVERY.md`; `onboarding_profile_router.py`; `test_onboarding_profile_router.py`.
+
+**Acceptance / verification boundary:** Add structured fixtures for discovery/resume, already-connected capability reuse, unavailable-provider behavior, job/duty recommendation without activation, explicit constraints and no unsupported capability claims. MIRA 2.0 integration must persist only approved configuration/state to the selected sandbox authority.
+
+---
+
+### `ONBOARD-005` — Explicit new-user brief cadence and canonical IANA timezone configuration
+
+**Description:** A new deployment asks the user for its preferred brief/action-digest cadence, local schedule slots and one authoritative named IANA timezone rather than inheriting another deployment’s schedule or a device/travel timezone. Timezone is durable configuration used by scheduler semantics such as `OPS-003`; later travel/context changes do not silently change it. New-user configuration is distinct from the existing personal production deployment’s already-audited fixed schedule. If briefs are disabled/not applicable/deferred, onboarding does not create a dispatcher merely because the feature exists in the catalog.
+
+**Why it exists / user outcome:** A new user’s assistant runs on *their* schedule, while MIRA stops treating whatever timezone a phone happens to display as constitutional law.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `START_HERE.md` explicitly asks authoritative IANA timezone in kickoff and requires cadence/slots/timezone when briefs are enabled; `LIFE_INTERVIEW.md` reinforces canonical-time rules. Core named-timezone scheduler semantics are separately `test_verified` under `OPS-003`, but the complete onboarding capture → persisted configuration → scheduler/readback path is not yet integration/test-verified as one feature.
+
+**Hard dependencies:** `ONBOARD-003`; `SERVICE-001` brief activation; named IANA timezone validation; `OPS-001`/`OPS-003` when briefs are enabled; canonical configuration authority.
+
+**Enables:** portable new-user brief scheduling without copying personal deployment timing.
+
+**Legacy evidence:** category-E row 4; `START_HERE.md`; `LIFE_INTERVIEW.md`; existing `OPS-003` deterministic timezone tests.
+
+**Acceptance / verification boundary:** Add onboarding fixtures for valid/invalid IANA zones, enabled/disabled/deferred briefs, cadence/slot validation and persistence/readback. Sandbox integration must prove the captured timezone/slots drive configuration without changing from device/travel context.
+
+---
+
+### `SERVICE-001` — Explicit finite service activation state separate from capability and recommendation
+
+**Description:** Every catalogued MIRA service has one explicit activation state: `unresolved`, `enabled`, `disabled`, `not_applicable`, or `deferred`. Catalog presence does not prove implementation, capability availability does not imply activation, and a recommendation does not authorize enabling. Disabled/not-applicable services are excluded from normal recommendations; deferred services remain known future choices without pretending to be active. Legacy boolean fields may map to the finite model only when non-conflicting. Unknown services, invalid states and contradictory activation inputs fail closed. Service implementation/capability verification is tracked separately from activation.
+
+**Why it exists / user outcome:** “MIRA knows this feature exists,” “this device/account can support it,” “MIRA recommends it,” and “the user enabled it” stop being four different meanings of the same Boolean-shaped disaster.
+
+**Requirement status:** `required for honest onboarding and runtime configuration`.
+
+**Delivery/evidence:** `test_verified` in the legacy deterministic onboarding router. Tests prove default `unresolved`, explicit enable/disable, finite state validation, no silent activation from recommendations/catalog presence, disabled/not-applicable recommendation suppression, conflicting legacy/current state rejection, unknown-service failure and separate `requires_capability_verification` implementation status.
+
+**Hard dependencies:** canonical service catalog/IDs; configuration authority; explicit user decisions; capability-verification state.
+
+**Enables:** safe onboarding, module routing, deferred services, role-based recommendations and honest capability reporting.
+
+**Legacy evidence:** category-E row 5; `starter/tools/onboarding_profile_router.py`; `starter/tests/test_onboarding_profile_router.py`; `START_HERE.md` stock-service activation contract.
+
+**Acceptance / verification boundary:** Preserve deterministic state-machine tests in MIRA 2.0 and persist/read back service activation separately from capability/implementation state. Prove recommendation changes cannot mutate activation without explicit user/configuration action.
+
+## Category E1 consistency findings
+
+- `ONBOARD-002` is a privacy/source-lineage boundary, not merely a friendly onboarding screen. Starter sanitization is CI-enforced in legacy source but still needs MIRA 2.0 distribution proof.
+- `ONBOARD-003` owns interview pacing/resume; it does not itself decide which services are active.
+- `ONBOARD-004` discovers facts/preferences/capabilities and may recommend, but activation authority remains `SERVICE-001`.
+- `ONBOARD-005` configures a new deployment’s schedule/timezone only when applicable; it cannot overwrite another deployment’s schedule and runtime semantics remain under `OPS-*`.
+- `SERVICE-001` separates activation, recommendation, catalog presence and capability verification.
+- The rejected/unsafe universal-onboarding experiment remains rejected evidence. Its existence cannot override current bounded, explicit, browser/nontechnical-safe onboarding rules.
+- No E1 feature is promoted to MIRA 2.0 integration/live status merely because the legacy starter or tests exist.
+
 ## Audit status
 
 - Categories A, B, C and D are complete.
-- `M2-G0-005A` completed category-D rows 1-5.
-- `M2-G0-005B` completed category-D rows 6-10.
-- `M2-G0-005C` completed category-D rows 11-15.
-- `M2-G0-005D` audited row 16 as `RECIPE-001` and `MEAL-001` and completed the category-D consistency closure.
-- The complete historical feature inventory is still in progress. The next bounded audit begins category E with onboarding/safe-initialization foundations; no category-E feature is audited by this packet.
+- `M2-G0-006A` audited category-E rows 1-5 as `ONBOARD-002`, `ONBOARD-003`, `ONBOARD-004`, `ONBOARD-005`, and `SERVICE-001`.
+- The complete historical feature inventory is still in progress.
+- The next bounded audit begins category-E row 6 with working/self-employed profile behavior; role/profile implementation is not part of E1.

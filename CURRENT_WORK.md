@@ -2,52 +2,70 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
-
-### `M2-G0-005D` — Feature Audit Slice D4 — recipes, meal planning and category-D closure
-
-- **Merged PR:** #13
-- **Merge SHA:** `998e5fac8a8547c5c11893b4b3a111424b3cd82e`
-- **Audited features:** `RECIPE-001`, `MEAL-001`
-- **Result:** Category D is complete through all 16 historical rows with recipe knowledge, meal-plan state, grocery stock, shopping intent and purchase truth explicitly separated.
-- **Live Google production touched:** no.
-- **Executable product behavior changed:** no.
-
 ## Active packet
 
 - **Packet ID:** `M2-G0-006A`
 - **Name:** Feature Audit Slice E1 — safe starter and onboarding foundations
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Objective:** Audit the first five category-E onboarding/safe-initialization behaviors without entering role/profile variants or implementation work.
+- **Branch:** `audit/g0-006a-onboarding-foundations`
+- **Base main SHA:** `a490b2dbf15985e49565c6fb89d65a420ed33f0e`
+- **Feature audit commit:** `bbb2db77449c3b3cd70f43420c319bab80996ddf`
+- **Backlog checkpoint commit:** `f36b4281d61942706d96d2f75655ff571cd5eafd`
+- **Status:** acceptance work complete; PR/merge/readback pending.
 
-## Audit rows in this packet
+## Completed acceptance evidence
 
-1. Generic quarantined starter with no inherited personal data.
-2. Adaptive first boot: four kickoff questions, then bounded follow-ups.
-3. Ask AI use, pain points, job/duties, desired automation, apps/services and constraints.
-4. Ask preferred brief cadence/timezone for new users.
-5. Explicit service activation states: unresolved/enabled/disabled/not-applicable/deferred.
+1. Assigned five stable semantic features for category-E rows 1-5:
+   - `ONBOARD-002` Sanitized generic starter with no inherited personal production state;
+   - `ONBOARD-003` Four-question Minimum Useful Setup with resumable bounded interview;
+   - `ONBOARD-004` Capability, friction, AI-use and work-context discovery without silent activation;
+   - `ONBOARD-005` Explicit new-user brief cadence and canonical IANA timezone configuration;
+   - `SERVICE-001` Explicit finite service activation state separate from capability and recommendation.
+2. Added `ONBOARD-*` and `SERVICE-*` registry families so onboarding workflow and activation state are not hidden inside generic profile labels.
+3. Verified the legacy starter privacy boundary is executable and CI-enforced: `audit_starter_privacy.py` rejects production markers, non-placeholder emails, concrete Google resource URLs, authority IDs and symlinks, while CI also performs full-history public-source audit before validation/tests.
+4. Recorded `ONBOARD-002` as test/CI-enforced in legacy portable source while keeping MIRA 2.0 starter/distribution integration unverified; added `STARTER-SANITIZE-001`.
+5. Verified `START_HERE.md` explicitly prohibits inheriting another deployment’s timezone, schedules, accounts, assets, routines, goals, IDs, configuration, aliases or state.
+6. Recorded the exact four-question kickoff contract and `LIFE_INTERVIEW.md` bounded/resumable Interview Ledger behavior under `ONBOARD-003` without promoting the complete conversational flow to test-verified; added `FIRSTBOOT-CORE-001`.
+7. Recorded AI-use/pain-point/job/duty/automation/app/service/constraint discovery under `ONBOARD-004`, with questions limited to decisions that affect workflow, dependency, schema, schedule, permission or recommendation.
+8. Verified deterministic sub-boundaries for discovery: work-away/context recommendations require confirmation, catalog presence does not equal implementation, recommendations do not silently activate services, malformed inputs fail closed and context routing cannot change canonical timezone; added `DISCOVERY-CORE-001` for the untested end-to-end discovery flow.
+9. Recorded new-user cadence/slot/IANA-timezone configuration under `ONBOARD-005`, explicitly separate from the current personal deployment’s audited schedule; added `ONBOARD-SCHEDULE-001` for persistence/readback and routing tests.
+10. Verified `SERVICE-001` finite activation states `unresolved`, `enabled`, `disabled`, `not_applicable`, and `deferred` are deterministic/test-backed, with default unresolved, explicit enable/disable, conflict rejection, unknown-state failure and separate `requires_capability_verification` implementation status.
+11. Added `SERVICE-STATE-001` to port/prove those tested semantics in MIRA 2.0 canonical configuration.
+12. Preserved the rejected/unsafe universal-onboarding experiment as rejected evidence so it cannot silently become the current default through legacy branch/code resurrection.
+13. Touched no live Google production state and changed no executable MIRA 2.0 product behavior.
 
-Do not expand this packet to working/retired/nonworking/parent/dependent roles, family behavior, accessibility, provider portability, distribution, enterprise or product coding.
+## Key audit findings
 
-## Acceptance criteria
+- Starter sanitization is a privacy/source-lineage control, not merely onboarding copy.
+- Minimum Useful Setup and the deeper life interview are separate phases; the user does not need to finish an exhaustive questionnaire before MIRA becomes useful.
+- Discovery/recommendation is not authorization. Job title, duties or available provider capabilities may suggest services but never activate them.
+- New-user cadence/timezone is deployment configuration, not inherited personal policy and not device/travel time.
+- Service catalog presence, capability availability, recommendation and activation are four separate states/claims.
 
-1. Each scoped behavior receives stable semantic feature identity and an evidence boundary.
-2. Starter/bootstrap state is generic and synthetic by default; it cannot inherit personal production data, identifiers, schedules, private third-party facts or legacy authority IDs.
-3. First boot keeps the initial interaction to four or fewer high-value questions before bounded follow-ups and supports Minimum Useful Setup rather than interrogating the user indefinitely.
-4. Discovery captures intended AI use, pain points, job/duties, desired automations, apps/services and constraints only to the extent needed for configuration/recommendations; duties may inform recommendations but cannot silently activate services.
-5. New-user brief cadence and timezone are explicit configuration, use named IANA timezone semantics, and do not overwrite the personal deployment’s already-audited schedule.
-6. Service activation uses finite explicit states including unresolved, enabled, disabled, not-applicable and deferred; recommendations do not equal activation.
-7. Rejected/superseded universal-onboarding behavior is preserved as rejected evidence so it cannot resurrect through legacy code.
-8. Only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are intended changes.
-9. A small PR is scope-verified, merged and remotely read back.
-10. `CURRENT_WORK.md` advances to the next bounded category-E slice without beginning role/profile implementation.
-11. No live Google production state and no executable product behavior is changed.
+## Blockers
+
+None inside this forensic packet. MIRA 2.0 implementation/integration work is separately ranked as `STARTER-SANITIZE-001`, `FIRSTBOOT-CORE-001`, `DISCOVERY-CORE-001`, `ONBOARD-SCHEDULE-001`, and `SERVICE-STATE-001`.
 
 ## Exact next action
 
-Create branch `audit/g0-006a-onboarding-foundations` from current `main`. Inspect category-E row 1: **Generic quarantined starter with no inherited personal data**, including clean lineage, synthetic examples, legacy-data exclusion and how rejected onboarding experiments are prevented from becoming defaults.
+Open a pull request from `audit/g0-006a-onboarding-foundations` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back E1, then activate `M2-G0-006B` on current `main` and create branch `audit/g0-006b-role-profile-foundations`.
+
+## Next packet after merge
+
+### `M2-G0-006B` — Feature Audit Slice E2 — role/profile foundations
+
+Audit exactly category-E rows 6-10:
+
+1. Working/self-employed profile behavior.
+2. Retired profile behavior distinct from nonworking/unemployed state.
+3. Nonworking/between-jobs profile behavior distinct from retirement.
+4. Parent/guardian profile behavior and family/household recommendations.
+5. Dependent child/minor profile behavior with privacy/permission safety boundaries.
+
+Do not expand this packet to caregiver/household-manager/student/custom profiles, accessibility, family sharing implementation, provider portability, distribution or product coding.
+
+The exact first unaudited behavior is **Working/self-employed profile behavior**.
 
 ## Recovery protocol
 
