@@ -18,10 +18,10 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `AUDIT-A` | PREREQUISITE | Brief/time/tasking/operational-state reconstruction. | G0-001 | complete |
 | `AUDIT-B` | PREREQUISITE | Calendar/reminders/mail/communication safety. | AUDIT-A | complete |
 | `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | complete through `M2-G0-004C` |
-| `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence. | AUDIT-C | **in progress; D1 complete, D2 next** |
+| `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence. | AUDIT-C | **in progress; D1-D2 complete, D3 next** |
 | `AUDIT-D1` | PREREQUISITE | D rows 1-5: immutable asset identity; fitment relationships; asset evidence; bidirectional graph; identifiers; enrichment. | AUDIT-C | **complete in `M2-G0-005A`**; `ASSET-001`, `FITMENT-001`, `ASSET-002`, `ASSET-003`, `IDENT-001`, `EVID-001` |
-| `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual discovery/Drive retention; technical specs provenance; shopping intent separate from purchase; immutable inventory IDs; hierarchical intended/last-moved locations. | AUDIT-D1 | **next packet `M2-G0-005B`** |
-| `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; queryable household/shop inventory; consumable par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | queued |
+| `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual discovery/Drive retention; technical specs provenance; shopping intent separate from purchase; immutable inventory IDs; hierarchical intended/last-moved locations. | AUDIT-D1 | **complete in `M2-G0-005B`**; `KNOW-001`, `SPEC-001`, `SHOP-001`, `INV-001`, `LOC-001` |
+| `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; queryable household/shop inventory; consumable par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | **next packet `M2-G0-005C`** |
 | `AUDIT-D4` | PREREQUISITE | D row 16: recipes/meal planning/shopping linkage; category-D closure. | AUDIT-D3 | queued |
 | `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | queued |
 | `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | queued |
@@ -33,6 +33,10 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
+| `LOCATION-STATE-001` | PREREQUISITE | Implement/test `LOC-001` stable hierarchical locations with explicit intended-home placement separate from current/last-observed movement state, including cycle/container rules and readback. | `INV-001`, location/event schema | queued; PR #31 hierarchy code is salvage/reference only and does not prove intended-vs-observed semantics |
+| `SHOP-CORE-001` | PREREQUISITE | Implement/test deterministic `SHOP-001` shopping-intent reconciliation: exact/ambiguous match, owner-confirmed fulfillment, cancellation, replacement, partial fulfillment, idempotent replay, deletion/readback. | `RECEIPT-001`, stable shopping-intent identity | queued; policy is strong but no dedicated deterministic core located |
+| `KNOWLEDGE-INTEGRATION-001` | HARDENING | Prove `KNOW-001` synthetic manual discovery, Drive retention/index readback, idempotent Knowledge UUID replay and independent relationship degradation in MIRA 2.0 sandbox. | `KNOW-001`, `DATA-SANDBOX`, Google/MIRROR adapter | queued; deterministic core exists, provider integration unverified |
+| `SPEC-INTEGRATION-001` | HARDENING | Prove `SPEC-001` authoritative synthetic/manual-derived specification persistence/readback and reject owner-memory/OCR promotion without required provenance. | `SPEC-001`, `KNOW-001`, `DATA-SANDBOX` | queued; validator core is test-verified, integration unverified |
 | `FITMENT-ENGINE-001` | HARDENING | Add deterministic automatic `FITMENT-001` resolution tests/engine for multi-vehicle ambiguity, exclusion evidence, modifications, unique application and no-guess queue behavior. | `ASSET-001`, `IDENT-001`, fitment evidence | queued; explicit relationship core is test-verified but inference engine is not |
 | `ASSET-SERVICE-001` | HARDENING | Define/test structured warranty and maintenance lifecycle records under `ASSET-002` instead of relying only on generic evidence links/policy prose. | `ASSET-001`, `EVID-001` | queued; broader evidence graph exists but warranty/maintenance depth is not dedicated/tested |
 | `ORDER-STALE-001` | PREREQUISITE | Implement/test `ORDER-005` five-business-day stale-shipment escalation. | `ORDER-002`, business-day semantics | queued |
@@ -54,7 +58,7 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
-## Category-D1 dependency findings
+## Category-D1/D2 dependency findings
 
 - `ASSET-001` owns immutable physical identity; labels, owners, locations and backends cannot replace Entity UUID.
 - `FITMENT-001` is an explicit relationship authority. `assigned_to` is not `installed_on`; automatic fitment inference remains a separate hardening gap.
@@ -62,11 +66,15 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 - `ASSET-003` receipt/asset/identifier graph behavior is test-verified and intentionally excludes broad `owned_by` traversal.
 - `IDENT-001` preserves global-vs-namespaced identifier meaning, check digits/format, leading zeroes and serial-level collision safety.
 - `EVID-001` provider-neutral reconciliation is test-verified; Gmail/photo/OCR adapter execution remains integration work.
-- Safety-critical technical specification provenance remains for D2 rather than inheriting D1's broader evidence-core status.
+- `KNOW-001` owns canonical document/reference identity; asset links are downstream and provider failure does not manufacture a second manual.
+- `SPEC-001` verified safety-critical values require exact subject/applicability plus authoritative source tier and source locator; the deterministic validator core is test-verified.
+- `SHOP-001` active procurement intent is not purchase history or spend. Dedicated deterministic reconciliation remains queued as `SHOP-CORE-001`.
+- `INV-001` reuses canonical Entity UUIDs instead of creating an independent inventory identity authority.
+- `LOC-001` must distinguish intended storage placement from observed/current/last-moved location. PR #31 hierarchy code is salvage/reference only; `LOCATION-STATE-001` is the actual required implementation gap.
 
 ## Prior-category closure
 
-Categories A-C are complete. Their previously recorded gaps/evidence levels remain authoritative.
+Categories A-C are complete. Category D is complete through row 10. Their previously recorded gaps/evidence levels remain authoritative.
 
 ## New-idea triage rule
 
