@@ -41,6 +41,8 @@ ID families include:
 - `MOVE-*` — inventory movement events and scan-driven relocation workflows;
 - `PAR-*` — target stock levels, observed quantity and optional sensing;
 - `GROCERY-*` — grocery/pantry/freezer stock and shopping-list reconciliation;
+- `RECIPE-*` — durable recipe identity, content and provenance;
+- `MEAL-*` — dated meal-plan state and ingredient-gap reconciliation;
 - `PROFILE-*` — onboarding, roles, family, customization, accessibility;
 - `PROVIDER-*` — Google/Microsoft/Apple/storage/runtime portability;
 - `CLIENT-*` — ChatGPT, Android, web, desktop, CLI and device surfaces;
@@ -611,11 +613,69 @@ Category C is complete. Fulfillment, purchase identity, bounded spending, mercha
 - `GROCERY-001` keeps grocery procurement/stock distinct from receipt history and from serial-style durable asset handling where that would be nonsensical.
 - No category-D3 feature is promoted to MIRA 2.0 integration/live verification from legacy Google state or unmerged PR #31 code.
 
+## Audited recipe and meal-planning features
+
+### `RECIPE-001` — Durable recipe library with structured ingredients and provenance
+
+**Description:** MIRA may retain user-created, imported or referenced recipes as durable recipe records with stable Recipe identity, title, structured ingredient requirements, instructions or source reference, serving/yield information when supported, tags/aliases and provenance. Source text and extracted ingredient structure are distinguishable so normalization does not silently rewrite the original recipe. A recipe is reusable knowledge, not a dated meal plan, grocery stock record, shopping-list row or purchase. Imported copyrighted source material should retain the canonical source/document rather than duplicating entire protected works into public Git or arbitrary database fields; only the structured/relevant information needed for the user’s authorized knowledge store should be retained according to source policy.
+
+**Why it exists / user outcome:** A recipe should remain one reusable thing that can be planned many times, searched, scaled or compared against available ingredients without being recreated for every week’s menu.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** the historical ledger marks recipes/meal planning/shopping linkage `CURRENT REQUIRED` but `contract-only manifest`. Repository and PR #31 searches during D4 found no dedicated executable recipe-library engine or deterministic recipe tests. Generic `KNOW-001` provenance patterns are reusable architecture, but they do not by themselves implement structured recipes.
+
+**Hard dependencies:** stable Recipe identity; provenance/source handling; optional `KNOW-001` for retained source documents; practical ingredient identity/unit semantics shared with `GROCERY-001`.
+
+**Enables:** `MEAL-001`, recipe search, ingredient-gap analysis and later family/fridge surfaces.
+
+**Legacy evidence:** category-D row 16; project-conversation evidence explicitly records meal planning as a current requirement; no executable recipe core located in D4 audit.
+
+**Acceptance / verification boundary:** Add deterministic tests for recipe identity/dedupe, structured ingredient extraction/manual correction, servings/yield, source provenance, replay, source-text preservation and updates that do not replace Recipe identity.
+
+---
+
+### `MEAL-001` — Dated meal planning with pantry-aware ingredient-gap and shopping reconciliation
+
+**Description:** Meal plans are dated/period-scoped planning state that references recipes or explicit meal entries without mutating recipe identity. Planning may read supported `GROCERY-001` pantry/freezer/fridge availability and quantity evidence to estimate whether ingredients are on hand, but placing a meal on a plan does not consume stock or fabricate a grocery movement. Missing or insufficient ingredients may create/reconcile deduplicated grocery procurement intent through `SHOP-001` under explicit user/configured policy; the meal plan itself is not a shopping list. Purchase evidence later fulfills shopping intent under the existing purchase/shopping rules, while grocery stock changes only through supported stock events/observations. Ambiguous ingredient identity, units, substitutions or quantities remain reviewable rather than silently overbuying or decrementing inventory.
+
+**Why it exists / user outcome:** MIRA can plan meals from what is actually available and turn genuine ingredient gaps into a useful grocery list without claiming food was eaten, bought or stocked merely because an AI generated a weekly menu.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** `contract/specification-level`. The forensic ledger explicitly calls meal planning a current requirement, but no dedicated executable planner, pantry-gap engine or deterministic meal-planning tests were located in the audited repository/PR #31. It therefore receives no implementation credit from generic shopping/inventory code.
+
+**Hard dependencies:** `RECIPE-001`; `GROCERY-001`; `SHOP-001`; practical ingredient/unit matching; optional `PAR-001`; explicit user planning constraints/preferences where configured.
+
+**Enables:** weekly/daily meal plans, pantry-aware recipe selection, deduplicated missing-ingredient grocery intent and later household/fridge presentation.
+
+**Legacy evidence:** category-D row 16 and project-conversation evidence from the failed Foodie onboarding experiment stating meal planning remains a current requirement even though that universal onboarding design was rejected.
+
+**Acceptance / verification boundary:** Deterministic tests must cover dated plan identity/replay, recipe reuse, pantry availability without stock mutation, missing/partial ingredient calculation, unit/identity ambiguity, deduplicated shopping-intent creation, removal/change of planned meals, and proof that planning alone does not alter receipt/purchase or grocery-stock truth.
+
+## Category D consistency result
+
+Category D is complete through all 16 historical rows. The repaired authority/dependency model is:
+
+- Physical asset identity is canonical under `ASSET-001`; inventory participation (`INV-001`) reuses that Entity UUID and never invents a second physical-object identity authority.
+- Fitment/assignment/installation (`FITMENT-001`) is relationship state, not identity. `assigned_to` does not imply `installed_on`.
+- Purchase/receipt evidence (`RECEIPT-*`/`ORDER-*`) may create or enrich asset/grocery evidence but remains a separate commerce authority.
+- Asset evidence (`EVID-001`), durable reference knowledge (`KNOW-001`) and technical specifications (`SPEC-001`) are separate provenance layers with different verification requirements.
+- Shopping intent (`SHOP-001`) is active procurement state. It is not purchase history, inventory ownership, grocery stock or a permanent `Purchased` ledger.
+- Hierarchical location (`LOC-001`) separates intended home placement from current/last-observed placement. Movement (`MOVE-001`) records observations/events and cannot silently redefine intended placement.
+- Inventory query (`INV-002`) is a projection over canonical entities, relationships, identifiers and location state, not another editable database.
+- Par targets (`PAR-001`) are separate from observed quantities. Optional scale sensing (`PAR-002`) is merely another evidence source and is not required for ordinary inventory.
+- Grocery stock/list state (`GROCERY-001`) uses practical consumable quantity/location semantics and links to shopping/purchase evidence without pretending food is a serialized durable asset.
+- Recipe knowledge (`RECIPE-001`) is reusable durable content. Meal-plan state (`MEAL-001`) is date/period-scoped planning that references recipes.
+- Meal planning may read grocery availability and create deduplicated missing-ingredient shopping intent, but planning alone cannot consume stock, create a purchase, or claim a shopping item was fulfilled.
+- PR #31 contains several useful inventory/scanning/query candidates, but all remain unmerged salvage/reference evidence. The one-field relocation design conflicts with the required intended-versus-observed location model and must be repaired before salvage.
+- No category-D feature is promoted to MIRA 2.0 integration/live verification from legacy Google production state, conversation memory, or unmerged PR #31 code.
+
 ## Audit status
 
-- Categories A, B and C are complete.
+- Categories A, B, C and D are complete.
 - `M2-G0-005A` completed category-D rows 1-5.
 - `M2-G0-005B` completed category-D rows 6-10.
-- `M2-G0-005C` audited category-D rows 11-15 as `MOVE-001`, `INV-002`, `PAR-001`, `PAR-002`, and `GROCERY-001`.
-- The complete historical feature inventory is still in progress.
-- The next bounded audit is category-D row 16 only: recipes, meal planning and shopping linkage, followed by category-D consistency closure.
+- `M2-G0-005C` completed category-D rows 11-15.
+- `M2-G0-005D` audited row 16 as `RECIPE-001` and `MEAL-001` and completed the category-D consistency closure.
+- The complete historical feature inventory is still in progress. The next bounded audit begins category E with onboarding/safe-initialization foundations; no category-E feature is audited by this packet.
