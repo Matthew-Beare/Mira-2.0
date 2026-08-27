@@ -17,6 +17,7 @@ ID families include:
 - `WEATHER-*` — context-aware weather and route-hazard gating;
 - `MILE-*` — paid-mileage occurrences, pay calculations and mileage authority;
 - `TASK-*` — task taxonomy, next actions and completion evidence;
+- `ROUTINE-*` — recurring/staged routine definitions, occurrences, transitions, completion and reschedule semantics;
 - `RECOVERY-*` — run evidence, checkpoints, resumability, circuit breakers and failure isolation;
 - `CAL-*` — calendar, appointments and appointment-window semantics;
 - `REMIND-*` — reminder planning, medication reminder safety and sharing boundaries;
@@ -1512,9 +1513,77 @@ Category E is complete through all 26 historical rows. The final authority/depen
 - Legacy `recipe_library_enabled` is not permission to enable the full food stack; ambiguous broader migration intent must remain unresolved or be explicitly confirmed.
 - Service wrappers cannot outrank the weakest selected required child, and no F3 service receives MIRA 2.0 integration/live credit from catalog/router exposure or contract prose alone.
 
+## Audited F4 household administration and laundry-routine service boundaries
+
+### F row 11 — Household/errands/admin/maintenance
+
+**Canonical mapping:** service key `household_admin` → `TASK-001` + `TASK-002`, governed by `SERVICE-001` + `SERVICE-002`. General errands, paperwork, household administration and maintenance actions remain canonical tasks rather than creating a parallel household-work database. Asset maintenance evidence/history may be linked optionally through `ASSET-002` and verified technical specifications through `SPEC-001`, but those are domain integrations rather than universal readiness requirements.
+
+**Evidence ceiling:** `TASK-001` is test-verified while `TASK-002` remains specification/skill-level. The service wrapper therefore cannot outrank `TASK-002`, and no dedicated household-admin persistence/provider integration is proven in MIRA 2.0.
+
+**Dependency finding:** legacy `f-11` requires A13/A14, which maps cleanly to `TASK-001`/`TASK-002`. No new household-admin authority is justified. `PROFILE-007` may recommend the service but cannot activate it or infer task/property responsibility.
+
+### `ROUTINE-001` — Recurring and staged routine definition plus occurrence lifecycle
+
+**Description:** MIRA represents a reusable routine definition separately from each generated/observed routine occurrence. A routine may be simple recurring work or a staged workflow such as laundry, with stable routine/occurrence identity, cadence or allowed window, ordered/conditional stages where configured, explicit responsible Person or unresolved responsibility, status, provenance and completion evidence. Occurrences support replay-safe transitions such as pending/in-progress/completed/skipped/rescheduled/missed where applicable; a completed stage advances only from supported evidence or explicit user action. Editing a future cadence or responsibility does not rewrite historical occurrences. Missing or late completion remains honest rather than being silently marked done from elapsed time or reminder delivery.
+
+**Why it exists / user outcome:** “Do laundry every week” and “this week’s laundry is in the dryer” become durable, queryable state instead of one task being repeatedly overwritten until nobody knows whether the clothes, the schedule or merely the reminder is complete.
+
+**Requirement status:** `current required foundation for staged/repeating household routines`.
+
+**Delivery/evidence:** the legacy router and its household-routine regression test provide `test_verified` evidence for explicit activation, representative staged/pickup examples, consolidated delivery intent and prohibited ownership inference. They do **not** implement a durable routine-definition/occurrence lifecycle. No dedicated deterministic routine engine covering occurrence generation, replay, stages, completion, skip/reschedule/miss or responsibility history was located. The complete feature therefore remains `specified`/design-evidenced rather than test-verified.
+
+**Hard dependencies:** `TASK-001`; `TASK-002` for next-action/completion semantics; canonical Person identity when responsibility is assigned; stable routine/occurrence IDs; provenance/evidence; canonical IANA time/window semantics when scheduled.
+
+**Enables:** F12 laundry/pickup workflows, later F13 routines/fitness/accountability, recurring household/admin work and consolidated routine reminders without cloning task truth into scheduler state.
+
+**Legacy evidence:** category-F rows 11-12; `onboarding_profile_router.py` household-routine template; `test_onboarding_profile_router.py::test_household_routines_are_explicit_and_do_not_fan_out_schedulers`; `questions.profile-and-stock-services.json`; `MODULE_CATALOG.md` generic accountability/routine fields.
+
+**Acceptance / verification boundary:** Implement deterministic tests for routine-definition identity, occurrence generation/replay, staged transitions, explicit completion, skipped/rescheduled/missed occurrences, cadence edits preserving history, explicit/unresolved responsibility, no ownership inference and independence from reminder delivery. Sandbox integration must persist/read back synthetic routine state without requiring a per-routine scheduler.
+
+### `REMIND-003` — Consolidated routine and stage reminder planning/projection
+
+**Description:** MIRA may derive reminder intents from canonical `ROUTINE-001` occurrences/stages without making reminder delivery the source of routine truth. Reminder identity is deterministic/replay-safe, duplicate unresolved reminders are suppressed, and one control cycle may project many due reminders through approved notification, brief and optional Calendar channels. The design explicitly forbids one permanent ChatGPT Scheduled Task/automation per chore, stage or occurrence. Delivery failure degrades the affected channel only; it cannot mark a routine stage complete, erase canonical state or create a second routine authority. Any provider mutation counts as successful only after exact target readback.
+
+**Why it exists / user outcome:** MIRA can remind someone to move laundry to the dryer or pick something up without spawning an immortal forest of tiny schedulers or pretending a notification means the chore happened.
+
+**Requirement status:** `current required for enabled routine-reminder delivery`.
+
+**Delivery/evidence:** the anti-fan-out/explicit-activation/consolidated-delivery boundary is directly `test_verified` in the onboarding router suite. The audited `reminder_delivery.py` implementation is appointment-centric and does not prove household/stage planning or provider readback. No dedicated routine-reminder planner/projection test suite was located, so full `REMIND-003` remains specification-level despite the tested routing boundary.
+
+**Hard dependencies:** `ROUTINE-001`; deterministic reminder identity; canonical time/window semantics; verified notification/brief delivery capability for selected channels; optional `CAL-006`-style Calendar projection contract when Calendar is selected; provider readback for mutation; `RECOVERY-002` failure isolation.
+
+**Enables:** laundry-stage reminders, pickup/drop-off reminders, later routine/accountability notifications and shared consolidated delivery infrastructure.
+
+**Legacy evidence:** category-F row 12; `onboarding_profile_router.py`; household-routine router regression test; `questions.profile-and-stock-services.json`; `behavior-dependencies.json` scheduler/notification/optional Calendar profiles. Legacy `reminder_delivery.py`/tests are appointment-specific and therefore only negative boundary evidence for this feature.
+
+**Acceptance / verification boundary:** Add deterministic fixtures for due/stage reminder planning, replay/dedupe, completion/cancellation suppression, reschedule, multiple routines in one control cycle, no per-chore scheduler creation and delivery-channel degradation. Integration verification requires synthetic notification and optional Calendar projection/readback while canonical routine state remains unchanged by delivery success/failure.
+
+### F row 12 — Laundry stages and drop-off/pickup reminders
+
+**Canonical mapping:** service key `household_routines` → required `TASK-001`, `TASK-002`, `ROUTINE-001`; when reminder delivery is selected, add `REMIND-003` plus the verified delivery capabilities for the chosen channels. Calendar projection is optional rather than universal. Legacy `household_routines_enabled` maps only to this service and does not enable `household_admin`, Calendar projection or any ownership/responsibility assignment.
+
+**Evidence ceiling:** explicit activation, representative laundry/pickup examples, anti-fan-out and no-ownership-inference routing are test-verified. The durable routine lifecycle and routine reminder planner/provider projection remain specification-level, so complete service readiness cannot exceed those missing children.
+
+**Dependency defect:** legacy `f-12` requires aggregate `f-11`. MIRA 2.0 normalizes that relationship into shared underlying `TASK-001`/`TASK-002` behavior rather than sibling-service activation. A user may enable household routines while leaving the broader `household_admin` service disabled or unresolved.
+
+## Category F4 consistency findings
+
+- F11 `household_admin` is task composition, not a new household database. General errands/admin/maintenance actions remain under `TASK-001`/`TASK-002`.
+- Asset maintenance history/evidence (`ASSET-002`/`SPEC-001`) is optional domain integration and cannot become a universal household-admin prerequisite.
+- `household_admin` and `household_routines` remain independent activation choices.
+- `ROUTINE-001` is required because recurring definitions, occurrence identity and staged transition/history semantics are not proven by generic task records alone.
+- `REMIND-003` is separate from `ROUTINE-001`; reminder/provider failure cannot change canonical routine truth.
+- Legacy F12→F11 dependence is normalized to shared underlying task behaviors, never sibling-service activation.
+- `household_routines_enabled` authorizes only the household-routines service; it does not authorize Calendar projection, notification channels beyond configured policy, or ownership assignment.
+- Household-manager role, service activation and observed completion cannot infer future responsibility/ownership for one person.
+- One-per-chore/stage/per-occurrence scheduler fan-out is prohibited; reminder delivery consolidates through control-cycle/notification/optional Calendar projection with deterministic identity/readback.
+- The tested router contract does not promote the missing routine engine or routine reminder projection to `test_verified`, integration or live status.
+- No F4 service receives MIRA 2.0 integration/live verification from legacy routing tests, contract prose or unmerged PR #31 evidence alone.
+
 ## Audit status
 
 - Categories A, B, C, D and E are complete.
-- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 were audited in `M2-G0-007B`; rows F9-F10 are audited in `M2-G0-007C`. Row F11 **Household/errands/admin/maintenance** is the next unaudited category-F behavior.
+- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 were audited in `M2-G0-007B`; rows F9-F10 were audited in `M2-G0-007C`; rows F11-F12 are audited in `M2-G0-007D`. Row F13 **Routines/fitness/accountability** is the next unaudited category-F behavior.
 - Category G remains unaudited.
 - The complete historical feature inventory remains in progress until F and G are closed.
