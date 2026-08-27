@@ -22,7 +22,7 @@ ID families include:
 - `REMIND-*` — reminder planning, medication reminder safety and sharing boundaries;
 - `MAIL-*` — email triage, communication safety, evidence ingestion;
 - `CAREER-*` — optional career/job monitoring and fit evaluation;
-- `ORDER-*` — orders, shipments, replacements, returns, refunds;
+- `ORDER-*` — orders, fulfillment, shipments, replacements, returns, refunds and order-lifecycle evidence;
 - `RECEIPT-*` — receipts, purchases, evidence, payment reconciliation;
 - `ASSET-*` — assets, fitment, specifications, manuals, maintenance;
 - `INV-*` — inventory, hierarchical locations, movement, scanning, par levels;
@@ -318,10 +318,124 @@ Category B is fully audited through row 10.
 - Job watch (`CAREER-001`) is an optional personal service and cannot become a universal default merely because it existed in the legacy deployment.
 - No category-B feature is promoted to MIRA 2.0 integration/live verification from legacy provider state.
 
+## Audited fulfillment-lifecycle features
+
+### `ORDER-001` — Evidence-grounded order and carrier correlation
+
+**Description:** MIRA ingests order/fulfillment evidence from supported mail, carrier/vendor/account sources, retained evidence, and explicit owner correction/confirmation, normalizes the facts, and correlates them to existing purchase/fulfillment identity before changing state. Gmail is an evidence adapter, not an exclusive purchase-ingestion gate. Matching prefers exact tracking, then strong vendor/order identity, then order/item/package evidence, and only then a unique combination of weaker facts. More than one plausible match stays unresolved and causes no mutation. Evidence precedence is explicit owner correction first, carrier delivery next, carrier exception/progress next, then vendor fulfillment/status evidence; newer text does not automatically outrank stronger evidence.
+
+**Why it exists / user outcome:** Shipment status should reflect what actually happened instead of whichever email arrived last, while missing or ambiguous email evidence must not make a known purchase disappear or cause MIRA to attach a tracking event to the wrong order.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** normalized shipment matching, exact-tracking correlation, user/carrier/vendor precedence, split-package expansion and ambiguity-no-mutation behavior are `test_verified` in the legacy deterministic reconciler. External Gmail/provider collection and MIRA 2.0 canonical-state integration remain `specified`/unverified.
+
+**Hard dependencies:** stable Receipt/Order/Shipment identity; bounded evidence adapters such as `MAIL-001`; canonical commerce history; active shipment projection; `RECOVERY-002` for provider/projection failure isolation.
+
+**Enables:** trustworthy lifecycle transitions, deduplicated active fulfillment, delivery detection, cancellation/replacement correlation and downstream Gmail filing.
+
+**Legacy evidence:** category-C row 1 in `docs/feature-ledger-2026-08-24.md`; `references/email-reconciliation.md`; `references/receipt-ingestion.md`; `scripts/reconcile_shipments.py`; `scripts/test_reconcile_shipments.py` exact tracking, precedence, split tracking and ambiguous-match fixtures; `SKILL.md` owner-evidence fallback and evidence-adapter boundary.
+
+**Acceptance / verification boundary:** Deterministic fixtures must preserve matching order/precedence and refuse ambiguous mutation. MIRA 2.0 integration verification requires synthetic/test evidence to resolve one canonical order/fulfillment identity, provider/source readback where applicable, and proof that unavailable Gmail does not prevent owner-supported canonical purchase state.
+
+**Compatibility notes:** A source message/thread ID is provenance, not the purchase identity itself. Later evidence enriches the same canonical transaction/fulfillment rather than creating chat-local duplicates.
+
+---
+
+### `ORDER-002` — Canonical ordered-to-delivered fulfillment lifecycle with active dedupe
+
+**Description:** MIRA represents active fulfillment separately from durable purchase history. `Awaiting Shipment`, `Shipped`, and material `Exception` states may remain in the active shipment projection; `Delivered` is a terminal lifecycle event recorded durably in canonical commerce history and must leave the active projection after that event is verified. One active shipment identity exists per supported fulfillment/package/tracking identity; split packages can legitimately create multiple active rows for one merchant order. Duplicate Shipment IDs, duplicate active tracking numbers, malformed active schemas, and terminal `Delivered` rows in the active queue fail closed rather than becoming silently inconsistent state.
+
+**Why it exists / user outcome:** The user sees only what is still in flight, can track split shipments correctly, and does not get a permanent cemetery of delivered packages masquerading as current work.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `test_verified` for ordered/shipped/progress/delivered active-state transitions, exact-tracking updates, split-package row creation, duplicate/schema validation, delivered-row removal and rejection of Delivered as an active status. Durable commerce-event/provider readback is not MIRA 2.0 integration-verified.
+
+**Hard dependencies:** `ORDER-001`; canonical purchase/lifecycle event authority; active `Shipments` projection; stable Shipment IDs; source-first projection semantics from `RECOVERY-002`.
+
+**Enables:** active shipment queries, compact Ops Brief fulfillment, delivery-once reporting and later return/replacement state.
+
+**Legacy evidence:** category-C row 2; `reconcile_shipments.py` active status/identity/schema rules; `test_reconcile_shipments.py` delivery removal, split packages, progress updates and active-status validation; `email-reconciliation.md`; `brief-run.md` requires post-reconciliation Shipments readback and active-only rendering.
+
+**Acceptance / verification boundary:** MIRA 2.0 must write/read back a synthetic canonical Ordered event, project Awaiting Shipment/Shipped state without duplicate identity, durably record Delivered, remove the active projection, and verify the target after each mutation. A projection failure after the canonical event must not roll back purchase history.
+
+---
+
+### `ORDER-003` — Explicit cancellation, return, refund and no-settlement lifecycle
+
+**Description:** Cancellation, fulfillment and money movement are separate facts. A cancellation request remains nonterminal until supported confirmation. Confirmed full or partial cancellation updates fulfillment only from supported surviving-item/revised-total evidence; missing surviving detail remains actionable instead of guessed. A physical return does not erase spend. A refund becomes a separately evidenced financial correction/net effect. Cases such as `No Refund Required`, `Revised Before Settlement`, or cancellation before settlement resolve without fabricating a refund. Pending expected refund/reversal remains open until verified and may later become overdue under the financial-resolution policy.
+
+**Why it exists / user outcome:** MIRA must distinguish “I asked them to cancel it,” “they cancelled it before charging me,” “I returned it,” and “the money actually came back.” Human commerce somehow requires all four states because apparently one word would have been too convenient.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** full/partial cancellation projection behavior and cancellation-request exception state are `test_verified`; financial resolution states, resolved/no-settlement cases and five-business-day refund/reversal escalation are also `test_verified` in the dedicated financial-resolution engine. Return/net-spend accounting and full cross-authority lifecycle remain strongly `specified` but not end-to-end MIRA 2.0 verified.
+
+**Hard dependencies:** `ORDER-001`/`ORDER-002`; canonical Receipt/Order Event identity; payment/financial evidence; source-first purchase authority; `RECOVERY-002` for independent shipment/financial projection failure.
+
+**Enables:** accurate cancellation status, refund follow-up, return history, financial correction and later payment reconciliation.
+
+**Legacy evidence:** category-C row 3; cancellation/refund sections of `receipt-ingestion.md`; `email-reconciliation.md`; `reconcile_shipments.py` cancellation states; `test_reconcile_shipments.py` cancellation fixtures; `financial_resolution.py`; `test_financial_resolution.py` revised-before-settlement, refunded, pending/overdue and business-day fixtures; `SKILL.md` invariant `Cancellation != refund`.
+
+**Acceptance / verification boundary:** Deterministic tests must cover request-vs-confirmed cancellation, partial-survivor requirements, no-settlement, return-without-refund, refund evidence and overdue expected correction. Integration verification requires synthetic canonical event/readback across commerce history and any active shipment/payment projection without inventing financial state from fulfillment alone.
+
+**Compatibility notes:** The five-business-day financial-correction timer here is not the separate stale-shipment/no-progress rule in `ORDER-005`.
+
+---
+
+### `ORDER-004` — Replacement and supersession without duplicate spend
+
+**Description:** MIRA first distinguishes a revision of the same merchant transaction from a true replacement transaction. The same vendor/order number remains one Receipt ID and is revised in place through append-only lifecycle evidence. A true replacement with a distinct merchant order/transaction receives a distinct Receipt ID; original and replacement are linked reciprocally through `Replaced By` / `Replacement For` plus one shared Replacement Group ID. Original cancellation/refund state is reconciled independently and supported financial totals are never copied or transferred between orders merely to make the numbers balance. One underlying transaction total is counted once per Receipt ID, and the replacement does not create duplicate spend through shadow purchase rows, duplicate shopping history, or mutation of the old Receipt ID into the new one.
+
+**Why it exists / user outcome:** When an order is cancelled and replaced, MIRA should preserve what actually happened without telling the user they bought the same thing twice, while still retaining both real merchant transactions when both truly existed.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** shipment-level replacement linking, confirmed-vs-pending original cancellation, required replacement identity and same-order-revision routing are `test_verified` in the legacy reconciler. Reciprocal Receipt ID/group semantics and single-count financial allocation are strongly `specified` in purchase policy, but the complete replacement-plus-spend graph is not yet independently end-to-end test-verified in MIRA 2.0.
+
+**Hard dependencies:** stable Receipt IDs and Order Events; `ORDER-003` original financial resolution; one-transaction/one-total receipt accounting; canonical shopping/asset projection rules when applicable; `RECOVERY-002`.
+
+**Enables:** replacement order tracking, accurate spend, one fulfilled shopping intent, provenance-preserving order history and later asset/fitment linkage to the surviving purchase.
+
+**Legacy evidence:** category-C row 4; `receipt-ingestion.md` replacement/supersession and one-transaction accounting rules; `reconcile_shipments.py`; `test_reconcile_shipments.py` confirmed replacement, pending original cancellation, required replacement fields and same-order revision fixtures; `SKILL.md` same-order vs true-replacement invariants.
+
+**Acceptance / verification boundary:** Before the whole feature can be called `test_verified`, deterministic purchase-domain fixtures must prove same-order revision preserves one Receipt ID, true replacement produces two reciprocal linked IDs with one group ID, original/refund accounting stays independent, balanced allocations count each supported transaction once, and replay does not duplicate either transaction or shopping intent. Integration verification requires MIRA 2.0 sandbox readback of the complete graph.
+
+---
+
+### `ORDER-005` — Active-only fulfillment brief and stale-shipment escalation
+
+**Description:** The Ops Brief renders only current active fulfillment after reconciliation and provider readback, normally as `Item — ETA <date>` or `Item — No ETA`, with status text only for a material exception. Durable delivery events observed since the previous successful run are reported once as `Delivered — <item>` and then disappear from later active output/history presentation. The required policy also calls for an `Action Required` escalation when an undelivered shipment has made no supported progress for five business days without a meaningful ETA/progress resolution.
+
+**Why it exists / user outcome:** The brief stays short and current while still surfacing a shipment that has genuinely gone stale instead of making the user manually remember how many business days a motionless tracking number has been sitting there.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** active-only shipment semantics, terminal Delivered exclusion and delivery-once output contract are `test_verified`/strongly specified through the reconciler and brief policy. **The dedicated five-business-day stale-shipment/no-progress escalation is currently only requirement/policy-level evidence in the audited tree: no dedicated executable rule/regression test was located in C1.** It must not be confused with the separately test-verified five-business-day financial-refund timer in `ORDER-003`.
+
+**Hard dependencies:** `ORDER-002`; authoritative last-progress/ETA evidence; business-day calendar semantics; prior successful-run cutoff for delivery-once output; `RECOVERY-002`.
+
+**Enables:** compact shipment brief output and actionable detection of genuinely stalled fulfillment.
+
+**Legacy evidence:** category-C row 5 in `feature-ledger-2026-08-24.md`; `brief-run.md` active-only post-reconciliation rendering and delivery-once contract; shipment reconciler/tests proving Delivered cannot remain active. No separate stale-shipment five-business-day algorithm/test was found in the audited C1 sources.
+
+**Acceptance / verification boundary:** Add deterministic fixtures for Monday-Friday business-day counting, exact stale threshold, ETA/progress reset behavior, weekends, resolved exceptions, and nonduplication of repeated alerts. MIRA 2.0 integration verification then requires synthetic active shipment readback where the same fulfillment crosses the threshold and produces one correct actionable state without becoming falsely Delivered or duplicated.
+
+## Category C1 consistency findings
+
+- `ORDER-001` evidence correlation is not canonical commerce storage; mail/provider evidence can fail while owner-supported purchase state remains valid.
+- `ORDER-002` active Shipments is a projection, not purchase history; source-first canonical events survive projection failure.
+- `ORDER-003` keeps fulfillment cancellation separate from financial settlement/refund state.
+- `ORDER-004` keeps same-order revision separate from true replacement and preserves one-count financial truth.
+- `ORDER-005` exposes a concrete verification gap: active-only rendering is supported, but stale-shipment five-business-day escalation needs its own executable/test work before implementation credit.
+- PR #31 contains broad reconciliation/receipt-queue/control-cycle candidates but no narrower verified fulfillment behavior that supersedes these audited records.
+- No category-C1 feature is promoted to MIRA 2.0 integration/live verification from legacy connected Google state.
+
 ## Audit status
 
 - Category A is complete through `M2-G0-002D`.
-- `M2-G0-003A` audited category-B rows 1-5.
-- `M2-G0-003B` audited category-B rows 6-10.
-- **Category B is complete.**
-- The next audit category is C: orders, shipments, receipts, payments and spending, which must be split into bounded packets before work begins.
+- Category B is complete through `M2-G0-003B`.
+- `M2-G0-004A` audited category-C rows 1-5: `ORDER-001` through `ORDER-005`.
+- The complete historical feature inventory is still in progress.
+- The next bounded audit begins with category-C row 6: receipt intake from email, files, photos/screenshots and manual entry.

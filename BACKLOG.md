@@ -18,10 +18,10 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `AUDIT-A` | PREREQUISITE | Brief/time/tasking/operational-state reconstruction. | G0-001 | **complete through `M2-G0-002D`** |
 | `AUDIT-B` | PREREQUISITE | Calendar/reminders/mail/communication safety. | AUDIT-A | **complete through `M2-G0-003B`** |
 | `AUDIT-B1` | PREREQUISITE | B rows 1-5: appointment/reminder safety. | AUDIT-A | complete; `CAL-001`…`CAL-003`, `REMIND-001`, `REMIND-002` |
-| `AUDIT-B2` | PREREQUISITE | B rows 6-10: appointment presentation, mail triage, outbound approval, archive approval, job watch. | AUDIT-B1 | **complete in `M2-G0-003B`**; `CAL-004`, `MAIL-001`…`MAIL-003`, `CAREER-001` |
-| `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | **next; split C1/C2/C3** |
-| `AUDIT-C1` | PREREQUISITE | C rows 1-5: mail/carrier evidence correlation; ordered→shipped→delivered lifecycle; cancellation/replacement/return/refund/no-settlement states; replacement without duplicate spend; active-undelivered + five-business-day no-progress behavior. | AUDIT-B | **next packet `M2-G0-004A`** |
-| `AUDIT-C2` | PREREQUISITE | C rows 6-10: receipt intake; searchable receipt/purchase history; email-grounded monthly spending; receipt taxonomy; expected charge/refund/reimbursement reconciliation. | AUDIT-C1 | queued |
+| `AUDIT-B2` | PREREQUISITE | B rows 6-10: appointment presentation, mail triage, outbound approval, archive approval, job watch. | AUDIT-B1 | complete; `CAL-004`, `MAIL-001`…`MAIL-003`, `CAREER-001` |
+| `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | **in progress; C1 complete, C2 next** |
+| `AUDIT-C1` | PREREQUISITE | C rows 1-5: evidence correlation; fulfillment lifecycle; cancellation/return/refund/no-settlement; replacement/supersession; active-only/stale fulfillment output. | AUDIT-B | **complete in `M2-G0-004A`**; `ORDER-001`…`ORDER-005` |
+| `AUDIT-C2` | PREREQUISITE | C rows 6-10: receipt intake; searchable receipt/purchase history; email-grounded monthly spending; receipt taxonomy; expected charge/refund/reimbursement reconciliation. | AUDIT-C1 | **next packet `M2-G0-004B`** |
 | `AUDIT-C3` | PREREQUISITE | C rows 11-12: optional subscription/free-trial tracking; credit-card/complete financial ingestion direction; then category-C consistency closure. | AUDIT-C2 | queued |
 | `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence. | AUDIT-C | queued |
 | `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | queued |
@@ -34,10 +34,11 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
+| `ORDER-STALE-001` | PREREQUISITE | Implement and regression-test `ORDER-005` five-business-day stale-shipment/no-progress escalation, including weekends, progress/ETA reset semantics and repeated-alert dedupe. | `ORDER-002`, business-day semantics | queued; audit found requirement but no dedicated executable/test |
 | `DATA-SANDBOX` | PREREQUISITE | Create separate MIRA 2.0 Google/MIRROR sandbox with synthetic data and prove no legacy production modification. | G0 audit + canonical state contract | queued |
 | `CORE-ROUNDTRIP` | VERTICAL | Stock ChatGPT create/read/mutate/dedupe/read-back one canonical Google-backed MIRROR entity. | dependency graph + sandbox | provisional |
 | `ANDROID-SYNC` | VERTICAL | Android reads/mutates same canonical entity without second authority. | CORE-ROUNDTRIP | provisional |
-| `OPS-BRIEF-VSLICE` | VERTICAL | Generate/deliver one real MIRA Ops Brief from canonical MIRA 2.0 state. | core + delivery prerequisites | provisional |
+| `OPS-BRIEF-VSLICE` | VERTICAL | Generate/deliver one real MIRA Ops Brief from canonical MIRA 2.0 state. | core + delivery prerequisites + required audited brief behavior such as `ORDER-STALE-001` when shipment output is in scope | provisional |
 | `BRAND-ASSETS` | ENHANCEMENT | Integrate approved MIRA source artwork and generated platform derivatives. | branding source delivered | queued |
 | `ONBOARD-INSTRUCTIONS` | PREREQUISITE | Boomer-safe onboarding for full replacement ChatGPT instructions without CLI. | audited onboarding + current UI verification | queued |
 | `GOV-RESP-001` | ENHANCEMENT | Next full Project Instructions replacement must require customer action or exact fallback `Just tell me to continue.` before final packet line. | next legitimate full replacement | queued; conversation behavior applies now |
@@ -46,6 +47,16 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `RFID` | LATER | RFID inventory capture/specialized hardware. | stable inventory schemas | deferred |
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
+
+## Category-C1 dependency findings
+
+- `ORDER-001` correlation consumes evidence but is not the canonical transaction authority. Gmail/provider absence cannot erase owner-supported purchase state.
+- `ORDER-002` keeps active fulfillment as a projection. Durable lifecycle history commits first and survives target projection failure.
+- `ORDER-003` keeps cancellation/return fulfillment facts separate from financial settlement/refund evidence. The financial five-business-day timer is test-verified but is not the stale-shipment timer.
+- `ORDER-004` distinguishes same-order revision from a true replacement. Shipment replacement linking is test-supported; full reciprocal Receipt-ID plus single-count spend behavior still needs purchase-domain end-to-end tests.
+- `ORDER-005` active-only/delivery-once semantics are supported, but the required five-business-day stale-shipment/no-progress escalation lacks a dedicated executable/regression test. `ORDER-STALE-001` is therefore a prerequisite before that behavior can receive implementation credit in a real Ops Brief slice.
+- PR #31 has broad reconciliation/receipt-queue/control-cycle candidates but no narrower verified C1 implementation that supersedes these records.
+- No C1 feature inherits MIRA 2.0 integration/live evidence from the legacy Google deployment.
 
 ## Category-B dependency findings
 
