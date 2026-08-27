@@ -1241,13 +1241,85 @@ Historical category-E row 20 is normalized into the existing `ONBOARD-001`, not 
 - Regulated-sensitive use is separately gated by exact organization approval evidence and does not inherit permission from runtime availability.
 - All four E5 features have genuine deterministic legacy tests, but none receives MIRA 2.0 integration/live verification until the new repo/runtime lanes are exercised and read back.
 
+## Audited provider onboarding and bootstrap features
+
+### `PROVIDER-002` — Browser-only provider authority onboarding with exact resource readback
+
+**Description:** MIRA onboards selected structured-state, retained-evidence, mail and calendar providers through browser or organization-approved integration surfaces and treats every provider capability as an independently verified fact. Setup records the exact signed-in identity and tenant/workspace where relevant, the selected narrowly scoped resource, stable provider ID/URL, requested action scope, bounded read, approved harmless synthetic write where mutation is required, and readback of that exact provider record before declaring the capability installed. Google may use native Sheets/Drive plus optional Gmail/Calendar; Microsoft may use Microsoft Lists or an explicit Excel table plus OneDrive/SharePoint and optional Outlook; Apple/iCloud remains an explicit user-mediated import/export/ICS lane unless a specific adapter proves more. Regulated-sensitive use additionally requires current organization approval evidence for the exact runtime, storage, purpose and action set. A connection badge, provider name, tenant login, readable file or broad OAuth scope is never proof of mutation/readback capability.
+
+**Why it exists / user outcome:** Connecting an account should prove what MIRA can actually do with the exact resources the user selected instead of translating a cheerful “Connected” badge into imaginary write access to an entire cloud estate.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** the legacy provider-onboarding contract is `test_verified` at the browser/onboarding-contract level. `PROVIDER_ONBOARDING.md` explicitly defines Google, Microsoft 365/OneDrive/SharePoint, Apple/iCloud, alternative-AI and institutional lanes plus the common bounded read → write → readback transaction. `install-flow.json` wires provider onboarding into structured-state/evidence capability gates and explicit blocked/manual-only states. `test_nontechnical_installation.py` regression-tests the presence of the Google/Microsoft/Apple/alternative-runtime browser lanes, no-terminal behavior and read/write/readback wording. Actual provider mutations for these lanes are not MIRA 2.0 integration-verified.
+
+**Hard dependencies:** `ONBOARD-006`; `PROVIDER-001`; exact provider/account/resource identity; Authority/Integration Registry state; provider read/write/readback capability; current organization approval evidence when regulated-sensitive.
+
+**Enables:** safe provider-specific structured state/evidence/calendar/mail setup, `PROVIDER-003`, later Microsoft/Apple adapters and honest manual/degraded portability.
+
+**Legacy evidence:** category-E row 25; `starter/PROVIDER_ONBOARDING.md`; `starter/install-flow.json`; `starter/tests/test_nontechnical_installation.py`.
+
+**Acceptance / verification boundary:** Port the provider-onboarding contract/tests to MIRA 2.0. Integration verification requires synthetic setup against exact provider resources with identity/resource/action readback; at least one Google lane and one non-Google or explicit manual lane must prove that unsupported automation remains degraded/manual rather than being fabricated.
+
+---
+
+### `ONBOARD-007` — Installable provider-neutral MIRA orchestration skill
+
+**Description:** MIRA has one portable installable orchestration package that supplies the provider-neutral runtime behavior needed for onboarding, dependency preflight, Integration Registry capability checks, control-cycle routing, planning and provider-adapter invocation. The legacy package ID `life-planner` is a compatibility identifier only; it is not the product name or a license to expose legacy branding. The package is installed from the exact deployment source/release and must never substitute the developer/reference deployment’s personal Ops skill or mutable production state. Provider names, personal schedules, private accounts and provider resource IDs are deployment data or adapter configuration, not hard-coded product identity. Missing dependencies are surfaced in ordinary language and do not authorize the package to connect accounts, create resources, change permissions or enable services automatically.
+
+**Why it exists / user outcome:** A new MIRA deployment receives the same portable reasoning/orchestration behavior without inheriting somebody else’s personal brief policy, accounts, schedules or Google layout.
+
+**Requirement status:** `current required / foundational onboarding runtime`.
+
+**Delivery/evidence:** the legacy package is `implemented`, and its installation/package-presence boundary is `test_verified`. `starter/life-planner/SKILL.md` defines provider-neutral routing, dependency preflight, Integration Registry behavior, safe provider remediation and core transaction boundaries. `install-flow.json` names the package independently from provider setup, while `test_nontechnical_installation.py` verifies that `SKILL.md`, the provider adapter blueprint/verifier and the `life-planner-skill` capability gate exist and explicitly forbids falling back to the reference deployment skill. A complete MIRA 2.0 installed-skill runtime smoke is not yet integration-verified.
+
+**Hard dependencies:** `ONBOARD-002`; `ONBOARD-006`; `SOURCE-001`; `PROVIDER-001`; canonical behavior/dependency registry; exact deployment source/release identity.
+
+**Enables:** portable first boot, provider adapters, deterministic bootstrap, dependency-aware operational modules and later runtime portability without duplicating MIRA logic per provider.
+
+**Legacy evidence:** category-E row 26 split; `starter/life-planner/SKILL.md`; `starter/install-flow.json`; `starter/tests/test_nontechnical_installation.py`.
+
+**Acceptance / verification boundary:** Port the package under canonical MIRA branding, preserve its provider-neutral contracts, install it from one synthetic MIRA 2.0 source/release, and prove runtime discovery/preflight plus one provider-adapter handoff without importing reference-deployment private state or requiring a CLI for the ordinary-user path.
+
+---
+
+### `PROVIDER-003` — Deterministic Personal Google bootstrap adapter with strict drift/readback verification
+
+**Description:** The Personal Google adapter deterministically converts approved onboarding configuration into a plan for one required core authority plus only the optional modules the user selected. The plan binds exact deployment/owner UUIDs, canonical IANA timezone, source repository and exact source commit, Google identity, module/failure-domain resources, native Sheets requirements, ordered headers/seed rows, Drive folders, Authority Registry, Interview Ledger, Integration Registry, People, Services and Run Log, then protects the plan with a deterministic hash. Verification rejects plan tampering and blocks core readiness on source repository/commit/read/write/remote-readback/CI drift, Google Drive identity mismatch, missing/wrong workbook/folder identity, non-native Sheets, spreadsheet-timezone drift, header/seed drift or missing provider IDs/URLs. Optional Gmail, Calendar and scheduled-delivery failures degrade only their selected paths; full scheduled readiness requires observed firing while manual use may remain ready. The adapter plans/verifies provider state; its existence does not prove live Google provisioning.
+
+**Why it exists / user outcome:** Personal Google onboarding can create the exact MIRA resources requested and prove they match the intended schema instead of declaring success because several spreadsheets with plausible names appeared in Drive.
+
+**Requirement status:** `current required for Personal Google lane`.
+
+**Delivery/evidence:** the deterministic legacy plan/verifier core is `test_verified`. `personal-google-blueprint.json` defines required core plus module-scoped optional authorities. `google_bootstrap.py` validates provider/schema/module IDs, exact configuration types, UUIDs, IANA timezone, source repo/SHA, Google identity, plan hash and provider readback. `test_personal_google_bootstrap.py` directly covers required/optional module selection, fail-closed unknown modules/timezones/nonboolean gates, exact ready readback, source/header/timezone/seed/identity drift, plan tampering, optional Gmail/Calendar/scheduler degradation and strict failure behavior. No MIRA 2.0 Google sandbox has yet been provisioned/read back through this adapter, so integration/live status remains unverified.
+
+**Hard dependencies:** `ONBOARD-007`; `PROVIDER-002`; `SOURCE-001`; exact Personal Google identity and provider capabilities; canonical MIRA schema/Authority Registry; `ONBOARD-005`/`OPS-003` only when recurring scheduling is selected.
+
+**Enables:** separate MIRA 2.0 Personal Google sandbox, canonical Google-backed MIRROR state, later `CORE-ROUNDTRIP` proof and provider-adapter comparison without making Google the product architecture.
+
+**Legacy evidence:** category-E row 26 split; `starter/life-planner/assets/personal-google-blueprint.json`; `starter/life-planner/scripts/google_bootstrap.py`; `starter/life-planner/references/personal-google-onboarding.md`; `starter/tests/test_personal_google_bootstrap.py`.
+
+**Acceptance / verification boundary:** Port the deterministic core/tests, then use only a separate synthetic MIRA 2.0 Google namespace to plan/provision/read back the exact selected modules. Verify provider IDs, source revision, schema/headers/seeds/timezone, optional degradation and one full ready transaction without touching legacy production.
+
+## Category E consistency result
+
+Category E is complete through all 26 historical rows. The final authority/dependency model is:
+
+- Rows 1-5 map to `ONBOARD-002` through `ONBOARD-005` plus `SERVICE-001`; rows 6-10 map to `PROFILE-001` through `PROFILE-005`; rows 11-15 map to `PROFILE-006` through `PROFILE-011`; rows 16-20 map to `PROFILE-012`, `PROFILE-013`, `DIST-001`, `DIST-002`, `DEV-004` and the `ONBOARD-001` refinement; rows 21-24 map to `ONBOARD-006`, `SOURCE-001`, `PROVIDER-001` and `SOURCE-002`; row 25 maps to `PROVIDER-002`; row 26 intentionally splits into `ONBOARD-007` and `PROVIDER-003`.
+- Historical combined rows are split only where different authority, permission or verification boundaries require it. The split does not manufacture extra historical requirements.
+- `ONBOARD-006` owns ordinary-user browser installation UX. It does not prove source access, runtime parity or provider mutation.
+- `SOURCE-001`/`SOURCE-002` own durable source capability/mode. Source access is not provider-state access and personal Git is not universal.
+- `PROVIDER-001` owns runtime capability routing; `PROVIDER-002` owns account/resource onboarding; `ONBOARD-007` owns portable MIRA orchestration; `PROVIDER-003` is one Personal Google adapter beneath those contracts.
+- Google is an adapter and current first vertical, not MIRA’s architecture. Microsoft and future providers can implement the same logical authority/readback contracts without inheriting Google resource shapes.
+- Apple/iCloud remains explicit manual/user-mediated portability unless an exact adapter proves unattended actions. MIRA does not upgrade manual import/export into imaginary synchronization.
+- Provider names, connection badges, readable resources, relationship labels and AI brands are never permissions or capability proof. Exact identity, scope, bounded action and readback remain separate evidence.
+- The portable MIRA package may route remediation but cannot silently connect providers, create resources, enable services or grant permissions.
+- Legacy deterministic tests establish strong implementation evidence for several E features, but no category-E feature is promoted to MIRA 2.0 integration/live verification until the new source/runtime/provider path is exercised with synthetic state and read back.
+- No live Google production state was touched during category-E audit and no executable MIRA 2.0 product behavior was changed.
+
 ## Audit status
 
-- Categories A, B, C and D are complete.
-- Category E rows 1-5 are complete in `M2-G0-006A`.
-- Category E rows 6-10 are complete in `M2-G0-006B`.
-- Category E rows 11-15 are complete in `M2-G0-006C`.
-- Category E rows 16-20 are complete in `M2-G0-006D`.
-- `M2-G0-006E` audited category-E rows 21-24 as `ONBOARD-006`, `SOURCE-001`, `PROVIDER-001`, and `SOURCE-002`.
-- The complete historical feature inventory is still in progress.
-- The next bounded audit is `M2-G0-006F`: category-E rows 25-26, provider onboarding/bootstrap and category-E closure.
+- Categories A, B, C, D and E are complete.
+- Category E is closed through all 26 historical rows by `M2-G0-006A` through `M2-G0-006F`.
+- The complete historical feature inventory remains in progress because categories F and G are still unaudited.
+- The next bounded audit is `M2-G0-007A`, beginning category F only after the E6 PR is merged and remotely read back.
