@@ -23,73 +23,43 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-007c-shopping-food-services`
 - **Branch start SHA:** `8e252c401f110faf0cce3924697745f8e1b29edb`
-- **Status:** forensic evidence pass complete; feature/backlog normalization next.
+- **Research checkpoint commit:** `9e0172ccd34e19c0b63a8e45b9e662d9a8b5f4a7`
+- **Feature registry commit:** `953cfe0b2f98a9f4b919998d5def81662c773587`
+- **Backlog checkpoint commit:** `6d197a4d6d898f5d7d2a4234455cc8ab19c6ba5a`
+- **Status:** acceptance complete; bounded PR/merge/readback pending.
 
-## Exact category-F scope in this packet
+## Audited F3 rows
 
-Audit exactly legacy category-F rows 9-10:
+9. **Shopping/procurement**.
+10. **Recipes/meals/groceries**.
 
-9. **Shopping/procurement** — ACCEPTED direction; service composition over active shopping intent and purchase reconciliation.
-10. **Recipes/meals/groceries** — CURRENT REQUIRED; service composition over grocery stock/list state, recipe knowledge and meal-plan state.
+## Completed acceptance evidence
 
-Do not expand this packet into F11 Household/errands/admin/maintenance, F12 Laundry stages/drop-off/pickup reminders, routines/fitness, education, family-school, travel, later category-F rows, category G, or executable MIRA 2.0 coding.
-
-## Forensic findings
-
-### F9 — Shopping/procurement
-
-1. Legacy `f-09` requires only D8, which category-D audit normalized as `SHOP-001` active shopping/procurement intent.
-2. `SHOP-001` already owns the important commerce boundary: shopping intent is not receipt/purchase history, shipment state, spending authority or asset identity; verified purchase evidence or explicit owner confirmation may fulfill an intent, and ambiguity stays open/reviewable.
-3. The module catalog repeats the same semantics: fulfilled shopping rows are removed only after durable purchase/reconciliation evidence is preserved; cancellation without a supported replacement leaves an still-wanted intent open; missing product identity becomes reconciliation work rather than a fake Purchased tombstone.
-4. The deterministic service router exposes `shopping` as its own activation state and may recommend it for parent/guardian or household-manager profiles, but recommendation never activates it and implementation remains capability-verification-gated.
-5. No new F9 domain feature is warranted. The service wrapper maps to `SHOP-001` under `SERVICE-001`/`SERVICE-002`, and its evidence ceiling remains constrained by `SHOP-001`, whose deterministic reconciliation engine is still queued.
-6. No additional semantic defect was found in the narrow legacy `f-09` → D8 mapping itself; downstream purchase/evidence dependencies remain owned by `SHOP-001` rather than duplicated in the service map.
-
-### F10 — Recipes/meals/groceries
-
-7. Legacy `f-10` requires D15 plus historical D16. Category D normalized those into `GROCERY-001`, `RECIPE-001`, and `MEAL-001`, because pantry/grocery stock, reusable recipe knowledge and dated meal-plan state are distinct authorities/lifecycles.
-8. The module catalog preserves the same separation: meal planning may reconcile existing recipes/plans, store structured recipe indexes, accepted meal plans and pantry/freezer state, and must keep meal planning, shopping intent and purchase history separate. It also forbids inventing dietary/medical restrictions.
-9. `MEAL-001` already carries the critical no-fabrication boundaries: planning may read grocery availability and create deduplicated missing-ingredient shopping intent, but planning alone cannot consume stock, create a purchase or claim shopping fulfillment.
-10. The service router exposes one `recipes_meals` activation key and a legacy compatibility field `recipe_library_enabled` mapped directly to that service. Tests prove this compatibility mapping affects activation without claiming implementation.
-11. This creates a semantic migration ambiguity: literal historical `recipe_library_enabled` proves only a recipe-library choice, not consent to enable meal planning, grocery/pantry tracking or shopping linkage. Canonical migration must not interpret that old Boolean as authorization for the full food stack.
-12. `SERVICE-002` selected-goal/submodule semantics from F2 apply directly here. The `recipes_meals` user-facing umbrella may expose at least recipe-library and meal-planning paths, with readiness/activation intent resolved at the appropriate submodule granularity rather than treating one weak/legacy Boolean as universal consent.
-13. Canonical dependency mapping must replace historical D16 with both `RECIPE-001` and `MEAL-001` where the meal-planning path is selected, and include `GROCERY-001` for the current pantry-aware meal-planning contract. A recipe-library-only path requires `RECIPE-001` and must not be blocked by absent `MEAL-001`/`GROCERY-001`.
-14. No new F10 domain feature is warranted; implementation gaps already exist as `RECIPE-CORE-001`, `MEAL-CORE-001`, and `GROCERY-CORE-001`.
-15. PR #31 did not previously yield a qualifying dedicated recipe/meal/grocery engine during category-D audit; no higher evidence level is inherited here.
-
-## Proposed normalization
-
-- F9 `shopping` → `SHOP-001` under `SERVICE-001` + `SERVICE-002`; no duplicate feature.
-- F10 `recipes_meals` remains a user-facing umbrella but uses selected submodule semantics:
-  - recipe-library path → `RECIPE-001`;
-  - meal-planning path → `MEAL-001` + `RECIPE-001` + `GROCERY-001` under the current pantry-aware contract, with `SHOP-001` dependency inherited through the canonical meal/grocery behavior rather than a duplicate purchase authority.
-- Record the historical F10 D16 split explicitly so dependency readiness cannot treat `RECIPE-001` and `MEAL-001` as the same lifecycle.
-- Extend `SERVICE-MIGRATION-001` so legacy `recipe_library_enabled` cannot silently enable meal planning/grocery state; unresolved intent requires explicit user choice.
-- Add one F3 service-dependency repair work item; reuse existing `SHOP-CORE-001`, `GROCERY-CORE-001`, `RECIPE-CORE-001`, and `MEAL-CORE-001` rather than duplicating implementation tasks.
-
-## Acceptance criteria
-
-1. Account for F9-F10 with stable canonical service mappings and create no duplicate shopping/grocery/recipe/meal features.
-2. Reuse `SERVICE-001`/`SERVICE-002` activation/readiness machinery and selected submodule semantics.
-3. Preserve `SHOP-001` active procurement intent as separate from receipts/orders/spending/inventory.
-4. Preserve `GROCERY-001`, `RECIPE-001`, and `MEAL-001` as separate authorities/lifecycles; planning cannot fabricate purchase, stock consumption or fulfillment.
-5. Reconcile historical F10 D16 to `RECIPE-001` + `MEAL-001` and preserve `GROCERY-001` for the current pantry-aware meal-planning path.
-6. Treat legacy `recipe_library_enabled` as compatibility evidence for recipe-library intent only; it cannot silently authorize meal/grocery behavior.
-7. Record actual evidence ceilings and do not promote service wrappers above their weakest selected required child.
-8. Reuse existing category-D implementation gaps; add only service-layer dependency/migration work required by F3.
-9. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`.
-10. Open a bounded PR, verify scope, merge and remotely read back before advancing to F4.
-11. Touch no legacy Google production state and change no executable MIRA 2.0 product behavior.
+1. F9 `shopping` is normalized as a service composition over canonical `SHOP-001`; no duplicate shopping domain feature was created.
+2. The narrow legacy `f-09` → D8 mapping is structurally sound. Receipt/order/fitment/provider dependencies remain owned by `SHOP-001` rather than being duplicated into the service wrapper.
+3. Shopping remains active procurement intent only and cannot become purchase history, shipment state, spending authority, inventory ownership or automatic purchasing authority.
+4. F10 `recipes_meals` is normalized as a selected-submodule umbrella under `SERVICE-001`/`SERVICE-002`, not one all-or-nothing food switch.
+5. Recipe-library-only readiness requires `RECIPE-001` and is not blocked by absent meal/grocery capabilities.
+6. Pantry-aware meal-planning readiness requires `MEAL-001` + `RECIPE-001` + `GROCERY-001`; shopping reconciliation is inherited through canonical child behavior rather than duplicated as a second purchase authority.
+7. Historical D16 remains split into `RECIPE-001` and `MEAL-001`; reusable recipe knowledge and dated meal-plan state are not re-collapsed at the service layer.
+8. Planning remains unable to fabricate stock consumption, purchase evidence or shopping fulfillment. Missing-ingredient shopping intent continues through canonical `SHOP-001` rules.
+9. Legacy `recipe_library_enabled` is compatibility evidence for recipe-library intent only. It cannot silently authorize meal planning, pantry/grocery tracking, shopping linkage or stock/purchase mutation; broader historical intent remains unresolved until explicitly selected.
+10. No new shopping/grocery/recipe/meal implementation tasks were created. Existing `SHOP-CORE-001`, `GROCERY-CORE-001`, `RECIPE-CORE-001`, and `MEAL-CORE-001` remain authoritative domain gaps.
+11. Added `AUDIT-F3` and `SERVICE-DEPS-003`; refined `SERVICE-MIGRATION-001` to include recipe-library compatibility semantics.
+12. `FEATURES.md` replacement was verified against the research checkpoint: one file only, 32 additions and one stale audit-status deletion; no earlier registry content changed.
+13. `BACKLOG.md` replacement was verified against the feature commit: one file only, 14 additions and two intended replacement lines; no unrelated backlog content changed.
+14. Service wrappers remain bounded by their weakest selected required child. Catalog/router exposure and compatibility booleans do not create implementation, integration or live evidence.
+15. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
 
 ## Exact next action
 
-Normalize F9-F10 in `FEATURES.md` as service mappings over existing category-D features, including selected recipe-library versus meal-planning submodule semantics and the legacy `recipe_library_enabled` migration ambiguity. Then add the bounded F3 service dependency/migration work to `BACKLOG.md`, close acceptance state here, and run the three-file PR/merge/readback gate.
+Compare `audit/g0-007c-shopping-food-services` against `main` and verify the final packet is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` with the branch zero commits behind. Open a pull request to `main`, verify the server-side changed-file list and mergeability, merge using the exact PR head SHA, remotely read back the F3 feature/backlog state from `main`, then inspect authoritative category-F evidence beginning with F11 **Household/errands/admin/maintenance** and activate `M2-G0-007D` from the resulting main handoff commit.
 
 ## Next packet after F3
 
 ### `M2-G0-007D` — Feature Audit Slice F4
 
-Begin with category-F row 11 **Household/errands/admin/maintenance** and determine the rest of the bounded F4 slice from authoritative ledger/dependency evidence after F3 closes.
+Begin with category-F row 11 **Household/errands/admin/maintenance**. Determine the remainder of the bounded F4 slice from authoritative ledger/dependency evidence only after F3 is merged/read back. Do not pre-expand from conversational memory.
 
 ## Recovery protocol
 
