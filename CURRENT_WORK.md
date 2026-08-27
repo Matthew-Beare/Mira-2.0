@@ -24,7 +24,9 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Research checkpoint commit:** `c6fd0905ab358229631b85cec919352d28098bc1`
 - **Feature registry commit:** `5eee407ee19a129b63e5172f88b1a873e39b77f5`
 - **Backlog checkpoint commit:** `b60a2f91f96c95c00c24e76759b0698b2fae6dad`
-- **Status:** acceptance work complete; remove one unrelated backlog-diff artifact, then PR/merge/readback.
+- **Acceptance checkpoint commit:** `648e4ce189c2449cd3b1e6fe5df723c069ec7a8c`
+- **Scope-cleanup commit:** `531ed55f3f43f60967b0da1fdefea1608d6bcfbc`
+- **Status:** acceptance and scope cleanup complete; PR/merge/readback pending.
 
 ## Audited F1 rows
 
@@ -54,14 +56,15 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 9. Found and recorded legacy activation-coupling ambiguity: `order_lifecycle_enabled` maps only to `orders_shipments` although its prompt says “receipt and order lifecycle”; canonical MIRA keeps `orders_shipments` and `receipt_archive` separately activatable.
 10. Added ranked work `SERVICE-COMPOSE-001`, `SERVICE-DEPS-001`, and `SERVICE-MIGRATION-001`.
 11. Re-ranked `MIRA-SKILL-001` to depend on service composition and `OPS-BRIEF-VSLICE` to require service composition/dependency repair.
-12. Verified the `FEATURES.md` commit is bounded to one final-section hunk: 69 net added lines, with only stale audit-status lines removed.
-13. Verified the `BACKLOG.md` semantic changes are bounded to category-F correction, F1 work, service dependency findings and explicit affected dependencies, except for one accidental unrelated `IDENT-001` addition to `INVENTORY-QUERY-001` that must be removed before PR.
-14. No F1 service is promoted to MIRA 2.0 integration/live status from legacy catalog, skill or deterministic test evidence alone.
-15. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
+12. Verified `FEATURES.md` is bounded to the F1 service-composition section plus audit-status advancement.
+13. Removed the accidental unrelated `IDENT-001` change from `INVENTORY-QUERY-001`; final branch comparison against `main` is scope-clean.
+14. Final pre-PR comparison shows exactly three changed files: `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`; branch is five commits ahead and zero behind before this closing CURRENT_WORK commit.
+15. No F1 service is promoted to MIRA 2.0 integration/live status from legacy catalog, skill or deterministic test evidence alone.
+16. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
 
 ## Exact next action
 
-Remove the accidental unrelated `IDENT-001` dependency addition from the `INVENTORY-QUERY-001` backlog row so the F1 diff is scope-clean. Then compare branch against `main`, open a pull request limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, verify server-side changed-file scope and mergeability, merge with expected head SHA, remotely read back F1, and only then activate `M2-G0-007B`.
+Open a pull request from `audit/g0-007a-core-life-services` to `main`, verify server-side changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, verify mergeability, merge with the exact PR head SHA, remotely read back F1 on `main`, then inspect the authoritative forensic ledger/dependency evidence beginning with category-F row 6 **Personal finance organization** and activate `M2-G0-007B` from current `main` with an exact bounded scope before creating its branch.
 
 ## Next packet after merge
 
