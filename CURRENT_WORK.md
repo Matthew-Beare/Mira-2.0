@@ -2,52 +2,62 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
-
-### `M2-G0-004B` — Feature Audit Slice C2 — receipt and financial evidence foundations
-
-- **Merged PR:** #8
-- **Merge SHA:** `310ce64c5d6c3c733c692b7bca487b7b90d88be7`
-- **Audited features:** `RECEIPT-001`, `RECEIPT-002`, `SPEND-001`, `RECEIPT-003`, `PAYMENT-001`, `REIMB-001`
-- **Result:** receipt identity/history and merchant-payment core are separated from bounded spending, taxonomy and reimbursement gaps.
-- **Live Google production touched:** no.
-- **Executable product behavior changed:** no.
-
 ## Active packet
 
 - **Packet ID:** `M2-G0-004C`
 - **Name:** Feature Audit Slice C3 — optional subscriptions/full-finance direction and category-C closure
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Objective:** Audit the final two category-C directions, then reconcile dependencies/evidence across all commerce/receipt/payment/spending features and close category C without beginning asset/inventory work.
+- **Branch:** `audit/g0-004c-finance-direction-close-c`
+- **Base main SHA:** `16984d158dd23858259cb50a5e4af2c21acb42a3`
+- **Feature audit commit:** `2fb837b86e7cb8ff92ace4ee29959d0e9244da60`
+- **Backlog checkpoint commit:** `344abe703229f265ae5a289237d07683ca567e64`
+- **Status:** acceptance work complete; PR/merge/readback pending.
 
-## Audit rows in this packet
+## Completed acceptance evidence
 
-1. Optional subscription/free-trial tracking.
-2. Credit-card linkage / complete financial ingestion direction.
-3. Bounded category-C consistency pass across `ORDER-*`, `RECEIPT-*`, `SPEND-*`, `PAYMENT-*`, `REIMB-*` and any new stable IDs created here.
+1. Assigned `SUB-001` Optional subscription and free-trial tracking.
+2. Preserved `SUB-001` as `proposed / optional` because the forensic ledger records only a previous paused automation and no newer audited direct requirement promoted it to active/universal status.
+3. Recorded subscription activation as default-off, deduplicated evidence-driven commitment state with no per-subscription scheduler, no automatic cancellation/contact, and no silent resurrection.
+4. Assigned `FIN-001` Complete connected financial-account ingestion and reconciliation.
+5. Preserved `FIN-001` as proposed/infrastructure-deferred and `not_present` as a complete repository capability.
+6. Separated `FIN-001` from `PAYMENT-001`: the latter is a test-verified merchant expected-settlement reconciler, not complete bank/card ingestion or coverage proof.
+7. Recorded future finance requirements for explicit authorization, account/readback identity, sync/coverage limits, pending/posted semantics, debit/credit direction, transaction dedupe, transfer classification, privacy/secrets handling and provider failure isolation.
+8. Completed a bounded category-C consistency pass across `ORDER-*`, `RECEIPT-*`, `SPEND-*`, `PAYMENT-*`, `REIMB-*`, `SUB-*` and `FIN-*`.
+9. Confirmed C1/C2 audit gaps remain separately ranked rather than blocking forensic closure.
+10. Split category D into four bounded audit packets before entering asset/inventory work.
+11. Touched no live Google production state and changed no executable product behavior.
 
-Do not begin category D in this packet.
+## Key audit findings
 
-## Acceptance criteria
+- Subscription/free-trial tracking remains valid later work but is not a current universal/default requirement.
+- Complete financial-account ingestion remains future infrastructure and cannot be inferred from receipt-derived spending or merchant payment matching.
+- Receipt, fulfillment, merchant settlement, reimbursement and complete finance are distinct authorities linked through stable identities rather than one financial blob.
+- Category C is now fully audited without any MIRA 2.0 integration/live promotion from legacy provider state.
 
-1. Subscription/free-trial tracking is classified from current requirement evidence rather than resurrecting a paused historical automation by accident.
-2. Complete bank/card ingestion is separated from receipt-derived spending and merchant-payment reconciliation.
-3. Privacy, connector scope, account coverage, pending/posted semantics and readback requirements are recorded before any future full-finance implementation can be considered complete.
-4. All category-C dependency/evidence contradictions are resolved or explicitly queued.
-5. No legacy connected account or Google data is treated as MIRA 2.0 integration/live proof.
-6. `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are the only intended changed files.
-7. A small PR is scope-verified, merged, and remotely read back.
-8. `CURRENT_WORK.md` advances to a bounded first category-D packet.
-9. No live Google production state and no executable product behavior is changed.
+## Blockers
+
+None. PR/merge/readback is the remaining packet release step.
 
 ## Exact next action
 
-Create branch `audit/g0-004c-finance-direction-close-c` from current `main`. Inspect category-C row 11: **Optional subscription/free-trial tracking**, including whether any current direct requirement supersedes its historical proposed/paused status. Assign a stable feature ID/evidence state before auditing full financial ingestion.
+Open a pull request from `audit/g0-004c-finance-direction-close-c` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back category-C closure, then activate `M2-G0-005A` on `main` and create its audit branch.
 
-## Next packet boundary
+## Next packet after merge
 
-After category C closes, split category D into bounded asset/inventory audit packets before implementation work. The first exact category-D row is **Stable asset identity and item-to-vehicle/equipment fitment**.
+### `M2-G0-005A` — Feature Audit Slice D1 — asset identity and evidence foundations
+
+Audit exactly category-D rows 1-5:
+
+1. Stable asset identity and item-to-vehicle/equipment fitment.
+2. Asset purchase evidence, manuals, warranties, maintenance and verified specifications.
+3. Bidirectional receipt/order ↔ asset/vehicle/tool queries.
+4. Namespaced UPC/GTIN, merchant SKU, manufacturer part/model, serial, IMEI and MAC identities.
+5. Product/serial/barcode photo and Gmail evidence enrichment.
+
+Do not expand this packet to location hierarchy, QR movement, grocery/par sensing or category-D rows 6-16.
+
+The exact first unaudited behavior is **Stable asset identity and item-to-vehicle/equipment fitment**.
 
 ## Recovery protocol
 
