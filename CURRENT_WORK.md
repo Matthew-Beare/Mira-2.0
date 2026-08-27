@@ -4,62 +4,67 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 ## Completed packet before this branch
 
-### `M2-G0-007A` — Feature Audit Slice F1 — core life-service module boundaries
+### `M2-G0-007B` — Feature Audit Slice F2 — finance, appointment/calendar, and administrative-health services
 
-- **Merged PR:** #20
-- **Merge SHA:** `9925b1b097342626bb7f2c16d94e2327b144de5c`
-- **Audited rows:** F1-F5 — Briefs/action digest; Next-action planner; Email triage; Orders/shipments; Receipt archive.
-- **Audited feature:** `SERVICE-002` plus canonical service-to-domain mappings.
-- **Result:** service activation, dependency readiness, recommendation, implementation evidence and provider capability are explicitly separated; semantic dependency/migration defects are ranked for repair.
+- **Merged PR:** #21
+- **Merge SHA:** `e6890dea352f40c5205d1e21f94dada5b5752b50`
+- **Audited rows:** F6-F8 — Personal finance organization; Appointments/calendar/reminders; Administrative health organization.
+- **Result:** finance is goal-scoped; appointment/provider identity (`CAL-005`) and Calendar projection/readback (`CAL-006`) are separate; administrative health (`HEALTH-001`) is non-clinical and separate from medication reminders/caregiver sharing.
+- **Remote readback:** `FEATURES.md` and `BACKLOG.md` on `main` contain the F2 registry and ranked work.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-007B`
-- **Name:** Feature Audit Slice F2 — finance, appointment/calendar, and administrative-health services
+- **Packet ID:** `M2-G0-007C`
+- **Name:** Feature Audit Slice F3 — shopping and food-service composition
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-007b-finance-calendar-health-services`
-- **Branch start SHA:** `204665fb84cfb7588c64074e5e6c2282c4074453`
-- **Research checkpoint commit:** `43a9475336d18fc18170049e3afb9d243b16cf20`
-- **Feature registry commit:** `ce4de6a1a6b115673e1320524c6671394365ac7c`
-- **Backlog checkpoint commit:** `6a912a49631dd843a2012130c4704cdf70fab5d2`
-- **Status:** acceptance complete; bounded PR/merge/readback pending.
+- **Planned branch:** `audit/g0-007c-shopping-food-services`
+- **Base merge SHA:** `e6890dea352f40c5205d1e21f94dada5b5752b50`
+- **Status:** packet activated; branch creation and forensic evidence pass next.
 
-## Audited F2 rows
+## Exact category-F scope in this packet
 
-6. **Personal finance organization**.
-7. **Appointments/calendar/reminders**.
-8. **Administrative health organization**.
+Audit exactly legacy category-F rows 9-10:
 
-## Completed acceptance evidence
+9. **Shopping/procurement** — ACCEPTED direction; service composition over active shopping intent and purchase reconciliation.
+10. **Recipes/meals/groceries** — CURRENT REQUIRED; service composition over grocery stock/list state, recipe knowledge and meal-plan state.
 
-1. F6 finance is normalized as a goal/submodule-scoped `SERVICE-002` composition rather than a monolithic finance implementation claim.
-2. Existing canonical finance authorities remain separate: `SPEND-001`, `PAYMENT-001`, `REIMB-001`, optional `SUB-001`, and future `FIN-001`. Budgeting, debt, savings and broad cash-flow support are not claimed from those children without their own future evidence.
-3. Added `CAL-005` — evidence-safe appointment/provider identity reconciliation. Legacy provider-identity resolution/correction/ambiguity handling is directly test-verified; broader canonical appointment lifecycle and MIRA 2.0 persistence remain unverified.
-4. Added `CAL-006` — idempotent linked Calendar projection/update with exact provider readback. This is strongly specified but has no dedicated audited Calendar mutation/readback implementation and therefore remains below `test_verified`/integration status.
-5. F7 keeps `appointments_calendar` and `appointment_reminders` separately activatable. `appointments_calendar` maps to `CAL-005` + `CAL-006` with conditional `CAL-004`; reminder activation maps separately to `CAL-002` + `CAL-003` plus canonical appointment state.
-6. Legacy `f-07` dependency on personal `CAL-001` Saturday lookahead is recorded as a semantic defect; deployment-specific Brief projection is not universal appointment-service readiness.
-7. Added `HEALTH-001` — non-clinical administrative health organization. It is specification-level only and explicitly excludes diagnosis, treatment, dose/timing inference, missed-dose advice and relationship-derived caregiver access.
-8. F8 keeps `health_organization`, `medication_reminders` (`REMIND-001`) and caregiver sharing (`REMIND-002` plus exact permission/recipient identity) as independent activation/permission surfaces.
-9. Legacy `f-08` medication-reminder-as-health-service coupling is recorded as a semantic defect in both directions.
-10. `SERVICE-002` is refined so umbrella services derive readiness only for selected goals/submodules; a working child path cannot make unsupported adjacent goals appear ready.
-11. Added `AUDIT-F2`, `SERVICE-DEPS-002`, `APPOINTMENT-IDENTITY-001`, `CALENDAR-PROJECTION-001`, and `HEALTH-ADMIN-001`; refined `SERVICE-COMPOSE-001`. Existing underlying finance tasks were reused rather than duplicated.
-12. `FEATURES.md` replacement was verified against the research checkpoint: one file only, 97 additions and 2 stale audit-status deletions, with the intended ID-family/refinement/F2 hunks only.
-13. `BACKLOG.md` replacement was verified against the feature commit: one file only, 21 additions and 3 updated/stale lines, with only F2 audit/work/dependency findings and the intended `SERVICE-COMPOSE-001` refinement.
-14. No F2 feature or service was promoted to MIRA 2.0 integration/live status from legacy deterministic subcores, workflow prose or unmerged PR #31 evidence.
-15. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
+Do not expand this packet into F11 Household/errands/admin/maintenance, F12 Laundry stages/drop-off/pickup reminders, routines/fitness, education, family-school, travel, later category-F rows, category G, or executable MIRA 2.0 coding.
+
+## Handoff evidence used to bound F3
+
+1. Authoritative forensic ledger places F9 Shopping/procurement and F10 Recipes/meals/groceries immediately after F2 and before household/routine services.
+2. Legacy dependency map is narrow and coherent:
+   - `f-09` requires `d-08` Shopping/procurement intent;
+   - `f-10` requires `d-15` Grocery/pantry/freezer state and `d-16` historical Recipes/meal-planning row.
+3. Category D already normalized those behaviors into `SHOP-001`, `GROCERY-001`, `RECIPE-001`, and `MEAL-001`; F3 should therefore audit service composition/readiness without duplicating domain features unless a distinct service-layer behavior is genuinely missing.
+4. Historical D16 was split into `RECIPE-001` and `MEAL-001` because reusable recipe knowledge and dated meal-plan state have different lifecycle semantics. The legacy F10 dependency map must be reconciled to both canonical features rather than treating D16 as one undifferentiated child.
+5. F11-F12 shift to task/routine/scheduler/notification semantics: `f-11` requires A13/A14 and task state; `f-12` depends on `f-11` plus scheduler/notification and optional Calendar projection. They are therefore a separate packet boundary rather than being dragged into shopping/food.
+
+## Acceptance criteria
+
+1. Account for F9-F10 with stable canonical service mappings and create no duplicate shopping/grocery/recipe/meal features.
+2. Reuse `SERVICE-001`/`SERVICE-002` activation/readiness machinery.
+3. Preserve `SHOP-001` active procurement intent as separate from receipts/orders/spending/inventory.
+4. Preserve `GROCERY-001`, `RECIPE-001`, and `MEAL-001` as separate authorities/lifecycles; planning cannot fabricate purchase, stock consumption or fulfillment.
+5. Reconcile the historical F10 single D16 dependency to the canonical `RECIPE-001` + `MEAL-001` split and record any other semantic dependency defects.
+6. Record actual evidence ceilings and do not promote service wrappers above their weakest selected required child.
+7. Reconcile relevant service catalog/router/test/PR #31 evidence only where it materially changes the evidence boundary.
+8. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` unless a hard audit dependency requires another authority-file change.
+9. Open a bounded PR, verify scope, merge and remotely read back before advancing to F4.
+10. Touch no legacy Google production state and change no executable MIRA 2.0 product behavior.
 
 ## Exact next action
 
-Compare `audit/g0-007b-finance-calendar-health-services` against `main` and verify the final packet is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`. Open a pull request to `main`, verify the server-side changed-file list and mergeability, merge with the exact PR head SHA, remotely read back the F2 feature/backlog state from `main`, then inspect the authoritative category-F ledger/dependency evidence beginning with F9 **Shopping/procurement** and activate `M2-G0-007C` from the resulting main handoff commit.
+Create branch `audit/g0-007c-shopping-food-services` from this handoff commit. Audit F9 **Shopping/procurement** first against `SHOP-001`, the legacy `f-09` dependency map, service catalog/onboarding activation semantics and any deterministic reconciliation evidence. Then audit F10 against `GROCERY-001`, `RECIPE-001`, `MEAL-001` and the legacy `f-10` mapping before normalizing service mappings/evidence gaps.
 
-## Next packet after F2
+## Next packet after F3
 
-### `M2-G0-007C` — Feature Audit Slice F3
+### `M2-G0-007D` — Feature Audit Slice F4
 
-Begin with category-F row 9 **Shopping/procurement**. Determine the rest of the bounded F3 slice from authoritative ledger/dependency evidence only after F2 is merged/read back. Do not pre-expand from conversational memory.
+Begin with category-F row 11 **Household/errands/admin/maintenance** and determine the rest of the bounded F4 slice from authoritative ledger/dependency evidence after F3 closes.
 
 ## Recovery protocol
 
