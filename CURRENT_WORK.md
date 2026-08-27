@@ -2,18 +2,6 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
-
-### `M2-G0-002A` — Feature Audit Slice A1 — scheduler/context foundations
-
-- **Merged PR:** #1
-- **Merged audit state SHA:** `c33e89c52dc15d991348cefd2b3e0c51be15fd8e`
-- **Audited features:** `OPS-001` through `OPS-005`
-- **Changed files:** `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md`
-- **Result:** canonical schedule, duplicate-schedule prohibition, runtime clock gate, deterministic Run ID/fresh delivery, and deterministic HOME/ROAD override foundations are durably recorded with requirement/evidence separation.
-- **Live Google production touched:** no.
-- **Executable product behavior changed:** no.
-
 ## Active packet
 
 - **Packet ID:** `M2-G0-002B`
@@ -21,42 +9,63 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-002b-context-travel`
-- **Base audit-state SHA:** `c33e89c52dc15d991348cefd2b3e0c51be15fd8e`
-- **Objective:** Reconstruct the next bounded set of historical MIRA context/travel/weather capabilities, assign stable semantic feature IDs, and document descriptions, dependencies, evidence levels, and compatibility notes without implementing product behavior.
+- **Base main SHA:** `bee1d50a15e1d84f2fa3b679fb78ae9fdc3deec4`
+- **Feature audit commit:** `bffc1f922b4e00c78db157f070b929ce39438e17`
+- **Backlog checkpoint commit:** `5a185c5b84b397e76905a81439ac1a0caeb1ec65`
+- **Status:** acceptance work complete; PR/merge/readback pending.
 
-## Audit rows in this packet
+## Objective
 
-Audit exactly legacy category-A behaviors 6-10:
+Reconstruct legacy category-A behaviors 6-10 as bounded MIRA 2.0 feature records without changing executable behavior or live Google production state.
 
-1. Generic context pairs: HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/CAMPUS, HOME/OFFICE, HOME/AWAY, custom.
-2. Job title/duties inform context recommendation but never silently enable it.
-3. Active trip tracking separate from context and paid-work tracking.
-4. Multi-leg routes, learned runtime, current location, ETA, ahead/behind inference.
-5. ROAD severe-weather/route-condition watch; HOME local weather only.
+## Completed acceptance evidence
 
-Do not expand this packet to mileage, tasks, Run Log/recovery, or later category-A behaviors merely because related evidence is nearby.
+1. Assigned stable semantic IDs:
+   - `CTX-001` Configurable operating-context pairs;
+   - `CTX-002` Evidence-gated context recommendation and explicit activation;
+   - `TRIP-001` Independent trip occurrence lifecycle;
+   - `ROUTE-001` Learned routes, directional runtime, location and ETA inference;
+   - `WEATHER-001` Context-gated HOME and ROAD weather intelligence.
+2. Added `CTX-*`, `TRIP-*`, `ROUTE-*`, and `WEATHER-*` ID families because the audit showed these have distinct authorities/dependencies and should not remain a single overloaded `OPS-*` bucket.
+3. Recorded complete user-facing descriptions, rationale, requirement status, delivery/evidence boundaries, dependencies, downstream enables, evidence paths, acceptance boundaries and compatibility notes.
+4. Verified legacy candidate context-router behavior through code/tests for HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/CAMPUS, HOME/AWAY, custom labels, explicit bypass, needs-confirmation state and title-keyword false-positive protection.
+5. Recorded that HOME/OFFICE is a valid configured pair through custom-label support but is not a dedicated audited legacy recommendation heuristic.
+6. Kept trip occurrence state independent from reusable Route knowledge and later Mileage/paid-work accounting.
+7. Recorded route-average ETA and time-progress primitives as implemented/test-supported while keeping human-facing ahead/behind interpretation below an unearned verification level.
+8. Recorded deterministic HOME/ROAD weather gating and route-watch expiry as test-verified, while actual NWS/DOT/511 evidence retrieval remains an external integration boundary.
+9. Reconciled materially relevant PR #31 evidence and found no narrower context/travel implementation that supersedes these records; broad candidate `MIRA-F009` only requires mode-specific filtering to remain contract-driven/tested.
+10. Updated `BACKLOG.md`, including a non-blocking queued governance item for the corrected reply footer wording `Just tell me to continue.` without expanding this packet.
+11. Touched no live Google production state and changed no executable product behavior.
 
-## Acceptance criteria
+## Key audit findings
 
-1. Each of the five scoped behaviors receives a stable MIRA 2.0 semantic feature ID.
-2. Each feature receives a complete user-facing description and rationale.
-3. Requirement status is separated from implementation/test/integration/live evidence.
-4. Known hard dependencies and downstream enables are recorded.
-5. Relevant legacy source/test/evidence paths are recorded without copying private production data.
-6. Materially relevant PR #31/branch evidence is reconciled as candidate evidence rather than blindly promoted.
-7. Context recommendation, active-trip state, route/runtime inference, and weather gating remain separate capabilities where their dependencies differ.
-8. `FEATURES.md` and `BACKLOG.md` are updated and committed on the packet branch.
-9. A small PR is opened, scope-verified, merged, and remotely read back before the packet is called complete.
-10. `CURRENT_WORK.md` advances to the next exact unaudited behavior before ending the packet.
-11. No live Google production state and no executable product behavior is changed.
+- Context recommendation and context activation are separate features and must remain separate in onboarding.
+- Generic context labels generalize `OPS-005`; they do not replace its deterministic transition/override semantics.
+- Trip, Route, context, Mileage and weather state are related through explicit references, not one combined mutable state object.
+- Route/ETA logic has stronger test evidence than the old ledger's wording suggested, but ahead/behind user-facing inference still needs explicit verification.
+- Weather gating is deterministic/tested; hazard conclusions still require source-grounded external evidence.
+
+## Blockers
+
+None inside this audit packet. PR/merge/readback is the remaining packet release step.
 
 ## Exact next action
 
-Create/confirm branch `audit/g0-002b-context-travel` from the current MIRA 2.0 main checkpoint. Read legacy category-A evidence for behavior 6: **Generic context pairs: HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/CAMPUS, HOME/OFFICE, HOME/AWAY, custom**. Inspect its candidate onboarding/context-router implementation and tests, assign its stable MIRA 2.0 feature ID, and draft the audited record before moving to behavior 7.
+Open a pull request from `audit/g0-002b-context-travel` to `main`, verify the changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back the merged state, then update `CURRENT_WORK.md` on `main` to activate `M2-G0-002C`.
 
-## Next packet boundary
+## Next packet after merge
 
-If `M2-G0-002B` completes, `M2-G0-002C` begins with category-A behavior 11: **Company-paid mileage and estimated gross pay; both Thursday briefs**.
+### `M2-G0-002C` — Feature Audit Slice A3 — mileage/tasks/recovery foundations
+
+Audit exactly legacy category-A behaviors 11-15:
+
+1. Company-paid mileage and estimated gross pay; both Thursday briefs.
+2. Separate accessible Miles & Pay tracker.
+3. Task hierarchy High/Medium/Low → classification → subsystem → one task per bullet.
+4. Next-action coaching and honest completion evidence.
+5. Phase-aware Run Log, last-good checkpoint, resumable recovery, circuit breaker.
+
+The exact first unaudited behavior is **Company-paid mileage and estimated gross pay; both Thursday briefs**.
 
 ## Recovery protocol
 
@@ -66,4 +75,5 @@ On any new conversation/session:
 3. continue from the exact next action;
 4. do not broaden scope from chat history;
 5. capture new customer ideas in BACKLOG unless required for acceptance or explicitly reprioritized;
-6. every assistant reply ends with the current packet recovery tag.
+6. before the final packet line, state any customer action needed; if none is needed, use `Just tell me to continue.`;
+7. the final visible line remains the packet recovery tag.
