@@ -1481,9 +1481,40 @@ Category E is complete through all 26 historical rows. The final authority/depen
 - Provider mutation for Calendar or financial state requires exact target identity/scope and readback; source/provider connection alone is not success evidence.
 - No F2 service receives MIRA 2.0 integration/live credit from legacy deterministic subcores, skill prose or unmerged PR #31 evidence alone.
 
+## Audited F3 shopping and food-service composition
+
+### F row 9 — Shopping/procurement
+
+**Canonical mapping:** service key `shopping` → `SHOP-001`, governed by `SERVICE-001` + `SERVICE-002`. The legacy `f-09` aggregate requires historical D8, which category D normalized directly to `SHOP-001`.
+
+**Evidence ceiling:** the service wrapper inherits the generic `SERVICE-002` composition evidence, but its required domain child `SHOP-001` remains specification-level because no dedicated deterministic shopping-intent reconciliation engine was located. MIRA 2.0 provider/list persistence and readback are likewise unverified.
+
+**Dependency finding:** the narrow legacy `f-09` → D8 mapping is structurally sound and needs no new domain feature. Receipt/order/fitment/provider dependencies remain owned by `SHOP-001` and its canonical children rather than being duplicated into the service wrapper.
+
+### F row 10 — Recipes/meals/groceries
+
+**Canonical mapping:** service key `recipes_meals` is a selected-submodule umbrella under `SERVICE-001` + `SERVICE-002`, not one all-or-nothing food switch. A recipe-library path requires `RECIPE-001`. A pantry-aware meal-planning path requires `MEAL-001` + `RECIPE-001` + `GROCERY-001`; downstream shopping reconciliation remains owned by the canonical `MEAL-001`/`GROCERY-001` dependency on `SHOP-001` rather than being duplicated as a second purchase authority.
+
+**Evidence ceiling:** `RECIPE-001`, `MEAL-001`, and `GROCERY-001` are all specification/contract-level in the audited legacy evidence, with their deterministic cores already queued as `RECIPE-CORE-001`, `MEAL-CORE-001`, and `GROCERY-CORE-001`. Therefore neither recipe-library nor meal-planning readiness is implemented merely because the catalog/router exposes `recipes_meals`.
+
+**Dependency defect:** legacy `f-10` requires D15 plus a single historical D16. Category D split D16 into `RECIPE-001` and `MEAL-001` because reusable recipe knowledge and dated meal-plan state have different lifecycles. Canonical meal-planning readiness must require both, while a recipe-library-only path must not be blocked by missing `MEAL-001` or `GROCERY-001`.
+
+**Migration defect:** legacy `recipe_library_enabled` maps directly to the umbrella `recipes_meals` activation in the old router. That Boolean is valid compatibility evidence for recipe-library intent only. It cannot silently authorize meal planning, pantry/grocery tracking, shopping linkage, stock mutation or any adjacent food submodule. Where historical state cannot distinguish broader intent, migration remains unresolved until explicit user choice.
+
+## Category F3 consistency findings
+
+- F9 and F10 are service compositions over already-canonical category-D behaviors; no new shopping, grocery, recipe or meal domain IDs are created.
+- `shopping` remains active procurement intent only. It does not become purchase history, order state, spending, inventory ownership or automatic purchasing authority.
+- `recipes_meals` uses selected-submodule semantics from `SERVICE-002`: recipe-library and meal-planning paths may have different activation/readiness requirements.
+- Recipe knowledge (`RECIPE-001`), grocery/pantry state (`GROCERY-001`) and dated meal plans (`MEAL-001`) remain separate authorities/lifecycles.
+- Planning alone cannot consume stock, create a purchase or claim shopping fulfillment. Missing-ingredient shopping intent remains reconciled through canonical `SHOP-001` behavior.
+- Legacy D16 must not be re-collapsed after category-D audit split it into recipe and meal-plan semantics.
+- Legacy `recipe_library_enabled` is not permission to enable the full food stack; ambiguous broader migration intent must remain unresolved or be explicitly confirmed.
+- Service wrappers cannot outrank the weakest selected required child, and no F3 service receives MIRA 2.0 integration/live credit from catalog/router exposure or contract prose alone.
+
 ## Audit status
 
 - Categories A, B, C, D and E are complete.
-- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 are audited in `M2-G0-007B`. Row F9 **Shopping/procurement** is the next unaudited category-F behavior.
+- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 were audited in `M2-G0-007B`; rows F9-F10 are audited in `M2-G0-007C`. Row F11 **Household/errands/admin/maintenance** is the next unaudited category-F behavior.
 - Category G remains unaudited.
 - The complete historical feature inventory remains in progress until F and G are closed.
