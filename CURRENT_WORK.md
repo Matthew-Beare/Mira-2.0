@@ -2,55 +2,26 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
+## Completed packet
+
+### `M2-G0-006C` — Feature Audit Slice E3 — extended roles and usability boundaries
+
+- **Merged PR:** #16
+- **Merge SHA:** `0c2b698efa5959fba8691dfc351d485fab7de5fb`
+- **Audited features:** `PROFILE-006`, `PROFILE-007`, `PROFILE-008`, `PROFILE-009`, `PROFILE-010`, `PROFILE-011`
+- **Result:** caregiver, household-manager, student, mixed/custom, preference-driven usability and the rejected public “Boomer mode” boundary are normalized at their actual evidence levels.
+- **Live Google production touched:** no.
+- **Executable product behavior changed:** no.
+
 ## Active packet
 
-- **Packet ID:** `M2-G0-006C`
-- **Name:** Feature Audit Slice E3 — extended roles and usability boundaries
+- **Packet ID:** `M2-G0-006D`
+- **Name:** Feature Audit Slice E4 — identity, sharing and self-extension foundations
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-006c-role-customization-foundations`
-- **Base main SHA:** `22b8eed925daee868fe34ef494b3a63044f07e50`
-- **Feature audit commit:** `b0938a638a48f0e715f98576d39457b9e4823653`
-- **Backlog checkpoint commit:** `6db0895530617df0bd0ca832deba6663d2362a12`
-- **Status:** acceptance work complete; PR/merge/readback pending.
+- **Objective:** Audit category-E rows 16-20 covering per-person/relationship identity and permissions, personal-fork/upstream sharing, clean starter boundaries, custom skill creation and automatic instruction updates without entering provider installation, portability or product coding.
 
-## Completed acceptance evidence
-
-1. Split category-E row 11 into separate `PROFILE-006` caregiver and `PROFILE-007` household-manager features because their safety and recommendation boundaries differ.
-2. Recorded `PROFILE-006` caregiver as an explicit composable role whose health/appointment/household recommendations never grant authority or activation. Legacy router implementation exists, but no dedicated caregiver-only regression fixture was located.
-3. Preserved `REMIND-001`, `REMIND-002`, `SERVICE-001` and explicit Person/relationship permission state as independent gates for caregiver-related behavior.
-4. Recorded `PROFILE-007` household-manager and verified direct legacy regression coverage for household-routine recommendation/activation, washer-to-dryer and pickup examples, consolidated delivery instead of per-chore automations and prohibited ownership inference.
-5. Recorded `PROFILE-008` student as a first-class role with HOME/CAMPUS available only through explicit/recommended context configuration. The audited router does not auto-select HOME/CAMPUS from the student role alone.
-6. Preserved dependent-minor precedence when student and dependent-minor roles coexist.
-7. Recorded `PROFILE-009` mixed/custom role composition and verified direct tests for underlying-role preservation, explicit primary role, dependent-minor primary precedence, duplicate/contradictory role rejection, unsupported-role failure and custom-plus-known-role rejection.
-8. Recorded `PROFILE-010` preference-driven usability/accessibility without demographic inference. Legacy evidence test-supports the non-inference boundary, while a full accessibility/preference engine is not present.
-9. Recorded `PROFILE-011` as a durable negative constraint: public “Boomer mode” is rejected/superseded; a private user-selected alias may exist only as private presentation state and cannot change roles, permissions, activation, capabilities or safety policy.
-10. Added ranked work items `PROFILE-CARE-001`, `PROFILE-HOUSEHOLD-001`, `PROFILE-STUDENT-001`, `PROFILE-MIXED-001`, `PROFILE-USABILITY-001`, and `PROFILE-LABEL-001`.
-11. Kept caregiver/parent/minor shared-state authorization dependent on the later explicit Person/relationship permission authority rather than treating role labels as access control.
-12. Touched no live Google production state and changed no executable MIRA 2.0 product behavior.
-
-## Key audit findings
-
-- Caregiver and household-manager are separate roles; neither is an authorization token.
-- Household-manager routing has genuine anti-fan-out/no-ownership-inference regression evidence.
-- Student role and HOME/CAMPUS context are separate facts; the role alone does not activate the context.
-- `mixed` is presentation summary only; canonical roles remain individually preserved.
-- Accessibility/usability must follow explicit preferences or device capability, never age/retirement stereotypes.
-- Public “Boomer mode” remains rejected. Private aliases are presentation-only mutable state.
-
-## Blockers
-
-None inside this forensic packet. Shared-care/family authorization remains dependent on the explicit Person/relationship permission model to be audited in E4.
-
-## Exact next action
-
-Open a pull request from `audit/g0-006c-role-customization-foundations` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back E3, then activate `M2-G0-006D` on current `main` and create branch `audit/g0-006d-identity-sharing-skill-foundations`.
-
-## Next packet after merge
-
-### `M2-G0-006D` — Feature Audit Slice E4 — identity, sharing and self-extension foundations
-
-Audit exactly category-E rows 16-20:
+## Audit rows in this packet
 
 1. Per-person identity, household/beneficiary relationships and permission scopes.
 2. Personal fork plus reviewed upstream feature sharing.
@@ -58,9 +29,29 @@ Audit exactly category-E rows 16-20:
 4. Self-improving/custom skill builder.
 5. Automatic instruction-update behavior.
 
-Do not expand this packet to browser/provider installation, alternative runtime/provider portability, institutional deployment, category F, category G or product coding.
+Do not expand this packet to browser/provider installation, alternative AI/runtime portability, Microsoft/Apple provider behavior, institutional deployment, category F, category G or product coding.
 
-The exact first unaudited behavior is **Per-person identity, household/beneficiary relationships and permission scopes**.
+## Acceptance criteria
+
+1. Each scoped behavior receives a stable semantic feature ID and explicit evidence boundary.
+2. Person identity, household/beneficiary relationships and permission scopes are distinct. Relationship labels never grant access; shared state requires explicit scoped authorization and provider/API readback.
+3. Personal forks/deployments may preserve private custom behavior while reusable upstream contributions require explicit user publication approval, sanitization, tests and reviewed source changes; private mutable state never rides upstream.
+4. A clean starter/distribution is generated from canonical portable source and remains separate from protected legacy production state; it is not an independent development source of truth.
+5. Custom skill/self-extension behavior is bounded by explicit capability, dependency, privacy and test gates; generated features do not silently become enabled or publish themselves.
+6. Automatic instruction updates follow the project full-replacement rule: produce the complete replacement block, preserve durable source/version evidence, and never rely on fragmentary patch instructions unless explicitly requested.
+7. Relevant legacy source/workflow/tests are inspected without importing private operational data or unmerged tainted history.
+8. Only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are intended packet changes.
+9. A small PR is scope-verified, merged and remotely read back.
+10. `CURRENT_WORK.md` advances to the next bounded category-E slice with an exact resume point.
+11. No live Google production state and no executable MIRA 2.0 product behavior is changed.
+
+## Exact next action
+
+Create branch `audit/g0-006d-identity-sharing-skill-foundations` from this current `main` checkpoint. Inspect category-E row 16: **Per-person identity, household/beneficiary relationships and permission scopes**, including immutable Person identity, relationship identity versus authorization, beneficiary allocation semantics, explicit sharing grants and readback.
+
+## Next packet boundary
+
+If E4 completes, `M2-G0-006E` audits the remaining category-E rows covering browser-only/nontechnical installation, provider/capability onboarding boundaries and related onboarding closure, then closes category E. Do not begin category F inside E4.
 
 ## Recovery protocol
 
