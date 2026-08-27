@@ -4,63 +4,68 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 ## Completed packet before this branch
 
-### `M2-G0-007E` — Feature Audit Slice F5 — routines/accountability and education/study services
+### `M2-G0-007F` — Feature Audit Slice F6 — family-school coordination and permission boundary
 
-- **Merged PR:** #24
-- **Merge SHA:** `6eac4c03a91532bd9c95169284776bc7b4479e84`
-- **Main handoff commit activating F6:** `f86456423e7bf3964965006cd690df10b1430b81`
-- **Audited rows:** F13-F14 — Routines/fitness/accountability; Education/study/deadlines/offline preparation.
-- **Result:** F13 reuses `ROUTINE-001` + `TASK-001` + `TASK-002` with optional `REMIND-003` and no `FITNESS-*` authority; F14 adds `EDU-001`; generic source-linked Calendar projection is `CAL-007`.
-- **Remote readback:** F5 `FEATURES.md` and `BACKLOG.md` verified on `main` after merge.
+- **Merged PR:** #25
+- **Merge SHA:** `549690c3a66d295c8effca064c21afb2b5bad0b2`
+- **Audited row:** F15 — Parent/child school coordination.
+- **Result:** no `FAMILY-*` authority was created; school truth remains `EDU-001`, Person/relationship identity remains `PROFILE-012`, and cross-person permission/sharing remains `PROFILE-013`. Parent/dependent roles are recommendation inputs, never readiness or authorization gates.
+- **Backlog:** added `AUDIT-F6` and `SERVICE-DEPS-006`; existing Person, permission, education and Calendar implementation work remains authoritative.
+- **Remote readback:** F6 `FEATURES.md` and `BACKLOG.md` verified on `main` after merge.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-007F`
-- **Name:** Feature Audit Slice F6 — family-school coordination and permission boundary
-- **Class:** forensic audit / privacy prerequisite
+- **Packet ID:** `M2-G0-007G`
+- **Name:** Feature Audit Slice F7 — travel planning and work-trip/pay composition
+- **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-007f-family-school-permissions`
-- **Branch start SHA:** `f86456423e7bf3964965006cd690df10b1430b81`
-- **Research checkpoint:** `2aa2e88765eca4bda68e0f2bd1a6151620610f4c`
-- **Feature registry commit:** `1012b20a0a2615dce498fb9b72ff73d32139df38`
-- **Backlog checkpoint commit:** `7966c6bd9a7c7beb78b06182b914e6df8a695450`
-- **Status:** acceptance complete; bounded PR/merge/readback pending.
+- **Branch:** `audit/g0-007g-travel-work-trip`
+- **Base merge SHA:** `549690c3a66d295c8effca064c21afb2b5bad0b2`
+- **Status:** activated; forensic evidence pass next.
 
-## Audited F6 row
+## Exact category-F scope in this packet
 
-15. **Parent/child school coordination**.
+Audit exactly legacy category-F rows 16-17:
 
-## Completed acceptance evidence
+16. **Travel/vacation/outdoor planning** — ACCEPTED direction; legacy dependency map requires A8 active Trip state plus A9 Route/runtime/location/ETA behavior, with Calendar projection optional.
+17. **Work-trip/route/paid-work tracking** — REQUIRED; legacy dependency map requires the same A8/A9 Trip/Route foundations plus A11 company-paid mileage/gross and A12 separate Miles & Pay authority.
 
-1. F15 `family_school` is actor/subject/scope-aware service composition, not a new family-school database or identity authority.
-2. School/education truth remains `EDU-001`; exact people and relationships remain `PROFILE-012`; access/sharing grants remain `PROFILE-013`.
-3. No `FAMILY-*` feature family or duplicate family-school engine was created because no distinct canonical lifecycle was found.
-4. Legacy `f-15` is semantically defective because it hard-requires parent/guardian and dependent-minor role behaviors. `PROFILE-004`/`PROFILE-005` are recommendation/routing inputs, not runtime readiness or authorization gates.
-5. Same-person/private education support does not require a cross-person sharing grant merely because `family_school` is enabled.
-6. Cross-person/shared read, write or sharing requires exact actor, subject, resource and action scope under `PROFILE-013`; provider/API mutation or sharing counts only after exact readback.
-7. Relationship labels, household membership, co-residence, school enrollment, observed Calendar traffic, role labels or prior completion never imply custody or access rights.
-8. Minimum-necessary dependent/minor data applies and public/source fixtures must remain synthetic.
-9. `TASK-*`, `ROUTINE-001`, `REMIND-003` and `CAL-007` remain optional selected workflow/projection dependencies with separate failure domains.
-10. `CAL-007` projection cannot silently enable Calendar, invitations, attendees or access to another person's calendar.
-11. Existing `PERSON-GRAPH-001`, `PERMISSION-SCOPE-001`, `EDUCATION-CORE-001` and `CALENDAR-PROJECTION-001` already represent the underlying implementation gaps; F6 added no duplicate implementation core.
-12. Added only `AUDIT-F6` and `SERVICE-DEPS-006` to the backlog.
-13. Legacy profile-router tests prove recommendation/activation and dependent-minor routing boundaries, not permission enforcement, provider sharing or live family-school behavior.
-14. No dedicated family-school engine or qualifying PR #31 implementation was located, so F15 remains specification-level with no integration/live credit.
-15. `FEATURES.md` whole-file replacement was diff-gated against the research checkpoint: exactly one file, 29 additions and two intended status replacements.
-16. `BACKLOG.md` whole-file replacement was diff-gated against the feature commit: exactly one file, 16 additions and one intended closure-line replacement.
-17. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
+Do not expand this packet into F18 assets/maintenance/warranties/manuals, F19 personal knowledge/reference library, F20 backup/disaster recovery, F21 custom skill builder, F22 wearable/activity ingestion, F23 weather onboarding, category G, or executable MIRA 2.0 coding.
+
+## Packet-boundary rationale
+
+- F16 and F17 share the same canonical travel foundations: `TRIP-001` and `ROUTE-001`.
+- F17 is the paid-work specialization of that travel state and adds the already-separate `MILE-001`/`MILE-002` authority boundary; paid mileage must never become generic Trip distance.
+- F16's vacation/outdoor planning prose describes selected planning projections around a Trip: destination/date constraints, reservations, preparation tasks, documents, optional budgets, Calendar and route/weather support. No separate vacation-state engine has yet been evidenced.
+- F18 immediately switches to asset/evidence domains, so rows 16-17 form one bounded dependency-coherent slice.
+
+## Acceptance criteria
+
+1. Determine whether F16/F17 are service compositions over existing `TRIP-001`, `ROUTE-001`, `MILE-001`, `MILE-002`, tasks, Calendar/weather/evidence, or whether any distinct canonical travel lifecycle truly requires a new feature ID.
+2. Preserve Trip occurrence identity separately from reusable Route knowledge, context state and paid mileage/pay authority.
+3. Generic/vacation travel must not imply paid work, company miles, payroll, ROAD context, weather watch, Calendar projection, reservations, documents or budget tracking unless those selected paths are separately configured/evidenced.
+4. Work-trip service readiness must require `TRIP-001` + `ROUTE-001` plus `MILE-001`/`MILE-002` only when paid-work tracking is selected; map/odometer/route distance must never substitute for company-paid miles.
+5. Trip lifecycle/status must remain evidence-grounded. Route/location/ETA inference cannot fabricate departure, arrival, cancellation, reservation, completion or paid-mile settlement.
+6. Multi-leg travel may reuse one Trip occurrence with ordered legs/route references only if the legacy/current evidence supports stable leg identity without collapsing Route identity; otherwise record the implementation gap explicitly rather than inventing completion evidence.
+7. Vacation/outdoor preparation should reuse `TASK-*`; retained documents/equipment/weather/Calendar/budget paths stay independent optional integrations with their existing authorities and failure domains.
+8. Calendar projection remains independently optional through `CAL-007`; weather/hazard behavior remains independently optional through `WEATHER-001` and cannot become canonical Trip truth.
+9. Requirement status remains separate from implementation/test/integration/live evidence; legacy executable A8/A9/A11/A12 evidence does not automatically prove F16/F17 service integration in MIRA 2.0.
+10. Reconcile PR #31/legacy branch evidence as candidate evidence only and create no duplicate service/domain engines without a distinct authority/lifecycle justification.
+11. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`.
+12. Open a bounded PR, verify changed-file scope and mergeability, merge using exact head SHA, and remotely read back before advancing.
+13. Touch no legacy Google production state and change no executable MIRA 2.0 product behavior.
 
 ## Exact next action
 
-Compare `audit/g0-007f-family-school-permissions` against `main` and verify the packet is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` with the branch zero commits behind. Open a pull request to `main`, verify GitHub's server-side changed-file list and mergeability, merge using the exact PR head SHA, remotely read back the F6 registry/backlog state from `main`, then inspect authoritative category-F evidence beginning with F16 **Travel/vacation/outdoor planning** and activate `M2-G0-007G` from the resulting main handoff commit.
+Create branch `audit/g0-007g-travel-work-trip` from this main handoff commit. Inspect authoritative F16/F17 evidence across the feature ledger, `behavior-dependencies.json`, `MODULE_CATALOG.md`, Trip/Route/mileage policy/runtime code and deterministic tests, plus any relevant PR #31 travel candidate. First decide whether F16 or F17 requires any canonical feature beyond existing `TRIP-001`, `ROUTE-001`, `MILE-001`, `MILE-002` and selected task/Calendar/weather/evidence composition; checkpoint that finding before registry normalization.
 
-## Next packet after F6
+## Next packet after F7
 
-### `M2-G0-007G` — Feature Audit Slice F7
+### `M2-G0-007H` — Feature Audit Slice F8
 
-Begin with category-F row 16 **Travel/vacation/outdoor planning**. Determine the remainder of the bounded F7 slice from authoritative dependency evidence after F6 closes. Do not pre-expand from conversational memory.
+Begin with category-F row 18 **Assets/maintenance/warranties/manuals** and determine the remainder of the bounded F8 slice from authoritative dependency evidence after F7 closes.
 
 ## Recovery protocol
 
