@@ -23,10 +23,11 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual retention; technical specs; shopping intent; inventory identity; hierarchical locations. | AUDIT-D1 | complete in `M2-G0-005B` |
 | `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; inventory query; par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | complete in `M2-G0-005C` |
 | `AUDIT-D4` | PREREQUISITE | D row 16: recipe library; meal planning; missing-ingredient shopping linkage; category-D closure. | AUDIT-D3 | complete in `M2-G0-005D`; `RECIPE-001`, `MEAL-001` |
-| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | **in progress; E1-E2 complete, E3 next** |
+| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | **in progress; E1-E3 complete, E4 next** |
 | `AUDIT-E1` | PREREQUISITE | E rows 1-5: sanitized generic starter; bounded four-question first boot; AI/job/pain-point/app discovery; cadence/timezone intake; explicit service activation states. | AUDIT-D | complete in `M2-G0-006A`; `ONBOARD-002`, `ONBOARD-003`, `ONBOARD-004`, `ONBOARD-005`, `SERVICE-001` |
-| `AUDIT-E2` | PREREQUISITE | E rows 6-10: working/self-employed; retired; nonworking; parent/guardian; dependent-minor profile foundations. | AUDIT-E1 | **complete in `M2-G0-006B`**; `PROFILE-001` through `PROFILE-005` |
-| `AUDIT-E3` | PREREQUISITE | E rows 11-15: caregiver/household-manager; student/HOME-CAMPUS; mixed/custom roles; older-adult usability; “Boomer mode” nickname/exclusion boundary. | AUDIT-E2 | **next packet `M2-G0-006C`** |
+| `AUDIT-E2` | PREREQUISITE | E rows 6-10: working/self-employed; retired; nonworking; parent/guardian; dependent-minor profile foundations. | AUDIT-E1 | complete in `M2-G0-006B`; `PROFILE-001` through `PROFILE-005` |
+| `AUDIT-E3` | PREREQUISITE | E rows 11-15: caregiver/household-manager; student/HOME-CAMPUS; mixed/custom roles; older-adult usability; “Boomer mode” nickname/exclusion boundary. | AUDIT-E2 | **complete in `M2-G0-006C`**; `PROFILE-006` through `PROFILE-011` |
+| `AUDIT-E4` | PREREQUISITE | E rows 16-20: per-person identity/household-beneficiary relationships/permission scopes; personal fork + reviewed upstream feature sharing; standalone clean starter; self-improving/custom skill builder; automatic instruction updates. | AUDIT-E3 | **next packet `M2-G0-006D`** |
 | `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | queued |
 | `AUDIT-G` | PREREQUISITE | ChatGPT/Android/web/desktop/CLI/device surfaces. | AUDIT-F | queued |
 | `AUDIT-LEGACY` | HARDENING | Reconcile PR #31 plus meaningful legacy branches/repos against stable MIRA 2.0 features. | audits A-G | queued; inspect earlier only when materially relevant |
@@ -36,6 +37,12 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
+| `PROFILE-CARE-001` | HARDENING | Port/test `PROFILE-006` caregiver role composition, recommendations, no silent activation and no inferred health/family authority; later shared-care state requires explicit permission scopes/readback. | `PROFILE-006`, `SERVICE-001`, `REMIND-001`, `REMIND-002`, Person/relationship permission authority (E4 pending) | queued; legacy router implements role but no dedicated caregiver fixture located |
+| `PROFILE-HOUSEHOLD-001` | HARDENING | Port/prove `PROFILE-007` household-manager routing, anti-per-chore-scheduler behavior, explicit responsibility/ownership and mixed-role persistence. | `PROFILE-007`, `SERVICE-001`, task/routine authority | queued; legacy anti-fan-out/no-ownership core is test-verified |
+| `PROFILE-STUDENT-001` | HARDENING | Port/test `PROFILE-008` student role plus explicit HOME/CAMPUS option, ensuring student status never silently activates away context and dependent-minor precedence remains intact. | `PROFILE-008`, `CTX-001`, `CTX-002`, `SERVICE-001` | queued; role implemented, no dedicated standalone student/HOME-CAMPUS fixture located |
+| `PROFILE-MIXED-001` | HARDENING | Port/prove `PROFILE-009` mixed/custom composition, explicit primary-role routing and fail-closed duplicate/contradictory/custom-role behavior with persistence/readback. | `PROFILE-009`, canonical profile authority | queued; legacy deterministic composition core is test-verified |
+| `PROFILE-USABILITY-001` | ENHANCEMENT | Define/test `PROFILE-010` explicit usability/accessibility preference schema so presentation/modality follows user preference/device capability rather than age, retirement or demographic inference. | `PROFILE-010`, onboarding preference state, client capability discovery | queued; non-inference sub-boundary test-supported, full preference engine absent |
+| `PROFILE-LABEL-001` | HARDENING | Enforce `PROFILE-011`: no public “Boomer mode” role/mode identifier; private aliases remain private presentation-only state and cannot alter roles, permissions, activation or capabilities. | `PROFILE-011`, `ONBOARD-002`, canonical profile alias state | queued; public rejection specified, private alias behavior implemented/test-supported |
 | `PROFILE-MINOR-001` | PREREQUISITE | Port/prove `PROFILE-005` dependent-minor routing plus minimum-necessary private data, explicit relationship/permission scopes and shared-authority readback before any dependent-minor feature is promoted. | `PROFILE-005`, `SERVICE-001`, explicit Person/relationship permission authority (E4 pending) | queued; role/context safety is test-verified, custody/sharing authorization is not |
 | `PROFILE-PARENT-001` | PREREQUISITE | Port/prove `PROFILE-004` parent/guardian composition and synthetic family relationship state while demonstrating relationship labels never grant calendar/school/health/finance/sharing access. | `PROFILE-004`, `SERVICE-001`, explicit Person/relationship permission authority (E4 pending) | queued; core router tested, family-service/provider permission integration unverified |
 | `PROFILE-WORK-001` | HARDENING | Port/test `PROFILE-001` working/self-employed role semantics with dedicated self-employed and mixed-role fixtures, primary-role persistence/readback and no recommendation-driven activation. | `PROFILE-001`, `ONBOARD-004`, `SERVICE-001`, `CTX-002` | queued; working context paths tested, self-employed path lacks dedicated audited fixture |
@@ -78,22 +85,26 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
-## Category-E1/E2 dependency findings
+## Category-E1/E2/E3 dependency findings
 
 - `ONBOARD-002` is a privacy/lineage prerequisite. New deployments begin generic and synthetic; protected legacy state remains outside portable/public source.
 - `ONBOARD-003` owns bounded interview pacing and durable resume state, not service activation.
 - `ONBOARD-004` owns discovery/recommendation. Job titles, duties, existing apps and AI-use evidence may inform recommendations but cannot silently enable services or permissions.
 - `ONBOARD-005` owns new-user cadence/timezone capture; scheduler runtime semantics remain under `OPS-*`, and an existing deployment’s schedule is never inherited as a default.
 - `SERVICE-001` owns activation state and explicitly separates `unresolved/enabled/disabled/not_applicable/deferred` from capability availability, catalog presence and recommendation.
-- `PROFILE-001` through `PROFILE-005` are routing/profile facts, not authorization. Role recommendations cannot mutate service activation.
+- `PROFILE-001` through `PROFILE-009` are routing/profile facts, not authorization. Role recommendations cannot mutate service activation.
 - Retirement and nonworking remain distinct; neither may imply age, health, disability, financial or competence facts.
-- Parent/guardian and dependent-minor labels do not grant custody, calendar, school, health, financial or sharing authority. Permission-scoped relationship state is a separate prerequisite that will be audited in a later category-E slice.
-- Dependent-minor recurring away-context behavior requires explicit approval rather than inference from student/school labels.
+- Parent/guardian, caregiver and dependent-minor labels do not grant custody, calendar, school, health, financial or sharing authority. Permission-scoped Person/relationship state remains a separate E4 prerequisite.
+- Household-manager does not imply universal chore/property ownership; dedicated legacy tests already prohibit ownership inference and per-chore scheduler fan-out.
+- Student role does not silently activate HOME/CAMPUS. Context remains explicit/recommended configuration under `CTX-*`.
+- `mixed` preserves underlying roles and explicit primary routing. `custom` cannot erase established role semantics.
+- `PROFILE-010` keeps usability/accessibility preference-driven and prohibits demographic inference.
+- `PROFILE-011` rejects public “Boomer mode”; private user-chosen aliases remain presentation-only private state.
 - Legacy unsafe/rejected universal-onboarding behavior stays rejected and cannot become a default through old branch/code resurrection.
 
 ## Prior-category closure
 
-Categories A-D are complete. Category E is complete through row 10. Their recorded implementation gaps/evidence levels remain authoritative.
+Categories A-D are complete. Category E is complete through row 15. Their recorded implementation gaps/evidence levels remain authoritative.
 
 ## New-idea triage rule
 
