@@ -10,7 +10,11 @@ ID families include:
 
 - `CORE-*` — MIRA control plane, canonical state, identity, reconciliation, provenance;
 - `MIRROR-*` — companion reality database/state/evidence contracts;
-- `OPS-*` — briefs, operational state, trips, routes, tasks, run logs;
+- `OPS-*` — briefs, operational state, tasks, run logs, deployment-specific operations;
+- `CTX-*` — user-selected operating-context models and context recommendation;
+- `TRIP-*` — trip occurrence state and trip lifecycle;
+- `ROUTE-*` — reusable route knowledge, directional routing and runtime/ETA behavior;
+- `WEATHER-*` — context-aware weather and route-hazard gating;
 - `CAL-*` — calendar, appointments, reminders;
 - `MAIL-*` — email triage, communication safety, evidence ingestion;
 - `ORDER-*` — orders, shipments, replacements, returns, refunds;
@@ -247,10 +251,153 @@ MIRA uses canonical vector source assets for symbol, wordmark, square lockup, wi
 
 **Acceptance / verification boundary:** Deterministic policy tests must pass for weekly boundaries, DST and override conflicts. Integration/live verification later requires canonical MIRA 2.0 state readback showing the configured transitions and an explicit override round trip without reliance on legacy production sheets.
 
-**Compatibility notes:** This record intentionally does not absorb category-A behavior 6 (generic context pairs) or behavior 8 (active trip tracking/ROAD forcing). Those remain separate features so future generalization cannot erase the current HOME/ROAD semantics or pretend downstream dependencies are already complete.
+**Compatibility notes:** This record intentionally does not absorb generic context pairs or active-trip forcing. Those are separate features so future generalization cannot erase the current HOME/ROAD semantics or pretend downstream dependencies are already complete.
+
+---
+
+### `CTX-001` — Configurable operating-context pairs
+
+**Description:** MIRA may use a two-label operating-context model when environment materially changes available tasks, equipment, evidence, connectivity, notifications, routes, weather, or routines. Supported/recommended patterns include `HOME / ROAD`, `HOME / TRUCK`, `HOME / FIELD`, `HOME / CAMPUS`, `HOME / AWAY`, and user-defined labels. `HOME / OFFICE` is a valid configured pair even though the audited legacy recommendation heuristic does not contain a dedicated OFFICE rule; it is supported through explicit/custom labels. Context is mutable user state, not identity, employment status, or scheduling timezone.
+
+**Why it exists / user outcome:** Different people need different useful boundaries. A truck driver, field technician, student, office worker, or household user should not inherit somebody else's hard-coded HOME/ROAD worldview.
+
+**Requirement status:** `accepted direction`, with explicit user-defined labels and current HOME/ROAD deployment semantics preserved.
+
+**Delivery/evidence:** `test_verified` in the audited legacy onboarding/context-router candidate for recommended pairs, bypass behavior, custom two-label validation, and explicit selection. **No MIRA 2.0 canonical-state integration is yet verified.**
+
+**Hard dependencies:** mutable profile/context authority; user confirmation/selection state; downstream modules must consume context labels through a contract rather than hard-coded personal assumptions.
+
+**Enables:** reusable mode-specific task/routine/equipment behavior across personal, family, work, school, and later institutional profiles.
+
+**Milestone:** generalized user model / onboarding foundation.
+
+**Legacy evidence:**
+- legacy feature ledger category A row 6;
+- legacy candidate `starter/PROFILE_AND_CONTEXT_MODES.md` defines dynamic context separately from life profile and lists HOME/ROAD, HOME/TRUCK, HOME/FIELD, HOME/CAMPUS, HOME/AWAY and custom labels;
+- legacy candidate `starter/tools/onboarding_profile_router.py` validates explicit two-label custom modes and returns deterministic recommended/bypassed/selected states;
+- `starter/tests/test_onboarding_profile_router.py` verifies HOME/ROAD with HOME/TRUCK alternate, HOME/FIELD, custom labels, bypass, and timezone independence.
+
+**Acceptance / verification boundary:** The generalized feature is integration-verified only after a MIRA 2.0 sandbox profile can store/read back selected labels and at least one downstream module consumes them without changing the canonical schedule timezone. Recommendation support for a label is distinct from explicit custom-label support.
+
+**Compatibility notes:** Existing `OPS-005` remains the audited current deployment's HOME/ROAD transition/override behavior. Generalization must adapt that behavior through configured labels rather than deleting its proven semantics.
+
+---
+
+### `CTX-002` — Evidence-gated context recommendation and explicit activation
+
+**Description:** Job title and duties may inform a context recommendation, but MIRA must never silently activate a context split from keywords or assumptions. Onboarding asks whether a recurring away/alternate environment actually exists; explicit `no` bypasses work-away context, explicit `yes` permits a recommendation that still requires confirmation/rename, and unresolved travel/field evidence remains `needs_confirmation` or `unresolved`. Explicit user labels outrank recommendations.
+
+**Why it exists / user outcome:** A person's job title is useful evidence, not permission for MIRA to invent their lifestyle. The user should get helpful suggestions without waking up to a system that decided a Broadway actor works on the road because a substring matched `road`.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `test_verified` in the legacy candidate router. **MIRA 2.0 onboarding/UI and canonical readback remain unimplemented/unverified.**
+
+**Hard dependencies:** profile/job/duties intake; `CTX-001`; explicit activation/confirmation state.
+
+**Enables:** low-friction onboarding, safe profile recommendations, Boomer-friendly setup without hidden behavior changes.
+
+**Milestone:** generalized onboarding foundation.
+
+**Legacy evidence:**
+- legacy feature ledger category A row 7;
+- `starter/PROFILE_AND_CONTEXT_MODES.md` routing contract requires confirmation and prohibits title-only activation;
+- `starter/tools/onboarding_profile_router.py` uses word-boundary role-family matching plus explicit `works_away_from_home` state;
+- `starter/tests/test_onboarding_profile_router.py` verifies trucker recommendation without silent selection, explicit office-worker bypass, field-role `needs_confirmation`, custom-label precedence, and the Broadway false-match regression.
+
+**Acceptance / verification boundary:** Deterministic router tests must pass, then the MIRA 2.0 onboarding flow must prove that a recommendation cannot become enabled canonical context without explicit user confirmation/readback.
+
+**Compatibility notes:** Recommendation and activation are deliberately separate. This feature must not infer context from employer, profession, age, or device location alone.
+
+---
+
+### `TRIP-001` — Independent trip occurrence lifecycle
+
+**Description:** MIRA tracks each real trip/dispatch occurrence separately from reusable route knowledge, operating context, and paid-work/mileage accounting. Trips have stable identities and lifecycle states such as Planned, Active, Arrived, and Cancelled. An active trip may force ROAD context when no higher-precedence explicit override exists, but changing context does not itself create a Trip and learning a Route does not create a Trip/Mileage occurrence.
+
+**Why it exists / user outcome:** A user can be ROAD without a specific paid trip, can learn a route without having driven it today, and can complete a trip without corrupting route history or payroll state. These are related facts, not the same row wearing four hats.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `test_verified` for core legacy separation/precedence behavior; **MIRA 2.0 trip-state persistence and provider readback remain unverified.**
+
+**Hard dependencies:** canonical trip authority; `OPS-005`/context precedence contract; stable Trip IDs; route linkage only when a route exists.
+
+**Enables:** route/weather watches, location/ETA tracking, multi-leg work cycles, later mileage/pay occurrence linkage, arrival evidence and trip history.
+
+**Milestone:** travel/operational-state foundation.
+
+**Legacy evidence:**
+- legacy feature ledger category A row 8;
+- `skill/ops-brief-policy/references/state-maintenance.md` explicitly separates reusable Routes, Trip occurrences and Mileage Log occurrences and prohibits creating a Trip merely because a Route changed;
+- `skill/ops-brief-policy/references/route-weather.md` preserves Planned/Active/Arrived/Cancelled trip history;
+- `skill/ops-brief-policy/scripts/test_ops_policy_entry.py` verifies an active trip survives the weekly HOME boundary and forces ROAD, while an explicit HOME override still wins.
+
+**Acceptance / verification boundary:** MIRA 2.0 must create/update/read back Trip lifecycle state independently of context and mileage, then prove precedence behavior without mutating protected legacy production data.
+
+**Compatibility notes:** Paid mileage and work-cycle accounting are intentionally deferred to the next audit packet. `TRIP-001` may reference those records later but does not make them the same authority.
+
+---
+
+### `ROUTE-001` — Learned routes, directional runtime, location and ETA inference
+
+**Description:** MIRA maintains reusable learned route knowledge separately from Trip occurrences. A route is identified by endpoint pair, supports directional route overviews and directional average runtime, can derive ETA for a trip from departure plus stored runtime when no stronger explicit ETA exists, records user-reported current location/time, and may compute bounded time-progress information for corridor reasoning. Explicit user/company route/runtime corrections outrank older learned values. Multi-leg work is represented as separate trip occurrences rather than assuming the first destination is the final return home.
+
+**Why it exists / user outcome:** MIRA should learn how recurring travel actually works instead of repeatedly asking the same route questions or substituting naive map-distance math for the user's real operating history.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `test_verified` for route-average ETA and related trip/weather primitives; route storage/reversal and progress primitives are implemented/specifically documented. **Human-facing ahead/behind interpretation and MIRA 2.0 live authority integration are not yet independently verified.**
+
+**Hard dependencies:** `TRIP-001`; stable Route IDs and endpoint normalization; trustworthy departure/current-location evidence; explicit precedence for user-supplied ETA/runtime.
+
+**Enables:** trip ETA/status, route-weather corridor scoping, runtime learning, current-location freshness prompts, later ahead/behind estimates and paid-mile occurrence association.
+
+**Milestone:** travel/route foundation.
+
+**Legacy evidence:**
+- legacy feature ledger category A row 9;
+- `skill/ops-brief-policy/references/route-weather.md` defines one learned route per unordered endpoint pair, directional overview/runtime, reverse fallback and explicit-user precedence;
+- `skill/ops-brief-policy/references/state-maintenance.md` separates learned terminal-pair Routes from occurrence history and rejects map/odometer substitutes for paid miles;
+- `skill/ops-brief-policy/scripts/ops_policy.py` derives ETA from route average and computes bounded `progress_fraction` from departure/ETA;
+- `skill/ops-brief-policy/scripts/test_ops_policy.py` verifies route-average ETA and its use as route-weather watch expiry.
+
+**Acceptance / verification boundary:** Unit tests must cover endpoint matching, directional runtime/route behavior, explicit ETA precedence, current-location handling and progress bounds. Integration verification requires canonical MIRA 2.0 Route + Trip round trips. Ahead/behind claims must remain labeled inference unless compared against observed location/time or other supported evidence.
+
+**Compatibility notes:** Company-paid mileage is a distinct later feature. Route geometry/runtime can be directional even where a future paid-mile policy is symmetric.
+
+---
+
+### `WEATHER-001` — Context-gated HOME and ROAD weather intelligence
+
+**Description:** Weather behavior depends on the user's selected operating context and active travel state. HOME mode permits home-location weather when it materially affects a HOME decision. ROAD mode can activate bounded route/corridor weather and official road-condition checks tied to an active trip/watch. Route watches have explicit/derived expiry and become inactive at expiry; MIRA must distinguish observed official road conditions from forecasts and estimated corridor position.
+
+**Why it exists / user outcome:** The user needs relevant weather, not a generic forecast dumped into every brief. At home, local conditions matter. On the road, a closure, wind restriction, ice, flooding, or severe-storm timing along the remaining route can matter far more than the weather at home.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `test_verified` for deterministic HOME/ROAD weather gates, route-watch eligibility and expiry in legacy policy. The external NWS/DOT/511 evidence workflow is `specified`; **live MIRA 2.0 external-weather integration is not verified.**
+
+**Hard dependencies:** `OPS-005` or generalized `CTX-001` context resolution; `TRIP-001`; `ROUTE-001` for corridor reasoning when applicable; external authoritative weather/road sources for actual hazard conclusions.
+
+**Enables:** concise home-weather decisions, severe-weather route warnings, corridor restriction checks, weather-watch expiration and failure-isolated external evidence.
+
+**Milestone:** travel/brief evidence foundation.
+
+**Legacy evidence:**
+- legacy feature ledger category A row 10;
+- `skill/ops-brief-policy/scripts/ops_policy.py` returns HOME weather and ROAD route-weather gates plus expiring route-watch state;
+- `skill/ops-brief-policy/scripts/test_ops_policy.py` verifies HOME weather allowance, ROAD-only route-weather behavior, route-average watch expiry, exclusive expiry and inactive HOME route watches;
+- `skill/ops-brief-policy/references/route-weather.md` specifies NWS plus official DOT/511 corridor checks, timing correlation, current-location preference, and observed-vs-forecast distinction;
+- `skill/ops-brief-policy/references/brief-run.md` restricts HOME and ROAD weather evidence to the engine-opened gates.
+
+**Acceptance / verification boundary:** Deterministic gating/expiry tests must pass. Integration verification later requires a MIRA 2.0 sandbox Trip/Route/context state to open the correct gate and an external evidence pass to return source-grounded results without contaminating the opposite context. Provider/source failure must degrade only the weather module.
+
+**Compatibility notes:** Weather location/source choices must be user/deployment configuration. The public repository must not hard-code a private home address or personal route.
 
 ## Audit status
 
 - `M2-G0-002A` audited legacy category-A behaviors 1-5 and assigned `OPS-001` through `OPS-005`.
+- `M2-G0-002B` audited category-A behaviors 6-10 and assigned `CTX-001`, `CTX-002`, `TRIP-001`, `ROUTE-001`, and `WEATHER-001`.
 - The complete historical feature inventory is **not yet imported**. Do not infer absence from this file.
-- The next bounded audit begins with legacy category-A behavior 6: generic context pairs (`HOME/ROAD`, `HOME/TRUCK`, `HOME/FIELD`, `HOME/CAMPUS`, `HOME/OFFICE`, `HOME/AWAY`, custom).
+- The next bounded audit begins with legacy category-A behavior 11: company-paid mileage and estimated gross pay on both Thursday briefs.
