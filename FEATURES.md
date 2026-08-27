@@ -23,7 +23,10 @@ ID families include:
 - `MAIL-*` — email triage, communication safety, evidence ingestion;
 - `CAREER-*` — optional career/job monitoring and fit evaluation;
 - `ORDER-*` — orders, fulfillment, shipments, replacements, returns, refunds and order-lifecycle evidence;
-- `RECEIPT-*` — receipts, purchases, evidence, payment reconciliation;
+- `RECEIPT-*` — canonical purchase/receipt identity, evidence intake, history and classification;
+- `SPEND-*` — evidence-bounded spending summaries and rollups;
+- `PAYMENT-*` — expected merchant charges, settlement matching and financial exceptions;
+- `REIMB-*` — beneficiary allocation and non-merchant reimbursement state;
 - `ASSET-*` — assets, fitment, specifications, manuals, maintenance;
 - `INV-*` — inventory, hierarchical locations, movement, scanning, par levels;
 - `PROFILE-*` — onboarding, roles, family, customization, accessibility;
@@ -432,10 +435,141 @@ Category B is fully audited through row 10.
 - PR #31 contains broad reconciliation/receipt-queue/control-cycle candidates but no narrower verified fulfillment behavior that supersedes these audited records.
 - No category-C1 feature is promoted to MIRA 2.0 integration/live verification from legacy connected Google state.
 
+## Audited receipt and financial-evidence features
+
+### `RECEIPT-001` — Multi-source canonical receipt intake and evidence dedupe
+
+**Description:** MIRA accepts purchase evidence from supported merchant email/forwarded mail, retained files, receipt photos/screenshots, authoritative account/vendor evidence when permitted, and explicit owner confirmation. The conversation or image is only an intake surface. Before creating a transaction, MIRA reconciles vendor/order/invoice/date/amount/item/payment-hint/message/attachment/image-hash/source identity against existing records so multiple evidence copies enrich one canonical Receipt ID instead of becoming duplicate purchases. Missing Gmail does not block a supported owner-confirmed purchase; unavailable fields remain blank and later evidence enriches the same Receipt ID. OCR/extraction is candidate evidence and cannot silently overwrite a verified identifier or transaction fact.
+
+**Why it exists / user outcome:** A purchase should remain one purchase whether MIRA first learns about it from an email, a phone photo, a screenshot or the user saying what they bought. Humans already have enough duplicate receipts without the assistant manufacturing more.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** normalized evidence/source-identity validation and idempotent evidence primitives are implemented/test-supported in the legacy evidence core; photo/manual/email ingestion and canonical dedupe rules are strongly `specified` in receipt policy. PR #31 contains an unmerged durable receipt-processing queue candidate keyed by one receipt/evidence identity, but it is reference evidence only and not MIRA 2.0 implementation. **MIRA 2.0 stock ChatGPT+Google receipt intake/provider readback remains unverified.**
+
+**Hard dependencies:** stable Receipt ID; canonical purchase/evidence authority; provenance/source identity; file/Drive retention when an original is retained; `ORDER-001` when fulfillment evidence is involved; `RECOVERY-002` for downstream projection isolation.
+
+**Enables:** searchable purchase history, order lifecycle, spending rollups, payment reconciliation, asset acquisition and later receipt capture on Android.
+
+**Legacy evidence:** category-C row 6; `receipt-ingestion.md`; `receipt-photo-intake.md`; `receipt-classification-fitment.md`; evidence/source-identity validation in `asset_evidence.py` and its tests; PR #31 candidate `starter/service/receipt_processing.py` demonstrates same-receipt durable processing/readback but is unmerged and architecture-specific.
+
+**Acceptance / verification boundary:** Deterministic fixtures must prove email/photo/manual variants of one transaction converge on one Receipt ID, source provenance survives enrichment, ambiguous identity queues instead of guessing, and OCR cannot overwrite verified facts. MIRA 2.0 integration verification requires synthetic multi-source intake into the sandbox authority plus provider readback, with no legacy production data used as fixtures.
+
+---
+
+### `RECEIPT-002` — Searchable expandable purchase history and connected receipt graph
+
+**Description:** MIRA exposes durable purchase history by canonical Receipt ID with searchable line-item detail and links to connected evidence, assets, identifiers, manuals/specifications and explicit relationships where applicable. Querying the same underlying purchase from a receipt, connected asset or stable identifier should return the same connected graph rather than separate contradictory databases. Household ownership edges that would drag unrelated assets into a purchase query are excluded. User-facing expandable history is a projection over canonical state, not another ledger.
+
+**Why it exists / user outcome:** The user can ask either “what did I buy?” or “what receipt/manual/part evidence belongs to this thing?” and reach the same reality instead of depending on which spreadsheet tab they remembered to search.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `test_verified` for the deterministic connected receipt/asset/identifier graph core. Legacy Google views existed, but **MIRA 2.0 user-facing Receipt Browser/Google readback is not integration/live verified.**
+
+**Hard dependencies:** `RECEIPT-001`; stable Receipt/line/evidence/entity identities; canonical relationship graph; provider/UI projection for user-facing expandable views.
+
+**Enables:** purchase lookup, asset provenance, warranty/manual navigation, support/refund evidence and future Android/web receipt browsing.
+
+**Legacy evidence:** category-C row 7; `receipt-ingestion.md` canonical Receipt Browser/detail model; `asset_evidence.py` `query_graph`; `test_asset_evidence.py` proves receipt and vehicle queries return the same connected graph and identifier queries reach the same receipt/assets.
+
+**Acceptance / verification boundary:** Keep deterministic graph tests, then MIRA 2.0 sandbox integration must write/read back a synthetic receipt with line/evidence/relationship data and prove receipt-, asset- and identifier-origin queries resolve the same canonical records. UI expansion/search is verified separately from the graph core.
+
+---
+
+### `SPEND-001` — Evidence-bounded monthly spending rollup
+
+**Description:** MIRA can summarize a selected month from canonical receipt/email-detected purchase evidence with transaction dedupe, category totals, a monthly total and unresolved/ambiguous items. The output must explicitly state its evidence boundary and must not present itself as complete household/card/bank spending unless a separately verified complete financial authority exists. Confirmation, shipment, delivery, photo and later-enrichment copies of one purchase count once by Receipt ID. Ambiguous ownership/classification stays visible or queued rather than being silently included or excluded.
+
+**Why it exists / user outcome:** The user gets a useful purchase-spending picture without a cheerful lie that an email-derived number equals every dollar that left every account.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** `specified`/skill workflow in the audited legacy tree. The audit did not locate a dedicated deterministic monthly rollup test suite sufficient for `test_verified` status. Legacy live summary state does not become MIRA 2.0 verification.
+
+**Hard dependencies:** `RECEIPT-001`; canonical one-count transaction totals/allocations; `RECEIPT-003` classification where category rollups are requested; explicit evidence-coverage metadata.
+
+**Enables:** monthly category summaries and later comparison against complete connected financial data without conflating the two.
+
+**Legacy evidence:** category-C row 8; monthly-rollup section of `receipt-ingestion.md`; line/allocation single-count rules in `receipt-classification-fitment.md`.
+
+**Acceptance / verification boundary:** Add deterministic fixtures for duplicate evidence variants, mixed receipts, excluded/unresolved classifications, refunds/revisions and evidence-boundary labeling. MIRA 2.0 integration verification requires a synthetic month in the sandbox and a reproducible rollup whose total equals included canonical Receipt IDs exactly once.
+
+---
+
+### `RECEIPT-003` — Generic configurable receipt taxonomy and line classification
+
+**Description:** Receipt classification is line-item based and supports generic categories/subcategories, search tags, cost owners, assets/projects and mixed/multi-category receipts without forcing an entire transaction into one label. The portable product may provide a sensible generic baseline such as Automotive, Bills & Utilities, Education, Electronics & Computer, Food & Dining, Health, House, Subscriptions & Services, Tools, Travel and General, but categories must remain configurable and must not hard-code this user's private assets, merchants or household as universal defaults. Ambiguous classification is queued after reasonable evidence work rather than guessed.
+
+**Why it exists / user outcome:** One hardware-store receipt can contain house parts, tools and something for a vehicle without MIRA declaring the whole transaction “Automotive” because one bolt looked enthusiastic.
+
+**Requirement status:** `accepted` / required by downstream spending and asset workflows.
+
+**Delivery/evidence:** classification semantics are strongly `specified`; the old ledger classified the general taxonomy itself as `spec-only`. Existing evidence cores validate identities/relationships, but this audit found no generic configurable taxonomy/classifier implementation sufficient to promote the feature beyond specification.
+
+**Hard dependencies:** `RECEIPT-001`; stable line identities; classification queue; balanced `Expense Ledger` allocation semantics.
+
+**Enables:** `SPEND-001`, asset/fitment assignment, project/cost-owner reporting and user-defined organization.
+
+**Legacy evidence:** category-C row 9; `receipt-ingestion.md` generic category baseline and ambiguity rules; `receipt-classification-fitment.md` independent line classification, Mixed/Multi-category summary and balanced allocations.
+
+**Acceptance / verification boundary:** Implement a configuration-backed taxonomy plus deterministic tests for mixed receipts, unknown categories, user-added categories, correction without Receipt-ID mutation and queue-after-investigation behavior. Integration verification requires sandbox persistence/readback without any private deployment categories encoded in public source.
+
+---
+
+### `PAYMENT-001` — Expected merchant charge and settlement reconciliation
+
+**Description:** MIRA tracks one canonical payment case per Receipt ID/current merchant financial outcome, separate from the purchase ledger itself. The latest supported same-order revision establishes expected settlement; account observations can remain Awaiting Settlement, Pending Match, Matched, Split Settlement, Overcharged, Undercharged, Pending Release, Settlement Contradiction, Refund/Reversal Expected, Resolved No Settlement or Ambiguous. Pending transactions are not final. Debit and credit direction are preserved. A no-settlement claim cannot hide a nonzero posted merchant net, and unmatched merchant charges are investigated rather than fabricated into receipts.
+
+**Why it exists / user outcome:** The user can tell whether the merchant charged what the order actually says, whether a refund/reversal is really resolved, and whether a pending authorization is merely still doing whatever mysterious ritual payment networks perform for several days.
+
+**Requirement status:** `accepted` and required for financially trustworthy receipt lifecycle.
+
+**Delivery/evidence:** deterministic merchant-payment reconciliation is `test_verified` in the legacy executable for missing/pending/exact/split settlement, overcharge, no-settlement contradiction, debit-credit zero-net resolution, pending credits and fail-closed money/state/identity validation. **Connected bank/card provider matching and MIRA 2.0 payment authority readback remain unverified.**
+
+**Hard dependencies:** `RECEIPT-001`; latest supported merchant expected amount; stable Payment Case/Receipt identity; financial-account adapter only when authorized/available; `ORDER-003` for cancellation/refund expectations; `RECOVERY-002`.
+
+**Enables:** expected-charge validation, over/undercharge action, refund/reversal resolution and later complete finance comparison without duplicating purchase history.
+
+**Legacy evidence:** category-C row 10 financial portion; `payment-reconciliation.md`; `payment_reconciliation.py`; `test_payment_reconciliation.py`; `financial_resolution.py`/tests for timed expected corrections; cancellation/financial rules in `receipt-classification-fitment.md`.
+
+**Acceptance / verification boundary:** Preserve deterministic payment tests. MIRA 2.0 integration verification requires synthetic/approved account observations to bind to one sandbox payment case with provider readback and no duplicated financial transaction record. Full-bank coverage is a separate category-C3/provider capability and must not be inferred here.
+
+---
+
+### `REIMB-001` — Beneficiary allocation and household reimbursement reconciliation
+
+**Description:** A merchant purchase remains one canonical Receipt ID and gross merchant total even when part or all of it benefits another person, another person's asset, a shared project, employer/client or other cost owner. Expense allocations identify the economic beneficiary/asset. A separate stable Reimbursement ID records money expected back and actually received with states such as Expected, Partially Received, Received, Waived or Disputed. Reimbursement is not a merchant refund, does not rewrite merchant lifecycle or gross spend, and is not wages/business revenue merely because money came in. Net household cost subtracts verified reimbursement exactly once from the supported beneficiary allocation.
+
+**Why it exists / user outcome:** Buying a $600 mixed receipt with $400 for somebody else should remain a $600 merchant purchase with a $400 reimbursement, not mutate into a fictional $200 receipt or a vendor refund that never happened.
+
+**Requirement status:** `accepted`.
+
+**Delivery/evidence:** strongly `specified` in the legacy reimbursement/receipt contracts. The audit found no dedicated deterministic reimbursement engine/test suite sufficient for `implemented` or `test_verified` status. Provider/identity integration is also unverified in MIRA 2.0.
+
+**Hard dependencies:** `RECEIPT-001`; stable beneficiary/asset identity; balanced expense allocations; explicit expected-reimbursement evidence; incoming-payment evidence when used; separation from `PAYMENT-001` merchant settlement/refund state.
+
+**Enables:** gross-vs-net household cost, purchases for family/other people, reimbursement follow-up and accurate beneficiary reporting.
+
+**Legacy evidence:** category-C row 10 reimbursement/beneficiary portion; `household-reimbursement.md`; receipt/allocation invariants in `receipt-ingestion.md` and `receipt-classification-fitment.md`.
+
+**Acceptance / verification boundary:** Implement deterministic reimbursement state/allocation logic and tests for mixed receipts, partial receipt, waiver/dispute, merchant refund coexistence, duplicate inflow prevention and exact net-household-cost math. Integration verification requires synthetic beneficiary/reimbursement state plus approved incoming-payment evidence/readback.
+
+## Category C2 consistency findings
+
+- `RECEIPT-001` makes Receipt ID the transaction identity and lets multiple evidence forms enrich it; mail/photo/chat/file surfaces are not separate ledgers.
+- `RECEIPT-002` has genuine deterministic graph-query evidence, but live user-facing Receipt Browser/provider readback remains a separate gate.
+- `SPEND-001` is deliberately evidence-bounded and cannot masquerade as complete account spending.
+- `RECEIPT-003` remains specification-level and needs a generic configurable implementation/test layer.
+- `PAYMENT-001` merchant settlement is distinct from `REIMB-001` reimbursement. A merchant refund changes merchant financial outcome; a reimbursement changes household net cost while preserving gross purchase history.
+- PR #31's receipt-processing queue is an unmerged architecture candidate and does not override the stock ChatGPT+Google MIRA 2.0 direction or provide implementation credit.
+- No C2 feature is promoted to MIRA 2.0 integration/live verification from legacy Google/account state.
+
 ## Audit status
 
 - Category A is complete through `M2-G0-002D`.
 - Category B is complete through `M2-G0-003B`.
 - `M2-G0-004A` audited category-C rows 1-5: `ORDER-001` through `ORDER-005`.
+- `M2-G0-004B` audited category-C rows 6-10: `RECEIPT-001`, `RECEIPT-002`, `SPEND-001`, `RECEIPT-003`, `PAYMENT-001`, `REIMB-001`.
 - The complete historical feature inventory is still in progress.
-- The next bounded audit begins with category-C row 6: receipt intake from email, files, photos/screenshots and manual entry.
+- The next bounded audit begins with category-C row 11: optional subscription/free-trial tracking, followed by complete financial-ingestion direction and category-C closure.
