@@ -36,8 +36,11 @@ ID families include:
 - `KNOW-*` — retained manuals/reference knowledge, knowledge identity and document relationships;
 - `SPEC-*` — technical specifications, applicability and provenance;
 - `SHOP-*` — active shopping/procurement intent and fulfillment reconciliation;
-- `INV-*` — inventory participation, movement, scanning, par levels and inventory projections;
+- `INV-*` — canonical inventory participation and query/projection behavior;
 - `LOC-*` — hierarchical physical location identity and placement/observation semantics;
+- `MOVE-*` — inventory movement events and scan-driven relocation workflows;
+- `PAR-*` — target stock levels, observed quantity and optional sensing;
+- `GROCERY-*` — grocery/pantry/freezer stock and shopping-list reconciliation;
 - `PROFILE-*` — onboarding, roles, family, customization, accessibility;
 - `PROVIDER-*` — Google/Microsoft/Apple/storage/runtime portability;
 - `CLIENT-*` — ChatGPT, Android, web, desktop, CLI and device surfaces;
@@ -498,10 +501,121 @@ Category C is complete. Fulfillment, purchase identity, bounded spending, mercha
 - PR #31 location hierarchy code remains salvage/reference evidence only; it neither changes the MIRA 2.0 evidence level nor proves the intended-versus-observed requirement.
 - No category-D2 feature is promoted to MIRA 2.0 integration/live verification from legacy Google state or unmerged PR #31 code.
 
+## Audited inventory movement, query, par and grocery features
+
+### `MOVE-001` — QR/barcode-driven inventory movement with explicit event/readback semantics
+
+**Description:** MIRA may use a QR code, barcode or other exact supported identifier to resolve a canonical Entity UUID and a stable Location UUID, then record a movement/placement observation for that existing entity. A scan never creates a second physical identity merely because a label was new, and ambiguous identifier/location resolution fails closed. Movement is an explicit event or observation with source, time and idempotency identity; successful mutation requires target readback. A scan-driven move updates current/last-observed placement under `LOC-001` but must not silently redefine the item’s intended/canonical home location. Scan-out/removal likewise records state rather than deleting the asset. Manual fallback may resolve the same canonical identifiers when camera scanning is unavailable.
+
+**Why it exists / user outcome:** Scanning a bin and an item should answer “I put this here” reliably, not rename the item, clone it, or permanently change where it is supposed to live.
+
+**Requirement status:** `accepted / required for inventory movement workflow`.
+
+**Delivery/evidence:** the historical ledger recorded this as spec-only. PR #31 raises the evidence ceiling to **unmerged implementation/test candidate**: shared smart-capture code resolves item/location codes, native Android declares camera/ML Kit barcode support, contract tests require smart-capture/barcode functionality, and the service exposes relocation commands with audit/readback. However, PR #31 remains unmerged reference code and its relocation path overwrites one `assets.location_uuid`, collapsing intended and observed placement. Therefore `MOVE-001` is not MIRA 2.0 implemented/test-verified and depends on the `LOCATION-STATE-001` repair before salvage.
+
+**Hard dependencies:** `INV-001`; `IDENT-001`; `LOC-001`; `LOCATION-STATE-001`; stable movement event/idempotency identity; mutation readback.
+
+**Enables:** scan-in/out, shop/loft item movement, container workflows and later Android inventory capture.
+
+**Legacy evidence:** category-D row 11; PR #31 `starter/clients/pwa/smart-capture.js`; `starter/tests/test_smart_capture_contract.py`; Android camera/barcode hooks; service `inventory.location.resolve_code`, `inventory.asset.resolve_code`, `inventory.asset.relocate` commands.
+
+**Acceptance / verification boundary:** Implement deterministic movement events with replay-safe idempotency, exact/ambiguous identifier handling, scan-in/out semantics, missing-location handling and target readback. Tests must prove movement changes observed/current location without changing intended home, repeated scans do not duplicate movement effects, and unresolved scans make no mutation.
+
+---
+
+### `INV-002` — Queryable household, loft and shop inventory projection
+
+**Description:** MIRA exposes searchable/queryable views over canonical entities, identifiers, relationships, quantities and location state so the user can ask what exists, where it belongs, where it was last observed, what is in a container/location, or find an item by exact identifier or supported descriptive criteria. The query surface is a projection over `ASSET-001`/`INV-001`/`LOC-001`, not a second editable inventory database. Queries preserve ambiguity and provenance rather than fabricating certainty from a label match, and broad ownership joins must not turn one item query into the entire household graph.
+
+**Why it exists / user outcome:** Household junk can be organized like a small parts store and found by query without creating a second spreadsheet whose contents drift from the actual asset/location state.
+
+**Requirement status:** `required`.
+
+**Delivery/evidence:** legacy requirement was specification-level. PR #31 contains substantial **unmerged implementation/test candidate** evidence: inventory query commands, identifier/location joins, hierarchy path endpoints and full-inventory UI contract tests covering assets, assigned inventory, identifiers, evidence, media, violations, journal and audit surfaces. Because the branch is unmerged and its location model still collapses intended/observed state, MIRA 2.0 implementation/integration credit remains unearned.
+
+**Hard dependencies:** `INV-001`; `LOC-001`; `IDENT-001`; `ASSET-003` graph/query semantics; `LOCATION-STATE-001` for complete “belongs vs last seen” answers.
+
+**Enables:** garage/loft storage lookup, inventory browser, barcode workflows, par-level views and future family inventory surfaces.
+
+**Legacy evidence:** category-D row 12; PR #31 service inventory query/hierarchy endpoints and `starter/tests/test_full_inventory_ui.py` as unmerged reference evidence.
+
+**Acceptance / verification boundary:** Sandbox queries must return canonical Entity UUIDs and both intended/observed location semantics, support exact identifier and bounded text/location queries, preserve ambiguity, and prove UI/query replay does not create or mutate a second authority.
+
+---
+
+### `PAR-001` — Target/par quantity with opt-in under-level notification
+
+**Description:** Consumable or replenishable stock may define an explicit target/par quantity separately from the latest supported observed quantity. Reorder/under-level state derives deterministically from those facts and configurable threshold semantics. Alerts are opt-in per user/category/item policy, consolidate rather than creating one permanent scheduler/task per item, and are replay-safe so repeated observations below par do not emit duplicate unresolved alerts. Purchases, consumption and manual corrections change observed quantity only from supported evidence; they do not silently rewrite the target par. A target change likewise does not fabricate a stock movement.
+
+**Why it exists / user outcome:** MIRA can tell the user “you are low on this” without confusing how much should be stocked with how much is actually present.
+
+**Requirement status:** `accepted`.
+
+**Delivery/evidence:** `specified` in the historical feature ledger. Repository searches found no dedicated par-level/reorder/threshold implementation or deterministic tests in the audited legacy tree or PR #31. It must not inherit implementation credit from generic inventory UI/movement code.
+
+**Hard dependencies:** canonical quantity/stock observation model; `INV-001`; stable item identity; optional `GROCERY-001` for food-specific use; consolidated notification/control-cycle semantics.
+
+**Enables:** consumable replenishment, low-stock briefs, grocery-list suggestions and optional sensor-driven stock estimation.
+
+**Legacy evidence:** category-D row 13 and associated historical product direction; no executable implementation located during D3 audit.
+
+**Acceptance / verification boundary:** Add deterministic tests for observed quantity versus target par, exact threshold crossing, corrections, target changes, opt-in/out, repeated below-par observations, recovery above threshold and consolidated alert idempotency.
+
+---
+
+### `PAR-002` — Optional scale-based passive stock sensing
+
+**Description:** A scale/load-cell or similar passive sensor may contribute quantity/weight observations for configured consumables when explicitly enabled. Sensor readings are evidence inputs, not canonical identity and not automatically truth: calibration, tare/container weight, unit conversion, noise/outliers, stale data and confidence must be handled before a reading can update an observed-stock estimate. Manual/receipt/scan corrections remain able to supersede or reconcile sensor estimates. Scale hardware is optional and can never become a universal prerequisite for inventory, par levels, groceries or MIRA itself.
+
+**Why it exists / user outcome:** Frequently used consumables can eventually update with less manual scanning, without turning a flaky load cell under a bin into the supreme authority on household reality.
+
+**Requirement status:** `proposed / optional`.
+
+**Delivery/evidence:** `not_present` in the historical ledger and no relevant scale/weight-sensor inventory implementation was found during repository/PR #31 search. This remains future enhancement/research, not current milestone work.
+
+**Hard dependencies:** `PAR-001`; canonical observation/provenance model; optional hardware adapter; calibration/confidence semantics.
+
+**Enables:** passive consumable estimation where worthwhile; does not block any other inventory capability.
+
+**Legacy evidence:** category-D row 14; historical proposal only.
+
+**Acceptance / verification boundary:** If promoted later, synthetic sensor tests must cover calibration/tare, noisy readings, stale samples, unit conversion, confidence, sensor/manual disagreement and failure isolation. Hardware/live verification is separately required before claiming real-world accuracy.
+
+---
+
+### `GROCERY-001` — Grocery list, pantry and freezer stock reconciliation
+
+**Description:** MIRA supports food/household-consumable stock across configured pantry/freezer/fridge/storage locations and a grocery procurement list while keeping durable purchase receipts separate. Grocery stock tracks product/item identity or practical grouped identity, quantity/unit where useful, location, freshness/expiration when supported and evidence/provenance. Grocery-list intent is active procurement state and reconciles with purchases/owner confirmation under `SHOP-001`; a receipt can inform stock without becoming the pantry database. Consumption, spoilage, transfer and manual correction are stock events/observations. Ambiguous package size/product identity remains unresolved rather than corrupting counts. The model permits coarse practical tracking when serial-level asset treatment would be absurd.
+
+**Why it exists / user outcome:** MIRA can know what food is on hand and what needs buying without forcing a box of pasta to behave like a serialized power tool or turning the grocery list into purchase history.
+
+**Requirement status:** `accepted`.
+
+**Delivery/evidence:** `specified` in the historical feature ledger and product discussions. Repository searches found no dedicated grocery/pantry/freezer executable model or deterministic tests in the audited legacy tree or PR #31, so it remains below implementation credit.
+
+**Hard dependencies:** `SHOP-001`; `INV-001`; `LOC-001`; practical quantity/unit observation model; optional `PAR-001`; `RECEIPT-001` only as purchase evidence, not stock authority.
+
+**Enables:** pantry/freezer queries, low-stock grocery suggestions, purchase-to-stock reconciliation and D4 recipe/meal-planning availability checks.
+
+**Legacy evidence:** category-D row 15; historical feature requirement/product direction; no dedicated executable implementation located during D3 audit.
+
+**Acceptance / verification boundary:** Deterministic tests must cover grocery-list intent versus receipt history, purchase-to-stock reconciliation, consumption/spoilage/transfer, package/unit ambiguity, pantry/freezer location changes, manual corrections and replay without duplicate stock increments.
+
+## Category D3 consistency findings
+
+- `MOVE-001` is an event/observation workflow over canonical `INV-001` identity and `LOC-001` state; scanning cannot become identity authority.
+- PR #31 smart-capture/relocation code is useful salvage evidence but currently overwrites a single location field and therefore cannot satisfy the intended-versus-observed contract.
+- `INV-002` is a read/query projection, not another mutable inventory database.
+- `PAR-001` separates target stock from observed stock and has no executable evidence located yet.
+- `PAR-002` remains optional/proposed and absent; no other inventory feature depends on owning scale hardware.
+- `GROCERY-001` keeps grocery procurement/stock distinct from receipt history and from serial-style durable asset handling where that would be nonsensical.
+- No category-D3 feature is promoted to MIRA 2.0 integration/live verification from legacy Google state or unmerged PR #31 code.
+
 ## Audit status
 
 - Categories A, B and C are complete.
 - `M2-G0-005A` completed category-D rows 1-5.
-- `M2-G0-005B` audited category-D rows 6-10 as `KNOW-001`, `SPEC-001`, `SHOP-001`, `INV-001`, and `LOC-001`.
+- `M2-G0-005B` completed category-D rows 6-10.
+- `M2-G0-005C` audited category-D rows 11-15 as `MOVE-001`, `INV-002`, `PAR-001`, `PAR-002`, and `GROCERY-001`.
 - The complete historical feature inventory is still in progress.
-- The next bounded audit begins with category-D row 11: QR/barcode scan-in and scan-out.
+- The next bounded audit is category-D row 16 only: recipes, meal planning and shopping linkage, followed by category-D consistency closure.
