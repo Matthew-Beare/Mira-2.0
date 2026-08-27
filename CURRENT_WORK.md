@@ -4,73 +4,73 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 ## Completed packet before this branch
 
-### `M2-G0-006F` — Feature Audit Slice E6 — provider onboarding/bootstrap and category-E closure
+### `M2-G0-007A` — Feature Audit Slice F1 — core life-service module boundaries
 
-- **Merged PR:** #19
-- **Merge SHA:** `2adf361c86731d76819acc7b24b025c47bb3a730`
-- **Main handoff commit activating F1:** `ac44f475b25d3245fceeaade198f3cc2a45d567d`
-- **Result:** all 26 historical category-E rows are accounted for and remotely read back on `main`.
+- **Merged PR:** #20
+- **Merge SHA:** `9925b1b097342626bb7f2c16d94e2327b144de5c`
+- **Audited rows:** F1-F5 — Briefs/action digest; Next-action planner; Email triage; Orders/shipments; Receipt archive.
+- **Audited feature:** `SERVICE-002` plus canonical service-to-domain mappings.
+- **Result:** service activation, dependency readiness, recommendation, implementation evidence and provider capability are now explicitly separated; two semantic dependency defects and one legacy activation-migration ambiguity are ranked for repair.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-007A`
-- **Name:** Feature Audit Slice F1 — core life-service module boundaries
+- **Packet ID:** `M2-G0-007B`
+- **Name:** Feature Audit Slice F2 — finance, appointment/calendar, and administrative-health services
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-007a-core-life-services`
-- **Branch start SHA:** `ac44f475b25d3245fceeaade198f3cc2a45d567d`
-- **Research checkpoint commit:** `c6fd0905ab358229631b85cec919352d28098bc1`
-- **Feature registry commit:** `5eee407ee19a129b63e5172f88b1a873e39b77f5`
-- **Backlog checkpoint commit:** `b60a2f91f96c95c00c24e76759b0698b2fae6dad`
-- **Acceptance checkpoint commit:** `648e4ce189c2449cd3b1e6fe5df723c069ec7a8c`
-- **Scope-cleanup commit:** `531ed55f3f43f60967b0da1fdefea1608d6bcfbc`
-- **Status:** acceptance and scope cleanup complete; PR/merge/readback pending.
+- **Branch:** `audit/g0-007b-finance-calendar-health-services`
+- **Base merge SHA:** `9925b1b097342626bb7f2c16d94e2327b144de5c`
+- **Status:** packet activated; branch creation and forensic evidence pass next.
 
-## Audited F1 rows
+## Exact category-F scope in this packet
 
-1. Briefs/action digest.
-2. Next-action planner.
-3. Email triage.
-4. Orders/shipments.
-5. Receipt archive.
+Audit exactly legacy category-F rows 6-8:
 
-## Completed acceptance evidence
+6. **Personal finance organization** — ACCEPTED direction; partial reconciliation executables, broader service specification-only.
+7. **Appointments/calendar/reminders** — REQUIRED; executable reminder planner + calendar/skill workflow; provider projection requires readback.
+8. **Administrative health organization** — PROPOSED/ACCEPTED direction; medication-reminder safety core executable; broader service specification-only and must exclude diagnosis/dosing.
 
-1. Accounted for all five F1 ledger rows without duplicating existing `OPS-*`, `TASK-*`, `MAIL-*`, `ORDER-*` or `RECEIPT-*` feature families.
-2. Added `SERVICE-002` — activatable service bundles over canonical behaviors with dependency-derived readiness.
-3. Preserved `SERVICE-001` as the independent activation-state authority. Recommendation, activation, implementation evidence, dependency readiness and provider capability remain separate facts.
-4. Recorded the five service mappings:
-   - Briefs → `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, `RECOVERY-002` plus service activation/composition;
-   - Next actions → `TASK-001`, `TASK-002` plus service activation/composition;
-   - Email triage → `MAIL-001`, `MAIL-002`, `MAIL-003` plus service activation/composition;
-   - Orders/shipments → `ORDER-001`, `ORDER-002`, `ORDER-003`, `ORDER-005` plus service activation/composition;
-   - Receipt archive → `RECEIPT-001`, `RECEIPT-002`, `RECEIPT-003` plus service activation/composition.
-5. Verified generic service composition/dependency semantics have deterministic legacy test evidence: unknown refs/cycles fail, required-child failure blocks affected aggregate service, optional-child failure degrades affected path, unrelated workflows remain unchanged, and no dependency install/enable occurs automatically.
-6. Preserved communication safety: Email triage includes `MAIL-002`; activation cannot grant outbound-send authority.
-7. Preserved commerce separation: Orders/shipments and Receipt archive are distinct service bundles and do not merge fulfillment, purchase identity, receipt archive or settlement authorities.
-8. Found and recorded two real dependency defects:
-   - legacy `f-01` Briefs omits A2 / `OPS-002`, so MIRA 2.0 must add single-dispatcher/no-duplicate-schedule safety to the canonical service bundle;
-   - legacy `f-04` Orders/shipments omits C4 / `ORDER-004`, so MIRA 2.0 must add replacement/supersession correctness to the canonical service bundle.
-9. Found and recorded legacy activation-coupling ambiguity: `order_lifecycle_enabled` maps only to `orders_shipments` although its prompt says “receipt and order lifecycle”; canonical MIRA keeps `orders_shipments` and `receipt_archive` separately activatable.
-10. Added ranked work `SERVICE-COMPOSE-001`, `SERVICE-DEPS-001`, and `SERVICE-MIGRATION-001`.
-11. Re-ranked `MIRA-SKILL-001` to depend on service composition and `OPS-BRIEF-VSLICE` to require service composition/dependency repair.
-12. Verified `FEATURES.md` is bounded to the F1 service-composition section plus audit-status advancement.
-13. Removed the accidental unrelated `IDENT-001` change from `INVENTORY-QUERY-001`; final branch comparison against `main` is scope-clean.
-14. Final pre-PR comparison shows exactly three changed files: `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`; branch is five commits ahead and zero behind before this closing CURRENT_WORK commit.
-15. No F1 service is promoted to MIRA 2.0 integration/live status from legacy catalog, skill or deterministic test evidence alone.
-16. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
+Do not expand this packet into F9 Shopping/procurement, F10 Recipes/meals/groceries, household/laundry/routines, later category-F rows, category G, or executable MIRA 2.0 coding.
+
+## Handoff evidence used to bound F2
+
+1. The authoritative forensic ledger places F6-F8 together immediately after the F1 service slice and before shopping/food services.
+2. Legacy dependency map:
+   - `f-06` requires `c-10` and treats `c-12` as optional;
+   - `f-07` requires `b-01`, `b-02`, `b-03`, `b-06`;
+   - `f-08` requires `b-04` and treats `b-05` as optional.
+3. F6-F8 share privacy/sensitive-state/readback concerns and therefore form a tighter bounded slice than combining them with shopping/food.
+4. The legacy Personal finance onboarding prompt is broader than the current dependency map: spending visibility, budgeting, savings, debt, recurring bills, purchase planning and cash-flow monitoring are discussed, while the dependency graph currently points primarily at reconciliation plus optional complete-account ingestion. This must be reconciled rather than silently treated as complete.
+5. Legacy appointment service prose includes verified appointment reconciliation, canonical appointment identity, one linked Calendar event, reminder profiles, provider readback, revision/cancellation update, ambiguity handling and independent Calendar Projection. Category-B audit named reminder/visibility behaviors but did not fully normalize this broader appointment-reconciliation/projection surface, so F7 may expose a distinct missing canonical feature rather than being only a wrapper.
+6. `appointment_identity.py` and `test_appointment_identity.py` provide deterministic evidence for provider/service identity resolution, source binding, supported research, owner correction, ambiguity failure and canonical appointment title; they do not alone prove Calendar projection or provider write/readback.
+7. F8 must keep administrative health organization distinct from diagnosis, treatment, dose inference, missed-dose advice and caregiver-sharing authority. Existing `REMIND-001`/`REMIND-002` cover medication reminder safety/sharing but may not represent the broader administrative-health service boundary.
+
+## Acceptance criteria
+
+1. Account for F6-F8 with stable semantic mappings and create new feature IDs only where distinct behavior/authority is genuinely missing.
+2. Reuse `SERVICE-001`/`SERVICE-002` for activation/readiness rather than duplicating service machinery.
+3. For F6, separate bounded spending/reconciliation, beneficiary/reimbursement, subscriptions/recurring commitments and complete financial-account ingestion; do not let a broad “finance” service imply capabilities not present or authorized.
+4. For F7, determine whether verified appointment reconciliation/calendar projection requires a new canonical `CAL-*` feature distinct from existing reminder/lookahead/visibility features, and record exact evidence/verification boundary.
+5. For F8, preserve medical-safety boundaries: administrative organization only, no diagnosis/dosing/treatment inference, no caregiver sharing without explicit permission.
+6. Record required versus optional child behaviors and note semantic dependency defects in legacy F6-F8 mappings.
+7. Preserve provider readback requirements for Calendar/financial mutations and exact account/resource scope.
+8. Keep service activation separate from capability/permission state.
+9. Reconcile relevant deterministic legacy tests and PR #31/reference evidence without promoting unmerged/provider/live claims.
+10. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` unless a hard audit dependency requires another authority-file change.
+11. Open a bounded PR, verify scope, merge and remotely read back before advancing to F3.
+12. Touch no legacy Google production state and change no executable MIRA 2.0 product behavior.
 
 ## Exact next action
 
-Open a pull request from `audit/g0-007a-core-life-services` to `main`, verify server-side changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, verify mergeability, merge with the exact PR head SHA, remotely read back F1 on `main`, then inspect the authoritative forensic ledger/dependency evidence beginning with category-F row 6 **Personal finance organization** and activate `M2-G0-007B` from current `main` with an exact bounded scope before creating its branch.
+Create branch `audit/g0-007b-finance-calendar-health-services` from this handoff commit. Then audit F6 **Personal finance organization** first: reconcile the legacy `f-06` dependency map against category-C canonical features and onboarding/module-catalog finance intent, determine whether the service needs `SPEND-001`, `PAYMENT-001`, `REIMB-001`, `SUB-001` and/or optional `FIN-001`, and record evidence/permission boundaries before moving to F7.
 
-## Next packet after merge
+## Next packet after F2
 
-### `M2-G0-007B` — Feature Audit Slice F2
+### `M2-G0-007C` — Feature Audit Slice F3
 
-Begin with category-F row 6 **Personal finance organization**. Determine the rest of the bounded F2 slice from the authoritative forensic ledger and dependency evidence at handoff; do not pre-expand from conversational memory.
+Begin with category-F row 9 **Shopping/procurement** and determine the rest of the bounded F3 slice only after F2 closes. Do not pre-expand from conversational memory.
 
 ## Recovery protocol
 
