@@ -17,15 +17,12 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 |---|---|---|---|---|
 | `AUDIT-A` | PREREQUISITE | Brief/time/tasking/operational-state reconstruction. | G0-001 | complete |
 | `AUDIT-B` | PREREQUISITE | Calendar/reminders/mail/communication safety. | AUDIT-A | complete |
-| `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | **complete through `M2-G0-004C`** |
-| `AUDIT-C1` | PREREQUISITE | Fulfillment lifecycle foundations. | AUDIT-B | complete; `ORDER-001`…`ORDER-005` |
-| `AUDIT-C2` | PREREQUISITE | Receipt/history/spend/taxonomy/payment/reimbursement. | AUDIT-C1 | complete; `RECEIPT-001`…`RECEIPT-003`, `SPEND-001`, `PAYMENT-001`, `REIMB-001` |
-| `AUDIT-C3` | PREREQUISITE | Optional subscription/full-finance direction and C closure. | AUDIT-C2 | **complete in `M2-G0-004C`**; `SUB-001`, `FIN-001` |
-| `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence. | AUDIT-C | **next; split D1-D4** |
-| `AUDIT-D1` | PREREQUISITE | D rows 1-5: stable asset identity/fitment; purchase evidence/manual/warranty/maintenance/spec linkage; bidirectional receipt↔asset queries; namespaced identifiers; barcode/photo/email enrichment. | AUDIT-C | **next packet `M2-G0-005A`** |
-| `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual discovery/Drive retention; technical specs provenance; shopping intent separate from purchase; immutable inventory/item IDs; hierarchical intended/last-moved locations. | AUDIT-D1 | queued |
+| `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | complete through `M2-G0-004C` |
+| `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence. | AUDIT-C | **in progress; D1 complete, D2 next** |
+| `AUDIT-D1` | PREREQUISITE | D rows 1-5: immutable asset identity; fitment relationships; asset evidence; bidirectional graph; identifiers; enrichment. | AUDIT-C | **complete in `M2-G0-005A`**; `ASSET-001`, `FITMENT-001`, `ASSET-002`, `ASSET-003`, `IDENT-001`, `EVID-001` |
+| `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual discovery/Drive retention; technical specs provenance; shopping intent separate from purchase; immutable inventory IDs; hierarchical intended/last-moved locations. | AUDIT-D1 | **next packet `M2-G0-005B`** |
 | `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; queryable household/shop inventory; consumable par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | queued |
-| `AUDIT-D4` | PREREQUISITE | D row 16: recipes/meal planning/shopping linkage; then category-D consistency closure. | AUDIT-D3 | queued |
+| `AUDIT-D4` | PREREQUISITE | D row 16: recipes/meal planning/shopping linkage; category-D closure. | AUDIT-D3 | queued |
 | `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | queued |
 | `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | queued |
 | `AUDIT-G` | PREREQUISITE | ChatGPT/Android/web/desktop/CLI/device surfaces. | AUDIT-F | queued |
@@ -36,12 +33,14 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
-| `ORDER-STALE-001` | PREREQUISITE | Implement/test `ORDER-005` five-business-day stale-shipment escalation including weekends, progress/ETA reset and alert dedupe. | `ORDER-002`, business-day semantics | queued; audit gap |
-| `SPEND-ROLLUP-001` | HARDENING | Implement deterministic `SPEND-001` monthly evidence-bounded rollup tests. | `RECEIPT-001`, `RECEIPT-003` | queued; audit gap |
-| `RECEIPT-TAXONOMY-001` | PREREQUISITE | Implement configuration-backed generic `RECEIPT-003` taxonomy/classifier. | `RECEIPT-001` | queued; audit gap |
-| `REIMB-CORE-001` | HARDENING | Implement/test deterministic `REIMB-001` reimbursement lifecycle and net-household-cost math. | `RECEIPT-001`, beneficiary identity/allocation | queued; audit gap |
-| `SUBSCRIPTION-TRACK-001` | LATER | Specify/implement opt-in `SUB-001` subscription/free-trial tracking only if promoted by product priority; disabled by default, no per-subscription scheduler or auto-cancel. | stable receipt/finance evidence + explicit activation | deferred optional capability |
-| `FINANCE-CONNECTOR-001` | LATER | Design/implement `FIN-001` authorized complete-account ingestion with coverage/sync/readback/privacy semantics. | provider abstraction + privacy model + explicit user authorization | deferred infrastructure |
+| `FITMENT-ENGINE-001` | HARDENING | Add deterministic automatic `FITMENT-001` resolution tests/engine for multi-vehicle ambiguity, exclusion evidence, modifications, unique application and no-guess queue behavior. | `ASSET-001`, `IDENT-001`, fitment evidence | queued; explicit relationship core is test-verified but inference engine is not |
+| `ASSET-SERVICE-001` | HARDENING | Define/test structured warranty and maintenance lifecycle records under `ASSET-002` instead of relying only on generic evidence links/policy prose. | `ASSET-001`, `EVID-001` | queued; broader evidence graph exists but warranty/maintenance depth is not dedicated/tested |
+| `ORDER-STALE-001` | PREREQUISITE | Implement/test `ORDER-005` five-business-day stale-shipment escalation. | `ORDER-002`, business-day semantics | queued |
+| `SPEND-ROLLUP-001` | HARDENING | Implement deterministic `SPEND-001` monthly evidence-bounded rollup tests. | `RECEIPT-001`, `RECEIPT-003` | queued |
+| `RECEIPT-TAXONOMY-001` | PREREQUISITE | Implement configuration-backed generic `RECEIPT-003` taxonomy/classifier. | `RECEIPT-001` | queued |
+| `REIMB-CORE-001` | HARDENING | Implement/test deterministic `REIMB-001` reimbursement lifecycle and net-household-cost math. | `RECEIPT-001`, beneficiary identity/allocation | queued |
+| `SUBSCRIPTION-TRACK-001` | LATER | Specify/implement opt-in `SUB-001` only if promoted by product priority. | stable receipt/finance evidence + explicit activation | deferred optional |
+| `FINANCE-CONNECTOR-001` | LATER | Design/implement `FIN-001` authorized complete-account ingestion with coverage/sync/readback/privacy semantics. | provider abstraction + privacy model + authorization | deferred infrastructure |
 | `DATA-SANDBOX` | PREREQUISITE | Create separate MIRA 2.0 Google/MIRROR sandbox with synthetic data and prove no legacy production modification. | G0 audit + canonical state contract | queued |
 | `CORE-ROUNDTRIP` | VERTICAL | Stock ChatGPT create/read/mutate/dedupe/read-back one canonical Google-backed MIRROR entity. | dependency graph + sandbox | provisional |
 | `ANDROID-SYNC` | VERTICAL | Android reads/mutates same canonical entity without second authority. | CORE-ROUNDTRIP | provisional |
@@ -55,16 +54,19 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
-## Category-C closure findings
+## Category-D1 dependency findings
 
-- `ORDER-*` owns fulfillment/lifecycle; active shipment state is a projection, not durable purchase history.
-- `RECEIPT-*` owns canonical one-count purchase/evidence/history/classification identity.
-- `SPEND-001` is evidence-bounded until complete financial coverage is proven; `FIN-001` is not a shortcut to claim that coverage today.
-- `PAYMENT-001` merchant settlement/refund and `REIMB-001` beneficiary reimbursement are separate authorities.
-- `SUB-001` remains optional/proposed. Historical paused automation is not permission to resurrect it.
-- `FIN-001` remains deferred complete-account infrastructure. The test-verified merchant payment core does not prove financial-account ingestion.
-- C1/C2 implementation gaps remain separately ranked and do not block forensic closure.
-- No category-C feature is MIRA 2.0 integration/live verified merely because legacy deployments had connected Google/account state.
+- `ASSET-001` owns immutable physical identity; labels, owners, locations and backends cannot replace Entity UUID.
+- `FITMENT-001` is an explicit relationship authority. `assigned_to` is not `installed_on`; automatic fitment inference remains a separate hardening gap.
+- `ASSET-002` links purchase/manual/warranty/maintenance/spec evidence but cross-authority failure cannot erase a verified asset. Dedicated warranty/maintenance lifecycle depth is queued separately.
+- `ASSET-003` receipt/asset/identifier graph behavior is test-verified and intentionally excludes broad `owned_by` traversal.
+- `IDENT-001` preserves global-vs-namespaced identifier meaning, check digits/format, leading zeroes and serial-level collision safety.
+- `EVID-001` provider-neutral reconciliation is test-verified; Gmail/photo/OCR adapter execution remains integration work.
+- Safety-critical technical specification provenance remains for D2 rather than inheriting D1's broader evidence-core status.
+
+## Prior-category closure
+
+Categories A-C are complete. Their previously recorded gaps/evidence levels remain authoritative.
 
 ## New-idea triage rule
 
