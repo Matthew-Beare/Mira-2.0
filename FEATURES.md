@@ -893,10 +893,142 @@ Category D is complete through all 16 historical rows. The repaired authority/de
 - Family sharing is an authority/permission operation with explicit scope and readback, never an implication of a profile relationship.
 - Legacy router implementation/tests establish useful deterministic evidence, but MIRA 2.0 profile persistence, provider sharing and family-service integration remain unverified.
 
+## Audited extended-role and usability features
+
+### `PROFILE-006` — Caregiver role with explicit health and sharing boundaries
+
+**Description:** `caregiver` is an explicit composable role for a person who coordinates care, rides, appointments, paperwork or responsibilities for another person. It may recommend appointment/calendar, reminder, household/admin, household-routine and health-organization services, but the caregiver label itself grants no authority over another person’s health, calendar, finances, communications or private state. Medication reminders remain governed by `REMIND-001`, caregiver reminder sharing remains governed by `REMIND-002`, and every recommended service stays independently unresolved/disabled/enabled under `SERVICE-001`. Caregiver status must not be inferred from a family relationship, age, co-residence or observed appointment traffic.
+
+**Why it exists / user outcome:** MIRA can help someone coordinate caregiving work without deciding that “caregiver” is a blanket authorization token for another human being’s life.
+
+**Requirement status:** `proposed / accepted direction`.
+
+**Delivery/evidence:** the legacy deterministic router implements a first-class `caregiver` role, public presentation, brief focus and role-specific service recommendations. The broader onboarding/question bank explicitly asks about caregiving duties rather than inferring them. No dedicated caregiver-only regression fixture was located in the audited test suite, and dedicated care/health service execution or permission readback remains unverified. The feature is therefore `implemented` at the router level, not fully `test_verified` end to end.
+
+**Hard dependencies:** `SERVICE-001`; explicit Person/relationship/permission authority; `REMIND-001`/`REMIND-002` for selected reminders; privacy/minimum-necessary policy.
+
+**Enables:** caregiver-focused next actions, appointment/household coordination and later scoped shared-care workflows.
+
+**Legacy evidence:** category-E row 11; `starter/tools/onboarding_profile_router.py`; `questions.json` caregiving discovery; historical ledger caregiver/household-manager row.
+
+**Acceptance / verification boundary:** Add dedicated caregiver fixtures for role composition, service recommendations, no silent activation and no inferred authority. MIRA 2.0 integration must use synthetic people and prove any shared-care scope requires explicit authorization/readback.
+
+---
+
+### `PROFILE-007` — Household-manager role with explicit routine ownership and consolidated delivery
+
+**Description:** `household_manager` is an explicit composable role for household administration/coordination. It may recommend household admin, household routines, shopping, assets and recipes/meals, but it does not imply sole ownership of chores, property, purchases or another person’s data. Household routines remain canonical task/routine state and should consolidate into brief or Calendar projection rather than creating one permanent scheduler/automation per chore. Laundry and pickup/drop-off examples are discoverable options, not universal defaults, and ownership/responsibility is never inferred merely because the role exists.
+
+**Why it exists / user outcome:** MIRA can help run a household without assigning every sock, grocery run and broken appliance to one person because someone selected “household manager.”
+
+**Requirement status:** `proposed / accepted direction`.
+
+**Delivery/evidence:** the legacy router implements the role and dedicated regression coverage verifies household-routine recommendation/activation, washer-to-dryer and pickup examples, consolidated delivery rather than per-chore automations, and `ownership_inference = prohibited`. Broader household service/provider integration remains unverified, but the routing/safety core is `test_verified`.
+
+**Hard dependencies:** `SERVICE-001`; `TASK-001`/routine authority; explicit household relationship/responsibility state where shared; Calendar/brief projection only when enabled.
+
+**Enables:** household routines, errands, shopping/admin coordination and later shared-household surfaces.
+
+**Legacy evidence:** category-E row 11; `onboarding_profile_router.py`; `test_onboarding_profile_router.py::test_household_routines_are_explicit_and_do_not_fan_out_schedulers`.
+
+**Acceptance / verification boundary:** Preserve deterministic anti-fan-out/ownership tests, add mixed-role persistence fixtures and prove MIRA 2.0 household recommendations cannot mutate another person’s responsibility or activate services without explicit state.
+
+---
+
+### `PROFILE-008` — Student role with explicit HOME/CAMPUS context option
+
+**Description:** `student` is a first-class composable role with study/deadline/next-action focus and optional education, skill-building and appointment recommendations. HOME/CAMPUS is an available context pair under `CTX-001`, not something automatically activated merely because a student role exists. Campus/away context requires explicit work-away/context evidence or user-selected labels; student identity, enrollment or school evidence cannot silently create a recurring away mode. When `dependent_minor` is also present, the dependent-minor safety precedence from `PROFILE-005` remains primary.
+
+**Why it exists / user outcome:** A student can get study-oriented planning and a useful campus context when it actually fits, without MIRA assuming every student commutes, lives on campus or wants school to become the organizing principle of the whole system.
+
+**Requirement status:** `accepted`.
+
+**Delivery/evidence:** the legacy router implements the `student` role, public presentation and recommendations. HOME/CAMPUS is supported through the generic custom-context mechanism and is exercised in the dependent-minor/student safety test only after explicit away approval. The audited suite does not contain a standalone student fixture proving a student-derived HOME/CAMPUS recommendation; in fact the router does not auto-select HOME/CAMPUS from the role alone. Therefore the role is `implemented`, while the explicit context option is supported and safety-consistent but not a fully test-verified automatic student workflow.
+
+**Hard dependencies:** `SERVICE-001`; `CTX-001`/`CTX-002`; canonical profile/configuration state; `PROFILE-005` when dependent-minor applies.
+
+**Enables:** study/deadline routing, optional HOME/CAMPUS views and later education integrations.
+
+**Legacy evidence:** category-E row 12; `onboarding_profile_router.py`; dependent-minor/student HOME/CAMPUS test; historical ledger student row.
+
+**Acceptance / verification boundary:** Add dedicated adult-student and dependent-student fixtures, prove HOME/CAMPUS remains explicit/recommended rather than silently activated, and persist/read back student/context state in the MIRA 2.0 sandbox.
+
+---
+
+### `PROFILE-009` — Mixed/custom role composition preserves underlying roles and explicit primary routing
+
+**Description:** MIRA supports multiple simultaneous roles without collapsing the underlying role set into one synthetic identity. `mixed` is only a summary presentation when multiple non-minor roles apply; the canonical roles remain individually preserved and an explicit `primary_role` controls routing precedence. `dependent_minor` remains primary when present for safety. The generic `custom` role is a fallback for a life pattern not represented by current roles and cannot be combined with established roles to erase their semantics. Duplicate, contradictory, unsupported or malformed role inputs fail closed.
+
+**Why it exists / user outcome:** A person can be working, parenting and studying at the same time without the database concluding that their true occupation is “mixed.”
+
+**Requirement status:** `required for generality`.
+
+**Delivery/evidence:** the legacy router/test suite `test_verified` mixed-role preservation, explicit primary-role requirement, retired+parent composition, dependent-minor primary precedence, duplicate-role rejection, custom-plus-known-role rejection, contradictory flags and unsupported-role failure. MIRA 2.0 profile persistence/readback remains unverified.
+
+**Hard dependencies:** canonical profile identity/state; stable role vocabulary; explicit primary-role semantics; `SERVICE-001` for any recommendations.
+
+**Enables:** realistic multi-role profiles and future role additions without destructive remapping.
+
+**Legacy evidence:** category-E row 13; `onboarding_profile_router.py`; `test_onboarding_profile_router.py` mixed/primary/duplicate/custom-role fixtures.
+
+**Acceptance / verification boundary:** Preserve deterministic composition/fail-closed tests and prove MIRA 2.0 role edits preserve unaffected roles/services while changing only explicit routing state.
+
+---
+
+### `PROFILE-010` — Preference-driven usability and accessibility without demographic inference
+
+**Description:** MIRA may adapt wording, interaction density, reminder presentation, input/output modality, text size/readability guidance, spoken delivery and other usability choices from explicit user preference, observed device capability or accessibility configuration. Age, retirement status, family role or another demographic label must never be used as a shortcut to infer disability, competence, medication needs, financial sophistication, hearing/vision status or “simplified mode.” A retired or older user may receive the same full feature set as any other user unless explicit preferences/capabilities say otherwise. Usability configuration is separate from role identity and from service activation.
+
+**Why it exists / user outcome:** MIRA can be easier to use for someone who wants larger text, simpler instructions or spoken reminders without first deciding what kind of human they are based on age stereotypes.
+
+**Requirement status:** `accepted direction`.
+
+**Delivery/evidence:** the historical ledger records older-adult usability as accepted direction and explicitly prohibits age/ability/competence inference. The legacy router returns `age_or_ability_inference = prohibited`, and retired-profile tests verify that boundary. Broader accessibility/preference routing is discovery-driven rather than represented by a dedicated deterministic accessibility engine, so only the non-inference core is test-supported; the full usability feature remains `specified/partially implemented` rather than test-verified.
+
+**Hard dependencies:** explicit preference/configuration authority; device/capability discovery when modality matters; `SERVICE-001`; privacy/non-inference policy.
+
+**Enables:** nontechnical/older-adult usability, accessible reminders and device-appropriate presentation without demographic modes.
+
+**Legacy evidence:** category-E row 14; historical ledger; `onboarding_profile_router.py` non-inference output; retired-profile regression tests.
+
+**Acceptance / verification boundary:** Add explicit usability/accessibility preference schema and deterministic fixtures proving preferences, not age/role, control presentation. Test that identical preferences produce identical behavior across age/role labels and that absent preferences do not trigger demographic defaults.
+
+---
+
+### `PROFILE-011` — Public “Boomer mode” is rejected; private user-chosen alias remains presentation-only
+
+**Description:** MIRA has no public profile, capability set or usability mode named “Boomer mode.” That nickname is rejected as a product-facing demographic mode because it is imprecise, potentially insulting and encourages age-based capability assumptions. If a user deliberately chooses a private friendly alias or joke label for their own profile, it may be stored as private mutable presentation state under the normal profile-alias mechanism. A private alias cannot change roles, permissions, service activation, safety policy, capability availability, accessibility settings or public/shared labels unless separately and explicitly configured.
+
+**Why it exists / user outcome:** The product can be friendly without turning a generation label into an architecture decision. Humanity has already invented enough settings menus that quietly mean “we assume you are bad at computers.”
+
+**Requirement status:** public mode `rejected_or_superseded`; optional private alias `accepted`.
+
+**Delivery/evidence:** the forensic ledger explicitly says the nickname was proposed but is deliberately not a public mode. The legacy router has no `boomer` role, supports only the finite canonical role vocabulary, fails closed on unsupported roles, and stores `profile_alias` in `private-mutable-state`. No dedicated regression test uses the literal nickname, so the public rejection is a durable specification/negative constraint while private-alias storage is implemented/test-supported through existing profile tests.
+
+**Hard dependencies:** `PROFILE-010`; canonical profile alias/private-state semantics; public-source sanitization under `ONBOARD-002`.
+
+**Enables:** respectful public UI while still allowing user-chosen private humor/nicknames.
+
+**Legacy evidence:** category-E row 15; historical ledger “Boomer mode” exclusion; `onboarding_profile_router.py` finite roles/private alias; profile-router tests for private alias and unknown-role failure.
+
+**Acceptance / verification boundary:** Add a MIRA 2.0 regression asserting no public role/mode identifier uses the rejected label and prove private aliases are presentation-only, private, non-authorizing and excluded from portable/public source.
+
+## Category E3 consistency findings
+
+- Caregiver and household-manager are separate composable roles because their safety and recommendation surfaces differ; neither role grants ownership or access authority.
+- Caregiver health/reminder recommendations remain behind `SERVICE-001`, `REMIND-001` and `REMIND-002`; the role is not health authorization.
+- Household-manager routing has direct anti-fan-out and no-ownership-inference tests; broader shared-household behavior remains separate.
+- Student is a role; HOME/CAMPUS is a context option. The role alone does not silently activate that context.
+- `mixed` is summary presentation only and never replaces canonical underlying roles. `custom` cannot erase established role semantics.
+- Accessibility/usability is preference/capability configuration, not age or retirement inference.
+- Public “Boomer mode” remains rejected. A private user-selected alias is harmless presentation state only and cannot change capabilities, permissions or safety policy.
+- No E3 feature is promoted to MIRA 2.0 integration/live verification from legacy router code alone.
+
 ## Audit status
 
 - Categories A, B, C and D are complete.
 - Category E rows 1-5 are complete in `M2-G0-006A`.
-- `M2-G0-006B` audited category-E rows 6-10 as `PROFILE-001` through `PROFILE-005`.
+- Category E rows 6-10 are complete in `M2-G0-006B`.
+- `M2-G0-006C` audited category-E rows 11-15 as `PROFILE-006` through `PROFILE-011`.
 - The complete historical feature inventory is still in progress.
-- The next bounded audit begins category-E row 11 with caregiver and household-manager profile behavior; no later profile, accessibility, provider or distribution behavior is audited by E2.
+- The next bounded audit begins category-E row 16 with per-person identity, household/beneficiary relationships and permission scopes.
