@@ -2,17 +2,6 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
-
-### `M2-G0-003B` — Feature Audit Slice B2 — appointment/mail communication safety
-
-- **Merged PR:** #6
-- **Merge SHA:** `c557ffdec72114c34e4159fed6ffb81a1731a5ec`
-- **Audited features:** `CAL-004`, `MAIL-001`, `MAIL-002`, `MAIL-003`, `CAREER-001`
-- **Result:** category B is complete and internally normalized.
-- **Live Google production touched:** no.
-- **Executable product behavior changed:** no.
-
 ## Active packet
 
 - **Packet ID:** `M2-G0-004A`
@@ -21,41 +10,59 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-004a-fulfillment-lifecycle`
 - **Base audit-state SHA:** `c557ffdec72114c34e4159fed6ffb81a1731a5ec`
-- **Objective:** Audit the first bounded commerce/fulfillment lifecycle behaviors as stable feature records while preserving evidence precedence, canonical-state/projection boundaries, and no-duplicate-spend semantics.
+- **Feature audit commit:** `f86efd730818dcb2e7ba99aba68774844ffa9f8e`
+- **Backlog checkpoint commit:** `66f472352be294383c61089d5935276442044a57`
+- **Status:** acceptance work complete; PR/merge/readback pending.
 
-## Audit rows in this packet
+## Completed acceptance evidence
 
-Audit exactly category-C rows 1-5:
+1. Assigned stable semantic IDs:
+   - `ORDER-001` Evidence-grounded order and carrier correlation;
+   - `ORDER-002` Canonical ordered-to-delivered fulfillment lifecycle with active dedupe;
+   - `ORDER-003` Explicit cancellation, return, refund and no-settlement lifecycle;
+   - `ORDER-004` Replacement and supersession without duplicate spend;
+   - `ORDER-005` Active-only fulfillment brief and stale-shipment escalation.
+2. Verified deterministic shipment reconciliation evidence for exact tracking, stronger-source precedence, split-package expansion, ambiguity refusing mutation, progress updates, terminal delivery removal, active schema validation, full/partial cancellation behavior and replacement-link state.
+3. Kept evidence ingestion separate from canonical commerce state: Gmail/mail/carrier/provider evidence is an adapter path, not the purchase authority or mandatory gate.
+4. Kept active `Shipments` as a projection rather than purchase history; durable source events commit first and survive projection failure.
+5. Separated cancellation/return fulfillment from financial settlement/refund state. Verified the dedicated financial engine's no-settlement/resolved states and five-business-day expected-refund/reversal escalation.
+6. Kept the financial five-business-day correction timer separate from the shipment-stagnation timer.
+7. Recorded true replacement vs same-order revision semantics, distinct linked Receipt IDs for true replacements, independent original financial resolution, and single-count-spend requirements without promoting the full purchase graph beyond its evidence.
+8. Found and recorded a concrete implementation gap: the required `ORDER-005` five-business-day stale-shipment/no-progress escalation has no dedicated audited executable/regression test. Added backlog prerequisite `ORDER-STALE-001`.
+9. Reconciled materially relevant PR #31 evidence. Its broad reconciliation/receipt-queue/control-cycle candidates do not supersede the narrower audited C1 records or provide MIRA 2.0 live evidence.
+10. Updated `FEATURES.md` and `BACKLOG.md`; touched no live Google production state and changed no executable product behavior.
 
-1. Gmail/mail evidence ingestion and carrier/vendor correlation.
-2. Ordered → shipped → delivered lifecycle with dedupe.
-3. Cancelled, replaced, returned, refunded and no-settlement states.
-4. Replacement updates superseded purchase state without duplicate spend.
-5. Active-undelivered-only brief output plus five-business-day no-progress action.
+## Key audit findings
 
-Do not expand this packet to receipt/photo intake, spending summaries, financial connectors or category-C rows 6-12.
+- Evidence correlation, canonical purchase history and active fulfillment projection are three separate things.
+- Delivered fulfillment must leave active state only after durable lifecycle evidence exists.
+- Cancellation is not refund; return is not refund; a no-settlement/revised-before-settlement resolution can legitimately require no refund.
+- Same-order revision preserves one Receipt ID. A distinct replacement order gets its own linked Receipt ID and does not inherit or transfer financial totals by assumption.
+- `ORDER-005` cannot receive full implementation credit until stale-shipment business-day logic has its own deterministic implementation/tests.
 
-## Acceptance criteria
+## Blockers
 
-1. Each scoped behavior receives a stable semantic feature ID and complete feature record.
-2. Evidence ingestion/correlation remains separate from canonical commerce state and active shipment projections.
-3. Ordered/shipped/delivered lifecycle, cancellation/replacement/return/refund settlement state, and duplicate-spend prevention remain distinct where their authority/verification boundaries differ.
-4. Evidence precedence and ambiguous-match behavior are preserved; MIRA must not invent delivery, correlation, refund, or replacement relationships.
-5. Replacement/revision semantics preserve canonical transaction identity and do not double-count spend.
-6. Active brief output excludes delivered fulfillment after durable event recording and preserves the five-business-day no-progress action rule at its actual evidence level.
-7. Relevant legacy deterministic reconciliation code/tests and materially relevant PR #31 evidence are inspected without importing private transaction data.
-8. `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are the only intended changed files.
-9. A small PR is scope-verified, merged, and remotely read back.
-10. `CURRENT_WORK.md` advances to `M2-G0-004B` with the exact next unaudited category-C behavior.
-11. No live Google production state and no executable product behavior is changed.
+None inside this audit packet. The stale-shipment gap is queued implementation work, not a blocker to completing the forensic audit.
 
 ## Exact next action
 
-Create/confirm branch `audit/g0-004a-fulfillment-lifecycle`. Inspect legacy category-C row 1: **Gmail/mail evidence ingestion and carrier/vendor correlation**, including evidence precedence, matching order, ambiguity handling, and canonical-source-versus-projection boundaries. Assign its stable feature ID before moving to row 2.
+Open a pull request from `audit/g0-004a-fulfillment-lifecycle` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back the merged state, then activate `M2-G0-004B` on `main` and create its audit branch.
 
-## Next packet boundary
+## Next packet after merge
 
-If `M2-G0-004A` completes, `M2-G0-004B` begins with category-C row 6: **Receipt intake from email, files, photos/screenshots, and manual entry**.
+### `M2-G0-004B` — Feature Audit Slice C2 — receipt and financial evidence foundations
+
+Audit exactly category-C rows 6-10:
+
+1. Receipt intake from email, files, photos/screenshots and manual entry.
+2. Searchable expandable receipt/purchase history.
+3. Monthly email/receipt-detected spending with dedupe/category totals and explicit evidence-boundary labeling.
+4. General receipt taxonomy without private-user hard-coded defaults.
+5. Expected charge, refund, reimbursement and household-beneficiary reconciliation.
+
+Do not expand this packet to subscription/free-trial monitoring, complete bank/credit-card ingestion, assets/inventory, or category D.
+
+The exact first unaudited behavior is **Receipt intake from email, files, photos/screenshots, and manual entry**.
 
 ## Recovery protocol
 
