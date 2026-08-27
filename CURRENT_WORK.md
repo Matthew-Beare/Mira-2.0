@@ -8,6 +8,7 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 - **Merged PR:** #26
 - **Merge SHA:** `ad9a97a74ac0cec164a6b0f424dd47407bbebeaa`
+- **Main handoff commit activating F8:** `3db7203c9f7f1b232c63122e94f478898c1ae975`
 - **Rows audited:** F16 Travel/vacation/outdoor planning; F17 Work-trip/route/paid-work tracking.
 - **Result:** no `TRAVEL-*` authority. F16 composes `TRIP-001` + `ROUTE-001`; F17 adds independent `MILE-001` + `MILE-002` when paid-work tracking is selected. Ordered multi-leg grouping/revision remains explicit implementation gap `TRIP-ROUTE-CORE-001`.
 - **Registry maintenance:** `FEATURES.md` was compacted into the canonical index while verbose forensic detail remains durable in Git history/checkpoints; all stable IDs and audited service mappings were preserved.
@@ -22,7 +23,7 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-007h-asset-service`
-- **Branch start SHA:** this `main` handoff commit; create branch immediately after this write and record exact SHA on branch checkpoint.
+- **Branch start SHA:** `3db7203c9f7f1b232c63122e94f478898c1ae975`
 - **Status:** activated; F18 forensic audit next.
 
 ## Exact category-F scope
@@ -53,11 +54,7 @@ Do not expand this packet into F19 personal knowledge/reference library. Legacy 
 
 ## Exact next action
 
-1. Create branch `audit/g0-007h-asset-service` from this exact handoff commit.
-2. Update branch checkpoint with the exact branch-start SHA.
-3. Inspect legacy F18 ledger wording, service/router/catalog key and D1-D7 dependency/evidence paths.
-4. Determine whether F18 introduces any new canonical feature ID or only an audited service composition over existing category-D features.
-5. Check PR #31 only for evidence ceiling, never implementation credit.
+Inspect legacy F18 ledger wording, service/router/catalog key and D1-D7 dependency/evidence paths. Determine whether F18 introduces any new canonical feature ID or only an audited service composition over existing category-D features. Check PR #31 only for evidence ceiling, never implementation credit.
 
 ## Next packet after F8
 
