@@ -15,14 +15,12 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
-| `AUDIT-A` | PREREQUISITE | Brief/time/tasking/operational-state reconstruction. | G0-001 | **complete through `M2-G0-002D`** |
-| `AUDIT-B` | PREREQUISITE | Calendar/reminders/mail/communication safety. | AUDIT-A | **complete through `M2-G0-003B`** |
-| `AUDIT-B1` | PREREQUISITE | B rows 1-5: appointment/reminder safety. | AUDIT-A | complete; `CAL-001`…`CAL-003`, `REMIND-001`, `REMIND-002` |
-| `AUDIT-B2` | PREREQUISITE | B rows 6-10: appointment presentation, mail triage, outbound approval, archive approval, job watch. | AUDIT-B1 | complete; `CAL-004`, `MAIL-001`…`MAIL-003`, `CAREER-001` |
-| `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | **in progress; C1 complete, C2 next** |
-| `AUDIT-C1` | PREREQUISITE | C rows 1-5: evidence correlation; fulfillment lifecycle; cancellation/return/refund/no-settlement; replacement/supersession; active-only/stale fulfillment output. | AUDIT-B | **complete in `M2-G0-004A`**; `ORDER-001`…`ORDER-005` |
-| `AUDIT-C2` | PREREQUISITE | C rows 6-10: receipt intake; searchable receipt/purchase history; email-grounded monthly spending; receipt taxonomy; expected charge/refund/reimbursement reconciliation. | AUDIT-C1 | **next packet `M2-G0-004B`** |
-| `AUDIT-C3` | PREREQUISITE | C rows 11-12: optional subscription/free-trial tracking; credit-card/complete financial ingestion direction; then category-C consistency closure. | AUDIT-C2 | queued |
+| `AUDIT-A` | PREREQUISITE | Brief/time/tasking/operational-state reconstruction. | G0-001 | complete through `M2-G0-002D` |
+| `AUDIT-B` | PREREQUISITE | Calendar/reminders/mail/communication safety. | AUDIT-A | complete through `M2-G0-003B` |
+| `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | **in progress; C1-C2 complete, C3 next** |
+| `AUDIT-C1` | PREREQUISITE | C rows 1-5: fulfillment lifecycle foundations. | AUDIT-B | complete in `M2-G0-004A`; `ORDER-001`…`ORDER-005` |
+| `AUDIT-C2` | PREREQUISITE | C rows 6-10: receipt intake/history, bounded spending, taxonomy, merchant payment and reimbursement. | AUDIT-C1 | **complete in `M2-G0-004B`**; `RECEIPT-001`…`RECEIPT-003`, `SPEND-001`, `PAYMENT-001`, `REIMB-001` |
+| `AUDIT-C3` | PREREQUISITE | C rows 11-12: optional subscription/free-trial tracking; credit-card/complete financial-ingestion direction; category-C consistency closure. | AUDIT-C2 | **next packet `M2-G0-004C`** |
 | `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence. | AUDIT-C | queued |
 | `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | queued |
 | `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | queued |
@@ -34,11 +32,14 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
-| `ORDER-STALE-001` | PREREQUISITE | Implement and regression-test `ORDER-005` five-business-day stale-shipment/no-progress escalation, including weekends, progress/ETA reset semantics and repeated-alert dedupe. | `ORDER-002`, business-day semantics | queued; audit found requirement but no dedicated executable/test |
+| `ORDER-STALE-001` | PREREQUISITE | Implement/test `ORDER-005` five-business-day stale-shipment escalation including weekends, progress/ETA reset and alert dedupe. | `ORDER-002`, business-day semantics | queued; audit gap |
+| `SPEND-ROLLUP-001` | HARDENING | Implement deterministic `SPEND-001` monthly evidence-bounded rollup tests for duplicate evidence, mixed receipts, revisions/refunds, unresolved classification and coverage labeling. | `RECEIPT-001`, `RECEIPT-003` | queued; no dedicated audited rollup engine/test |
+| `RECEIPT-TAXONOMY-001` | PREREQUISITE | Implement configuration-backed generic `RECEIPT-003` taxonomy/classifier with mixed-receipt, user-added-category and correction tests. | `RECEIPT-001` | queued; currently specification-level |
+| `REIMB-CORE-001` | HARDENING | Implement/test deterministic `REIMB-001` reimbursement lifecycle, beneficiary allocations and exact net-household-cost math without conflating merchant refunds. | `RECEIPT-001`, beneficiary identity/allocation model | queued; currently specification-level |
 | `DATA-SANDBOX` | PREREQUISITE | Create separate MIRA 2.0 Google/MIRROR sandbox with synthetic data and prove no legacy production modification. | G0 audit + canonical state contract | queued |
 | `CORE-ROUNDTRIP` | VERTICAL | Stock ChatGPT create/read/mutate/dedupe/read-back one canonical Google-backed MIRROR entity. | dependency graph + sandbox | provisional |
 | `ANDROID-SYNC` | VERTICAL | Android reads/mutates same canonical entity without second authority. | CORE-ROUNDTRIP | provisional |
-| `OPS-BRIEF-VSLICE` | VERTICAL | Generate/deliver one real MIRA Ops Brief from canonical MIRA 2.0 state. | core + delivery prerequisites + required audited brief behavior such as `ORDER-STALE-001` when shipment output is in scope | provisional |
+| `OPS-BRIEF-VSLICE` | VERTICAL | Generate/deliver one real MIRA Ops Brief from canonical MIRA 2.0 state. | core + audited prerequisites | provisional |
 | `BRAND-ASSETS` | ENHANCEMENT | Integrate approved MIRA source artwork and generated platform derivatives. | branding source delivered | queued |
 | `ONBOARD-INSTRUCTIONS` | PREREQUISITE | Boomer-safe onboarding for full replacement ChatGPT instructions without CLI. | audited onboarding + current UI verification | queued |
 | `GOV-RESP-001` | ENHANCEMENT | Next full Project Instructions replacement must require customer action or exact fallback `Just tell me to continue.` before final packet line. | next legitimate full replacement | queued; conversation behavior applies now |
@@ -48,35 +49,26 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
+## Category-C2 dependency findings
+
+- `RECEIPT-001` owns canonical transaction/evidence convergence; email, file, photo and chat are intake surfaces, not separate purchase databases.
+- `RECEIPT-002` connected graph behavior is test-verified, but live user-facing Receipt Browser/provider readback remains integration work.
+- `SPEND-001` must remain explicitly evidence-bounded unless a complete financial authority is proven. `SPEND-ROLLUP-001` captures its missing deterministic rollup tests.
+- `RECEIPT-003` generic taxonomy remains specification-level and is now explicit prerequisite work instead of being mistaken for an implemented classifier.
+- `PAYMENT-001` merchant settlement core is test-verified, but connected-account matching/readback remains an integration boundary.
+- `REIMB-001` is a different authority from merchant refund/settlement and still needs deterministic implementation/tests.
+- PR #31 receipt-processing code is an unmerged self-hosted candidate. It may inform later design but does not change the stock ChatGPT+Google milestone or earn MIRA 2.0 completion evidence.
+
 ## Category-C1 dependency findings
 
-- `ORDER-001` correlation consumes evidence but is not the canonical transaction authority. Gmail/provider absence cannot erase owner-supported purchase state.
-- `ORDER-002` keeps active fulfillment as a projection. Durable lifecycle history commits first and survives target projection failure.
-- `ORDER-003` keeps cancellation/return fulfillment facts separate from financial settlement/refund evidence. The financial five-business-day timer is test-verified but is not the stale-shipment timer.
-- `ORDER-004` distinguishes same-order revision from a true replacement. Shipment replacement linking is test-supported; full reciprocal Receipt-ID plus single-count spend behavior still needs purchase-domain end-to-end tests.
-- `ORDER-005` active-only/delivery-once semantics are supported, but the required five-business-day stale-shipment/no-progress escalation lacks a dedicated executable/regression test. `ORDER-STALE-001` is therefore a prerequisite before that behavior can receive implementation credit in a real Ops Brief slice.
-- PR #31 has broad reconciliation/receipt-queue/control-cycle candidates but no narrower verified C1 implementation that supersedes these records.
-- No C1 feature inherits MIRA 2.0 integration/live evidence from the legacy Google deployment.
+- Evidence correlation, canonical commerce history and active fulfillment projection are separate authorities.
+- Cancellation/return fulfillment is separate from financial settlement/refund evidence.
+- Same-order revision is separate from true replacement; duplicate-spend prevention requires stable Receipt identity and balanced allocation.
+- `ORDER-005` stale-shipment escalation remains queued as `ORDER-STALE-001`.
 
-## Category-B dependency findings
+## Prior-category closure
 
-- `CAL-001` Saturday weekly lookahead uses repaired mode-independent slot semantics; older ROAD-only wording is superseded.
-- `CAL-002`/`CAL-003` deterministic reminder timing is separate from provider Calendar projection and actual notification delivery.
-- `CAL-004` prohibits fabricated acknowledgement/confirmation claims and isolates malformed/unavailable appointment evidence.
-- `REMIND-001` requires explicit supported medication schedule evidence and forbids dose/timing inference or missed-dose advice.
-- `REMIND-002` requires explicit sharing consent and real recipient resolution; a nonblank unit-test string is not integration proof.
-- `MAIL-001` triage is evidence intake only. It does not authorize archival or external contact.
-- `MAIL-002` is a provider-independent per-action outbound-contact approval gate; replacing Gmail with another provider must not weaken it.
-- `MAIL-003` treats silence as no archive permission and repeats unresolved review state.
-- `CAREER-001` is optional per user, relies on canonical qualifications/settings, and must remain inside an existing compatible control cycle rather than creating duplicate scheduling.
-- No category-B feature is promoted to MIRA 2.0 integration/live verification from legacy provider behavior.
-
-## Category-A dependency closure
-
-- Scheduling: `OPS-001` depends on `OPS-003`/`OPS-004`; live uniqueness remains `OPS-002` provider-readback work.
-- Recovery: `OPS-004` depends on `RECOVERY-001`; multi-module behavior uses `RECOVERY-002` for scoped failure domains.
-- Context/travel/mileage remain separate authorities linked by stable identity.
-- `TASK-002` remains specified pending dedicated generic completion/next-action tests.
+- Categories A and B are complete and retain their previously recorded dependency/evidence boundaries.
 - Legacy live-provider claims do not promote MIRA 2.0 evidence levels.
 
 ## New-idea triage rule
