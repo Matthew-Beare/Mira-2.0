@@ -4,62 +4,70 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 ## Completed packet before this branch
 
-### `M2-G0-007B` — Feature Audit Slice F2 — finance, appointment/calendar, and administrative-health services
+### `M2-G0-007C` — Feature Audit Slice F3 — shopping and food-service composition
 
-- **Merged PR:** #21
-- **Merge SHA:** `e6890dea352f40c5205d1e21f94dada5b5752b50`
-- **Main handoff commit activating F3:** `8e252c401f110faf0cce3924697745f8e1b29edb`
-- **Audited rows:** F6-F8 — Personal finance organization; Appointments/calendar/reminders; Administrative health organization.
-- **Result:** finance is goal-scoped; appointment/provider identity (`CAL-005`) and Calendar projection/readback (`CAL-006`) are separate; administrative health (`HEALTH-001`) is non-clinical and separate from medication reminders/caregiver sharing.
-- **Remote readback:** F2 `FEATURES.md` and `BACKLOG.md` were verified on `main` before F3 activation.
+- **Merged PR:** #22
+- **Merge SHA:** `f1c1345cdf0e60872df7433771926a26611d3bb1`
+- **Audited rows:** F9-F10 — Shopping/procurement; Recipes/meals/groceries.
+- **Result:** `shopping` maps to `SHOP-001`; `recipes_meals` uses selected recipe-library versus pantry-aware meal-planning submodules over `RECIPE-001`, `MEAL-001`, and `GROCERY-001`; legacy `recipe_library_enabled` cannot silently enable the whole food stack.
+- **Remote readback:** F3 `FEATURES.md` and `BACKLOG.md` were verified on `main` after merge.
 - **Live Google production touched:** no.
 - **Executable product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-007C`
-- **Name:** Feature Audit Slice F3 — shopping and food-service composition
+- **Packet ID:** `M2-G0-007D`
+- **Name:** Feature Audit Slice F4 — household administration and laundry routines
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-007c-shopping-food-services`
-- **Branch start SHA:** `8e252c401f110faf0cce3924697745f8e1b29edb`
-- **Research checkpoint commit:** `9e0172ccd34e19c0b63a8e45b9e662d9a8b5f4a7`
-- **Feature registry commit:** `953cfe0b2f98a9f4b919998d5def81662c773587`
-- **Backlog checkpoint commit:** `6d197a4d6d898f5d7d2a4234455cc8ab19c6ba5a`
-- **Status:** acceptance complete; bounded PR/merge/readback pending.
+- **Planned branch:** `audit/g0-007d-household-laundry-services`
+- **Base merge SHA:** `f1c1345cdf0e60872df7433771926a26611d3bb1`
+- **Status:** packet activated; branch creation and forensic evidence pass next.
 
-## Audited F3 rows
+## Exact category-F scope in this packet
 
-9. **Shopping/procurement**.
-10. **Recipes/meals/groceries**.
+Audit exactly legacy category-F rows 11-12:
 
-## Completed acceptance evidence
+11. **Household/errands/admin/maintenance** — CURRENT REQUIRED direction; generic task system plus machine-readable household-routine service/onboarding contract; live reminder projection capability-gated.
+12. **Laundry stages and drop-off/pickup reminders** — CURRENT REQUIRED; machine-readable router/reminder contract with tests; live brief/Calendar/notification delivery requires provider capability and readback.
 
-1. F9 `shopping` is normalized as a service composition over canonical `SHOP-001`; no duplicate shopping domain feature was created.
-2. The narrow legacy `f-09` → D8 mapping is structurally sound. Receipt/order/fitment/provider dependencies remain owned by `SHOP-001` rather than being duplicated into the service wrapper.
-3. Shopping remains active procurement intent only and cannot become purchase history, shipment state, spending authority, inventory ownership or automatic purchasing authority.
-4. F10 `recipes_meals` is normalized as a selected-submodule umbrella under `SERVICE-001`/`SERVICE-002`, not one all-or-nothing food switch.
-5. Recipe-library-only readiness requires `RECIPE-001` and is not blocked by absent meal/grocery capabilities.
-6. Pantry-aware meal-planning readiness requires `MEAL-001` + `RECIPE-001` + `GROCERY-001`; shopping reconciliation is inherited through canonical child behavior rather than duplicated as a second purchase authority.
-7. Historical D16 remains split into `RECIPE-001` and `MEAL-001`; reusable recipe knowledge and dated meal-plan state are not re-collapsed at the service layer.
-8. Planning remains unable to fabricate stock consumption, purchase evidence or shopping fulfillment. Missing-ingredient shopping intent continues through canonical `SHOP-001` rules.
-9. Legacy `recipe_library_enabled` is compatibility evidence for recipe-library intent only. It cannot silently authorize meal planning, pantry/grocery tracking, shopping linkage or stock/purchase mutation; broader historical intent remains unresolved until explicitly selected.
-10. No new shopping/grocery/recipe/meal implementation tasks were created. Existing `SHOP-CORE-001`, `GROCERY-CORE-001`, `RECIPE-CORE-001`, and `MEAL-CORE-001` remain authoritative domain gaps.
-11. Added `AUDIT-F3` and `SERVICE-DEPS-003`; refined `SERVICE-MIGRATION-001` to include recipe-library compatibility semantics.
-12. `FEATURES.md` replacement was verified against the research checkpoint: one file only, 32 additions and one stale audit-status deletion; no earlier registry content changed.
-13. `BACKLOG.md` replacement was verified against the feature commit: one file only, 14 additions and two intended replacement lines; no unrelated backlog content changed.
-14. Service wrappers remain bounded by their weakest selected required child. Catalog/router exposure and compatibility booleans do not create implementation, integration or live evidence.
-15. No live Google production state was touched and no executable MIRA 2.0 product behavior changed.
+Do not expand this packet into F13 Routines/fitness/accountability, F14 Education/study/deadlines/offline road preparation, family-school, travel, later category-F rows, category G, or executable MIRA 2.0 coding.
+
+## Handoff evidence used to bound F4
+
+1. The authoritative forensic ledger places F11 Household/errands/admin/maintenance and F12 Laundry stages/drop-off/pickup reminders together before F13 Routines/fitness/accountability.
+2. Legacy dependency map establishes a direct chain:
+   - `f-11` uses task-state and requires A13/A14, now `TASK-001` + `TASK-002`;
+   - `f-12` requires `f-11` and adds scheduler-delivery, notification-delivery and optional Calendar projection capabilities.
+3. The deterministic onboarding router exposes separate `household_admin` and `household_routines` service activation keys. Household-manager role may recommend them, but recommendation never enables either service.
+4. The router's household-routine reminder contract explicitly includes laundry-stage and drop-off/pickup examples, requires explicit user confirmation, uses canonical routine/task state, consolidates delivery through brief or Calendar projection rather than one automation per chore, and prohibits ownership inference.
+5. Dedicated router tests prove household-routine activation is explicit, include `washer_to_dryer` and `dry_cleaning_or_repair_pickup`, require consolidated delivery, and prohibit ownership inference.
+6. F13 changes dependency shape to generic routines/fitness with optional wearable input and no F11/F12 dependency; F14 changes again to education plus task/evidence/optional Calendar concerns. They therefore start later audit slices rather than expanding F4.
+
+## Acceptance criteria
+
+1. Account for F11-F12 with stable semantic mappings and create new feature IDs only where staged routine/delivery behavior is genuinely distinct from `TASK-001`/`TASK-002` and existing scheduler/Calendar features.
+2. Reuse `SERVICE-001`/`SERVICE-002` for activation/readiness; household-manager role recommendations remain separate from activation and permissions.
+3. Preserve `household_admin` and `household_routines` as separate service choices unless evidence proves one must subsume the other.
+4. Determine whether generic household admin is fully represented by `TASK-001` + `TASK-002` or needs an additional canonical household-domain feature.
+5. Determine whether staged/repeating household routines and laundry transitions require a distinct canonical routine feature beyond generic tasks.
+6. Preserve no-per-chore scheduler fan-out: delivery should consolidate through the control cycle, notification delivery and optional Calendar projection rather than creating one permanent automation per chore/stage.
+7. Preserve explicit responsibility/ownership boundaries; household-manager or household-routine activation cannot infer that one person owns every chore/item.
+8. Record provider/readback boundaries separately from deterministic routing/reminder-contract evidence.
+9. Reconcile relevant PR #31 evidence only as unmerged/reference evidence unless deterministic merged legacy evidence independently supports a higher level.
+10. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`.
+11. Open a bounded PR, verify scope, merge and remotely read back before advancing to the next category-F slice.
+12. Touch no legacy Google production state and change no executable MIRA 2.0 product behavior.
 
 ## Exact next action
 
-Compare `audit/g0-007c-shopping-food-services` against `main` and verify the final packet is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` with the branch zero commits behind. Open a pull request to `main`, verify the server-side changed-file list and mergeability, merge using the exact PR head SHA, remotely read back the F3 feature/backlog state from `main`, then inspect authoritative category-F evidence beginning with F11 **Household/errands/admin/maintenance** and activate `M2-G0-007D` from the resulting main handoff commit.
+Create branch `audit/g0-007d-household-laundry-services` from this handoff commit. Audit F11 against `TASK-001`, `TASK-002`, `PROFILE-007`, the legacy `f-11` dependency map, service router/catalog and any household-admin/routine evidence. Then audit F12 staged laundry/drop-off/pickup semantics and delivery/readback boundaries before deciding whether a new canonical routine feature is warranted.
 
-## Next packet after F3
+## Next packet after F4
 
-### `M2-G0-007D` — Feature Audit Slice F4
+### `M2-G0-007E` — Feature Audit Slice F5
 
-Begin with category-F row 11 **Household/errands/admin/maintenance**. Determine the remainder of the bounded F4 slice from authoritative ledger/dependency evidence only after F3 is merged/read back. Do not pre-expand from conversational memory.
+Begin with category-F row 13 **Routines/fitness/accountability** and determine the rest of the bounded F5 slice from authoritative ledger/dependency evidence after F4 closes.
 
 ## Recovery protocol
 
