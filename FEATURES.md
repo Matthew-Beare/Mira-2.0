@@ -1262,7 +1262,7 @@ Historical category-E row 20 is normalized into the existing `ONBOARD-001`, not 
 
 **Legacy evidence:** category-E row 25; `starter/PROVIDER_ONBOARDING.md`; `starter/install-flow.json`; `starter/tests/test_nontechnical_installation.py`.
 
-**Acceptance / verification boundary:** Port the provider-onboarding contract/tests to MIRA 2.0. Integration verification requires synthetic setup against exact provider resources with identity/resource/action readback; at least one Google lane and one non-Google or explicit manual lane must prove that unsupported automation remains degraded/manual rather than being fabricated.
+**Acceptance / verification boundary:** Port the provider-onboarding contract/tests to MIRA 2.0. Integration verification requires synthetic setup against exact provider resources with identity/resource/action readback; at least one Google lane and one non-Google or explicit manual lane must prove that unsupported automation remains degraded/manual rather than fabricated.
 
 ---
 
@@ -1653,9 +1653,36 @@ Category E is complete through all 26 historical rows. The final authority/depen
 - Calendar/evidence/wearable failure degrades only the selected path and cannot erase education/task/routine state.
 - No F5 service receives MIRA 2.0 integration/live verification from skill prose, router catalog presence, optional capability profiles or unmerged PR #31 evidence alone.
 
+## Audited F6 family-school coordination and permission boundary
+
+### F row 15 — Parent/child school coordination
+
+**Canonical mapping:** service key `family_school` is actor/subject/scope-aware composition under `SERVICE-001` + `SERVICE-002`. The subject's education truth remains `EDU-001` linked to exact `PROFILE-012` Person identity. When the acting person/service is accessing, sharing or mutating another person's education or shared school state, require explicit `PROFILE-013` actor/resource/action permission scope plus provider/API readback where the provider exposes sharing or mutation. `PROFILE-004` parent/guardian and `PROFILE-005` dependent-minor are recommendation/routing inputs only and are not readiness or authorization gates. Selected task/routine/reminder workflows reuse their existing authorities; Calendar projection is independently optional via `CAL-007`.
+
+**Evidence ceiling:** parent/dependent routing and recommendation-not-activation boundaries are `test_verified` in the legacy profile router suite. `PROFILE-012`, `PROFILE-013` and `EDU-001` remain specification/architecture/workflow-level, and cross-person provider authorization/readback is unverified. The complete service therefore remains specification-level and receives no integration/live credit.
+
+**Dependency defect:** legacy `f-15` hard-requires historical E9 parent/guardian and E10 dependent-minor role behaviors plus E16 Person identity. Canonical MIRA 2.0 removes role tokens from readiness prerequisites. Roles can recommend the service; exact actor/subject identity and permission scope determine authorization. Same-person/private education support does not require a cross-person sharing grant merely because the service exists.
+
+**Privacy/safety boundary:** relationships, household membership, co-residence, school enrollment, observed Calendar traffic, profile roles or prior completion never imply custody or access. Minimum-necessary dependent/minor data only. Cross-person read/write/share requires explicit scope. Calendar projection does not authorize invitations or attendee updates. No family-school path may fabricate grades, attendance, submissions, completion, custody or responsibility.
+
+**Legacy evidence:** category-F row 15; `docs/feature-ledger-2026-08-24.md`; `starter/behavior-dependencies.json`; `starter/tools/onboarding_profile_router.py`; `starter/tests/test_onboarding_profile_router.py`; `starter/questions.profile-and-stock-services.json`; `starter/STATE_AUTHORITY_MODEL.md`; `starter/MODULE_CATALOG.md`. No dedicated family-school engine or qualifying PR #31 implementation was located.
+
+**Acceptance / verification boundary:** Deterministic service-dependency tests must prove parent/dependent role labels alone cannot satisfy readiness or permission, same-person/private education support does not require a cross-person grant, cross-person access blocks without exact actor/subject/resource/action scope, revoked/narrowed grants stop the affected path, optional Calendar/task/routine/reminder failures degrade only those paths, and provider/API mutation or sharing requires exact readback. Integration verification must use synthetic people and school state only.
+
+## Category F6 consistency findings
+
+- F15 creates no `FAMILY-*` authority; school/education truth remains in `EDU-001`.
+- Person/relationship truth (`PROFILE-012`) and permission/sharing grants (`PROFILE-013`) remain separate authorities.
+- Parent/dependent role features (`PROFILE-004`/`PROFILE-005`) route and recommend; they do not grant capability, permission or readiness.
+- Same-person/private use does not require cross-person sharing grants. Cross-person/shared use does.
+- `TASK-*`, `ROUTINE-001`, `REMIND-003` and `CAL-007` remain optional selected workflow/projection paths with their own failure domains.
+- Existing `PERSON-GRAPH-001`, `PERMISSION-SCOPE-001`, `EDUCATION-CORE-001` and `CALENDAR-PROJECTION-001` already represent the underlying implementation gaps; no duplicate family-school engine is warranted.
+- Minimum-necessary private data and synthetic fixtures are mandatory for dependent/minor testing and public source.
+- No F6 service receives MIRA 2.0 integration/live verification from role-router tests, skill/catalog prose, relationship labels or unmerged PR #31 evidence alone.
+
 ## Audit status
 
 - Categories A, B, C, D and E are complete.
-- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 were audited in `M2-G0-007B`; rows F9-F10 were audited in `M2-G0-007C`; rows F11-F12 were audited in `M2-G0-007D`; rows F13-F14 are audited in `M2-G0-007E`. Row F15 **Parent/child school coordination** is the next unaudited category-F behavior.
+- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 were audited in `M2-G0-007B`; rows F9-F10 were audited in `M2-G0-007C`; rows F11-F12 were audited in `M2-G0-007D`; rows F13-F14 were audited in `M2-G0-007E`; row F15 is audited in `M2-G0-007F`. Row F16 **Travel/vacation/outdoor planning** is the next unaudited category-F behavior.
 - Category G remains unaudited.
 - The complete historical feature inventory remains in progress until F and G are closed.
