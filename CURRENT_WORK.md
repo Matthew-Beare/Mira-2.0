@@ -2,62 +2,26 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
+## Completed packet
+
+### `M2-G0-005B` — Feature Audit Slice D2 — knowledge/spec/shopping/location foundations
+
+- **Merged PR:** #11
+- **Merge SHA:** `302023ffc2ed97bd543c7dd8202c87e1aeed8be0`
+- **Audited features:** `KNOW-001`, `SPEC-001`, `SHOP-001`, `INV-001`, `LOC-001`
+- **Result:** manuals/Knowledge, technical specifications, shopping intent, inventory identity and location semantics are normalized at their actual evidence levels.
+- **Live Google production touched:** no.
+- **Executable product behavior changed:** no.
+
 ## Active packet
 
-- **Packet ID:** `M2-G0-005B`
-- **Name:** Feature Audit Slice D2 — knowledge/spec/shopping/location foundations
+- **Packet ID:** `M2-G0-005C`
+- **Name:** Feature Audit Slice D3 — inventory movement, query, par and grocery foundations
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-005b-knowledge-spec-location`
-- **Base main SHA:** `f41bb7f340e3d708e8ceff1f5178da3e209cf658`
-- **Feature audit commit:** `abf0d204c1c1a7cb564030969ea47d3db50e7872`
-- **Backlog checkpoint commit:** `02746b48acb4d2c9b2918021224afccf214e6a94`
-- **Status:** acceptance work complete; PR/merge/readback pending.
+- **Objective:** Audit QR/barcode movement, household/shop inventory query behavior, par-level tracking, optional scale sensing and grocery/pantry/freezer flows without entering recipes/meal planning or implementation work.
 
-## Completed acceptance evidence
-
-1. Assigned five stable semantic features for category-D rows 6-10:
-   - `KNOW-001` Canonical manual/reference knowledge identity and retained-document lifecycle;
-   - `SPEC-001` Provenance-locked technical specifications with exact applicability;
-   - `SHOP-001` Active shopping intent distinct from durable purchase history;
-   - `INV-001` Inventory participation reuses canonical Entity UUID identity;
-   - `LOC-001` Hierarchical locations with intended placement separate from observed/last-moved state.
-2. Added dedicated `KNOW-*`, `SPEC-*`, `SHOP-*` and `LOC-*` feature-ID families so those authorities are not hidden under overloaded asset/inventory labels.
-3. Recorded manuals/references as immutable Knowledge UUID objects with source identity, revision/edition, retained-file identity and honest queued/blocked/unavailable states.
-4. Verified deterministic Knowledge validation for retained Drive identity/revision requirements, queued-without-retention behavior, unknown Knowledge relationship rejection and lookup-state progression.
-5. Kept actual MIRA 2.0 Drive file/index writes below integration verification; added `KNOWLEDGE-INTEGRATION-001` for sandbox provider readback.
-6. Recorded `SPEC-001` safety-critical verification boundary: exact subject Entity UUID/applicability, OEM/manufacturer/authoritative-regulatory source tier, source URL or retained Knowledge UUID, page/section locator and revision/version.
-7. Verified deterministic specification tests reject owner-memory source tier, missing source locator, missing authoritative source link and silent mutation of an already verified value.
-8. Added `SPEC-INTEGRATION-001` because provider/document readback remains unverified even though the specification validator core is test-verified.
-9. Recorded `SHOP-001` as active mutable procurement intent only; durable purchases remain under `RECEIPT-*`/`ORDER-*`, and shopping state cannot become a second spend/purchase ledger.
-10. Kept `SHOP-001` below `test_verified` because no dedicated deterministic shopping reconciliation suite was located; added `SHOP-CORE-001` for exact/ambiguous match, owner-confirmed fulfillment, cancellation, replacement, partial fulfillment, replay and deletion/readback behavior.
-11. Recorded `INV-001` as a projection/state participation rule that reuses `ASSET-001` canonical Entity UUIDs instead of inventing a second inventory primary identity. Friendly IDs, QR labels, shelf labels and serial/vendor identifiers remain aliases/identifiers.
-12. Inspected PR #31 `inventory_hierarchy.py` as unmerged salvage/reference evidence only. It contains nested location paths, container-location linkage and cycle/self-location protections but does not earn MIRA 2.0 implementation credit.
-13. Recorded `LOC-001` intended/canonical placement separately from current/last-observed or moved-to state. Neither fact silently rewrites the other.
-14. Added `LOCATION-STATE-001` for stable Location UUID hierarchy, cycle/container behavior and explicit intended-versus-observed movement semantics.
-15. Touched no live Google production state and changed no executable product behavior.
-
-## Key audit findings
-
-- Manuals/reference documents are canonical Knowledge objects, not attributes stuffed onto an asset row.
-- A verified technical specification is a provenance-locked fact for an exact subject/configuration, not merely extracted text.
-- Shopping intent, purchase history and inventory ownership are three different state domains.
-- Inventory does not need another physical-item identity system; the canonical Entity UUID survives every inventory projection.
-- “Where this belongs” and “where it was last observed/moved” are different facts. PR #31 implements useful hierarchy primitives but not that complete semantic contract.
-
-## Blockers
-
-None inside the forensic packet. `SHOP-CORE-001`, `LOCATION-STATE-001`, `KNOWLEDGE-INTEGRATION-001`, and `SPEC-INTEGRATION-001` are separately ranked implementation/integration work.
-
-## Exact next action
-
-Open a pull request from `audit/g0-005b-knowledge-spec-location` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back the merged D2 state, then activate `M2-G0-005C` on current `main` and create its audit branch.
-
-## Next packet after merge
-
-### `M2-G0-005C` — Feature Audit Slice D3 — inventory movement, query, par and grocery foundations
-
-Audit exactly category-D rows 11-15:
+## Audit rows in this packet
 
 1. QR/barcode scan-in and scan-out.
 2. Queryable household/loft/shop inventory.
@@ -67,7 +31,27 @@ Audit exactly category-D rows 11-15:
 
 Do not expand this packet to recipes/meal planning/category-D row 16, profiles/onboarding, Android implementation, RFID hardware, Home Assistant implementation or product coding.
 
-The exact first unaudited behavior is **QR/barcode scan-in and scan-out**.
+## Acceptance criteria
+
+1. Each scoped behavior receives a stable semantic feature ID and evidence boundary.
+2. QR/barcode movement depends on `INV-001` canonical Entity UUIDs and `LOC-001` location/event semantics; scanning cannot create a shadow identity or silently redefine intended placement.
+3. Queryable household/shop inventory is a projection/query capability over canonical entities/locations, not another editable inventory database.
+4. Par-level behavior distinguishes observed quantity, target/par quantity and notification state; under-level alerts are opt-in and replay-safe.
+5. Scale sensing remains optional hardware/input evidence and cannot become a universal requirement or sole quantity authority.
+6. Grocery/pantry/freezer flows remain separate from durable receipt history and from generic asset inventory where their lifecycle/count semantics differ.
+7. Relevant legacy policy/code/tests and materially relevant PR #31 evidence are inspected without committing private household inventory data.
+8. Only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are intended changes.
+9. A small PR is scope-verified, merged and remotely read back.
+10. `CURRENT_WORK.md` advances to `M2-G0-005D` with exact row-16 recipe/meal-planning resume point.
+11. No live Google production state and no executable product behavior is changed.
+
+## Exact next action
+
+Create branch `audit/g0-005c-inventory-movement-par-grocery` from current `main`. Inspect category-D row 11: **QR/barcode scan-in and scan-out**, including identity resolution, location/movement event semantics, idempotency, ambiguity, readback and its dependency on `INV-001`/`LOC-001`.
+
+## Next packet boundary
+
+If D3 completes, `M2-G0-005D` audits category-D row 16 only: recipes, meal planning and shopping linkage, then performs category-D consistency closure. Do not begin category E in D3.
 
 ## Recovery protocol
 
