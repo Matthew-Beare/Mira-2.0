@@ -2,68 +2,52 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
+## Completed packet
+
+### `M2-G0-004B` — Feature Audit Slice C2 — receipt and financial evidence foundations
+
+- **Merged PR:** #8
+- **Merge SHA:** `310ce64c5d6c3c733c692b7bca487b7b90d88be7`
+- **Audited features:** `RECEIPT-001`, `RECEIPT-002`, `SPEND-001`, `RECEIPT-003`, `PAYMENT-001`, `REIMB-001`
+- **Result:** receipt identity/history and merchant-payment core are separated from bounded spending, taxonomy and reimbursement gaps.
+- **Live Google production touched:** no.
+- **Executable product behavior changed:** no.
+
 ## Active packet
 
-- **Packet ID:** `M2-G0-004B`
-- **Name:** Feature Audit Slice C2 — receipt and financial evidence foundations
+- **Packet ID:** `M2-G0-004C`
+- **Name:** Feature Audit Slice C3 — optional subscriptions/full-finance direction and category-C closure
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-004b-receipt-financial-evidence`
-- **Base main SHA:** `0a381a3c829ff143a9aca8262536f008bf36cf4a`
-- **Feature audit commit:** `70dfd31a5a93703868c76795af5ab4a9dede68d7`
-- **Backlog checkpoint commit:** `df2b31a584995abb3076f2c062212698f25ed4d0`
-- **Status:** acceptance work complete; PR/merge/readback pending.
+- **Objective:** Audit the final two category-C directions, then reconcile dependencies/evidence across all commerce/receipt/payment/spending features and close category C without beginning asset/inventory work.
 
-## Completed acceptance evidence
-
-1. Split five legacy rows into six stable features because merchant settlement and household reimbursement are distinct authorities:
-   - `RECEIPT-001` Multi-source canonical receipt intake and evidence dedupe;
-   - `RECEIPT-002` Searchable expandable purchase history and connected receipt graph;
-   - `SPEND-001` Evidence-bounded monthly spending rollup;
-   - `RECEIPT-003` Generic configurable receipt taxonomy and line classification;
-   - `PAYMENT-001` Expected merchant charge and settlement reconciliation;
-   - `REIMB-001` Beneficiary allocation and household reimbursement reconciliation.
-2. Recorded email/file/photo/screenshot/manual evidence as intake surfaces that enrich one Receipt ID rather than creating shadow ledgers.
-3. Recorded source identity/provenance, image/evidence dedupe, OCR-as-candidate behavior, owner-evidence fallback, and later evidence enrichment without Receipt-ID replacement.
-4. Verified deterministic receipt/asset/identifier graph queries return the same connected canonical records from different selectors.
-5. Kept user-facing Receipt Browser/provider readback below integration verification despite the graph core being test-verified.
-6. Recorded monthly spending as explicitly evidence-bounded/incomplete unless a separate complete financial authority exists; no dedicated deterministic rollup test suite was located.
-7. Recorded generic receipt taxonomy as configuration-driven and currently specification-level rather than treating private/user-specific categories as universal product defaults.
-8. Verified deterministic merchant-payment behavior for Awaiting Settlement, Pending Match, Matched, Split Settlement, Overcharged, no-settlement contradiction, zero-net debit/credit resolution, pending credits and fail-closed invalid money/state/identity input.
-9. Separated merchant refund/settlement from household reimbursement. Reimbursement preserves gross purchase and changes net household cost only from supported beneficiary/allocation and incoming-payment evidence.
-10. Recorded reimbursement as strongly specified but not executable/test-verified in the audited legacy tree.
-11. Reconciled PR #31 receipt-processing code only as unmerged architecture/reference evidence; it does not earn MIRA 2.0 implementation credit or replace the stock ChatGPT+Google milestone.
-12. Added explicit backlog gaps `SPEND-ROLLUP-001`, `RECEIPT-TAXONOMY-001`, and `REIMB-CORE-001`.
-13. Touched no live Google production state and changed no executable product behavior.
-
-## Key audit findings
-
-- A purchase can have many evidence sources but one canonical transaction identity.
-- Receipt history/query, spending rollup and classification are separate capabilities with different evidence ceilings.
-- `PAYMENT-001` answers whether the merchant settled the expected financial outcome. `REIMB-001` answers whether another person/organization repaid the household. They cannot share one ambiguous “money back” state.
-- A receipt-derived monthly spending report is useful but must never claim complete account coverage without a complete financial authority.
-- C2 produced three concrete later implementation/hardening gaps rather than quietly promoting policy text to working product.
-
-## Blockers
-
-None inside this audit packet. The identified implementation gaps are ranked backlog work and do not block forensic completion.
-
-## Exact next action
-
-Open a pull request from `audit/g0-004b-receipt-financial-evidence` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back the merged state, then activate `M2-G0-004C` on `main` and create its audit branch.
-
-## Next packet after merge
-
-### `M2-G0-004C` — Feature Audit Slice C3 — optional subscriptions/full-finance direction and category-C closure
-
-Audit exactly category-C rows 11-12:
+## Audit rows in this packet
 
 1. Optional subscription/free-trial tracking.
 2. Credit-card linkage / complete financial ingestion direction.
+3. Bounded category-C consistency pass across `ORDER-*`, `RECEIPT-*`, `SPEND-*`, `PAYMENT-*`, `REIMB-*` and any new stable IDs created here.
 
-Then perform a bounded consistency pass across all category-C features (`ORDER-*`, `RECEIPT-*`, `SPEND-*`, `PAYMENT-*`, `REIMB-*`), resolve dependency/evidence contradictions, and close category C. Do not begin category D in this packet.
+Do not begin category D in this packet.
 
-The exact first unaudited behavior is **Optional subscription/free-trial tracking**.
+## Acceptance criteria
+
+1. Subscription/free-trial tracking is classified from current requirement evidence rather than resurrecting a paused historical automation by accident.
+2. Complete bank/card ingestion is separated from receipt-derived spending and merchant-payment reconciliation.
+3. Privacy, connector scope, account coverage, pending/posted semantics and readback requirements are recorded before any future full-finance implementation can be considered complete.
+4. All category-C dependency/evidence contradictions are resolved or explicitly queued.
+5. No legacy connected account or Google data is treated as MIRA 2.0 integration/live proof.
+6. `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are the only intended changed files.
+7. A small PR is scope-verified, merged, and remotely read back.
+8. `CURRENT_WORK.md` advances to a bounded first category-D packet.
+9. No live Google production state and no executable product behavior is changed.
+
+## Exact next action
+
+Create branch `audit/g0-004c-finance-direction-close-c` from current `main`. Inspect category-C row 11: **Optional subscription/free-trial tracking**, including whether any current direct requirement supersedes its historical proposed/paused status. Assign a stable feature ID/evidence state before auditing full financial ingestion.
+
+## Next packet boundary
+
+After category C closes, split category D into bounded asset/inventory audit packets before implementation work. The first exact category-D row is **Stable asset identity and item-to-vehicle/equipment fitment**.
 
 ## Recovery protocol
 
