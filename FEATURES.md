@@ -46,6 +46,7 @@ ID families include:
 - `ONBOARD-*` — safe starter, first boot, discovery and user configuration intake;
 - `SERVICE-*` — explicit service activation and capability-verification state;
 - `PROFILE-*` — roles, family, customization and accessibility;
+- `SOURCE-*` — durable source modes, source read/write/readback capability and source-lineage behavior;
 - `PROVIDER-*` — Google/Microsoft/Apple/storage/runtime portability;
 - `CLIENT-*` — ChatGPT, Android, web, desktop, CLI and device surfaces;
 - `DIST-*` — distribution, updates, releases, rollback;
@@ -1149,12 +1150,104 @@ Historical category-E row 20 is normalized into the existing `ONBOARD-001`, not 
 - Historical automatic instruction updates are normalized into `ONBOARD-001`; full replacement is the supported fallback, direct UI mutation remains capability-gated.
 - No E4 feature is promoted to MIRA 2.0 integration/live verification from legacy source/tests alone.
 
+## Audited nontechnical source/runtime onboarding features
+
+### `ONBOARD-006` — Browser-only nontechnical installation with no terminal fallback
+
+**Description:** Default MIRA installation for an ordinary personal user is a browser-only flow. The user does not open Command Prompt, PowerShell, Terminal, Git Bash or a code editor; does not install Git or GitHub CLI; and does not paste commands, tokens, SSH keys or passwords. The personal path creates a private repository through the audited GitHub web-template flow, connects the exact repository to the required runtime capabilities and verifies owner, visibility, default branch, source revision and capability status before setup is called successful. If the required template, runtime skill or source-write capability is unavailable, onboarding reports a specific blocked state and stops that path rather than substituting a fork, Codespace, download, local clone or shell instructions. Developer/CLI setup may exist separately only after the user explicitly chooses developer mode.
+
+**Why it exists / user outcome:** A nontechnical user can install MIRA without being ambushed halfway through by `git clone`, a token prompt or the usual industry ritual of pretending a terminal is self-explanatory.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** the legacy browser installer is `test_verified`. `INSTALL.md` explicitly prohibits terminal/CLI fallbacks; `install-flow.json` defines `nontechnical-browser-only`, private GitHub-template creation, blocked states and forbidden actions; `test_nontechnical_installation.py` directly asserts the no-terminal wording, absence of `git clone`/`gh repo create`, private browser template flow, fail-closed template behavior, alternate-runtime/enterprise browser lanes and required verification fields. Live MIRA 2.0 installation has not yet been integration-verified.
+
+**Hard dependencies:** `DIST-002`; `ONBOARD-002`; `SOURCE-001`; current browser/runtime product surfaces; exact repository/capability readback.
+
+**Enables:** genuinely nontechnical personal onboarding, later provider setup and ordinary-user distribution without local development tooling.
+
+**Legacy evidence:** category-E row 21; `starter/INSTALL.md`; `starter/install-flow.json`; `starter/tests/test_nontechnical_installation.py`.
+
+**Acceptance / verification boundary:** Port the machine-readable installer contract/tests to MIRA 2.0 and perform one synthetic browser-only install from the MIRA 2.0 starter. Verify no CLI/local tooling is required, blocked capabilities stay blocked, and the created private source/readback matches the intended deployment.
+
+---
+
+### `SOURCE-001` — Independent source read, source write and remote-readback capability gates
+
+**Description:** Durable source access is not one Boolean. MIRA tracks at least source read, source write and source remote readback independently for the exact repository/source target. In the personal ChatGPT/Codex lane the ChatGPT GitHub app may prove repository read while Codex separately proves bounded write; read access is never evidence of write authority. Lasting source/config changes are called successful only after the intended remote source commit/state is read back. Missing source write may degrade or block durable personal source mutation without preventing unrelated conversational/onboarding work. An authorization button, readable file, local copy or provider brand is not proof of write/readback.
+
+**Why it exists / user outcome:** “I can see your repo” stops being translated into “therefore I can safely commit to it,” a leap that has caused enough software damage without MIRA joining in.
+
+**Requirement status:** `current required / integrity boundary`.
+
+**Delivery/evidence:** the legacy gate is `test_verified`. `install-flow.json` has separate `chatgpt-github-read` and `codex-github-write` gates and requires remote write/readback evidence. `test_nontechnical_installation.py` asserts those gates are independent. `provider_capability_router.py` requires `source_read`, `source_write` and `source_remote_readback` for verified durable source mutation in user/organization Git lanes; `test_platform_portability.py` verifies missing write/readback degrades rather than being falsely claimed.
+
+**Hard dependencies:** exact source target identity; runtime/source connector capability; remote source readback; `DIST-001`/`DEV-004` when source mutation is performed.
+
+**Enables:** honest Git/source onboarding, safe durable configuration changes, private custom features and verified releases.
+
+**Legacy evidence:** category-E row 22; `INSTALL.md`; `install-flow.json`; `provider_capability_router.py`; `test_nontechnical_installation.py`; `test_platform_portability.py`.
+
+**Acceptance / verification boundary:** Port deterministic gate tests to MIRA 2.0 and prove against a synthetic repository that read-only access cannot satisfy write, a bounded source write requires remote commit readback, and a moved/unauthorized target fails closed rather than reporting success.
+
+---
+
+### `PROVIDER-001` — Provider-neutral AI runtime capability routing from observed evidence
+
+**Description:** MIRA supports ChatGPT/Codex, Claude, approved Microsoft/organizational AI, Gemini, local-model and generic MCP-capable runtimes only through observed capability contracts. Runtime/provider name, connection button, readable integration, plan marketing or local client presence never establishes feature parity. The router evaluates the exact runtime/deployment, data classification, organization approval evidence, source mode and observed capabilities such as state/evidence read-write-readback, email read, calendar projection and scheduled delivery. Unknown capability/request keys fail closed. Regulated-sensitive data is blocked unless the exact runtime/storage/use/actions are organization-approved with current approval evidence. Missing optional capabilities degrade only affected paths; missing required capabilities block the affected plan/module rather than being invented.
+
+**Why it exists / user outcome:** MIRA can move between AI products without claiming that every logo has secretly implemented the same connector, scheduler and permission model.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** the legacy provider-neutral router is `test_verified`. `provider_capability_router.py` deterministically evaluates observed capability booleans and never uses provider name as proof. `test_platform_portability.py` verifies a fully observed lane, proves Claude/Microsoft labels cannot bypass missing source-write evidence, blocks regulated data without approval/reference, verifies managed-source degradation, optional adapter degradation and unknown-key failure. `platform-capabilities.json` and `PLATFORM_PORTABILITY.md` define the portable runtime/storage/source contract.
+
+**Hard dependencies:** observed runtime/tool capabilities; data-classification/approval state; `SOURCE-001`; provider/resource identity/readback for any live adapter.
+
+**Enables:** ChatGPT-first product portability, alternate AI runtimes, regulated deployment gating and future provider adapters without false parity claims.
+
+**Legacy evidence:** category-E row 23; `PLATFORM_PORTABILITY.md`; `platform-capabilities.json`; `provider_capability_router.py`; `test_platform_portability.py`.
+
+**Acceptance / verification boundary:** Port the router/manifest/tests to MIRA 2.0, keep capability evaluation deterministic/fail-closed, then integration-verify representative runtime lanes only from their exact observed tools and readback. No runtime receives live feature credit from its brand name.
+
+---
+
+### `SOURCE-002` — Explicit personal Git, organization Git, managed-central and no-Git/manual source lanes
+
+**Description:** MIRA treats durable source mode as deployment configuration rather than forcing every user into a personal GitHub account. Supported modes are personal/user Git, approved organization Git, managed-central source and explicit no-Git/manual portability. Personal Git may use the browser template/private-repository path. Organization Git may use approved GitHub Enterprise, GitLab, Azure Repos or equivalent source with exact read/write/readback. Managed-central source lets administrators maintain a pinned release so end users need no Git account; personal behavior/source changes are blocked or routed through the approved managed change process. No-Git/manual mode may consume pinned releases and deliberate CSV/JSON/ICS/document exchanges but cannot claim durable personal source mutation, unattended synchronization or automated writes. Mutable personal state never moves into Git merely because source mode changes.
+
+**Why it exists / user outcome:** MIRA can work for a personal user, a locked-down employee or someone with no Git account without instructing the last two to create a personal GitHub account behind IT’s back. Revolutionary stuff: respecting the deployment environment.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** the legacy source-mode contract is `test_verified`. `provider_capability_router.py` accepts exactly `user-git`, `organization-git`, `managed-central`, and `none` and assigns distinct required/degraded behavior. `test_platform_portability.py` verifies managed-central operation and remote-readback degradation. `platform-capabilities.json` enumerates personal GitHub, GitHub Enterprise, GitLab, Azure Repos, managed-central and portable-manual deployment lanes. `INSTALL.md` explicitly forbids personal-account workarounds in corporate/government/health-care environments.
+
+**Hard dependencies:** `SOURCE-001`; `PROVIDER-001`; approved source identity/policy for organization/managed lanes; `DIST-002` for pinned releases; privacy/state authority separation.
+
+**Enables:** consumer, enterprise-managed and manual portability without source-control coercion or shadow IT.
+
+**Legacy evidence:** category-E row 24; `INSTALL.md`; `PLATFORM_PORTABILITY.md`; `platform-capabilities.json`; `provider_capability_router.py`; `test_platform_portability.py`.
+
+**Acceptance / verification boundary:** Preserve deterministic source-mode tests in MIRA 2.0 and integration-verify at least one personal Git and one managed/no-user-Git lane with synthetic data. Prove `none` cannot report durable source mutation and organization/managed lanes never require a personal-account bypass.
+
+## Category E5 consistency findings
+
+- `ONBOARD-006` owns ordinary-user installation UX; it does not itself grant source or provider capabilities.
+- `SOURCE-001` owns source read/write/readback truth. ChatGPT read and Codex write are one current adapter example, not hard-coded universal architecture.
+- `PROVIDER-001` owns runtime capability claims. Runtime/provider names never imply parity, approval or action support.
+- `SOURCE-002` owns source-lineage mode. Personal Git is one lane, not a prerequisite for all MIRA users.
+- Managed-central and no-Git/manual lanes preserve the distinction between portable source and mutable personal state.
+- Nontechnical onboarding never uses a CLI fallback to paper over a missing browser/runtime capability; blocked means blocked until an approved path exists.
+- Regulated-sensitive use is separately gated by exact organization approval evidence and does not inherit permission from runtime availability.
+- All four E5 features have genuine deterministic legacy tests, but none receives MIRA 2.0 integration/live verification until the new repo/runtime lanes are exercised and read back.
+
 ## Audit status
 
 - Categories A, B, C and D are complete.
 - Category E rows 1-5 are complete in `M2-G0-006A`.
 - Category E rows 6-10 are complete in `M2-G0-006B`.
 - Category E rows 11-15 are complete in `M2-G0-006C`.
-- `M2-G0-006D` audited category-E rows 16-20 as `PROFILE-012`, `PROFILE-013`, `DIST-001`, `DIST-002`, `DEV-004`, plus the E4 refinement of existing `ONBOARD-001`.
+- Category E rows 16-20 are complete in `M2-G0-006D`.
+- `M2-G0-006E` audited category-E rows 21-24 as `ONBOARD-006`, `SOURCE-001`, `PROVIDER-001`, and `SOURCE-002`.
 - The complete historical feature inventory is still in progress.
-- The next bounded audit begins category-E row 21 with browser-only nontechnical installation and source/runtime capability routing.
+- The next bounded audit is `M2-G0-006F`: category-E rows 25-26, provider onboarding/bootstrap and category-E closure.
