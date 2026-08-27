@@ -33,7 +33,11 @@ ID families include:
 - `FITMENT-*` — explicit asset/equipment assignment, installation and compatibility relationships;
 - `IDENT-*` — namespaced product/device identifiers and validation;
 - `EVID-*` — retained multi-source evidence and enrichment behavior;
-- `INV-*` — inventory, hierarchical locations, movement, scanning, par levels;
+- `KNOW-*` — retained manuals/reference knowledge, knowledge identity and document relationships;
+- `SPEC-*` — technical specifications, applicability and provenance;
+- `SHOP-*` — active shopping/procurement intent and fulfillment reconciliation;
+- `INV-*` — inventory participation, movement, scanning, par levels and inventory projections;
+- `LOC-*` — hierarchical physical location identity and placement/observation semantics;
 - `PROFILE-*` — onboarding, roles, family, customization, accessibility;
 - `PROVIDER-*` — Google/Microsoft/Apple/storage/runtime portability;
 - `CLIENT-*` — ChatGPT, Android, web, desktop, CLI and device surfaces;
@@ -384,9 +388,120 @@ Category C is complete. Fulfillment, purchase identity, bounded spending, mercha
 - `EVID-001` provider-neutral reconciliation is test-verified; actual Gmail/photo/OCR provider ingestion is not MIRA 2.0 integration-verified.
 - Dedicated safety-critical technical-spec provenance is intentionally left for D2 rather than being smuggled into D1's broader evidence umbrella.
 
+## Audited knowledge, specification, shopping, inventory-identity and location features
+
+### `KNOW-001` — Canonical manual/reference knowledge identity and retained-document lifecycle
+
+**Description:** Manuals, service manuals, datasheets, bulletins and other durable references are canonical Knowledge objects with immutable RFC 4122 Knowledge UUIDs, source identity, document type, manufacturer/model/part metadata, revision/edition, source URL, retained-file identity and status. A chat upload, email attachment, URL and Drive copy may be evidence paths to the same Knowledge UUID rather than separate documents. Manufacturer/OEM sources are preferred when available. Lookup/download states such as `lookup_queued`, `download_blocked`, `unavailable`, `no_match` or equivalent must remain honest; a failed download cannot be called retained. In the current Google-backed architecture, `retained` requires the canonical Drive file identity/URL plus an explicit version/revision where applicable. Asset/receipt/project links are downstream relationships from the verified Knowledge UUID and may degrade without deleting or duplicating the retained document.
+
+**Why it exists / user outcome:** MIRA should be able to find the actual manual again, know which revision it is, and link it to the correct asset without treating a filename or chat upload as durable knowledge.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** the provider-neutral Knowledge record/status/relationship core is `test_verified` for retained-file/revision requirements, queued-without-retention behavior, immutable source/UUID reconciliation, unknown Knowledge-link rejection and explicit lookup status progression. The Drive download/file/index workflow is strongly `specified`; MIRA 2.0 Drive write/readback is not integration-verified.
+
+**Hard dependencies:** durable knowledge/file authority; `EVID-001`; explicit source identity; `ASSET-001` only when asset linkage is required; `RECOVERY-002` for provider/relationship failure isolation.
+
+**Enables:** manuals on demand, asset support/service references, exact source lookup for `SPEC-001`, migration to later object storage without changing Knowledge identity.
+
+**Legacy evidence:** category-D row 6; `knowledge-manual-ingestion.md`; `asset_evidence.py` Knowledge/Knowledge Relationship/Lookup collections; `test_asset_evidence.py` retained manual, queued manual, unknown Knowledge relationship and lookup-state fixtures.
+
+**Acceptance / verification boundary:** Preserve deterministic record/state tests. MIRA 2.0 integration verification requires synthetic manual discovery, retained Drive file plus Knowledge index readback, idempotent replay preserving Knowledge UUID, and independent handling of a failed asset relationship.
+
+---
+
+### `SPEC-001` — Provenance-locked technical specifications with exact applicability
+
+**Description:** Technical specifications are separate evidence-backed records tied to an exact subject Entity UUID and applicability statement. Safety-critical values such as torque, tire pressure, fluid capacity/specification, alignment and load limits may be `verified` only when supported by OEM/manufacturer/authoritative-regulatory evidence, an exact source URL or retained Knowledge UUID, page/section locator and relevant revision/version. Owner memory, chat recollection, OCR text or a generic web result may remain candidate evidence but cannot silently become verified. Verified value/applicability/source fields are immutable except through an explicit supersession/correction event so a later scrape cannot rewrite a safety-critical fact in place.
+
+**Why it exists / user outcome:** MIRA can answer “what is the torque spec for this exact configuration?” without quietly applying an STI, another model year, another transmission or someone’s forum recollection to the wrong machine.
+
+**Requirement status:** `current required`.
+
+**Delivery/evidence:** `test_verified` for authoritative source-tier enforcement, required source locator, source URL/Knowledge linkage, unknown Knowledge rejection, exact subject binding and refusal to silently mutate a verified specification. MIRA 2.0 provider/document retrieval and live readback remain unverified.
+
+**Hard dependencies:** `ASSET-001` subject identity; `KNOW-001` or another authoritative source locator; `EVID-001`; explicit applicability/version semantics.
+
+**Enables:** safe service answers, maintenance planning, fitment decisions and evidence-grounded technical support.
+
+**Legacy evidence:** category-D row 7; `knowledge-manual-ingestion.md`; `asset_evidence.py` Technical Specifications validator; `test_asset_evidence.py` verified-source/provenance/immutability fixtures.
+
+**Acceptance / verification boundary:** Preserve deterministic provenance tests; sandbox integration must retain/read back an authoritative synthetic/manual-derived specification and reject a candidate owner-memory/OCR value from promotion without the required provenance.
+
+---
+
+### `SHOP-001` — Active shopping intent distinct from durable purchase history
+
+**Description:** `Shopping & Procurement` represents only open procurement intent and is not a purchase ledger, shipment queue, asset registry or spend authority. A shopping intent has its own stable identity, requested item/purpose/target asset or fitment when known, status and provenance. Supported purchase evidence or explicit owner confirmation may fulfill the intent, but the durable purchase remains under `RECEIPT-*`/`ORDER-*`; after verified reconciliation the active shopping row is removed/closed without creating a `Purchased` shadow ledger or duplicate spend. Same-order revisions and true replacement transactions satisfy one underlying intent when appropriate. Cancellation without replacement does not fulfill an still-wanted intent. Partial fulfillment closes only the supported divisible portion. Ambiguous matches remain open/reviewable rather than being closed by category similarity.
+
+**Why it exists / user outcome:** “I need brake pads” and “I bought these brake pads” are related facts, not the same database row pretending to be both a to-do list and accounting system.
+
+**Requirement status:** `accepted`.
+
+**Delivery/evidence:** strongly `specified` in receipt/shopping reconciliation policy, including source-first purchase commit, exact matching, removal/readback and failure isolation. The forensic audit did not locate a dedicated deterministic shopping-intent reconciliation engine/test suite sufficient for `test_verified` status. PR #31 contains broader product/client candidates but does not supersede this evidence ceiling.
+
+**Hard dependencies:** stable shopping-intent identity; `RECEIPT-001`/`ORDER-*` purchase evidence; `FITMENT-001` where target compatibility matters; provider/list readback for mutation.
+
+**Enables:** shopping list, procurement planning, replacement-aware fulfillment, household/grocery linkage without duplicate spend.
+
+**Legacy evidence:** category-D row 8; `receipt-ingestion.md` Shopping & Procurement reconciliation contract.
+
+**Acceptance / verification boundary:** Add deterministic fixtures for exact/ambiguous matching, owner-confirmed fulfillment without receipt identity, cancellation, replacement, partial fulfillment, idempotent replay and target-row deletion/readback. Sandbox integration must prove a fulfilled shopping intent disappears from active state while one canonical purchase remains.
+
+---
+
+### `INV-001` — Inventory participation reuses canonical Entity UUID identity
+
+**Description:** Inventory is a state/projection over canonical physical entities, not a second identity namespace. A physical object or tracked set/lot that enters inventory keeps the immutable Entity UUID from `ASSET-001`; specialized tool/household/inventory views expose that UUID rather than assigning a competing primary identity. Friendly stock IDs, QR labels, shelf labels, serials and vendor codes are aliases/identifiers. Set/lot quantity may remain one Entity UUID when individual tracking is not useful; individually tracked physical units require distinct canonical Entity UUIDs. Location, movement, ownership, category, count and presentation changes never renumber the entity.
+
+**Why it exists / user outcome:** The drill on the receipt, the drill on the shelf, the drill behind a QR code and the drill in a maintenance record remain the same drill.
+
+**Requirement status:** `accepted / foundational prerequisite`.
+
+**Delivery/evidence:** the immutable UUID and inventory-acquisition core is `test_verified` through `ASSET-001`; therefore the no-second-inventory-identity rule is supported by executable identity behavior. Specialized MIRA 2.0 inventory persistence/UI and legacy inventory migration are not integration-verified. This feature does not claim QR movement or location-event behavior, which belongs to later D packets.
+
+**Hard dependencies:** `ASSET-001`; canonical MIRROR entity authority; explicit set/lot versus individual tracking semantics.
+
+**Enables:** `LOC-001`, QR/barcode movement, queryable household/shop inventory, par levels, maintenance and migration without identity duplication.
+
+**Legacy evidence:** category-D row 9; `asset-acquisition.md`; `inventory_reconciliation.py`; `test_inventory_reconciliation.py`; PR #31 inventory code only as unmerged reference for later projections.
+
+**Acceptance / verification boundary:** MIRA 2.0 sandbox must expose the same Entity UUID through asset and inventory views, reject a second primary inventory UUID for the same physical entity, and preserve identity across category/location changes.
+
+---
+
+### `LOC-001` — Hierarchical locations with intended placement separate from observed/last-moved state
+
+**Description:** MIRA models physical locations as stable hierarchical entities such as site/building/room/zone/aisle/shelf/bin/container, with explicit parent relationships and cycle protection. Containers may themselves be movable physical assets while exposing a child location for their contents. Location semantics distinguish at least (a) the intended/canonical home or storage placement for an item and (b) the latest supported observed/moved-to location/evidence. A move/scan observation updates movement/current-observation state but must not silently redefine the intended home location; changing intended placement is an explicit decision. Conversely, an intended shelf does not prove the item is physically there now. The model should support practical household/shop granularity without requiring absurd per-cut/per-piece tracking where it adds no value.
+
+**Why it exists / user outcome:** MIRA can answer both “where does this belong?” and “where was it last put?” without erasing one answer every time the other changes.
+
+**Requirement status:** `required / under active design`.
+
+**Delivery/evidence:** the intended-versus-last-moved semantic remains `specified` and is not yet test-verified. PR #31 contains substantial unmerged `inventory_hierarchy.py` candidate code for nested location paths, container-location linkage, move-following container paths, identifier readback and cycle/self-location protection. Because PR #31 is unmerged/reference-only and the audited code does not prove the required intended-versus-observed separation, `LOC-001` does not receive MIRA 2.0 implementation credit from it.
+
+**Hard dependencies:** `INV-001`; stable Location UUIDs; explicit location relationship/event schema; source/evidence identity; later movement semantics from D3.
+
+**Enables:** QR/barcode scan-in/out, queryable loft/shop inventory, container movement, “where is it?” and “where does it belong?” queries, par/grocery storage organization.
+
+**Legacy evidence:** category-D row 10; feature ledger requirement; PR #31 `starter/service/inventory_hierarchy.py` as unmerged architecture/reference evidence.
+
+**Acceptance / verification boundary:** Implement/test stable hierarchical Location UUIDs, parent/cycle rules, movable-container semantics and separate intended-home versus current/last-observed state. Tests must prove a movement event changes observed/current state without rewriting intended placement and an explicit intended-placement edit does not fabricate a physical move. Integration verification requires sandbox readback from both query paths.
+
+## Category D2 consistency findings
+
+- `KNOW-001` document identity is independent from `ASSET-001`; a manual can remain canonical while an asset link is pending, and a verified asset survives manual-provider failure.
+- `SPEC-001` is not free-form knowledge extraction. Verified safety-critical facts require exact subject/applicability and authoritative provenance.
+- `SHOP-001` is active intent, not purchase history, shipment state, spend or asset identity.
+- `INV-001` deliberately reuses `ASSET-001` Entity UUIDs so MIRA does not create a parallel inventory identity authority.
+- `LOC-001` is a location/state model, not merely a text `location` field. Intended placement and observed/last-moved location are distinct facts.
+- PR #31 location hierarchy code remains salvage/reference evidence only; it neither changes the MIRA 2.0 evidence level nor proves the intended-versus-observed requirement.
+- No category-D2 feature is promoted to MIRA 2.0 integration/live verification from legacy Google state or unmerged PR #31 code.
+
 ## Audit status
 
 - Categories A, B and C are complete.
-- `M2-G0-005A` audited category-D rows 1-5 as `ASSET-001`, `FITMENT-001`, `ASSET-002`, `ASSET-003`, `IDENT-001`, `EVID-001`.
+- `M2-G0-005A` completed category-D rows 1-5.
+- `M2-G0-005B` audited category-D rows 6-10 as `KNOW-001`, `SPEC-001`, `SHOP-001`, `INV-001`, and `LOC-001`.
 - The complete historical feature inventory is still in progress.
-- The next bounded audit begins with category-D row 6: manual discovery and canonical Drive retention.
+- The next bounded audit begins with category-D row 11: QR/barcode scan-in and scan-out.
