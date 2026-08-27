@@ -2,17 +2,6 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
-
-### `M2-G0-002D` — Feature Audit Slice A4 — failure isolation and Slice-A closure
-
-- **Merged PR:** #4
-- **Merge SHA:** `0f4f2f9a304df5379bfa477076ed7fb7f61202fd`
-- **Audited feature:** `RECOVERY-002`
-- **Result:** category A is complete and internally reconciled.
-- **Live Google production touched:** no.
-- **Executable product behavior changed:** no.
-
 ## Active packet
 
 - **Packet ID:** `M2-G0-003A`
@@ -20,41 +9,57 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-003a-reminder-safety`
-- **Base audit-state SHA:** `0f4f2f9a304df5379bfa477076ed7fb7f61202fd`
-- **Objective:** Audit the first bounded calendar/reminder safety behaviors as stable feature records, preserving safety/evidence boundaries and separating deterministic planning from live Calendar/provider proof.
+- **Base main SHA:** `3dcf3925b6759c6475b2912a5ad009ca233dee03`
+- **Feature audit commit:** `03a59efa4edde4a0d918e32374cae7035b2a1559`
+- **Backlog checkpoint commit:** `6a9dcfaf5c8208793448695acd66a8bdc422cf95`
+- **Status:** acceptance work complete; PR/merge/readback pending.
 
-## Audit rows in this packet
+## Completed acceptance evidence
 
-Audit exactly category-B rows 1-5:
+1. Assigned stable semantic IDs:
+   - `CAL-001` Saturday AM seven-day appointment lookahead;
+   - `CAL-002` Day-before and morning-of appointment reminders;
+   - `CAL-003` Configurable relative appointment reminder, default one hour before;
+   - `REMIND-001` Evidence-gated medication reminders;
+   - `REMIND-002` Explicit opt-in caregiver reminder sharing.
+2. Added a separate `REMIND-*` family because medication safety and reminder-sharing permissions have different authority/verification boundaries from Calendar appointment state.
+3. Reconciled the older ROAD-only Saturday-lookahead wording against repaired policy/tests: the current audited behavior is slot-based and mode-independent, with Saturday AM covering Saturday through Friday.
+4. Verified deterministic planner tests for day-before, morning-of, one-hour-before, equal-time dedupe, cancelled/disabled suppression, at/after-start suppression, explicit service activation, named-IANA timezone handling and deterministic replay IDs.
+5. Verified medication safety tests for allowed evidence sources, explicit schedule confirmation, nonempty unique schedule times, paused/disabled suppression, DST fail-closed behavior, prohibition on assistant-inferred timing and prohibition on missed-dose advice.
+6. Verified caregiver sharing is default-off and recipient-required, while preserving the evidence ceiling that a unit-test recipient string does not prove real recipient identity/authorization/provider delivery.
+7. Reconciled PR #31 as broad Android reminder/background candidate evidence only; it does not supersede the dedicated reminder planner or prove Calendar/notification delivery.
+8. Updated `FEATURES.md` and `BACKLOG.md`; touched no live Google production state and changed no executable product behavior.
 
-1. Saturday 2:45 AM ROAD appointment lookahead for the next week.
-2. Appointment reminder day before and morning of.
-3. Appointment reminder one hour before.
-4. Medication reminders only from explicit owner, prescription-label, pharmacy, or clinician evidence.
-5. Caregiver reminder sharing with explicit opt-in and exact recipient identity.
+## Key audit findings
 
-Do not expand this packet to important-mail triage, auto-email rules, archive approval or job-watch behavior.
+- Saturday weekly appointment lookahead is mode-independent in the repaired policy, superseding older ROAD-only wording.
+- Appointment visibility/planning semantics are test-verified, but Calendar projection/readback and actual user notification delivery are separate integration/live gates.
+- Medication reminders require explicit supported regimen evidence and confirmation; no personal legacy regimen data is imported for development.
+- Caregiver-sharing unit tests prove the permission gate, not the human recipient. Exact identity resolution/authorization/revocation require later integration evidence.
 
-## Acceptance criteria
+## Blockers
 
-1. Each scoped behavior receives a stable MIRA 2.0 semantic feature ID and complete feature record.
-2. Appointment-window behavior, reminder planning, medication evidence rules and caregiver-sharing permission remain separate where their safety/verification boundaries differ.
-3. Requirement status is separated from implementation/test/integration/live evidence.
-4. Relevant legacy planner/policy/tests are inspected and materially relevant PR #31 evidence reconciled without promotion-by-association.
-5. Live Calendar projection/readback is not claimed from deterministic tests.
-6. No medication dose/schedule is inferred and no caregiver sharing is treated as enabled from historical data.
-7. `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are the only intended changed files.
-8. A small PR is scope-verified, merged, and remotely read back.
-9. `CURRENT_WORK.md` advances to the next exact category-B audit behavior.
-10. No live Google production state and no executable product behavior is changed.
+None. PR/merge/readback is the remaining packet release step.
 
 ## Exact next action
 
-Create/confirm branch `audit/g0-003a-reminder-safety`. Inspect the legacy appointment-window and reminder-planner policy/tests for category-B row 1: **Saturday 2:45 AM ROAD appointment lookahead for the next week**. Assign the stable feature ID and record its evidence boundary before moving to row 2.
+Open a pull request from `audit/g0-003a-reminder-safety` to `main`, verify changed-file scope is limited to `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`, merge it, remotely read back the merged state, then update `CURRENT_WORK.md` on `main` to activate `M2-G0-003B`.
 
-## Next packet boundary
+## Next packet after merge
 
-If `M2-G0-003A` completes, `M2-G0-003B` begins with category-B row 6: **Context-aware appointment windows without exposing misleading confirmation state**, followed by the scoped mail/communication-safety rows through row 10.
+### `M2-G0-003B` — Feature Audit Slice B2 — appointment/mail communication safety
+
+Audit exactly category-B rows 6-10:
+
+1. Context-aware appointment windows without exposing misleading confirmation state.
+2. Important email triage across school, employer, jobs, financial, medical, vendors, fraud/security.
+3. No automatic outbound email or vendor contact.
+4. Archive-approval prompt using the exact user-facing question and repeat-on-silence behavior.
+5. Career/job watch with realistic qualification filtering.
+
+Do not expand this packet into orders/shipments/receipts or category C.
+
+The exact first unaudited behavior is **Context-aware appointment windows without exposing misleading confirmation state**.
 
 ## Recovery protocol
 
