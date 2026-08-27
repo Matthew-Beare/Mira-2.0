@@ -18,13 +18,14 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `AUDIT-A` | PREREQUISITE | Brief/time/tasking/operational-state reconstruction. | G0-001 | complete |
 | `AUDIT-B` | PREREQUISITE | Calendar/reminders/mail/communication safety. | AUDIT-A | complete |
 | `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | complete through `M2-G0-004C` |
-| `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence/food planning. | AUDIT-C | **complete through `M2-G0-005D`** |
+| `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence/food planning. | AUDIT-C | complete through `M2-G0-005D` |
 | `AUDIT-D1` | PREREQUISITE | D rows 1-5: immutable asset identity; fitment relationships; asset evidence; bidirectional graph; identifiers; enrichment. | AUDIT-C | complete in `M2-G0-005A` |
 | `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual retention; technical specs; shopping intent; inventory identity; hierarchical locations. | AUDIT-D1 | complete in `M2-G0-005B` |
 | `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; inventory query; par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | complete in `M2-G0-005C` |
-| `AUDIT-D4` | PREREQUISITE | D row 16: recipe library; meal planning; missing-ingredient shopping linkage; category-D closure. | AUDIT-D3 | **complete in `M2-G0-005D`**; `RECIPE-001`, `MEAL-001` |
-| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | queued; begin with bounded `AUDIT-E1` |
-| `AUDIT-E1` | PREREQUISITE | Category-E rows 1-5: generic quarantined starter/no inherited personal data; four-question adaptive first boot; bounded AI/job/pain-point/app discovery; cadence/timezone intake; explicit service activation states. | AUDIT-D | **next packet `M2-G0-006A`** |
+| `AUDIT-D4` | PREREQUISITE | D row 16: recipe library; meal planning; missing-ingredient shopping linkage; category-D closure. | AUDIT-D3 | complete in `M2-G0-005D`; `RECIPE-001`, `MEAL-001` |
+| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | **in progress; E1 complete, E2 next** |
+| `AUDIT-E1` | PREREQUISITE | E rows 1-5: sanitized generic starter; bounded four-question first boot; AI/job/pain-point/app discovery; cadence/timezone intake; explicit service activation states. | AUDIT-D | **complete in `M2-G0-006A`**; `ONBOARD-002`, `ONBOARD-003`, `ONBOARD-004`, `ONBOARD-005`, `SERVICE-001` |
+| `AUDIT-E2` | PREREQUISITE | E rows 6-10: working/self-employed profile behavior; retired profile; nonworking profile; parent/guardian profile; dependent child/minor profile. | AUDIT-E1 | **next packet `M2-G0-006B`** |
 | `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | queued |
 | `AUDIT-G` | PREREQUISITE | ChatGPT/Android/web/desktop/CLI/device surfaces. | AUDIT-F | queued |
 | `AUDIT-LEGACY` | HARDENING | Reconcile PR #31 plus meaningful legacy branches/repos against stable MIRA 2.0 features. | audits A-G | queued; inspect earlier only when materially relevant |
@@ -34,6 +35,11 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
+| `STARTER-SANITIZE-001` | PREREQUISITE | Port/prove `ONBOARD-002` privacy/history audit gates for the MIRA 2.0 starter/distribution and verify synthetic clean lineage with no inherited legacy production state. | `ONBOARD-002`, distribution/starter source | queued; legacy source has CI-enforced scanner but MIRA 2.0 distribution proof is unverified |
+| `FIRSTBOOT-CORE-001` | PREREQUISITE | Implement/test `ONBOARD-003` exact ≤4 kickoff flow, durable Interview Ledger resume/defer/silence semantics and Minimum Useful Setup before exhaustive discovery. | `ONBOARD-002`, canonical onboarding state | queued; strong workflow artifacts, complete deterministic flow not test-verified |
+| `DISCOVERY-CORE-001` | HARDENING | Implement/test structured `ONBOARD-004` AI-use/pain-point/job/app/constraint discovery with capability reuse, no unsupported claims and recommendation-not-activation semantics. | `ONBOARD-003`, `SERVICE-001`, capability router | queued; important sub-boundaries are tested, full discovery flow is not |
+| `ONBOARD-SCHEDULE-001` | PREREQUISITE | Implement/test `ONBOARD-005` new-user cadence/slot/IANA-timezone capture, validation, persistence/readback and enabled-brief routing without inherited personal schedule. | `ONBOARD-003`, `SERVICE-001`, `OPS-003` | queued |
+| `SERVICE-STATE-001` | PREREQUISITE | Port/prove `SERVICE-001` finite activation-state machine in MIRA 2.0 canonical configuration, keeping activation separate from catalog presence, recommendation and capability verification. | canonical service catalog/config authority | queued; legacy deterministic core is test-verified |
 | `RECIPE-CORE-001` | LATER | Implement/test `RECIPE-001` stable recipe identity, provenance, structured ingredient/yield data, source preservation, dedupe and replay. | ingredient/unit semantics; optional `KNOW-001` source retention | queued; current-required product capability but outside present stock-core milestone |
 | `MEAL-CORE-001` | LATER | Implement/test `MEAL-001` dated plan identity, recipe reuse, pantry-aware ingredient gaps, ambiguity handling and deduplicated `SHOP-001` grocery intent without planning-induced stock mutation. | `RECIPE-001`, `GROCERY-CORE-001`, `SHOP-CORE-001` | queued; current-required product capability but outside present stock-core milestone |
 | `MOVEMENT-CORE-001` | PREREQUISITE | Salvage/redesign `MOVE-001` as replay-safe movement/observation events with exact identifier/location resolution, scan-in/out semantics and target readback without rewriting intended placement. | `INV-001`, `IDENT-001`, `LOCATION-STATE-001` | queued; PR #31 scanner/relocate path is reference candidate but overwrites one `location_uuid` |
@@ -66,22 +72,18 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
-## Category-D dependency closure
+## Category-E1 dependency findings
 
-- `ASSET-001` owns physical identity; `INV-001` reuses that UUID rather than creating another inventory identity system.
-- `FITMENT-001` owns assignment/installation/compatibility relationships, not identity.
-- `EVID-001`, `KNOW-001` and `SPEC-001` are separate provenance layers with different evidence gates.
-- `SHOP-001` is active procurement intent; `RECEIPT-*`/`ORDER-*` are durable commerce history.
-- `LOC-001` separates intended home from observed/current placement; `MOVE-001` is event/observation state over those locations.
-- `INV-002` is a query projection, never an editable second authority.
-- `PAR-001` target stock and observed stock are distinct; `PAR-002` remains optional sensor evidence.
-- `GROCERY-001` is practical consumable stock/list state and links to shopping/purchase evidence without becoming serialized durable-asset history.
-- `RECIPE-001` is reusable recipe knowledge; `MEAL-001` is dated planning state. A plan may read grocery stock and request missing ingredients through `SHOP-001`, but planning alone cannot consume stock or create purchase truth.
-- PR #31 remains salvage/reference evidence. Its inventory relocation model requires repair before any later movement salvage.
+- `ONBOARD-002` is a privacy/lineage prerequisite. New deployments begin generic and synthetic; protected legacy state remains outside portable/public source.
+- `ONBOARD-003` owns bounded interview pacing and durable resume state, not service activation.
+- `ONBOARD-004` owns discovery/recommendation. Job titles, duties, existing apps and AI-use evidence may inform recommendations but cannot silently enable services or permissions.
+- `ONBOARD-005` owns new-user cadence/timezone capture; scheduler runtime semantics remain under `OPS-*`, and an existing deployment’s schedule is never inherited as a default.
+- `SERVICE-001` owns activation state and explicitly separates `unresolved/enabled/disabled/not_applicable/deferred` from capability availability, catalog presence and recommendation.
+- Legacy unsafe/rejected universal-onboarding behavior stays rejected and cannot become a default through old branch/code resurrection.
 
 ## Prior-category closure
 
-Categories A-D are complete. Their recorded implementation gaps/evidence levels remain authoritative. Category E has not yet been audited.
+Categories A-D are complete. Category E is complete through row 5. Their recorded implementation gaps/evidence levels remain authoritative.
 
 ## New-idea triage rule
 
