@@ -18,8 +18,9 @@ ID families include:
 - `MILE-*` — paid-mileage occurrences, pay calculations and mileage authority;
 - `TASK-*` — task taxonomy, next actions and completion evidence;
 - `ROUTINE-*` — recurring/staged routine definitions, occurrences, transitions, completion and reschedule semantics;
+- `EDU-*` — education track/course/certification identity, academic work, deadlines and prerequisites;
 - `RECOVERY-*` — run evidence, checkpoints, resumability, circuit breakers and failure isolation;
-- `CAL-*` — calendar, appointments and appointment-window semantics;
+- `CAL-*` — calendar, appointments and source-linked Calendar projection semantics;
 - `REMIND-*` — reminder planning, medication reminder safety and sharing boundaries;
 - `HEALTH-*` — non-clinical administrative health organization and safety boundaries;
 - `MAIL-*` — email triage, communication safety, evidence ingestion;
@@ -1551,9 +1552,9 @@ Category E is complete through all 26 historical rows. The final authority/depen
 
 **Delivery/evidence:** the anti-fan-out/explicit-activation/consolidated-delivery boundary is directly `test_verified` in the onboarding router suite. The audited `reminder_delivery.py` implementation is appointment-centric and does not prove household/stage planning or provider readback. No dedicated routine-reminder planner/projection test suite was located, so full `REMIND-003` remains specification-level despite the tested routing boundary.
 
-**Hard dependencies:** `ROUTINE-001`; deterministic reminder identity; canonical time/window semantics; verified notification/brief delivery capability for selected channels; optional `CAL-006`-style Calendar projection contract when Calendar is selected; provider readback for mutation; `RECOVERY-002` failure isolation.
+**Hard dependencies:** `ROUTINE-001`; deterministic reminder identity; canonical time/window semantics; verified notification/brief delivery capability for selected channels; optional generic Calendar projection when selected; provider readback for mutation; `RECOVERY-002` failure isolation.
 
-**Enables:** laundry-stage reminders, pickup/drop-off reminders, later routine/accountability notifications and shared consolidated delivery infrastructure.
+**Enables:** laundry-stage reminders, pickup/drop-off reminders, routine/accountability notifications and shared consolidated delivery infrastructure.
 
 **Legacy evidence:** category-F row 12; `onboarding_profile_router.py`; household-routine router regression test; `questions.profile-and-stock-services.json`; `behavior-dependencies.json` scheduler/notification/optional Calendar profiles. Legacy `reminder_delivery.py`/tests are appointment-specific and therefore only negative boundary evidence for this feature.
 
@@ -1581,9 +1582,80 @@ Category E is complete through all 26 historical rows. The final authority/depen
 - The tested router contract does not promote the missing routine engine or routine reminder projection to `test_verified`, integration or live status.
 - No F4 service receives MIRA 2.0 integration/live verification from legacy routing tests, contract prose or unmerged PR #31 evidence alone.
 
+## Audited F5 routines/accountability and education/study service boundaries
+
+### F row 13 — Routines/fitness/accountability
+
+**Canonical mapping:** service key `routines_fitness` → required `ROUTINE-001` + `TASK-001` + `TASK-002`, governed by `SERVICE-001` + `SERVICE-002`. When accountability prompts are selected, add `REMIND-003`. Wearable/activity evidence is optional and belongs to later F22 integration; its absence cannot block basic routine/fitness readiness.
+
+**ROUTINE-001 F5 refinement:** user-selected routines may carry optional purpose/outcome, component blocks, HOME/away/context-valid variants, a minimum viable version, result evidence such as duration/sets/reps/load/variation when the user wants that detail, and a configured progression/review rule. These fields refine one routine/occurrence model rather than creating a separate fitness authority. Progression changes require supported evidence and must not invent injuries, diagnoses, calorie targets, medication advice or unsafe progression.
+
+**REMIND-003 F5 refinement:** accountability check-ins respect explicit acknowledgement/anti-nag behavior and progression/review prompts run only at the configured cadence or on request. Reminder delivery, elapsed time and missing wearable evidence never prove completion.
+
+**Evidence ceiling:** the service is skill/workflow-level. `TASK-001` is test-verified, while `TASK-002`, `ROUTINE-001` and the complete `REMIND-003` planner remain below test-verified as already recorded. No dedicated fitness/performance engine or deterministic progression suite was found in the audited legacy source or PR #31.
+
+**Dependency defect:** legacy `f-13` lists task-state, optional wearable capability and policy-source but no required canonical behaviors. MIRA 2.0 must explicitly require the task/routine lifecycle while keeping wearables optional. No `FITNESS-*` feature is created merely because the service has a fitness label.
+
+### `EDU-001` — Durable education track, academic-work and deadline identity
+
+**Description:** MIRA represents selected education programs, courses and certification tracks as durable education entities with stable identity, provenance and status. Assignments, exams, projects and other verified academic work/deadlines have stable identity linked to their track, supported source evidence, deadline/status and prerequisite relationships. Education state may record weekly targets, preferred study-session sizing, explicit HOME/away applicability and offline/download readiness when supported. Generic tasks and routines may reference this state but do not replace the education identity/lifecycle. Submission, attendance, grade, citation or completion evidence is never fabricated from silence, reminders, elapsed time or unsupported inference; user/source corrections preserve history rather than manufacturing proof.
+
+**Why it exists / user outcome:** A course or certification remains one durable thing that many tasks, deadlines, study sessions and source materials can reference instead of being flattened into a bag of todos that forgets what the work belongs to.
+
+**Requirement status:** `current required for the selected education/study service`.
+
+**Delivery/evidence:** `specified`/skill-workflow level. `life-planning-accountability.md` and `MODULE_CATALOG.md` strongly define program/course/certification identity, verified work/deadlines/prerequisites, source links, offline constraints and no-fabrication rules. The router catalogs/recommends `education` safely, but no dedicated deterministic education-state engine or tests were found in the audited legacy source or PR #31. MIRA 2.0 persistence/provider integration is unverified.
+
+**Hard dependencies:** stable education/work IDs; `TASK-001`; `TASK-002`; source/provenance; explicit context configuration for HOME/away applicability; optional `ROUTINE-001` for recurring study sessions; optional retained evidence/file capability for source materials; optional `CAL-007` for Calendar projection.
+
+**Enables:** education/study service, evidence-grounded study next actions, offline preparation and later family/school coordination without granting family permissions by implication.
+
+**Legacy evidence:** category-F row 14; `skill/ops-brief-policy/references/life-planning-accountability.md`; `starter/MODULE_CATALOG.md`; `starter/behavior-dependencies.json`; `starter/tools/onboarding_profile_router.py` and tests.
+
+**Acceptance / verification boundary:** Add deterministic tests for track/course/certification identity and replay, academic-work identity, deadline/prerequisite revisions, source correction, HOME/away constraints, retained/offline readiness evidence, no fabricated grade/attendance/submission/proof state and stable history across user/source corrections. Sandbox integration must persist/read back synthetic education state only.
+
+### `CAL-007` — Generic source-linked Calendar projection with stable identity and provider readback
+
+**Description:** For any independently enabled canonical event class, MIRA may project a source entity/event to Calendar through one stable Projection record rather than making Calendar the source of truth. Projection identity is derived from source type + source ID + event class + exact target calendar/resource. The record links canonical source identity/revision to provider event ID, title, start/end, projection status and sync evidence. Source revision updates the linked provider event in place; cancellation updates/deletes it according to configured policy while retaining projection audit history. A missing provider event may be recreated only after verifying the canonical projection row and avoiding duplicates by source identity. Success requires exact provider event/readback. Enabling one event class does not enable others, and inviting attendees remains a separate consequential permission/action.
+
+**Why it exists / user outcome:** Deadlines, trips, deliveries, maintenance items and other selected facts can appear on Calendar without every domain reinventing event identity or leaving duplicate stale events whenever reality changes.
+
+**Requirement status:** `accepted / required foundation when generic Calendar projection is selected`.
+
+**Delivery/evidence:** strongly `specified` in legacy `calendar-projection.md`, which defines independent event-class opt-in, stable source-linked projection rows, update/cancel/dedupe/recreate semantics and provider readback. No dedicated generic deterministic projection engine/test suite or MIRA 2.0 provider transaction was found. Therefore `CAL-007` is below `test_verified` and has no integration/live credit.
+
+**Hard dependencies:** stable canonical source identity/revision; exact provider Calendar/resource identity; provider write + readback capability; explicit event-class projection policy; IANA timezone semantics for timed events; `RECOVERY-002`; `PROFILE-013` where another person's/shared state is exposed; separate authority for attendees/invitations.
+
+**Enables:** F14 education/deadline projection and later delivery, travel, task, maintenance, bill/renewal and custom event classes. `CAL-006` remains the appointment-specific specialization and may reuse the generic core rather than being stretched across unrelated domains.
+
+**Legacy evidence:** category-F row 14; `skill/ops-brief-policy/references/calendar-projection.md`; `life-planning-accountability.md`; module/provider contracts. PR #31 broad Calendar capability language remains unmerged reference evidence only.
+
+**Acceptance / verification boundary:** Add deterministic tests for stable projection identity, create/replay/update/reschedule/cancel/dedupe, exact target calendar, missing-provider-event recovery, wrong-target/wrong-readback failure, independent event-class activation and no attendee side effects. Integration verification requires synthetic provider Calendar create/update/cancel/readback with one canonical source preserved across retries/revisions.
+
+### F row 14 — Education/study/deadlines/offline road preparation
+
+**Canonical mapping:** service key `education` uses selected-path semantics under `SERVICE-001` + `SERVICE-002`. Core education/deadline support requires `EDU-001` + `TASK-001` + `TASK-002`. Recurring study/accountability may add `ROUTINE-001` and `REMIND-003`. Retained/offline source-material handling adds the selected verified evidence/file capability. Calendar projection is optional through `CAL-007` and never becomes canonical education state.
+
+**Evidence ceiling:** `EDU-001` and `CAL-007` are specification/workflow-level; `TASK-001` is test-verified while `TASK-002`/`ROUTINE-001`/complete `REMIND-003` remain below test-verified. The service therefore cannot be promoted merely because the router/catalog or skill prose describes the workflow.
+
+**Dependency defect:** legacy `f-14` declares task-state plus optional Calendar/evidence profiles but no canonical education behavior. MIRA 2.0 adds `EDU-001` to own program/course/certification and academic-work identity while leaving study routines, documents and Calendar as separate selected paths/failure domains.
+
+## Category F5 consistency findings
+
+- F13 is routine/task composition, not a fitness database. `ROUTINE-001` carries optional session/result/progression metadata without creating `FITNESS-*` identity.
+- Wearable/activity ingestion remains optional F22 work and is never required for basic `routines_fitness` readiness or used as negative proof of noncompletion.
+- `REMIND-003` prompts/check-ins remain projection behavior; acknowledgement controls anti-nag and delivery never mutates canonical completion evidence.
+- `EDU-001` is distinct from generic task identity because durable program/course/certification and academic-work/deadline/prerequisite lifecycles must survive many tasks, routines and evidence sources.
+- Retained syllabi/materials remain separate evidence/document state linked from education records. Broader generic knowledge/reference normalization remains for F19 rather than being preempted here.
+- Offline readiness must be supported by actual retained/downloaded evidence, not by assuming a link will remain reachable away from home.
+- `CAL-007` owns generic source-linked Calendar projection across event classes. `CAL-006` remains appointment-specific; neither Calendar projection is canonical domain truth.
+- Academic submissions, attendance, grades, citations and proof of work are never fabricated. Deadline/status corrections require supported source evidence or explicit user action.
+- Calendar/evidence/wearable failure degrades only the selected path and cannot erase education/task/routine state.
+- No F5 service receives MIRA 2.0 integration/live verification from skill prose, router catalog presence, optional capability profiles or unmerged PR #31 evidence alone.
+
 ## Audit status
 
 - Categories A, B, C, D and E are complete.
-- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 were audited in `M2-G0-007B`; rows F9-F10 were audited in `M2-G0-007C`; rows F11-F12 are audited in `M2-G0-007D`. Row F13 **Routines/fitness/accountability** is the next unaudited category-F behavior.
+- Category F is in progress. Rows F1-F5 were audited in `M2-G0-007A`; rows F6-F8 were audited in `M2-G0-007B`; rows F9-F10 were audited in `M2-G0-007C`; rows F11-F12 were audited in `M2-G0-007D`; rows F13-F14 are audited in `M2-G0-007E`. Row F15 **Parent/child school coordination** is the next unaudited category-F behavior.
 - Category G remains unaudited.
 - The complete historical feature inventory remains in progress until F and G are closed.
