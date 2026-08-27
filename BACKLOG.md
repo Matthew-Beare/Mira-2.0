@@ -18,12 +18,13 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `AUDIT-A` | PREREQUISITE | Brief/time/tasking/operational-state reconstruction. | G0-001 | complete |
 | `AUDIT-B` | PREREQUISITE | Calendar/reminders/mail/communication safety. | AUDIT-A | complete |
 | `AUDIT-C` | PREREQUISITE | Orders/shipments/receipts/payments/spending. | AUDIT-B | complete through `M2-G0-004C` |
-| `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence. | AUDIT-C | **in progress; D1-D3 complete, D4 next** |
-| `AUDIT-D1` | PREREQUISITE | D rows 1-5: immutable asset identity; fitment relationships; asset evidence; bidirectional graph; identifiers; enrichment. | AUDIT-C | **complete in `M2-G0-005A`**; `ASSET-001`, `FITMENT-001`, `ASSET-002`, `ASSET-003`, `IDENT-001`, `EVID-001` |
-| `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual discovery/Drive retention; technical specs provenance; shopping intent separate from purchase; immutable inventory IDs; hierarchical intended/last-moved locations. | AUDIT-D1 | **complete in `M2-G0-005B`**; `KNOW-001`, `SPEC-001`, `SHOP-001`, `INV-001`, `LOC-001` |
-| `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; queryable household/shop inventory; consumable par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | **complete in `M2-G0-005C`**; `MOVE-001`, `INV-002`, `PAR-001`, `PAR-002`, `GROCERY-001` |
-| `AUDIT-D4` | PREREQUISITE | D row 16: recipes/meal planning/shopping linkage; category-D closure. | AUDIT-D3 | **next packet `M2-G0-005D`** |
-| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | queued |
+| `AUDIT-D` | PREREQUISITE | Assets/fitment/inventory/storage/identifiers/evidence/food planning. | AUDIT-C | **complete through `M2-G0-005D`** |
+| `AUDIT-D1` | PREREQUISITE | D rows 1-5: immutable asset identity; fitment relationships; asset evidence; bidirectional graph; identifiers; enrichment. | AUDIT-C | complete in `M2-G0-005A` |
+| `AUDIT-D2` | PREREQUISITE | D rows 6-10: manual retention; technical specs; shopping intent; inventory identity; hierarchical locations. | AUDIT-D1 | complete in `M2-G0-005B` |
+| `AUDIT-D3` | PREREQUISITE | D rows 11-15: QR/barcode movement; inventory query; par levels; optional scale sensing; grocery/pantry/freezer flows. | AUDIT-D2 | complete in `M2-G0-005C` |
+| `AUDIT-D4` | PREREQUISITE | D row 16: recipe library; meal planning; missing-ingredient shopping linkage; category-D closure. | AUDIT-D3 | **complete in `M2-G0-005D`**; `RECIPE-001`, `MEAL-001` |
+| `AUDIT-E` | PREREQUISITE | Profiles/onboarding/family/customization/accessibility. | AUDIT-D | queued; begin with bounded `AUDIT-E1` |
+| `AUDIT-E1` | PREREQUISITE | Category-E rows 1-5: generic quarantined starter/no inherited personal data; four-question adaptive first boot; bounded AI/job/pain-point/app discovery; cadence/timezone intake; explicit service activation states. | AUDIT-D | **next packet `M2-G0-006A`** |
 | `AUDIT-F` | PREREQUISITE | Providers/portability/distribution/enterprise. | AUDIT-E | queued |
 | `AUDIT-G` | PREREQUISITE | ChatGPT/Android/web/desktop/CLI/device surfaces. | AUDIT-F | queued |
 | `AUDIT-LEGACY` | HARDENING | Reconcile PR #31 plus meaningful legacy branches/repos against stable MIRA 2.0 features. | audits A-G | queued; inspect earlier only when materially relevant |
@@ -33,11 +34,13 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
+| `RECIPE-CORE-001` | LATER | Implement/test `RECIPE-001` stable recipe identity, provenance, structured ingredient/yield data, source preservation, dedupe and replay. | ingredient/unit semantics; optional `KNOW-001` source retention | queued; current-required product capability but outside present stock-core milestone |
+| `MEAL-CORE-001` | LATER | Implement/test `MEAL-001` dated plan identity, recipe reuse, pantry-aware ingredient gaps, ambiguity handling and deduplicated `SHOP-001` grocery intent without planning-induced stock mutation. | `RECIPE-001`, `GROCERY-CORE-001`, `SHOP-CORE-001` | queued; current-required product capability but outside present stock-core milestone |
 | `MOVEMENT-CORE-001` | PREREQUISITE | Salvage/redesign `MOVE-001` as replay-safe movement/observation events with exact identifier/location resolution, scan-in/out semantics and target readback without rewriting intended placement. | `INV-001`, `IDENT-001`, `LOCATION-STATE-001` | queued; PR #31 scanner/relocate path is reference candidate but overwrites one `location_uuid` |
 | `INVENTORY-QUERY-001` | HARDENING | Implement/prove `INV-002` canonical household/shop query projection across Entity UUIDs, identifiers, relationships, intended/observed locations and containers without second mutable authority. | `INV-001`, `LOC-001`, `ASSET-003`, `LOCATION-STATE-001` | queued; PR #31 query/UI is unmerged reference candidate |
 | `PAR-CORE-001` | ENHANCEMENT | Implement/test `PAR-001` observed quantity, explicit target/par, threshold crossing and replay-safe opt-in consolidated low-stock state. | `INV-001`, canonical quantity observations | queued; no executable par engine located |
 | `PAR-SCALE-001` | LATER | Research/implement optional `PAR-002` scale/load-cell adapter with calibration, tare, noise, stale-data and confidence semantics only if promoted by product priority. | `PAR-001`, observation/provenance model | deferred optional; no implementation located |
-| `GROCERY-CORE-001` | PREREQUISITE | Implement/test `GROCERY-001` grocery-list versus stock state, pantry/freezer locations, purchase-to-stock reconciliation, consumption/spoilage/transfer and replay-safe quantity updates. | `SHOP-001`, `INV-001`, `LOC-001`, practical quantity/unit model | queued; needed by later meal-planning behavior, no executable core located |
+| `GROCERY-CORE-001` | PREREQUISITE | Implement/test `GROCERY-001` grocery-list versus stock state, pantry/freezer locations, purchase-to-stock reconciliation, consumption/spoilage/transfer and replay-safe quantity updates. | `SHOP-001`, `INV-001`, `LOC-001`, practical quantity/unit model | queued; prerequisite for later meal-planning behavior, no executable core located |
 | `LOCATION-STATE-001` | PREREQUISITE | Implement/test `LOC-001` stable hierarchical locations with explicit intended-home placement separate from current/last-observed movement state, including cycle/container rules and readback. | `INV-001`, location/event schema | queued; PR #31 hierarchy code is salvage/reference only and does not prove intended-vs-observed semantics |
 | `SHOP-CORE-001` | PREREQUISITE | Implement/test deterministic `SHOP-001` shopping-intent reconciliation: exact/ambiguous match, owner-confirmed fulfillment, cancellation, replacement, partial fulfillment, idempotent replay, deletion/readback. | `RECEIPT-001`, stable shopping-intent identity | queued; policy is strong but no dedicated deterministic core located |
 | `KNOWLEDGE-INTEGRATION-001` | HARDENING | Prove `KNOW-001` synthetic manual discovery, Drive retention/index readback, idempotent Knowledge UUID replay and independent relationship degradation in MIRA 2.0 sandbox. | `KNOW-001`, `DATA-SANDBOX`, Google/MIRROR adapter | queued; deterministic core exists, provider integration unverified |
@@ -63,28 +66,22 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
-## Category-D1/D2/D3 dependency findings
+## Category-D dependency closure
 
-- `ASSET-001` owns immutable physical identity; labels, owners, locations and backends cannot replace Entity UUID.
-- `FITMENT-001` is an explicit relationship authority. `assigned_to` is not `installed_on`; automatic fitment inference remains a separate hardening gap.
-- `ASSET-002` links purchase/manual/warranty/maintenance/spec evidence but cross-authority failure cannot erase a verified asset. Dedicated warranty/maintenance lifecycle depth is queued separately.
-- `ASSET-003` receipt/asset/identifier graph behavior is test-verified and intentionally excludes broad `owned_by` traversal.
-- `IDENT-001` preserves global-vs-namespaced identifier meaning, check digits/format, leading zeroes and serial-level collision safety.
-- `EVID-001` provider-neutral reconciliation is test-verified; Gmail/photo/OCR adapter execution remains integration work.
-- `KNOW-001` owns canonical document/reference identity; asset links are downstream and provider failure does not manufacture a second manual.
-- `SPEC-001` verified safety-critical values require exact subject/applicability plus authoritative source tier and source locator; the deterministic validator core is test-verified.
-- `SHOP-001` active procurement intent is not purchase history or spend. Dedicated deterministic reconciliation remains queued as `SHOP-CORE-001`.
-- `INV-001` reuses canonical Entity UUIDs instead of creating an independent inventory identity authority.
-- `LOC-001` must distinguish intended storage placement from observed/current/last-moved location. PR #31 hierarchy code is salvage/reference only; `LOCATION-STATE-001` is the actual required implementation gap.
-- `MOVE-001` depends on repaired location semantics. PR #31 barcode capture/relocation is salvageable architecture but cannot be imported as-is because it overwrites one location field.
-- `INV-002` is a query projection over canonical state, never an editable second inventory database.
-- `PAR-001` target quantity and observed quantity are separate facts; under-level state must be replay-safe and opt-in.
-- `PAR-002` is optional sensor evidence and cannot block inventory or grocery operation.
-- `GROCERY-001` is practical consumable stock plus procurement reconciliation; receipt history remains evidence, not pantry state.
+- `ASSET-001` owns physical identity; `INV-001` reuses that UUID rather than creating another inventory identity system.
+- `FITMENT-001` owns assignment/installation/compatibility relationships, not identity.
+- `EVID-001`, `KNOW-001` and `SPEC-001` are separate provenance layers with different evidence gates.
+- `SHOP-001` is active procurement intent; `RECEIPT-*`/`ORDER-*` are durable commerce history.
+- `LOC-001` separates intended home from observed/current placement; `MOVE-001` is event/observation state over those locations.
+- `INV-002` is a query projection, never an editable second authority.
+- `PAR-001` target stock and observed stock are distinct; `PAR-002` remains optional sensor evidence.
+- `GROCERY-001` is practical consumable stock/list state and links to shopping/purchase evidence without becoming serialized durable-asset history.
+- `RECIPE-001` is reusable recipe knowledge; `MEAL-001` is dated planning state. A plan may read grocery stock and request missing ingredients through `SHOP-001`, but planning alone cannot consume stock or create purchase truth.
+- PR #31 remains salvage/reference evidence. Its inventory relocation model requires repair before any later movement salvage.
 
 ## Prior-category closure
 
-Categories A-C are complete. Category D is complete through row 15. Their previously recorded gaps/evidence levels remain authoritative.
+Categories A-D are complete. Their recorded implementation gaps/evidence levels remain authoritative. Category E has not yet been audited.
 
 ## New-idea triage rule
 
