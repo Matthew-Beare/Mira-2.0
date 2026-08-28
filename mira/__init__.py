@@ -1,5 +1,17 @@
 """MIRA 2.0 core package."""
 
+from .authority import (
+    AuthorityBinding,
+    AuthorityBindingNotFoundError,
+    AuthorityNotFoundError,
+    AuthorityRegistry,
+    AuthorityRegistryError,
+    AuthorityRoute,
+    AuthoritySchemaError,
+    AuthoritySpec,
+    AuthorityUnavailableError,
+    StoredAuthority,
+)
 from .structured_state import (
     EventMutationResult,
     EventRecord,
@@ -18,6 +30,15 @@ from .structured_state import (
 )
 
 __all__ = [
+    "AuthorityBinding",
+    "AuthorityBindingNotFoundError",
+    "AuthorityNotFoundError",
+    "AuthorityRegistry",
+    "AuthorityRegistryError",
+    "AuthorityRoute",
+    "AuthoritySchemaError",
+    "AuthoritySpec",
+    "AuthorityUnavailableError",
     "EventMutationResult",
     "EventRecord",
     "HealthStatus",
@@ -29,6 +50,7 @@ __all__ = [
     "ResourceRecord",
     "RevisionConflictError",
     "SchemaInfo",
+    "StoredAuthority",
     "StructuredStateAdapter",
     "StructuredStateError",
     "ValidationError",
