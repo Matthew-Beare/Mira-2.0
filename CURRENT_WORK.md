@@ -1,72 +1,73 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
+Git is authoritative. This file records the completed repository-growth gates and exact Wave-2 successor.
 
-## Completed packet before this branch
-
-### `M2-G1-005` — Machine-readable feature registry gate
-
-- **Merged PR:** #42
-- **Merge SHA / main readback:** `d635d45cbdfc66dc8f3e8d9eda765340045a9111`
-- **Post-merge completion checkpoint / this branch start SHA:** `4bc2790fa304695b96c9edcf06ff3a8c23b3c173`
-- **Remote CI:** run `33211317703`; compile + feature registry + full suite succeeded.
-- **Result:** `FEATURE-REGISTRY-001` is implemented/test-verified; canonical feature graph is machine-validated.
-
-## Active packet
+## Completed packet
 
 ### `M2-G1-006` — Production component ownership and anti-bloat gate
 
 - **Work ID:** `CODE-OWNERSHIP-001`
-- **Class:** implementation / repository-growth prerequisite
-- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Merged PR:** #43
+- **Merge SHA / main readback:** `1a8a3279ca3be55dac3371dab33155b996c0946b`
 - **Branch:** `impl/g1-006-code-ownership`
 - **Branch start SHA:** `4bc2790fa304695b96c9edcf06ff3a8c23b3c173`
-- **Status:** activated; current production surface inventoried, implementation next.
+- **CI-verified PR head:** `60df2aceeb8a250e6a52c1e0c15b75daeda925a3`
+- **GitHub Actions run:** `33211598736`
+- **Remote verification:** compile, feature registry, code ownership, and full unit/integration suite all succeeded.
+- **Result:** every current `mira/*.py` production artifact is owned exactly once by a bounded component with canonical feature/work linkage and direct Python test imports. CI rejects unowned/overlapping code, dangling feature/work references, and missing/non-material verification evidence.
 
-## Current production inventory
+## Product-state checkpoint
 
-Production root is `mira/`. Current Python artifacts:
-- `mira/__init__.py`
-- `mira/structured_state.py`
-- `mira/authority.py`
-- `mira/api_core.py`
-- `mira/http_transport.py`
-- `mira/feature_registry.py`
+MIRA 2.0 currently has:
+- canonical structured state: implemented/test-verified;
+- Authority Registry: implemented/test-verified;
+- shared API service + scoped auth/HTTP transport: implemented/test-verified;
+- synthetic HTTP canonical roundtrip: integration-verified;
+- feature dependency registry gate: implemented/test-verified;
+- production component ownership/anti-bloat gate: implemented/test-verified.
 
-This packet will add `mira/code_ownership.py`, which must itself be owned in the manifest. Tests, docs, workflows, `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are verification/governance surfaces, not product-runtime artifacts.
+No Google-backed canonical entity, managed deployment, stock-ChatGPT integration, or MIRA 2.0 Android APK is yet claimed.
 
-## Objective
+## Selected successor
 
-Implement a language-neutral component ownership manifest and CI validator so every production artifact has exactly one bounded owner, relevant feature/work linkage and direct verification evidence before provider/client code fan-out.
+### `M2-M0-001` — Isolated Google/MIRROR data sandbox
 
-## Acceptance criteria
+- **Work ID:** `DATA-SANDBOX`
+- **Class:** provider integration prerequisite / protected-data boundary
+- **Planned branch:** `integration/m0-001-google-sandbox`
+- **Dependencies satisfied:** canonical Authority Registry and structured-state contracts are implemented; repository growth gates are green.
 
-1. One canonical ownership manifest with stable component IDs, responsibility, why-separate rationale, owned production paths, feature IDs, work IDs and direct verification paths.
-2. Explicit production roots; every production artifact under them is owned exactly once.
-3. Reject unowned artifacts, duplicate ownership, missing paths and ownership outside roots.
-4. Validate feature IDs against canonical `FEATURES.md` registry.
-5. Validate work IDs against canonical `BACKLOG.md` rows.
-6. Require direct verification paths and reject missing/non-test evidence.
-7. Python verification profile proves verification source materially imports/references the owned module.
-8. Multiple cohesive files per component are allowed; no one-file/one-feature rule.
-9. CI runs ownership validation before the full suite.
-10. Tests cover invalid manifests plus the real repository manifest.
-11. Inventory all current `mira/*.py` including the validator itself.
-12. No provider/Google/Android/legacy-state changes.
+### Objective
+
+Create and verify a separate Google Drive namespace for MIRA 2.0 synthetic integration work without touching, repurposing, migrating, or using any legacy MIRA production artifact as a fixture.
+
+### Acceptance criteria
+
+1. Search Drive before writing and prove whether an exact `MIRA 2.0 Sandbox` folder already exists.
+2. Create at most one root-level `MIRA 2.0 Sandbox` folder; never rename/reuse a legacy MIRA/LyfeOS folder.
+3. Create a dedicated `Structured State` child folder only inside the verified sandbox parent.
+4. Use no personal operational data; provider resources contain generic names only and synthetic data only.
+5. Read back folder metadata and parent relationships from Google after writes.
+6. Verify the sandbox folder is distinct from any legacy artifacts encountered by search; do not modify those artifacts.
+7. Provider resource IDs/URLs and account identifiers are not committed to the public repository.
+8. Record only sanitized verification evidence and exact next adapter requirements in Git.
+9. No Google Sheet/state schema is created yet; that belongs to `GOOGLE-STORE-ADAPTER-001`.
+10. No Gmail/Calendar/scheduler/Android/deployment changes.
 
 ## Exact next action
 
-1. Add `project/code_ownership.json` with current bounded components.
-2. Implement `mira/code_ownership.py` validator/CLI over feature/work registries and filesystem inventory.
-3. Add deterministic tests and CI gate.
-4. Open bounded PR, require remote CI green and exact file scope.
-5. Merge/read back main, then begin Wave 2 with the isolated MIRA 2.0 data sandbox.
+1. Create `integration/m0-001-google-sandbox` from this exact main checkpoint.
+2. Activate `M2-M0-001` in branch `CURRENT_WORK.md`.
+3. Search connected Google Drive for the exact sandbox name before any provider write.
+4. Create/verify the isolated folder hierarchy if absent.
+5. Commit sanitized provider readback evidence only, PR/merge/read back main.
+6. Then activate `GOOGLE-STORE-ADAPTER-001` to create and use the first Google-backed structured-state resource inside the sandbox.
 
 ## Recovery protocol
 
 On any new conversation/session:
 1. read this file first;
 2. verify repository/branch/head;
-3. continue from exact next action;
-4. do not broaden scope from chat history;
+3. continue from the exact next action;
+4. never place live provider IDs/private data in public Git;
 5. capture unrelated ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
