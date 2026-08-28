@@ -21,44 +21,66 @@ Git is authoritative. This file identifies exactly one active provider-adapter p
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-002-google-store-adapter`
 - **Branch start SHA:** `ae30e8b304da097570d3d0061fd9c863b654f3ca`
-- **Status:** activated after initial successor provider resource creation; metadata/tab/range verification next.
+- **Activation commit:** `482a42ad0c57accbd080e03d5b2c032554e56264`
+- **Adapter implementation:** `dfcd41e8821a4eee2c3695fd357f00904b266c02`
+- **Adapter/gateway tests:** `e5565704878317f15bdc484997b178d6e518ba9c`
+- **Code ownership update:** `97893a6249846f2c319562ed15de8ca5dd1c7f3c`
+- **Status:** provider schema grounded/corrected; adapter/test content committed; remote CI and live mutation proof next.
 
-## Provider timing/readback note
+## Provider resource evidence
 
-After M2-M0-001 merged, before this branch activation commit was written, successor-scope work created a native Google Sheet named `MIRROR Structured State - Synthetic` from a local synthetic-only workbook and moved it into the verified `Structured State` sandbox child. Native conversion and the destination parent were provider-read-back before this activation. No live provider ID is recorded here.
+- One native Google Sheet named `MIRROR Structured State - Synthetic` was created from a synthetic-only workbook and moved under the verified `Structured State` sandbox child.
+- Provider metadata shows exactly four tabs: `Metadata`, `Resources`, `Events`, `Idempotency`.
+- Bounded provider reads verified headers and seed synthetic rows.
+- Imported ISO timestamp cells were normalized back to literal UTC strings after conversion had treated them as spreadsheet serial dates.
+- Metadata was extended with `resource_types_json=["entity"]`, `event_types_json=["created","updated"]`, and `writer_model=single_writer`.
+- The first bounded read exposed a schema defect: `Events` had `stream_id` but no `stream_type`. The live sandbox schema was corrected to the eight-column event contract `event_type,event_id,stream_type,stream_id,stream_revision,payload_json,occurred_at,idempotency_key` before adapter implementation.
+- All provider content remains generic/synthetic. Live IDs/URLs are intentionally omitted from Git.
 
-## Objective
+## Engineering boundary
 
-Implement and integration-prove a Google Sheets-backed `StructuredStateAdapter` path using only synthetic data inside the isolated MIRA 2.0 sandbox, preserving the existing provider-neutral state semantics.
+M2-M0 uses a **single-writer** Google Sheets authority model. `GoogleSheetsStructuredStateAdapter` holds an adapter-local mutation lock and submits each resource/event mutation plus idempotency record as one Sheets batch. Optimistic revision/idempotency checks are exact for one writer process. Google Sheets does not provide distributed cell compare-and-swap, so multi-process/multi-writer safety is not claimed and must be hardened before any deployment topology that permits concurrent independent writers.
 
-## Acceptance criteria
+## Implemented component
 
-1. Exactly one native Google Sheet with the selected synthetic title exists in the verified `Structured State` child.
-2. `Metadata`, `Resources`, `Events`, and `Idempotency` tabs/schema are provider-read-back and contain synthetic data only.
-3. Implement provider-neutral Sheets gateway boundary plus Google Sheets adapter without credentials or resource IDs in Git.
-4. Stable IDs, revisions, bounded query, exact readback, append-only events, idempotency and stale-revision behavior match `StructuredStateAdapter` semantics.
-5. Google row/tab persistence remains isolated behind the adapter/gateway; API and Authority Registry remain provider-agnostic.
-6. Deterministic fake-gateway tests cover create/read/query/update/replay/conflict/events/readback.
-7. Live provider proof performs a synthetic create/update/readback cycle and verifies exact provider rows after mutation.
-8. Update production ownership manifest for new code and direct tests.
-9. All feature-registry/code-ownership/unit/integration CI gates pass.
-10. No personal data, legacy data, Gmail, Calendar, scheduler, Android, or deployment changes.
-11. Live provider IDs/URLs/account identifiers remain outside public Git.
-12. Bounded PR/merge/readback, then advance to managed API deployment.
+`mira/google_sheets_store.py` provides:
+- provider-neutral `SheetsGateway` and atomic `SheetRowMutation` boundary;
+- stdlib `GoogleSheetsRestGateway` with runtime-injected spreadsheet ID/access-token provider and no hard-coded credential/resource identifiers;
+- `GoogleSheetsStructuredStateAdapter` implementing health/schema/get/query/upsert/append-event/events-for semantics;
+- exact schema/header validation;
+- stable caller IDs, monotonic revisions, bounded queries, idempotency replay/material-conflict checks, stale revision checks and exact post-write readback;
+- Google-specific range/tab/row behavior isolated below `STORE-001`.
+
+`tests/test_google_sheets_store.py` covers fake-gateway contract behavior and REST request construction/bearer injection. `project/code_ownership.json` owns the new module under component `google-sheets-state` with direct test evidence.
+
+## Acceptance criteria status
+
+1. One native synthetic Sheet inside verified child. **Provider-created/read-back.**
+2. Four tabs/schema synthetic-only. **Provider-read-back; Events schema defect corrected.**
+3. Gateway + adapter without committed credentials/IDs. **Implemented.**
+4. Contract semantics preserved. **Test content committed; remote CI pending.**
+5. Provider details isolated below adapter. **Implemented.**
+6. Deterministic fake-gateway tests. **Committed; remote CI pending.**
+7. Live synthetic create/update/readback cycle. **Pending.**
+8. Production ownership manifest updated. **Committed.**
+9. All CI gates green. **Pending.**
+10. No personal/legacy/Gmail/Calendar/scheduler/Android/deployment state. **Satisfied.**
+11. Live provider IDs/URLs/account identifiers excluded from Git. **Satisfied.**
+12. Bounded PR/merge/readback. **Pending.**
 
 ## Exact next action
 
-1. Read native spreadsheet metadata and resolve exact tab names/sheet IDs.
-2. Read bounded header/seed ranges from each tab.
-3. Implement the Sheets gateway/adapter and tests, update ownership manifest.
-4. Perform live synthetic mutation/readback through the provider surface and record sanitized evidence.
-5. Require all CI gates green, merge/read back main.
+1. Open a bounded PR and let compile/feature-registry/code-ownership/full tests validate the implementation.
+2. Fix only packet-scoped failures; do not weaken existing contract/gates.
+3. After code is green, exercise the equivalent create -> read -> update -> replay/conflict readback sequence against the live sandbox Sheet using bounded provider operations.
+4. Record only sanitized live-integration evidence in this file.
+5. Re-run exact-head CI if evidence bookkeeping changes, merge/read back main.
 6. Activate `API-DEPLOYMENT-001` next.
 
 ## Recovery protocol
 
 On any new conversation/session:
 1. read this file first and verify branch/head;
-2. rediscover the sandbox Sheet by exact title/provider folder if its resource reference is needed;
+2. rediscover the sandbox Sheet by exact provider search when its resource reference is needed;
 3. never commit live provider IDs/private data;
 4. continue only the active packet unless a blocker forces scope change.
