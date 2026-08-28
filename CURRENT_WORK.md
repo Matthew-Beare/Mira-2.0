@@ -1,94 +1,52 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
+Git is authoritative. This file records the completed structured-state packet and exact successor.
 
-## Completed packet before this branch
-
-### `M2-G0-010` — Final dependency graph and implementation ranking closeout
-
-- **Merged PR:** #36
-- **Merge SHA / main readback:** `a7d3e947ac71803c3c19777668c0ea79d844463f`
-- **Post-merge completion checkpoint / this branch start SHA:** `15b8842e9058cf09b5b8294ff10ceac22a3d5422`
-- **Result:** G0 is complete; M2-M0/M2-M1 critical path is acyclic and ranked.
-
-## Active packet
+## Completed packet
 
 ### `M2-G1-001A` — Synthetic structured-state adapter core
 
 - **Work ID:** `STORE-ADAPTER-001A`
-- **Class:** implementation / foundational prerequisite
-- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Merged PR:** #37
+- **Merge SHA / main readback:** `a6550d6a44bbe8b02285204e9f475f8caa085d95`
 - **Branch:** `impl/g1-001a-structured-state-adapter`
 - **Branch start SHA:** `15b8842e9058cf09b5b8294ff10ceac22a3d5422`
-- **Activation commit:** `188730f279b10eb155915e685abf82c26203d8de`
-- **Package export commit:** `5f43f54e1b91ba918d59a9d92e6dcfb932977ecc`
-- **Structured-state implementation:** `192f6eaa78d806f35fa6e3b2c671da009a21bf14`
-- **Deterministic tests:** `30177b198ed45261df544f80b291e25a0532d8fb`
-- **Minimal CI gate:** `8737b7aa849bc21e42e756e498f0a29dbb22dc0e`
-- **Status:** implementation complete locally; 11 deterministic unit tests pass; remote PR CI and final evidence normalization next.
+- **Implementation head / CI-verified PR head:** `c66deb591f47979e45e819c75a4eca830e390cbd`
+- **GitHub Actions run:** `33209577735`
+- **Remote verification:** compile succeeded; `python -m unittest discover -s tests -v` succeeded with **11 tests, 0 failures/errors**.
+- **Result:** provider-neutral structured-state Protocol, deterministic in-memory synthetic adapter, caller-supplied stable IDs, monotonic revisions, exact readback, bounded query, mandatory idempotency/replay protection, stale-revision conflict handling, append-only event streams and fail-closed validation are implemented/test-verified.
+- **Scope proof:** no Google/provider/network/evidence-store/Authority Registry/API/Android behavior or protected legacy production state was touched.
 
-## Implemented component
+## Selected successor
 
-Component: **structured-state**
+### `M2-G1-002` — Canonical Authority Registry core
 
-Owned production surface:
-- `mira/structured_state.py` — provider-neutral structured mutable-state contract, deterministic in-memory adapter, contract errors/types.
-- `mira/__init__.py` — package export surface for this component.
+- **Work ID:** `AUTHORITY-REGISTRY-001`
+- **Class:** implementation / foundational prerequisite
+- **Planned branch:** `impl/g1-002-authority-registry`
+- **Dependency satisfied:** `STORE-ADAPTER-001A` is merged and test-verified.
+- **Objective:** implement a canonical persisted registry that binds each mutable data class to exactly one active authority and resolves that authority through an explicitly registered structured-state adapter.
 
-Direct verification:
-- `tests/test_structured_state.py`
-- `.github/workflows/ci.yml` compiles `mira`/`tests` and runs stdlib `unittest` on Python 3.12.
+### Acceptance criteria
 
-No third-party runtime dependencies were introduced.
-
-## Implemented semantics
-
-- explicit health/schema contract with declared resource/event types;
-- exact read with defensive readback copies;
-- bounded deterministic query with exact payload filters and hard limit bounds;
-- caller-supplied stable canonical resource/event IDs;
-- monotonic resource revisions and event stream revisions;
-- mandatory mutation idempotency keys;
-- exact replay returns prior result without another mutation;
-- material idempotency-key reuse fails closed;
-- optimistic stale-revision mutation fails without changing state;
-- duplicate event identity fails closed;
-- append-only ordered event-stream readback;
-- invalid/unknown resource/event types and non-JSON payloads fail explicitly.
-
-## Verification evidence
-
-Local deterministic run against the exact committed implementation/test content:
-- command: `python -m unittest discover -s tests -v`
-- result: **11 tests passed, 0 failures/errors**.
-
-Remote GitHub CI is not yet evidence until a PR-triggered run succeeds.
-
-## Acceptance criteria
-
-1. Bounded interface for health/schema, exact read, bounded query, idempotent upsert and append-event behavior. **Implemented/local-test-verified.**
-2. Stable caller-supplied canonical IDs; replay never invents competing identities. **Implemented/local-test-verified.**
-3. Monotonic revisions and exact material readback after mutation. **Implemented/local-test-verified.**
-4. Same idempotency key + same material request returns prior result without another mutation. **Implemented/local-test-verified.**
-5. Same idempotency key + different material request fails closed. **Implemented/local-test-verified.**
-6. Stale expected revision fails explicitly and leaves state unchanged. **Implemented/local-test-verified.**
-7. Invalid/unknown resource or envelope fails explicitly. **Implemented/local-test-verified.**
-8. Deterministic tests cover create/read/query/update/replay/conflict/append-event/readback. **11 tests pass locally.**
-9. No Google/provider/network/evidence-store work, credentials or legacy production state. **Satisfied.**
-10. Bounded production ownership and tests; one coherent PR. **Component/test ownership recorded; PR pending.**
-
-## Scope guard
-
-No Authority Registry, HTTP/API, Google/SQL provider, evidence-store, Android, credential or legacy-production behavior was added.
+1. Define stable Authority records with caller-supplied Authority IDs and bounded adapter/resource/namespace/failure-domain/owner/schema/verification metadata.
+2. Persist Authority records and data-class bindings through `StructuredStateAdapter`; registry has no second mutable backing store.
+3. Each mutable data class resolves to exactly one active Authority binding; missing binding fails explicitly.
+4. Activating/replacing a binding requires optimistic expected revision and is replay-safe/idempotent.
+5. Unknown, disabled, unverified or runtime-unregistered authority/adapter cannot resolve as healthy canonical authority.
+6. Registering an Authority never silently activates it for a data class.
+7. Runtime adapter registration is explicit and separate from persisted Authority metadata; possessing an adapter object grants no data-class authority by itself.
+8. Routing returns the exact Authority metadata plus the registered adapter without exposing provider/database credentials.
+9. Deterministic tests prove registration/readback, activation, one-authority routing, replacement conflict, replay, disabled/unverified/unregistered failure and failure isolation.
+10. No HTTP/API, Google/provider-specific adapter, cross-person permission, evidence-store or Android work.
 
 ## Exact next action
 
-1. Compare branch to `main` and verify only packet-scoped product/test/CI/current-work files changed.
-2. Open bounded implementation PR at the exact head.
-3. Verify PR file list and PR-triggered CI.
-4. If CI passes, update `BACKLOG.md` and this file with remote test evidence and next packet selection.
-5. Merge exact verified head/read back `main`.
-6. Activate `AUTHORITY-REGISTRY-001` as the next dependency-ranked implementation packet.
+1. Create `impl/g1-002-authority-registry` from this exact main checkpoint.
+2. Activate `M2-G1-002` in branch `CURRENT_WORK.md`.
+3. Implement the registry over the merged structured-state adapter.
+4. Extend tests and existing CI only within packet scope.
+5. PR/CI/merge/readback, then advance to `API-CORE-001`.
 
 ## Recovery protocol
 
