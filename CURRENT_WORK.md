@@ -1,52 +1,87 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file records the completed packet and exact successor point.
+Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet
+## Completed packet before this branch
 
-### `M2-G0-008G` — Remaining feature-ledger closeout — F21-F23 + G2-G6/G8-G9/G11-G15
+### `M2-G0-008G` — Remaining feature-ledger closeout
 
-- **Repository:** `Matthew-Beare/Mira-2.0`
 - **Merged PR:** #34
 - **Merge SHA / main readback:** `acb7e8c9025b7f6096f9a4fcba0ced8d9d68622c`
-- **Branch:** `audit/g0-008g-remaining-ledger-closeout`
-- **Branch start SHA:** `f7f0608849e96da19cc871c119e11afd0052f319`
-- **Research checkpoint:** `01845ec769c26de3ffb1cbe03456ec0ae37026c7`
-- **Feature normalization:** `6b5c982eafe786918bda12e73d6f021d092f57a3`
-- **Backlog normalization:** `1243f1b617a0a33c357368e51efa3930baf5cc75`
-- **Packet-close head:** `4696c910fef146f9d9966a5492d22f080bf83631`
-- **Server-side file scope verified:** exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md`.
-- **Result:** Category F is closed through F23 and recovered Category G through G20. New semantic features are `WEARABLE-001`, `WEATHER-002`, `ENTERPRISE-001`, `OBS-001`, `LOCAL-001`, `VOICE-001`. Provider/backend/topology choices were deduped into existing authority boundaries rather than made false core blockers.
+- **Post-merge completion checkpoint / this branch start SHA:** `0b734df51c815ec16a05a4b0b5a6446dde5f4e78`
+- **Result:** feature inventory is complete through F23/G20.
 
-## Product-state checkpoint
+## Active packet
 
-The feature inventory/reconstruction phase is complete. There are no unreconciled recovered F/G ledger rows.
+- **Packet ID:** `M2-G0-009`
+- **Name:** Legacy branch/PR reconciliation
+- **Class:** forensic reconciliation / final salvage gate before dependency closeout
+- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Branch:** `audit/g0-009-legacy-reconciliation`
+- **Branch start SHA:** `0b734df51c815ec16a05a4b0b5a6446dde5f4e78`
+- **Activation commit:** `cebc9515798563b33da462690b06e00785ec1491`
+- **Research/disposition checkpoint:** `bbc3d5446b6d50e9e028a0ba5570574769bff478`
+- **Backlog normalization:** `cd79f733ab7bff3f4540812d20fe73996c8374d3`
+- **Status:** acceptance complete; diff gate, PR, merge and main readback remain.
 
-Android remains a defined but unimplemented MIRA 2.0 client:
-- legacy Android build evidence exists;
-- no MIRA 2.0 APK exists yet;
-- `API-CORE-001` is not built;
-- `ANDROID-SYNC` is not proven.
+## Canonical reconciliation result
 
-The Android implementation critical path remains:
-`AUTHORITY-REGISTRY-001` + `STORE-ADAPTER-001` -> `API-CORE-001` -> `CORE-ROUNDTRIP` -> `ANDROID-CLIENT-CORE-001` -> `ANDROID-SYNC` -> native delivery/capture/release hardening.
+- Legacy Personal-Production has two open PRs: **#31** and **#34**.
+- PR #31 is **selective salvage/reference only; never wholesale merge**.
+- PR #34 governance/control-plane work is **superseded by authoritative Mira-2.0; reject merge**.
+- Public and Institutional Experimental repositories explicitly identify themselves as generated, non-canonical distributions and create no independent feature authority.
+- Representative architecture/dependency/reconciliation/distribution-fix branches are already ancestors of legacy `main`.
+- Diverged manual-brief/distribution-build/install-cleanup branches are semantically superseded by newer legacy-main behavior.
+- Old `mira-mirror-branding` work is historical evidence only; current `BRAND-001`/approved modern brand assets win.
+- `feature/productization-docker-oauth-full-ui` is a genuine 4-commit independent code quarry. Salvage its repository abstraction/revisioned upserts, compatibility, pairing and idempotency patterns into `STORE-ADAPTER-001`/`API-CORE-001`; reject its coarse auth, direct Google wiring, non-registry backend selection, single-location overwrite model and parallel-service-stack architecture.
 
-## Remaining before new implementation
+## PR #31 salvage ceiling
 
-Exactly two G0 closeout stages remain:
+Selective candidates are already mapped to existing work IDs:
 
-1. **G0-009 / `AUDIT-LEGACY`** — reconcile meaningful legacy branches and PRs against stable MIRA 2.0 IDs, salvage bounded candidates only, and explicitly reject wholesale historical mega-merges.
-2. **G0-010 / `DEP-GRAPH`** — final dependency/enables graph, duplicate/supersession map and ranked implementation backlog.
+- API/auth/idempotency/compatibility/readback -> `API-CORE-001`.
+- storage adapters/portability -> `STORE-ADAPTER-001`, `AUTHORITY-MIGRATION-001`.
+- Android core/delivery/capture/release -> `ANDROID-CLIENT-CORE-001`, `ANDROID-NATIVE-DELIVERY-001`, `ANDROID-CAPTURE-001`, `ANDROID-RELEASE-001`.
+- backup snapshot/digest/provider replication -> `BACKUP-CORE-001`.
+- inventory/location/receipt/reconciliation/migration -> existing domain work including `LOCATION-STATE-001`, `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001`, receipt/order/shop/migration work.
+- local-service contracts -> `LOCAL-INTEGRATIONS` under `LOCAL-001`.
+- distribution/update/client packaging -> `DIST-STARTER-001`, `FEATURE-SHARE-001`, later client-release work.
+- desktop/Tauri/PWA -> `DESKTOP-PARITY` after shared core/API.
 
-After those close, implementation begins.
+Explicit rejects remain direct client-to-provider authority mutation, client DB/provider/source credentials, dual writable masters, relationship/device-token implied permissions, permissive mutation compatibility/idempotency, silent scheduler threads, path identity as Knowledge authority, backup-without-restore claims, collapsed intended/observed location, and CI-implied live/signing/device/provider claims.
+
+## Feature impact
+
+No new semantic feature IDs were required by G0-009. Existing `legacy_*` and `candidate_unmerged` evidence labels remain correct.
+
+## Android product-state checkpoint
+
+- MIRA 2.0 APK: **not built yet**.
+- Shared MIRA API: **not built yet**.
+- Android shared-state proof: **not yet**.
+- Reusable legacy Android/service/storage pieces: **identified and fenced to current architecture**.
+
+The rewrite risk is now lower, but implementation percentage has not materially changed.
+
+## Acceptance criteria
+
+1. Meaningful open/unmerged PRs identified. **Satisfied.**
+2. Material divergent branches classified. **Satisfied.**
+3. PR #31 mapped to stable work IDs with explicit salvage/reject boundary. **Satisfied.**
+4. Independent productization branch mapped/rejected as architecture. **Satisfied.**
+5. Generated mirrors excluded as independent sources. **Satisfied.**
+6. No wholesale mega-merge/direct-provider authority path permitted. **Satisfied.**
+7. No new semantic feature IDs required. **Satisfied.**
+8. `AUDIT-LEGACY` marked complete in `BACKLOG.md`. **Satisfied.**
+9. No protected legacy production/provider state or executable MIRA 2.0 behavior changed. **Satisfied.**
+10. Bounded PR/merge/readback. **Pending.**
 
 ## Exact next action
 
-1. Create `audit/g0-009-legacy-reconciliation` from this completion checkpoint.
-2. Inventory meaningful open/unmerged PRs and branches in legacy MIRA repositories, starting with PR #31 and branches with material divergence from legacy main.
-3. Map each candidate component to existing stable MIRA 2.0 feature/work IDs; do not create new product semantics merely because old code exists.
-4. Record salvage/reject/defer disposition and evidence ceiling.
-5. Normalize only Git authority files and merge the bounded G0-009 result before G0-010.
+1. Compare `audit/g0-009-legacy-reconciliation` against `main`; require only intended Git authority files.
+2. Open bounded PR, verify exact filenames/head/mergeability, merge exact head and read back `main`.
+3. Create G0-010 dependency-closeout branch from the post-merge checkpoint.
+4. G0-010 is the final pre-implementation packet.
 
 ## Recovery protocol
 
@@ -54,5 +89,5 @@ On any new conversation/session:
 1. read this file first;
 2. verify repository/branch/head;
 3. continue from the exact next action;
-4. do not reconstruct unfinished work from chat memory when Git contains the checkpoint;
+4. do not broaden scope from chat history;
 5. capture unrelated ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
