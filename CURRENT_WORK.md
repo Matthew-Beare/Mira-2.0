@@ -10,7 +10,6 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Merge SHA:** `442c68b777444678957f241c3219eedd588afe35`
 - **Main handoff commit activating backup audit:** `ae84799f27c65f126bb6ee222585750b5f4e6d6e`
 - **Result:** F18 service key `assets`; no new asset-service domain authority; selected-path readiness over existing category-D features.
-- **Remote readback:** F18 `FEATURES.md` and F8 `BACKLOG.md` state verified on `main`.
 
 ## Active packet
 
@@ -20,78 +19,81 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-008a-backup-disaster-recovery`
 - **Branch start SHA:** `ae84799f27c65f126bb6ee222585750b5f4e6d6e`
-- **Status:** forensic evidence pass complete; feature/backlog normalization next.
+- **Research checkpoint:** `4c5cf6d13e6200e547eaa837f040470b2f19a1cd`
+- **Feature registry commit:** `c91431e8d8237d311043cb8217454a9fea13c027`
+- **Backlog commit:** `b397330da392c7bf75519c592edcb7a1bd617b3b`
+- **Status:** acceptance complete; bounded PR/merge/readback pending.
 
-## Exact scope
+## Exact audited scope
 
-1. **G16 — Twice-daily incremental, daily cloud, weekly full, rotation, encryption, restore tests** — REQUIRED backlog.
-2. **F20 — Backup/disaster recovery** — REQUIRED backlog; exact legacy service key `recovery`; requires G16.
+1. **G16 — Twice-daily incremental, daily cloud, weekly full, rotation, encryption, restore tests**.
+2. **F20 — Backup/disaster recovery**, exact legacy service key `recovery`, requiring G16.
 
-F19/G17/G18, F21, F22, F23, other category-G infrastructure, migration execution and live backup operations remain outside this packet.
+No G17/G18/F19, F21-F23, migration execution, live backup operations or executable MIRA 2.0 product code entered this packet.
 
-## Forensic findings
+## Canonical result
 
-1. A distinct data-protection lifecycle is justified and must not be collapsed into `RECOVERY-001`/`RECOVERY-002`, which own runtime Run Log/checkpoint/circuit-breaker and failure-isolation semantics. The new semantic family will be `BACKUP-*`.
-2. One canonical feature is sufficient for this historical slice: **`BACKUP-001` — Verified provider-neutral backup and restore lifecycle**. Backup creation, retention, integrity/readback and restore verification are separate states/evidence within one lifecycle rather than separate authorities.
-3. F20 exact legacy service key is `recovery`. It is a `SERVICE-001`/`SERVICE-002` wrapper over `BACKUP-001`, not a second backup database.
-4. Legacy dependency graph gives `g-16` profile `backup`, requiring canonical `backup-catalog` plus capabilities `backup_target` and `restore_test`; `f-20` requires `g-16`.
-5. Legacy feature catalog records both G16 and F20 as REQUIRED backlog, `specification`/`documented`.
-6. Legacy state-authority architecture explicitly says a recovery copy is nonauthoritative and never a second writable master. Provider-native version history/export/snapshots, database backup/WAL and object-storage versioning are adapter implementations beneath the contract.
-7. No dedicated backup/restore lifecycle test file exists in the audited legacy `starter/tests` suite. Generic behavior-dependency tests prove catalog coverage and block/degrade mechanics, not backup correctness or recoverability.
-8. PR #31 contains meaningful unmerged candidate evidence:
-   - `starter/backup-policy.json` defines full/incremental requests, destinations, provider readback, full fallback when incremental change-journal coverage is unprovable, last-good preservation intent and source/runtime-backup separation.
-   - `starter/service/backup_scheduler.py` creates stable Backup UUID rows, SQLite snapshots, evidence archives, SHA-256 digests, provider replication/readback, history and policy APIs.
-   - `docs/integrations-self-hosting-and-backups.md` explicitly separates source rollback from runtime-data backup and requires backup provider/readback verification.
-   - `starter/service/run.py` installs the backup scheduler in the broad candidate service.
-9. PR #31 does **not** qualify as complete G16/F20 implementation:
-   - no restore implementation or restore-test transaction was located;
-   - no direct deterministic backup lifecycle/restore test suite was located;
-   - archive encryption is not proven; `encrypt_provider_credentials` is not backup-payload encryption;
-   - retention/rotation policy is declared but actual rotation enforcement is absent;
-   - no RPO/RTO model or evidence exists;
-   - requested incremental backups always become `full_fallback`, which is honest but not incremental capability;
-   - candidate defaults use daily incremental requests and weekly full, not the historical twice-daily incremental requirement;
-   - the candidate creates its own silent hourly scheduler thread and swallows scheduler exceptions, so it does not prove canonical scheduled delivery, observability or failure reporting;
-   - source repository backup is explicitly separate and not implemented by the runtime archive path.
-10. Therefore `BACKUP-001` evidence ceiling is **specified + unmerged partial implementation candidate**, with no MIRA 2.0 implementation/integration/live credit.
-11. A successful backup occurrence must prove at least exact protected scope/authority, stable Backup ID, type/effective type, destination, integrity digest or equivalent, completed timestamp and target/provider readback. It must not claim recoverability merely from archive creation.
-12. A restore test is a separate verification event tied to an exact Backup ID and isolated target/sandbox. It must verify restored canonical identities/material state against expected scope and record result without overwriting the live authority.
-13. Backup policy must explicitly cover selected protected data classes/authorities, cadence, retention/rotation, encryption-at-rest/in-transit requirements as applicable, RPO/RTO goals and restore-test cadence. No unsupported numeric defaults are promoted from candidate code.
-14. Historical requested cadence remains evidence to preserve/reconcile: twice-daily incremental, daily cloud and weekly full. MIRA 2.0 must not promise true incrementals until complete change-journal/delta semantics are proven; honest full fallback remains preferable to a false incremental claim.
-15. Git/source/config backup and mutable runtime state/evidence backup are distinct protection paths. Public/source Git must never receive private mutable state, evidence blobs, secrets or provider credentials as a backup shortcut.
-16. Backup failure must not mutate/delete canonical live state or the last verified good recovery artifact; missing backup target/restore capability blocks/degrades only recovery protection and exposes Action Required state.
-17. Development restore tests use synthetic MIRA 2.0 sandbox data only. Protected legacy production remains untouched.
-18. PR #31 remains unmerged reference/salvage evidence only.
+1. Added stable semantic feature **`BACKUP-001` — Verified provider-neutral backup and restore lifecycle**.
+2. `BACKUP-001` is intentionally separate from `RECOVERY-001`/`RECOVERY-002`; runtime Run Log/checkpoint/circuit-breaker recovery is not durable data backup/disaster recovery.
+3. F20 exact service key `recovery` maps through `SERVICE-001`/`SERVICE-002` to `BACKUP-001`; no second service database or backup authority is created.
+4. Recovery artifacts are nonauthoritative copies and never second writable masters.
+5. Backup creation/target readback and restore verification are separate evidence states. A file, digest or cloud upload alone never proves recoverability.
+6. Canonical backup evidence includes exact protected authority/data-class scope, stable Backup ID, requested/effective type, destination, timestamps, integrity evidence and exact target/provider readback.
+7. Restore tests are separate auditable events tied to an exact Backup ID, use isolated synthetic/sandbox targets during development and verify restored canonical identities/material state before a recovery claim.
+8. Policy must explicitly cover selected cadence, retention/rotation, encryption requirements, RPO/RTO goals and restore-test cadence without inventing universal numeric defaults.
+9. Historical twice-daily incremental, daily-cloud and weekly-full cadence remains deployment evidence. True incrementals cannot be claimed without complete delta/change-journal proof; a clearly labelled full fallback is preferred to false incrementality.
+10. Source/config protection and mutable structured-state/evidence protection are distinct. Public/source Git is never a private runtime-state, evidence, secret or provider-credential backup target.
+11. Provider-native snapshots/version history, database backup/WAL, object-storage versioning and export archives are adapters under the one provider-neutral contract.
+12. Backup failure cannot mutate/delete live canonical state or destroy the last verified good recovery artifact. Missing backup-target/restore-test capability blocks/degrades only the recovery service.
+13. Legacy dependency graph profile `backup` requires `backup-catalog`, `backup_target` and `restore_test`; `f-20` requires `g-16`.
+14. Generic legacy dependency CI proves catalog coverage/failure isolation, but no dedicated backup/restore lifecycle test file exists in the audited main starter suite.
+15. PR #31 contains useful unmerged partial candidate evidence: Backup UUID/history, SQLite snapshot, evidence archive, SHA-256, provider replication/readback and honest full fallback when incrementality is unproven.
+16. PR #31 does not close G16/F20: no restore implementation/test, no proven backup-payload encryption, no rotation enforcement, no RPO/RTO semantics, no true incrementals, cadence mismatch, separate silent scheduler thread, and no source-repository backup implementation in the runtime archive path.
+17. Therefore `BACKUP-001` evidence is `specified+candidate_unmerged`, with no MIRA 2.0 implementation/integration/live credit.
+18. No live Google production state was touched and no executable MIRA 2.0 behavior changed.
 
-## Acceptance criteria status
+## Durable normalization evidence
 
-1. Stable semantic ID justified: `BACKUP-001`. **Satisfied for audit decision.**
-2. F20 service key `recovery` mapped without duplicate authority. **Satisfied for audit decision.**
+- `FEATURES.md` commit `c91431e8d8237d311043cb8217454a9fea13c027`:
+  - immediate diff gate: only `FEATURES.md` changed;
+  - 17 additions / 2 audit-status replacements;
+  - adds `BACKUP-001`, F20 service mapping, backup integrity findings and partial category-G status.
+- `BACKLOG.md` commit `b397330da392c7bf75519c592edcb7a1bd617b3b`:
+  - immediate diff gate: only `BACKLOG.md` changed;
+  - 18 additions / 2 closure-line replacements;
+  - adds exactly `AUDIT-G16-F20`, `SERVICE-DEPS-009`, and `BACKUP-CORE-001` plus bounded backup dependency findings.
+
+## Acceptance criteria
+
+1. Stable semantic ID. **Satisfied: `BACKUP-001`.**
+2. F20 service key/mapping. **Satisfied: `recovery` → `BACKUP-001`.**
 3. Recovery copies nonauthoritative. **Satisfied.**
-4. Backup success separate from restore verification. **Satisfied.**
-5. Protected-scope/source/runtime/evidence boundaries defined. **Satisfied.**
-6. Provider-neutral adapter semantics preserved. **Satisfied.**
-7. Cadence/retention/encryption/RPO/RTO policy semantics recovered without invented numeric defaults. **Satisfied at specification boundary.**
-8. Backup/restore audit identity/evidence semantics recovered. **Satisfied at specification boundary.**
-9. Synthetic-only restore verification during development. **Satisfied.**
-10. Provider backup readback + separate restored-state verification required. **Satisfied.**
-11. Failure isolation preserved. **Satisfied.**
+4. Backup success distinct from restore verification. **Satisfied.**
+5. Protected-scope/source/runtime/evidence boundaries. **Satisfied.**
+6. Provider-neutral adapter semantics. **Satisfied.**
+7. Retention/rotation/encryption/RPO/RTO/cadence semantics without invented universal defaults. **Satisfied at specification boundary.**
+8. Stable backup/restore evidence identity. **Satisfied at specification boundary.**
+9. Synthetic-only development restore verification. **Satisfied.**
+10. Provider target readback + restored-state verification. **Satisfied.**
+11. Failure isolation/last-good preservation. **Satisfied.**
 12. Requirement/evidence separation. **Satisfied.**
-13. PR #31 reconciled without promotion. **Satisfied.**
-14. Only authority files changed. **In progress; registry/backlog/current-work writes pending.**
-15. PR/merge/readback. **Pending.**
-16. No production/executable changes. **Satisfied so far.**
+13. PR #31 reconciled as partial reference only. **Satisfied.**
+14. Only `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md`. **Satisfied on branch; final scope gate pending.**
+15. Bounded PR/merge/readback. **Pending.**
+16. No legacy production/executable changes. **Satisfied.**
 
 ## Exact next action
 
-1. Add `BACKUP-001` and G16/F20 canonical mappings/evidence boundaries to `FEATURES.md`.
-2. Add the bounded audit/service/core implementation work to `BACKLOG.md` without disturbing existing ranked rows.
-3. Diff-gate each authority write.
-4. Close `CURRENT_WORK.md`, final-scope gate the branch, open/verify/merge a bounded PR and remotely read back `main`.
+1. Compare `audit/g0-008a-backup-disaster-recovery` against `main`; require zero commits behind and exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
+2. Open a bounded PR to `main`.
+3. Verify GitHub server-side changed filenames and mergeability.
+4. Merge using the exact verified PR head SHA.
+5. Remotely read back `BACKUP-001`, F20 mapping, and backup backlog work from `main`.
+6. Rerank remaining unaudited F19/F21/F22/F23 and category-G prerequisites and activate the next bounded packet on `main`.
 
 ## Next packet after `M2-G0-008A`
 
-Not preassigned. After this data-integrity prerequisite closes, rerank F19/F21/F22/F23 and their remaining category-G prerequisites.
+Not preassigned. Dependency/integrity ranking after merge decides among G17/G18+F19, F21, F22, F23 and remaining G work.
 
 ## Recovery protocol
 
