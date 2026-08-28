@@ -22,86 +22,59 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Activation commit:** `d25063b86006ac3d79b8ddb122189fc88f1205d0`
 - **Research checkpoint:** `d0cb02666c918afc24068b4249638aab4d482015`
 - **Feature normalization:** `32fad9c2c0b063e09eb5de04e241c034a2aae90c`
-- **Status:** forensic research and `FEATURES.md` normalization complete; `BACKLOG.md` normalization is the exact resume point.
+- **Backlog normalization:** `cdfb42510941ed6117241dc5964ac0484791f6cc`
+- **Status:** acceptance complete; final diff gate, PR, merge and main readback remain.
 
-## Source-ledger mapping and ranking decision
+## Canonical result
 
-The remaining source rows were recovered from legacy `MIRA-Personal-Production/docs/feature-ledger-2026-08-24.md`.
+1. Added **`DEV-005` — Machine-readable projection of canonical feature/dependency/evidence state with reproducible generation and CI drift enforcement**.
+2. Added **`DEV-006` — Production component ownership and direct-verification inventory with anti-bloat/unowned-code release gate**.
+3. `FEATURES.md` remains the sole canonical feature authority. JSON/Markdown/dashboard catalogs are generated projections only.
+4. Stable semantic IDs are authored identities and never generated from row order, title text or display order. Legacy `<category>-<row_number>` identity is rejected.
+5. Requirement state, implementation evidence, test evidence, integration evidence and live evidence remain distinct. File existence or a matching regex cannot upgrade feature evidence.
+6. `FEATURE-REGISTRY-001` will implement the MIRA 2.0 stable-ID parser/schema/generator/drift gate and is now a prerequisite for `DEP-GRAPH`.
+7. `DEV-006` is component-based, not one-file/one-feature. Every production artifact must map to exactly one bounded component; one component may own several cohesive files.
+8. `CODE-OWNERSHIP-001` will implement the language-neutral component ownership/direct-evidence gate. Unowned or overlapping production ownership fails closed.
+9. Anti-bloat means no unowned/duplicated responsibilities, accidental debug/test payloads or unjustified parallel implementations; it does not reward arbitrary file fragmentation.
+10. Python AST/style/security rules found in the legacy implementation remain language-specific profiles rather than universal MIRA architecture.
+11. Legacy G19/G20 implementation and CI at `MIRA-Personal-Production` commit `2c2824c70ddc3268c25333063eb61428817a5bf4` remain valid legacy test evidence only; no MIRA 2.0 executable implementation is claimed.
+12. No protected legacy provider/production state or executable MIRA 2.0 product code changed in this packet.
 
-- **F21:** Custom skill/automation builder.
-- **F22:** Activity trackers/wearable data.
-- **F23:** Explicit weather-in-briefs onboarding.
-- **G2-G6:** provider portability, regulated lane, release channels and eventual SQL.
-- **G8-G9:** observability and object/evidence storage.
-- **G11-G15:** Home Assistant, Plex, voice, private-service/VPN and family-site infrastructure.
-- **G19:** hierarchical machine-readable feature catalog with CI drift enforcement.
-- **G20:** machine-enforced production-code inventory and anti-bloat ownership gate.
+## Android product-state checkpoint
 
-G19 + G20 outrank the other remaining rows because they are repository/release-integrity foundations that support dependency closeout and safe implementation growth. Optional/later infrastructure does not outrank them; F23 remains current-required but user-visible rather than foundational.
+This packet does not change the Android implementation percentage. The current critical Android path remains:
 
-## Canonical G19 findings
+1. `AUTHORITY-REGISTRY-001` + `STORE-ADAPTER-001`;
+2. `API-CORE-001` shared service runtime;
+3. `CORE-ROUNDTRIP` stock ChatGPT proof;
+4. `ANDROID-CLIENT-CORE-001`;
+5. `ANDROID-SYNC` proving Android and ChatGPT share one canonical entity;
+6. native delivery/capture and signed release hardening.
 
-1. Legacy G19 has real executable/test evidence. `scripts/feature_catalog.py` parses `docs/feature-ledger-2026-08-24.md`, hashes that source, generates JSON/Markdown catalog views, validates evidence paths and fails CI on generated-file drift.
-2. Legacy `.github/workflows/ci.yml` explicitly runs `python3 scripts/feature_catalog.py --check` plus tests. Legacy main commit `2c2824c70ddc3268c25333063eb61428817a5bf4` has successful Actions checks, including the CI test job. G19 is therefore implemented + CI/test-verified **in that legacy revision only**.
-3. Legacy IDs are not semantically stable: `feature_catalog.py` assigns `<category>-<row_number>` IDs from Markdown order. Inserting/reordering rows renumbers downstream identities and can corrupt durable dependencies.
-4. Legacy evidence mapping is title-regex-driven and therefore too brittle to define canonical stable feature/evidence relationships.
-5. MIRA 2.0 keeps `FEATURES.md` as the canonical Git-backed feature authority. JSON/dashboard/catalog views are reproducible projections, never independently editable feature truth.
-6. Stable semantic IDs are authored identities and never generated from row position, title text or display order.
-7. Requirement and evidence states remain separate. Machine-readable projection must preserve stable ID, title, requirement/evidence tier, dependencies and mappings/evidence references without upgrading claims from file existence.
-8. Material catalog drift is release-blocking and generated outputs trace to exact source revision/hash.
-
-## Canonical G20 findings
-
-1. Legacy `docs/code-inventory.json` inventories production Python files with path, bounded responsibility, separation rationale and direct test files.
-2. `tests/test_code_inventory.py` verifies selected production Python files are listed exactly once, have responsibility/separation metadata and named test evidence; it also applies Python-specific AST/style/security checks. Legacy main CI at `2c2824c...` is green, so this scope is implemented + CI/test-verified in legacy.
-3. Durable MIRA semantics are **production artifact/component ownership + evidence coverage**, not “one file equals one feature.”
-4. Every production artifact maps to exactly one bounded owning component; one component may cover multiple cohesive files. Unowned or overlapping ownership fails closed.
-5. Each component declares why it exists separately, owned path/surface, relevant feature/work IDs and direct verification evidence. A test filename alone does not prove meaningful coverage.
-6. Anti-bloat prevents unowned/duplicated responsibilities, accidental debug/test payloads and unjustified parallel implementations. It does not reward arbitrary file fragmentation or minimization.
-7. Python-specific docstring/import/exception/dynamic-execution/TODO/shell checks are language/tooling policy, not universal MIRA feature semantics. Android/Kotlin, TypeScript/web, Python services and future runtimes use language-appropriate profiles under the same ownership/evidence rule.
-
-## Authority boundary
-
-- `FEATURES.md` remains canonical for stable feature IDs plus requirement/evidence/dependency state.
-- `BACKLOG.md` remains canonical for ranked engineering work.
-- `CURRENT_WORK.md` remains canonical for the active packet/resume point.
-- `ROADMAP.md` remains canonical for milestones.
-- `DEV-005` is a generated machine-readable projection from `FEATURES.md`; there is no dual-edit feature registry.
-- `DEV-006` may use a separate Git-backed component ownership manifest because that manifest describes source ownership/verification, not product priority or mutable reality state.
-
-## Normalized feature result
-
-`FEATURES.md` commit `32fad9c2c0b063e09eb5de04e241c034a2aae90c` added:
-
-- **`DEV-005` — Machine-readable projection of canonical feature/dependency/evidence state with reproducible generation and CI drift enforcement**; requirement `required/governance`, evidence `specified+legacy-test-verified`, deps `DEV-001,DEV-003`.
-- **`DEV-006` — Production component ownership and direct-verification inventory with anti-bloat/unowned-code release gate**; requirement `required/governance`, evidence `specified+legacy-test-verified`, dep `DEV-001`.
-- G19 and G20 foundation mappings.
-- Integrity rules rejecting row-position identity, independent generated authority, one-file/one-feature architecture and universal Python-specific policy.
-- Category-G audit status now records G1, G7, G10, G16-G20 as audited through this packet, contingent on backlog/packet merge closure.
+Legacy Android code has successful CI build evidence, but there is still no MIRA 2.0 APK or shared-API integration proof.
 
 ## Acceptance criteria
 
 1. Stable semantic feature boundary for G19/G20. **Satisfied: `DEV-005`, `DEV-006`.**
-2. Git/`FEATURES.md` remains sole feature authority; generated views cannot compete. **Satisfied.**
-3. Stable authored IDs; no row-order identity. **Satisfied; legacy defect explicit.**
-4. Requirement/evidence/dependency state remains machine-representable without false promotion. **Satisfied.**
-5. Material catalog drift is release-blocking and outputs trace exact source revision. **Satisfied as design; legacy implementation/test evidence exists.**
-6. Production artifact ownership is bounded and fail-closed for unowned/overlapping code. **Satisfied as design; legacy Python implementation/test evidence exists.**
-7. Anti-bloat does not force one-file/one-feature or arbitrary fragmentation. **Satisfied.**
-8. Python-specific lint/security rules are not promoted to universal product semantics. **Satisfied.**
-9. Legacy evidence classified conservatively. **Satisfied.**
-10. No protected legacy production/provider state or executable MIRA 2.0 code touched. **Satisfied so far.**
-11. Stable backlog IDs/dependency normalization. **Pending.**
-12. Bounded PR/merge/readback. **Pending.**
+2. `FEATURES.md` remains sole feature authority. **Satisfied.**
+3. Stable authored feature identity and no row-position identity. **Satisfied.**
+4. Requirement/evidence/dependency projection without false evidence promotion. **Satisfied.**
+5. Reproducible generated projection and material drift gate defined. **Satisfied at specification boundary; legacy test evidence exists.**
+6. Component ownership/direct-verification semantics defined. **Satisfied at specification boundary; legacy Python test evidence exists.**
+7. Anti-bloat avoids one-file/one-feature fragmentation. **Satisfied.**
+8. Language-specific rules remain implementation profiles. **Satisfied.**
+9. `AUDIT-G19-G20`, `FEATURE-REGISTRY-001`, `CODE-OWNERSHIP-001` and `DEP-GRAPH` dependencies normalized in `BACKLOG.md`. **Satisfied.**
+10. No production/provider state or executable MIRA 2.0 changes. **Satisfied.**
+11. Bounded PR/merge/readback. **Pending.**
 
 ## Exact next action
 
-1. Normalize `BACKLOG.md` with completed `AUDIT-G19-G20`, `FEATURE-REGISTRY-001`, and `CODE-OWNERSHIP-001`.
-2. Make `DEP-GRAPH` depend on `DEV-005`/`FEATURE-REGISTRY-001` so dependency closeout consumes stable machine-readable semantic IDs rather than row-position IDs.
-3. Do not make every implementation packet depend on `CODE-OWNERSHIP-001` by prose fan-out; instead record it as a release/growth prerequisite and later enforce it centrally in CI.
-4. Update this file with the exact backlog normalization SHA and packet-close state.
-5. Compare branch against `main`; require exactly the intended Git authority files.
-6. Open bounded PR, verify server-side filenames/head/mergeability, merge exact head and remotely read back `main`.
+1. Compare `audit/g0-008f-catalog-code-integrity` against `main`; require zero commits behind and exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
+2. Open bounded PR to `main`.
+3. Verify GitHub server-side changed filenames, exact head SHA and mergeability.
+4. Merge using the exact verified head SHA.
+5. Read back `DEV-005`, `DEV-006`, `AUDIT-G19-G20`, `FEATURE-REGISTRY-001`, `CODE-OWNERSHIP-001` and this completion checkpoint from `main`.
+6. Dependency-rank and activate one bounded successor packet. Prefer a closeout packet that reconciles the remaining F21-F23/G2-G6/G8-G9/G11-G15 rows without drifting into implementation, so G0 can finish and implementation can begin.
 
 ## Recovery protocol
 
