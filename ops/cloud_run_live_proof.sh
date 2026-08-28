@@ -11,7 +11,8 @@ set -Eeuo pipefail
 
 readonly DEFAULT_REGION="us-east1"
 readonly DEFAULT_SERVICE="mira-m0-proof"
-readonly DEFAULT_SERVICE_ACCOUNT="mira-m0-runtime"
+readonly DEFAULT_RUNTIME_SERVICE_ACCOUNT="mira-m0-runtime"
+readonly DEFAULT_BUILD_SERVICE_ACCOUNT="mira-m0-builder"
 readonly DEFAULT_SECRET="mira-m0-bearer"
 readonly DEFAULT_RATE_LIMIT="120"
 readonly REQUIRED_REPOSITORY="Matthew-Beare/Mira-2.0"
@@ -29,12 +30,6 @@ require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "required command is unavailable: $1"
 }
 
-require_value() {
-  local name="$1"
-  local value="${!name:-}"
-  [[ -n "$value" ]] || fail "$name is required"
-}
-
 active_account() {
   gcloud auth list --filter='status:ACTIVE' --format='value(account)' 2>/dev/null | head -n 1
 }
@@ -47,9 +42,19 @@ project_id() {
   gcloud config get-value project 2>/dev/null || true
 }
 
+principal_member() {
+  local account="$1"
+  if [[ "$account" == *"gserviceaccount.com" ]]; then
+    printf 'serviceAccount:%s' "$account"
+  else
+    printf 'user:%s' "$account"
+  fi
+}
+
 service_account_email() {
-  local project="$1"
-  printf '%s@%s.iam.gserviceaccount.com' "${MIRA_CLOUD_RUN_SERVICE_ACCOUNT:-$DEFAULT_SERVICE_ACCOUNT}" "$project"
+  local name="$1"
+  local project="$2"
+  printf '%s@%s.iam.gserviceaccount.com' "$name" "$project"
 }
 
 secret_exists() {
@@ -64,21 +69,36 @@ service_account_exists() {
   gcloud iam service-accounts describe "$email" --project "$project" >/dev/null 2>&1
 }
 
+ensure_service_account() {
+  local project="$1"
+  local name="$2"
+  local display_name="$3"
+  local email
+  email="$(service_account_email "$name" "$project")"
+  if ! service_account_exists "$project" "$email"; then
+    gcloud iam service-accounts create "$name" \
+      --project "$project" \
+      --display-name="$display_name"
+  fi
+  printf '%s' "$email"
+}
+
 ensure_repository_root() {
   [[ -f "Procfile" && -f "requirements.txt" && -f "mira/cloud_run_entrypoint.py" ]] \
     || fail "run this from the root of the ${REQUIRED_REPOSITORY} repository"
 }
 
 prepare() {
-  local project region service_account_name sa_email secret account member
+  local project region runtime_name build_name runtime_email build_email secret account member
   project="$(project_id)"
   [[ -n "$project" && "$project" != "(unset)" ]] || fail "set PROJECT_ID or select a gcloud project first"
   region="${REGION:-$DEFAULT_REGION}"
-  service_account_name="${MIRA_CLOUD_RUN_SERVICE_ACCOUNT:-$DEFAULT_SERVICE_ACCOUNT}"
+  runtime_name="${MIRA_CLOUD_RUN_SERVICE_ACCOUNT:-$DEFAULT_RUNTIME_SERVICE_ACCOUNT}"
+  build_name="${MIRA_CLOUD_RUN_BUILD_SERVICE_ACCOUNT:-$DEFAULT_BUILD_SERVICE_ACCOUNT}"
   secret="${MIRA_BEARER_SECRET_NAME:-$DEFAULT_SECRET}"
-  sa_email="$(service_account_email "$project")"
   account="$(active_account)"
   [[ -n "$account" ]] || fail "gcloud has no active authenticated account"
+  member="$(principal_member "$account")"
 
   note "Using project: $project"
   note "Using region: $region"
@@ -94,23 +114,32 @@ prepare() {
     iam.googleapis.com \
     --project "$project"
 
-  if ! service_account_exists "$project" "$sa_email"; then
-    note "Creating dedicated Cloud Run runtime service account..."
-    gcloud iam service-accounts create "$service_account_name" \
-      --project "$project" \
-      --display-name="MIRA M0 Cloud Run runtime"
-  fi
+  note "Creating/reusing dedicated runtime and build identities..."
+  runtime_email="$(ensure_service_account "$project" "$runtime_name" "MIRA M0 Cloud Run runtime")"
+  build_email="$(ensure_service_account "$project" "$build_name" "MIRA M0 Cloud Run builder")"
 
-  if [[ "$account" == *"gserviceaccount.com" ]]; then
-    member="serviceAccount:$account"
-  else
-    member="user:$account"
-  fi
-  note "Granting the active deployer permission to attach the runtime identity..."
-  gcloud iam service-accounts add-iam-policy-binding "$sa_email" \
+  note "Granting only the documented source-deploy roles to the active deployer..."
+  gcloud projects add-iam-policy-binding "$project" \
+    --member="$member" \
+    --role='roles/run.sourceDeveloper' >/dev/null
+  gcloud projects add-iam-policy-binding "$project" \
+    --member="$member" \
+    --role='roles/serviceusage.serviceUsageConsumer' >/dev/null
+
+  note "Granting the deployer permission to attach the bounded runtime/build identities..."
+  gcloud iam service-accounts add-iam-policy-binding "$runtime_email" \
     --project "$project" \
     --member="$member" \
     --role='roles/iam.serviceAccountUser' >/dev/null
+  gcloud iam service-accounts add-iam-policy-binding "$build_email" \
+    --project "$project" \
+    --member="$member" \
+    --role='roles/iam.serviceAccountUser' >/dev/null
+
+  note "Granting the dedicated build identity Cloud Run Builder only..."
+  gcloud projects add-iam-policy-binding "$project" \
+    --member="serviceAccount:$build_email" \
+    --role='roles/run.builder' >/dev/null
 
   if ! secret_exists "$project" "$secret"; then
     note "Creating restart-stable bearer secret without printing raw material..."
@@ -126,11 +155,12 @@ prepare() {
   note "Granting only the runtime identity access to the bearer secret..."
   gcloud secrets add-iam-policy-binding "$secret" \
     --project "$project" \
-    --member="serviceAccount:$sa_email" \
+    --member="serviceAccount:$runtime_email" \
     --role='roles/secretmanager.secretAccessor' >/dev/null
 
   printf 'MIRA_PREPARE_STATUS=READY_FOR_DRIVE_SHARE\n'
-  printf 'MIRA_SERVICE_ACCOUNT_EMAIL=%s\n' "$sa_email"
+  printf 'MIRA_SERVICE_ACCOUNT_EMAIL=%s\n' "$runtime_email"
+  printf 'MIRA_BUILD_SERVICE_ACCOUNT_EMAIL=%s\n' "$build_email"
   printf 'MIRA_PROJECT_ID=%s\n' "$project"
   printf 'MIRA_REGION=%s\n' "$region"
   printf 'NEXT=Share writer access on the isolated synthetic MIRA Sheet to MIRA_SERVICE_ACCOUNT_EMAIL, then run this script with deploy.\n'
@@ -151,15 +181,17 @@ deploy_once() {
   local project="$1"
   local region="$2"
   local service="$3"
-  local sa_email="$4"
-  local secret="$5"
-  local spreadsheet_id="$6"
+  local runtime_email="$4"
+  local build_email="$5"
+  local secret="$6"
+  local spreadsheet_id="$7"
 
   gcloud run deploy "$service" \
     --project "$project" \
     --region "$region" \
     --source=. \
-    --service-account="$sa_email" \
+    --build-service-account="projects/${project}/serviceAccounts/${build_email}" \
+    --service-account="$runtime_email" \
     --allow-unauthenticated \
     --concurrency=1 \
     --scaling=1 \
@@ -183,21 +215,21 @@ verify_service_control_plane() {
   local project="$1"
   local region="$2"
   local service="$3"
-  local expected_sa="$4"
+  local expected_runtime_sa="$4"
   service_json "$project" "$region" "$service" | \
-    EXPECTED_SA="$expected_sa" python3 -c '
+    EXPECTED_RUNTIME_SA="$expected_runtime_sa" python3 -c '
 import json, os, sys
 service = json.load(sys.stdin)
 errors = []
 scaling = service.get("scaling") or {}
 template = service.get("template") or {}
 if scaling.get("scalingMode") != "MANUAL":
-    errors.append(f"scalingMode={scaling.get(chr(115)+chr(99)+chr(97)+chr(108)+chr(105)+chr(110)+chr(103)+chr(77)+chr(111)+chr(100)+chr(101))!r}")
+    errors.append(f"scalingMode={scaling.get('scalingMode')!r}")
 if scaling.get("manualInstanceCount") != 1:
-    errors.append(f"manualInstanceCount={scaling.get(chr(109)+chr(97)+chr(110)+chr(117)+chr(97)+chr(108)+chr(73)+chr(110)+chr(115)+chr(116)+chr(97)+chr(110)+chr(99)+chr(101)+chr(67)+chr(111)+chr(117)+chr(110)+chr(116))!r}")
+    errors.append(f"manualInstanceCount={scaling.get('manualInstanceCount')!r}")
 if template.get("maxInstanceRequestConcurrency") != 1:
-    errors.append(f"maxInstanceRequestConcurrency={template.get(chr(109)+chr(97)+chr(120)+chr(73)+chr(110)+chr(115)+chr(116)+chr(97)+chr(110)+chr(99)+chr(101)+chr(82)+chr(101)+chr(113)+chr(117)+chr(101)+chr(115)+chr(116)+chr(67)+chr(111)+chr(110)+chr(99)+chr(117)+chr(114)+chr(114)+chr(101)+chr(110)+chr(99)+chr(121))!r}")
-if template.get("serviceAccount") != os.environ["EXPECTED_SA"]:
+    errors.append(f"maxInstanceRequestConcurrency={template.get('maxInstanceRequestConcurrency')!r}")
+if template.get("serviceAccount") != os.environ["EXPECTED_RUNTIME_SA"]:
     errors.append("runtime service account mismatch")
 traffic = service.get("traffic") or []
 if any(item.get("tag") for item in traffic):
@@ -281,7 +313,7 @@ record = payload.get("record") or {}
 if payload.get("readback_verified") is not True:
     raise SystemExit("API did not report exact readback verification")
 if record.get("payload") != {"proof": "cloud-run-live", "phase": expected_phase}:
-    raise SystemExit(f"unexpected canonical payload: {record.get(chr(112)+chr(97)+chr(121)+chr(108)+chr(111)+chr(97)+chr(100))!r}")
+    raise SystemExit(f"unexpected canonical payload: {record.get('payload')!r}")
 print(record["revision"])
 ' "$expected_phase"
 }
@@ -313,24 +345,28 @@ print("MIRA_API_READBACK_STATUS=VERIFIED")
 }
 
 deploy() {
-  local project region service secret sa_email spreadsheet_id bearer url resource_id pre_revision first_revision second_revision run_id
+  local project region service secret runtime_name build_name runtime_email build_email spreadsheet_id bearer url resource_id pre_revision first_revision second_revision run_id
   ensure_repository_root
   project="$(project_id)"
   [[ -n "$project" && "$project" != "(unset)" ]] || fail "set PROJECT_ID or select a gcloud project first"
   region="${REGION:-$DEFAULT_REGION}"
   service="${MIRA_CLOUD_RUN_SERVICE:-$DEFAULT_SERVICE}"
   secret="${MIRA_BEARER_SECRET_NAME:-$DEFAULT_SECRET}"
-  sa_email="$(service_account_email "$project")"
+  runtime_name="${MIRA_CLOUD_RUN_SERVICE_ACCOUNT:-$DEFAULT_RUNTIME_SERVICE_ACCOUNT}"
+  build_name="${MIRA_CLOUD_RUN_BUILD_SERVICE_ACCOUNT:-$DEFAULT_BUILD_SERVICE_ACCOUNT}"
+  runtime_email="$(service_account_email "$runtime_name" "$project")"
+  build_email="$(service_account_email "$build_name" "$project")"
   spreadsheet_id="$(read_spreadsheet_id)"
   run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
   resource_id="cloudrun-live-proof"
 
-  service_account_exists "$project" "$sa_email" || fail "runtime service account does not exist; run prepare first"
+  service_account_exists "$project" "$runtime_email" || fail "runtime service account does not exist; run prepare first"
+  service_account_exists "$project" "$build_email" || fail "build service account does not exist; run prepare first"
   secret_exists "$project" "$secret" || fail "bearer secret does not exist; run prepare first"
 
   note "Deploying the bounded MIRA service from source..."
-  deploy_once "$project" "$region" "$service" "$sa_email" "$secret" "$spreadsheet_id"
-  verify_service_control_plane "$project" "$region" "$service" "$sa_email"
+  deploy_once "$project" "$region" "$service" "$runtime_email" "$build_email" "$secret" "$spreadsheet_id"
+  verify_service_control_plane "$project" "$region" "$service" "$runtime_email"
   url="$(service_url "$project" "$region" "$service")"
   [[ "$url" == https://* ]] || fail "Cloud Run did not return an HTTPS service URL"
   verify_health "$url"
@@ -344,8 +380,8 @@ deploy() {
   verify_entity_read "$url" "$bearer" "$resource_id" initial "$first_revision"
 
   note "Redeploying the same source with the same Secret Manager bearer to prove restart continuity..."
-  deploy_once "$project" "$region" "$service" "$sa_email" "$secret" "$spreadsheet_id"
-  verify_service_control_plane "$project" "$region" "$service" "$sa_email"
+  deploy_once "$project" "$region" "$service" "$runtime_email" "$build_email" "$secret" "$spreadsheet_id"
+  verify_service_control_plane "$project" "$region" "$service" "$runtime_email"
   url="$(service_url "$project" "$region" "$service")"
   verify_health "$url"
   verify_entity_read "$url" "$bearer" "$resource_id" initial "$first_revision"
@@ -357,7 +393,8 @@ deploy() {
   unset bearer
   printf 'MIRA_DEPLOY_STATUS=LIVE_API_AND_RESTART_VERIFIED\n'
   printf 'MIRA_SERVICE_URL=%s\n' "$url"
-  printf 'MIRA_SERVICE_ACCOUNT_EMAIL=%s\n' "$sa_email"
+  printf 'MIRA_SERVICE_ACCOUNT_EMAIL=%s\n' "$runtime_email"
+  printf 'MIRA_BUILD_SERVICE_ACCOUNT_EMAIL=%s\n' "$build_email"
   printf 'MIRA_PROOF_RESOURCE_ID=%s\n' "$resource_id"
   printf 'MIRA_PROOF_REVISION=%s\n' "$second_revision"
   printf 'MIRA_PROOF_PHASE=post-restart\n'
