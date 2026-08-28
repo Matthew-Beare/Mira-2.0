@@ -1,65 +1,97 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file records the completed Authority Registry packet and exact API successor.
+Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
 
-## Completed packet
+## Completed packet before this branch
 
 ### `M2-G1-002` — Canonical Authority Registry core
 
-- **Work ID:** `AUTHORITY-REGISTRY-001`
 - **Merged PR:** #38
 - **Merge SHA / main readback:** `a453e54c437a697daa592e51f336a9604dffd8e2`
-- **Branch:** `impl/g1-002-authority-registry`
-- **Branch start SHA:** `6b9f9c362da2732f938958810b030d007a543ffe`
-- **CI-verified PR head:** `f6ac3c983d5cbf625cb6023b578abd66b53e839a`
-- **GitHub Actions run:** `33209898891`
-- **Remote verification:** compile succeeded; full suite **19 tests, 0 failures/errors**.
-- **Result:** persisted Authority metadata, one binding per data class, optimistic/idempotent binding replacement, explicit runtime adapter mounts, fail-closed disabled/unverified/unregistered/unhealthy/schema-mismatched resolution and data-class failure isolation are implemented/test-verified.
+- **Post-merge completion checkpoint / this branch start SHA:** `1d4d0108408e76a34a1dea4dcef0cb690e5dd96c`
+- **Remote CI:** GitHub Actions run `33209898891`; compile + 19 unit tests passed.
+- **Result:** `AUTHORITY-REGISTRY-001` is implemented/test-verified.
 
-## API umbrella split before implementation
-
-`API-CORE-001` is too large for one safe packet. It is split before growth:
-
-1. **`API-CORE-001A` — in-process API service semantics**: authenticated-principal contract, command/query envelopes, same-user resource/action authorization, API/schema compatibility preflight, Authority Registry routing, mandatory idempotency, conflict mapping, exact read-after-write verification and synthetic audit sink. No HTTP/network/session issuance.
-2. **`API-CORE-001B` — client authentication + transport boundary**: scoped/revocable client/session identity, HTTP transport, request parsing/error mapping and transport security hooks over 001A. No deployment/provider work.
-
-The umbrella `API-CORE-001` is complete only after both children are verified. This preserves the selected architecture while keeping packets bounded.
-
-## Selected successor
+## Active packet
 
 ### `M2-G1-003A` — API service semantics core
 
 - **Work ID:** `API-CORE-001A`
 - **Class:** implementation / security-data-integrity prerequisite
-- **Planned branch:** `impl/g1-003a-api-service-core`
-- **Dependencies satisfied:** `STORE-ADAPTER-001A`, `AUTHORITY-REGISTRY-001`.
+- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Branch:** `impl/g1-003a-api-service-core`
+- **Branch start SHA:** `1d4d0108408e76a34a1dea4dcef0cb690e5dd96c`
+- **Activation commit:** `68628614057c7e779d3968296e737581e76ea979`
+- **Service implementation:** `60ebbef6c3489af52676a6a1b4fbf19d2621e425`
+- **Deterministic API tests:** `705412977e7c1e9c67147516a84406173c885c10`
+- **Package exports:** `50d325d18dfab0945082e02850969d89133093d2`
+- **Status:** implementation/test content complete; local full-suite evidence is 30 tests green; bounded PR/remote CI next.
 
-### Objective
+## API umbrella split
 
-Implement a transport-independent API service core that accepts already-authenticated principal context, authorizes exact same-user actions, rejects incompatible/invalid mutation envelopes before state access, routes only through `AuthorityRegistry`, requires idempotency for commands, maps conflicts explicitly, verifies read-after-write and emits audit events.
+`API-CORE-001` remains an umbrella:
+1. `API-CORE-001A` — transport-independent service semantics (this packet).
+2. `API-CORE-001B` — scoped client/session authentication + HTTP transport (next after 001A).
 
-### Acceptance criteria
+The umbrella is complete only when both are verified.
 
-1. Define versioned query/command envelopes with actor subject, data class, action/resource identity and explicit API/schema versions.
-2. Define an authenticated-principal contract with stable actor/client IDs and explicit grants; this packet does **not** issue/authenticate tokens.
-3. Same-user only: subject must equal authenticated actor; cross-person requests fail closed until permission-scope work exists.
-4. Exact resource/action authorization is checked before authority resolution/mutation; query requires class-level query grant.
-5. API-major/schema incompatibility and malformed/unknown action fail before mutation.
-6. Commands require non-empty idempotency keys and forward expected revision to the structured adapter.
-7. All canonical reads/writes route through `AuthorityRegistry`; no direct provider/store selection in service code.
-8. Upsert mutation performs exact read-after-write comparison; mismatch fails explicitly.
-9. Structured revision/idempotency/validation conflicts map to stable API error categories without hiding canonical state.
-10. Synthetic audit sink records actor/client/action/resource/outcome for allowed, denied and failed requests without becoming business-state authority.
-11. Deterministic tests prove compatible read/query/upsert/replay, authz denial, cross-person denial, compatibility failure, conflict mapping, readback verification and audit behavior.
-12. No HTTP server, token/session issuance, provider-specific adapter, Google, Android, evidence store or legacy production state.
+## Implemented component
+
+Component: **api-service-core**
+
+Owned production surface:
+- `mira/api_core.py` — principal/grant contract, versioned envelopes/results/errors, authorization/preflight, Authority Registry routing, canonical read/write/readback, audit.
+- `mira/__init__.py` — package exports.
+
+Direct verification:
+- `tests/test_api_core.py` plus existing structured-state and Authority Registry tests.
+- existing `.github/workflows/ci.yml` compiles `mira`/`tests` and runs the full stdlib unit suite.
+
+## Implemented semantics
+
+- versioned `QueryEnvelope` and `CommandEnvelope`;
+- already-authenticated `AuthenticatedPrincipal` with explicit `Grant` values;
+- same-user subject enforcement; cross-person access fails closed;
+- exact data-class/action/resource authorization before Authority Registry resolution;
+- query requires class-level wildcard permission;
+- API-major/schema compatibility preflight before state mutation;
+- commands require idempotency keys and carry expected revision;
+- canonical operations route only via `AuthorityRegistry.resolve()`;
+- upserts use canonical exact read-after-write verification;
+- append events use exact event-stream readback verification;
+- structured conflicts/validation/not-found/authority failures map to stable API error categories;
+- synthetic nonauthoritative audit sink records identities, requested action/resource, authorization decision, outcome, error category and resolved authority.
+
+## Verification evidence
+
+Local full-suite run against the implementation/test content:
+- command: `python -m unittest discover -s tests -v`
+- result: **30 tests passed, 0 failures/errors**.
+
+Remote PR CI is pending and is not yet counted as packet test-verification evidence.
+
+## Acceptance criteria
+
+1. Versioned query/command envelopes. **Implemented/local-test-verified.**
+2. Authenticated-principal/grant contract without token issuance. **Implemented/local-test-verified.**
+3. Same-user enforcement / cross-person fail closed. **Implemented/local-test-verified.**
+4. Exact resource/action authorization before state access. **Implemented/local-test-verified.**
+5. Compatibility/unknown-action preflight before mutation. **Implemented/local-test-verified.**
+6. Mandatory command idempotency + expected revision propagation. **Implemented/local-test-verified.**
+7. All state routing through Authority Registry. **Implemented/local-test-verified.**
+8. Exact read-after-write / event readback. **Implemented/local-test-verified.**
+9. Stable conflict/validation/not-found/authority error categories. **Implemented/local-test-verified.**
+10. Nonauthoritative audit sink for allowed/denied/failed requests. **Implemented/local-test-verified.**
+11. Deterministic API behavior tests. **11 new API tests; 30 total pass locally.**
+12. No HTTP/token/provider/Google/Android/evidence/legacy-state work. **Satisfied.**
 
 ## Exact next action
 
-1. Create `impl/g1-003a-api-service-core` from this exact main checkpoint.
-2. Activate `M2-G1-003A` on the branch.
-3. Implement transport-independent service core and tests only.
-4. Require full local + GitHub CI green before merge.
-5. Then activate `M2-G1-003B` for authentication/HTTP transport.
+1. Compare branch to `main`; expected changed files are `CURRENT_WORK.md`, `mira/__init__.py`, `mira/api_core.py`, `tests/test_api_core.py`.
+2. Open bounded PR at exact head and verify server-side changed-file list.
+3. Require PR-triggered compile + full unit-suite success.
+4. Merge exact green head/read back `main`.
+5. Checkpoint completion and activate `M2-G1-003B` for authentication + HTTP transport.
 
 ## Recovery protocol
 
