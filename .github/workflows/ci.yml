@@ -27,5 +27,8 @@ jobs:
       - name: Feature registry
         run: python -m mira.feature_registry check FEATURES.md
 
+      - name: Code ownership
+        run: python -m mira.code_ownership check
+
       - name: Unit tests
         run: python -m unittest discover -s tests -v
