@@ -21,51 +21,59 @@ Git is authoritative. This file identifies exactly one active implementation pac
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `impl/g1-003b-http-auth-boundary`
 - **Branch start SHA:** `bcae2707444a57420b93c99c808adbdce64d9a5f`
-- **Status:** activated; implementation next.
+- **Activation commit:** `e9d77b2db5267901089a7c4bed2eedf68277536e`
+- **Session/WSGI implementation:** `607b622b064519dc075207894f60bd0c985cf2a6`
+- **Transport tests:** `586293ffbc19413efedcababeed785dd6b4edc4d`
+- **Package exports:** `b69146d81d238a677c672f17792c2d0eec0a324c`
+- **Status:** implementation/test content complete; bounded PR and remote CI are the executable verification gate.
 
-## Objective
+## Implemented component
 
-Implement a stdlib-only HTTP transport/authentication boundary over `ApiService`: opaque scoped client sessions with hashed bearer-token storage, expiry/revocation, HTTPS enforcement hook, bounded JSON request parsing, stable HTTP error mapping and WSGI-compatible request handling without provider/deployment coupling.
+Component: **http-auth-boundary**
 
-## Acceptance criteria
+Owned production surface:
+- `mira/http_transport.py` — scoped session issuance/authentication/revocation plus bounded WSGI HTTP transport.
+- `mira/__init__.py` — package exports.
 
-1. Issue opaque bearer credentials only from explicit actor/client/grant input; raw token returned once and only cryptographic hash retained.
-2. Stable session IDs, issue/expiry timestamps and explicit revocation; expired/revoked/unknown tokens fail authentication.
-3. Authentication reconstructs exact `AuthenticatedPrincipal` grants; no implicit relationship/provider/device grants.
-4. WSGI boundary exposes POST `/v1/query`, POST `/v1/commands`, GET `/v1/health` only.
-5. Protected routes require Bearer auth; malformed/missing credentials return 401 without service-state calls.
-6. Optional `require_https` rejects protected cleartext before authentication/service execution.
-7. JSON body must be object and bounded by content length; malformed/oversized/unknown route/method fail explicitly.
-8. Transport converts JSON to existing 001A envelopes only; canonical policy remains in `ApiService`.
-9. API errors map deterministically to HTTP status + stable JSON error shape; unexpected errors hide internals.
-10. Success responses serialize exact service result/readback information without secrets.
-11. Deterministic tests cover issuance/hash/expiry/revoke, HTTPS/401, status mapping, query/command success and no-service-call auth failures.
-12. No deployment/TLS certificate/provider/Google/Android/evidence/legacy-production work.
+Direct verification:
+- `tests/test_http_transport.py` plus the existing 30-test structured-state/Authority/API suite.
+- existing `.github/workflows/ci.yml` compiles all package/tests and runs the full stdlib unit suite.
 
-## Scope guard
+## Implemented semantics
 
-Allowed:
-- in-memory session credential store/authenticator;
-- WSGI-compatible transport adapter;
-- request/response serialization and error mapping;
-- deterministic tests and package exports.
+- opaque bearer sessions issued only from explicit `AuthenticatedPrincipal` input;
+- raw bearer token returned only in `IssuedCredential`; store retains SHA-256 token hash, actor/client IDs, exact grants and lifecycle metadata;
+- stable session IDs, bounded TTL, expiry and explicit revocation;
+- authentication reconstructs exact grants without relationship/provider/device augmentation;
+- WSGI routes limited to GET `/v1/health`, POST `/v1/query`, POST `/v1/commands`;
+- protected routes require Bearer authentication;
+- optional HTTPS scheme gate occurs before authentication/service execution;
+- bounded `Content-Length`, object-only UTF-8 JSON parsing and explicit 404/405/411/413 failures;
+- transport builds existing 001A envelopes only and delegates canonical policy/state to `ApiService`;
+- deterministic API error-to-HTTP status mapping;
+- success serialization uses exact service result/readback data and contains no bearer credential.
 
-Excluded:
-- Internet/cloud deployment;
-- certificate/proxy configuration;
-- provider adapters;
-- Google state;
-- Android/client implementation;
-- evidence store;
-- cross-person permission engine;
-- legacy production state.
+## Acceptance criteria status before remote CI
+
+1. One-time opaque token + hash-only retained session state. **Implemented/test-covered.**
+2. Stable session lifecycle/expiry/revocation. **Implemented/test-covered.**
+3. Exact principal/grant reconstruction. **Implemented/test-covered.**
+4. Bounded WSGI routes. **Implemented/test-covered.**
+5. Bearer 401 before service calls. **Implemented/test-covered.**
+6. HTTPS hook before auth/service. **Implemented/test-covered.**
+7. Bounded JSON/body/route/method failures. **Implemented/test-covered.**
+8. Existing 001A envelopes/policy reused. **Implemented.**
+9. Stable HTTP error mapping. **Implemented/test-covered.**
+10. Exact success serialization without secrets. **Implemented/test-covered.**
+11. Deterministic auth/transport tests. **Content committed; remote CI pending.**
+12. No deployment/provider/Google/Android/evidence/legacy state. **Satisfied.**
 
 ## Exact next action
 
-1. Implement `mira/http_transport.py` and tests.
-2. Update package exports.
-3. Run full suite, bounded PR, remote CI.
-4. Merge exact green head.
+1. Compare branch to `main`; expected changed files are `CURRENT_WORK.md`, `mira/__init__.py`, `mira/http_transport.py`, `tests/test_http_transport.py`.
+2. Open bounded PR and verify exact file list.
+3. Require PR-triggered compile + full unit-suite green; fix packet-scoped failures if any.
+4. Merge exact verified head/read back `main`.
 5. Mark `API-CORE-001` umbrella complete/test-verified and activate `CORE-SYNTHETIC-ROUNDTRIP`.
 
 ## Recovery protocol
