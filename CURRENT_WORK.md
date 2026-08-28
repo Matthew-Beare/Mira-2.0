@@ -1,87 +1,55 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active packet and its exact resume point.
+Git is authoritative. This file records the completed packet and exact final-audit successor point.
 
-## Completed packet before this branch
+## Completed packet
 
-### `M2-G0-008G` — Remaining feature-ledger closeout
+### `M2-G0-009` — Legacy branch/PR reconciliation
 
-- **Merged PR:** #34
-- **Merge SHA / main readback:** `acb7e8c9025b7f6096f9a4fcba0ced8d9d68622c`
-- **Post-merge completion checkpoint / this branch start SHA:** `0b734df51c815ec16a05a4b0b5a6446dde5f4e78`
-- **Result:** feature inventory is complete through F23/G20.
-
-## Active packet
-
-- **Packet ID:** `M2-G0-009`
-- **Name:** Legacy branch/PR reconciliation
-- **Class:** forensic reconciliation / final salvage gate before dependency closeout
 - **Repository:** `Matthew-Beare/Mira-2.0`
+- **Merged PR:** #35
+- **Merge SHA / main readback:** `8155c8fa40d4d6e0f9f65d8594061fba598c5784`
 - **Branch:** `audit/g0-009-legacy-reconciliation`
 - **Branch start SHA:** `0b734df51c815ec16a05a4b0b5a6446dde5f4e78`
-- **Activation commit:** `cebc9515798563b33da462690b06e00785ec1491`
 - **Research/disposition checkpoint:** `bbc3d5446b6d50e9e028a0ba5570574769bff478`
 - **Backlog normalization:** `cd79f733ab7bff3f4540812d20fe73996c8374d3`
-- **Status:** acceptance complete; diff gate, PR, merge and main readback remain.
+- **Packet-close head:** `fefb91c8ad04f2fb78c4ad5df5d013d651b25b8b`
+- **Server-side file scope verified:** exactly `BACKLOG.md`, `CURRENT_WORK.md`.
+- **Result:** PR #31 is selective salvage only; legacy PR #34 is superseded; generated mirrors are noncanonical; independent productization code is mapped as bounded API/storage candidate evidence with conflicting architecture rejected. No legacy hunt remains.
 
-## Canonical reconciliation result
+## Product-state checkpoint
 
-- Legacy Personal-Production has two open PRs: **#31** and **#34**.
-- PR #31 is **selective salvage/reference only; never wholesale merge**.
-- PR #34 governance/control-plane work is **superseded by authoritative Mira-2.0; reject merge**.
-- Public and Institutional Experimental repositories explicitly identify themselves as generated, non-canonical distributions and create no independent feature authority.
-- Representative architecture/dependency/reconciliation/distribution-fix branches are already ancestors of legacy `main`.
-- Diverged manual-brief/distribution-build/install-cleanup branches are semantically superseded by newer legacy-main behavior.
-- Old `mira-mirror-branding` work is historical evidence only; current `BRAND-001`/approved modern brand assets win.
-- `feature/productization-docker-oauth-full-ui` is a genuine 4-commit independent code quarry. Salvage its repository abstraction/revisioned upserts, compatibility, pairing and idempotency patterns into `STORE-ADAPTER-001`/`API-CORE-001`; reject its coarse auth, direct Google wiring, non-registry backend selection, single-location overwrite model and parallel-service-stack architecture.
+Feature reconstruction and legacy reconciliation are complete.
 
-## PR #31 salvage ceiling
+Android status is unchanged in executable terms:
+- MIRA 2.0 APK: not built;
+- shared MIRA API: not built;
+- Android shared-state proof: not proven;
+- reusable legacy Android/API/storage code: identified and bounded.
 
-Selective candidates are already mapped to existing work IDs:
+## Final pre-implementation stage
 
-- API/auth/idempotency/compatibility/readback -> `API-CORE-001`.
-- storage adapters/portability -> `STORE-ADAPTER-001`, `AUTHORITY-MIGRATION-001`.
-- Android core/delivery/capture/release -> `ANDROID-CLIENT-CORE-001`, `ANDROID-NATIVE-DELIVERY-001`, `ANDROID-CAPTURE-001`, `ANDROID-RELEASE-001`.
-- backup snapshot/digest/provider replication -> `BACKUP-CORE-001`.
-- inventory/location/receipt/reconciliation/migration -> existing domain work including `LOCATION-STATE-001`, `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001`, receipt/order/shop/migration work.
-- local-service contracts -> `LOCAL-INTEGRATIONS` under `LOCAL-001`.
-- distribution/update/client packaging -> `DIST-STARTER-001`, `FEATURE-SHARE-001`, later client-release work.
-- desktop/Tauri/PWA -> `DESKTOP-PARITY` after shared core/API.
+Only **G0-010 / `DEP-GRAPH`** remains before new MIRA 2.0 implementation begins.
 
-Explicit rejects remain direct client-to-provider authority mutation, client DB/provider/source credentials, dual writable masters, relationship/device-token implied permissions, permissive mutation compatibility/idempotency, silent scheduler threads, path identity as Knowledge authority, backup-without-restore claims, collapsed intended/observed location, and CI-implied live/signing/device/provider claims.
+This packet must:
+1. detect and remove dependency cycles;
+2. separate true prerequisites from hardening/later work;
+3. rank the implementation backlog by integrity/security, milestone prerequisites, architectural leverage and vertical value;
+4. define the shortest safe M2-M0 -> M2-M1 path;
+5. select exactly one first implementation packet with explicit acceptance criteria.
 
-## Feature impact
+## Known graph issues to resolve
 
-No new semantic feature IDs were required by G0-009. Existing `legacy_*` and `candidate_unmerged` evidence labels remain correct.
-
-## Android product-state checkpoint
-
-- MIRA 2.0 APK: **not built yet**.
-- Shared MIRA API: **not built yet**.
-- Android shared-state proof: **not yet**.
-- Reusable legacy Android/service/storage pieces: **identified and fenced to current architecture**.
-
-The rewrite risk is now lower, but implementation percentage has not materially changed.
-
-## Acceptance criteria
-
-1. Meaningful open/unmerged PRs identified. **Satisfied.**
-2. Material divergent branches classified. **Satisfied.**
-3. PR #31 mapped to stable work IDs with explicit salvage/reject boundary. **Satisfied.**
-4. Independent productization branch mapped/rejected as architecture. **Satisfied.**
-5. Generated mirrors excluded as independent sources. **Satisfied.**
-6. No wholesale mega-merge/direct-provider authority path permitted. **Satisfied.**
-7. No new semantic feature IDs required. **Satisfied.**
-8. `AUDIT-LEGACY` marked complete in `BACKLOG.md`. **Satisfied.**
-9. No protected legacy production/provider state or executable MIRA 2.0 behavior changed. **Satisfied.**
-10. Bounded PR/merge/readback. **Pending.**
+- `DEP-GRAPH` currently depends on implementation work `FEATURE-REGISTRY-001`, which conflicts with G0-010 being the final pre-implementation packet. The graph can be specified directly from canonical `FEATURES.md`; machine-readable registry implementation can follow.
+- `STORE-ADAPTER-001` currently depends on `DATA-SANDBOX` while `DATA-SANDBOX` depends on `STORE-ADAPTER-001`, forming a cycle that must be broken.
+- The current Google bootstrap/onboarding chain may be broader than required for the first synthetic core roundtrip and must be separated from ordinary-user release readiness.
 
 ## Exact next action
 
-1. Compare `audit/g0-009-legacy-reconciliation` against `main`; require only intended Git authority files.
-2. Open bounded PR, verify exact filenames/head/mergeability, merge exact head and read back `main`.
-3. Create G0-010 dependency-closeout branch from the post-merge checkpoint.
-4. G0-010 is the final pre-implementation packet.
+1. Create `audit/g0-010-dependency-closeout` from this checkpoint.
+2. Audit the current backlog dependency graph for cycles and over-broad prerequisites.
+3. Normalize the M2-M0/M2-M1 critical path and ranked first implementation sequence.
+4. Merge G0-010, then immediately activate the selected first implementation packet.
 
 ## Recovery protocol
 
