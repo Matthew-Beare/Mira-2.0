@@ -21,7 +21,9 @@ Git is authoritative. This file identifies exactly one active integrity-bootstra
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-003-google-authority-bootstrap`
 - **Branch start SHA:** `7929404403b56286a25399b16797658885cc2d97`
-- **Status:** activated; provider metadata/routing bootstrap and runtime helper next.
+- **Activation commit:** `30968286fd7d6c442a3c734d57a27b45da02399c`
+- **Implementation commit:** `97d959ddf79158205b80cb4d761ce4c79d5c2af9`
+- **Status:** provider readback complete; runtime bootstrap implemented; PR/CI/merge pending.
 
 ## Objective
 
@@ -41,13 +43,23 @@ Persist and verify the M2-M0 `entity` Authority route in the isolated Google sto
 10. No live provider IDs/credentials/private data in Git.
 11. All CI gates green; bounded PR/merge/readback.
 
+## Completed evidence on branch
+
+- Provider resource metadata readback exactly reports `["authority","authority_binding","entity"]`.
+- Synthetic `authority/google-sheets-m0` is present at revision 1 with verified/enabled metadata and logical resource reference `runtime:google-structured-state`.
+- Synthetic `authority_binding/binding-entity` is present at revision 1 and binds `entity` to `google-sheets-m0`.
+- Matching provider idempotency rows are present for `bootstrap-authority-google-sheets-m0` and `bootstrap-binding-entity` with adapter-compatible result envelopes and fingerprints.
+- `mira/runtime_bootstrap.py` preflights persisted state before writes, creates only missing records, uses deterministic bounded idempotency keys, mounts the runtime adapter, and resolves the route.
+- `tests/test_runtime_bootstrap.py` covers first boot, restart/read-only behavior, Authority mismatch rejection, binding mismatch rejection before persistent writes, and partial bootstrap completion.
+- `project/code_ownership.json` directly owns and verifies the new production module.
+
 ## Exact next action
 
-1. Extend provider metadata resource types.
-2. Write/read back synthetic Authority and entity binding using adapter-equivalent rows.
-3. Implement `mira/runtime_bootstrap.py` and tests.
-4. Update ownership manifest, PR/CI/merge.
-5. Proceed to provider-neutral managed-runtime/container packet.
+1. Open bounded PR from this branch to `main`.
+2. Run GitHub Actions and inspect any failing job before modifying code.
+3. If all gates are green, merge with expected head SHA and read back `main`.
+4. Close this packet in Git and activate the provider-neutral managed-runtime/container deployment packet.
+5. Do not claim live Python Google OAuth execution until the hosted runtime actually performs it.
 
 ## Recovery protocol
 
