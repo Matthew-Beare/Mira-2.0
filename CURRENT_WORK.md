@@ -21,7 +21,10 @@ Git is authoritative. This file identifies exactly one active managed-runtime as
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-004-managed-api-runtime`
 - **Branch start SHA:** `7f0b3fa304825c01b3ea9cf390231140b73200fb`
-- **Status:** activated; backlog reconciliation and runtime assembly implementation next.
+- **PR:** #47
+- **CI-verified implementation head:** `f0112b09d072c4c0fc04a0a03d4c4480b544d684`
+- **GitHub Actions run:** `33216840165`
+- **Status:** implementation complete and CI green; final checkpoint/merge/readback pending.
 
 ## Objective
 
@@ -42,17 +45,27 @@ Assemble the existing Google structured-state adapter, persistent Authority boot
 11. All CI gates green; bounded PR/merge/readback.
 12. Live managed hosting, TLS-provider verification, restart-stable injected secret implementation, live Google OAuth/provider execution, and stock ChatGPT connection remain explicit successor evidence, not claims of this packet.
 
+## Completed evidence on branch
+
+- `mira/http_transport.py` now defines a `BearerAuthenticator` protocol; `WsgiApiApp` depends only on `authenticate(token)` while `InMemorySessionStore` remains behavior-compatible.
+- `mira/runtime.py` adds strict non-secret `RuntimeConfig`, verified `ManagedRuntime`, and `assemble_managed_runtime` composition.
+- Startup inspects structured-state health/schema, requires `authority`, `authority_binding`, and `entity`, bootstraps persisted Authority routing, then performs an additional canonical route resolution before returning the app.
+- Runtime dependencies for structured state, authentication, and audit are injected; tests use no external network or live credentials.
+- `tests/test_runtime.py` proves successful assembly, authenticated command/query roundtrip through WSGI, config rejection, unhealthy/schema-incompatible provider rejection, and persisted Authority mismatch rejection without rewrite.
+- `project/code_ownership.json` owns/verifies the new runtime module.
+- PR #47 CI run `33216840165` passed compile, feature-registry validation, code-ownership validation, and the full test suite.
+
 ## Deployment constraint
 
 `InMemorySessionStore` loses random issued bearer credentials on process restart. This packet exposes authentication as an explicit boundary but does not falsely claim restart-stable credential persistence. The successor live-deployment slice must use an injected/restart-stable scoped credential mechanism and provider readback before `API-DEPLOYMENT-001` is fully complete.
 
 ## Exact next action
 
-1. Reconcile stale completed M2-M0 critical-path statuses in `BACKLOG.md` and record this packet as the active bounded child of `API-DEPLOYMENT-001`.
-2. Generalize `WsgiApiApp` authentication constructor to an explicit authenticator protocol without changing request behavior.
-3. Implement provider-neutral runtime config/application assembly and startup fail-closed checks.
-4. Add direct synthetic tests, update ownership, run CI, PR/merge/readback.
-5. Activate the live managed deployment/credential/provider-execution slice after this packet closes.
+1. Merge PR #47 only if its head remains the CI-verified implementation plus this documentation checkpoint and the final CI remains green.
+2. Read back `main` and close `M2-M0-004`.
+3. Reconcile stale completed M2-M0 critical-path statuses in `BACKLOG.md` as part of the close/select governance checkpoint.
+4. Activate the bounded live managed deployment/credential/provider-execution slice of `API-DEPLOYMENT-001`.
+5. Do not activate `CHATGPT-API-CLIENT-001` until the managed HTTPS service, restart-stable scoped credential, and live Google provider execution are verified.
 
 ## Recovery protocol
 
