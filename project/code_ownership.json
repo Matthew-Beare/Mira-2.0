@@ -37,12 +37,12 @@
     },
     {
       "id": "authority-registry",
-      "responsibility": "Persistent one-authority-per-data-class registry and explicit runtime adapter resolution.",
-      "why_separate": "Canonical authority selection is an integrity boundary independent of storage implementation and client/API transport.",
-      "owned_paths": ["mira/authority.py"],
+      "responsibility": "Persistent one-authority-per-data-class registry, fail-closed runtime bootstrap, and explicit runtime adapter resolution.",
+      "why_separate": "Canonical authority selection and safe restart bootstrap are an integrity boundary independent of storage implementation and client/API transport.",
+      "owned_paths": ["mira/authority.py", "mira/runtime_bootstrap.py"],
       "feature_ids": ["AUTH-001"],
       "work_ids": ["AUTHORITY-REGISTRY-001"],
-      "verification": ["tests/test_authority.py", "tests/test_synthetic_roundtrip.py"]
+      "verification": ["tests/test_authority.py", "tests/test_runtime_bootstrap.py", "tests/test_synthetic_roundtrip.py"]
     },
     {
       "id": "api-boundary",
