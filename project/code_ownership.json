@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "production_roots": [
+    {
+      "path": "mira",
+      "profile": "python",
+      "suffixes": [".py"]
+    }
+  ],
+  "components": [
+    {
+      "id": "mira-package-surface",
+      "responsibility": "Stable public Python package export surface for implemented MIRA core components.",
+      "why_separate": "Keeps import compatibility and package presentation separate from mutable-state, routing, transport, and repository-governance implementations.",
+      "owned_paths": ["mira/__init__.py"],
+      "feature_ids": ["CORE-001"],
+      "work_ids": ["CODE-OWNERSHIP-001"],
+      "verification": ["tests/test_synthetic_roundtrip.py"]
+    },
+    {
+      "id": "structured-state",
+      "responsibility": "Provider-neutral canonical structured-state contract and deterministic synthetic adapter semantics.",
+      "why_separate": "Storage mutation, revision, replay, query, and event semantics are reusable below authority routing and API transport.",
+      "owned_paths": ["mira/structured_state.py"],
+      "feature_ids": ["STORE-001"],
+      "work_ids": ["STORE-ADAPTER-001A"],
+      "verification": ["tests/test_structured_state.py", "tests/test_synthetic_roundtrip.py"]
+    },
+    {
+      "id": "authority-registry",
+      "responsibility": "Persistent one-authority-per-data-class registry and explicit runtime adapter resolution.",
+      "why_separate": "Canonical authority selection is an integrity boundary independent of storage implementation and client/API transport.",
+      "owned_paths": ["mira/authority.py"],
+      "feature_ids": ["AUTH-001"],
+      "work_ids": ["AUTHORITY-REGISTRY-001"],
+      "verification": ["tests/test_authority.py", "tests/test_synthetic_roundtrip.py"]
+    },
+    {
+      "id": "api-boundary",
+      "responsibility": "Same-user API policy, canonical routing, audit, scoped client sessions, and bounded HTTP transport.",
+      "why_separate": "Client-facing policy and transport form one service boundary above canonical authority/storage while remaining provider-neutral and deployment-independent.",
+      "owned_paths": ["mira/api_core.py", "mira/http_transport.py"],
+      "feature_ids": ["API-001"],
+      "work_ids": ["API-CORE-001"],
+      "verification": ["tests/test_api_core.py", "tests/test_http_transport.py", "tests/test_synthetic_roundtrip.py"]
+    },
+    {
+      "id": "repository-integrity",
+      "responsibility": "Machine validation of canonical feature dependencies and production component ownership/evidence coverage.",
+      "why_separate": "Repository integrity gates govern source growth and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
+      "owned_paths": ["mira/feature_registry.py", "mira/code_ownership.py"],
+      "feature_ids": ["DEV-005", "DEV-006"],
+      "work_ids": ["FEATURE-REGISTRY-001", "CODE-OWNERSHIP-001"],
+      "verification": ["tests/test_feature_registry.py", "tests/test_code_ownership.py"]
+    }
+  ]
+}

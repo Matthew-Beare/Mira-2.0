@@ -1,76 +1,72 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file records the completed feature-registry gate and exact successor.
+Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
 
-## Completed packet
+## Completed packet before this branch
 
 ### `M2-G1-005` — Machine-readable feature registry gate
 
-- **Work ID:** `FEATURE-REGISTRY-001`
 - **Merged PR:** #42
 - **Merge SHA / main readback:** `d635d45cbdfc66dc8f3e8d9eda765340045a9111`
-- **Branch:** `impl/g1-005-feature-registry`
-- **Branch start SHA:** `4fd0de9441ed549200eb7039d18ab25145309a1c`
-- **CI-verified PR head:** `3d4e89cb744675b6e7f595589719a1fede1c2938`
-- **GitHub Actions run:** `33211317703`
-- **Remote verification:** compile succeeded; canonical feature-registry validation succeeded; full unit/integration suite succeeded.
-- **Failure-driven repair evidence:** initial run `33211154761` correctly rejected `LOCATION-STATE-001` as an unknown feature dependency. `MOVE-001` and `INV-002` were repaired to retain `LOC-001` as the semantic feature dependency without weakening the validator.
-- **Result:** `FEATURES.md` is the only editable feature authority; authored IDs, malformed/duplicate/unknown/self/cyclic dependencies and deterministic source-bound JSON projection are CI-enforced.
+- **Post-merge completion checkpoint / this branch start SHA:** `4bc2790fa304695b96c9edcf06ff3a8c23b3c173`
+- **Remote CI:** run `33211317703`; compile + feature registry + full suite succeeded.
+- **Result:** `FEATURE-REGISTRY-001` is implemented/test-verified; canonical feature graph is machine-validated.
 
-## Product-state checkpoint
-
-MIRA 2.0 currently has:
-- structured canonical state: implemented/test-verified;
-- Authority Registry: implemented/test-verified;
-- API service semantics: implemented/test-verified;
-- scoped bearer auth + HTTP transport: implemented/test-verified;
-- synthetic HTTP canonical roundtrip: integration-verified;
-- machine-readable feature/dependency registry gate: implemented/test-verified.
-
-Google/provider deployment and Android shared-state proof are still pending.
-
-## Selected successor
+## Active packet
 
 ### `M2-G1-006` — Production component ownership and anti-bloat gate
 
 - **Work ID:** `CODE-OWNERSHIP-001`
 - **Class:** implementation / repository-growth prerequisite
-- **Planned branch:** `impl/g1-006-code-ownership`
-- **Dependencies satisfied:** `DEV-006`, `DEV-001`, and `FEATURE-REGISTRY-001` are specified/available; current production surface is small enough to inventory exactly.
+- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Branch:** `impl/g1-006-code-ownership`
+- **Branch start SHA:** `4bc2790fa304695b96c9edcf06ff3a8c23b3c173`
+- **Status:** activated; current production surface inventoried, implementation next.
 
-### Objective
+## Current production inventory
 
-Implement a language-neutral production-component ownership manifest and CI validator so every production artifact has exactly one bounded owner, relevant feature/work linkage and direct verification evidence before provider/client code fan-out.
+Production root is `mira/`. Current Python artifacts:
+- `mira/__init__.py`
+- `mira/structured_state.py`
+- `mira/authority.py`
+- `mira/api_core.py`
+- `mira/http_transport.py`
+- `mira/feature_registry.py`
 
-### Acceptance criteria
+This packet will add `mira/code_ownership.py`, which must itself be owned in the manifest. Tests, docs, workflows, `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are verification/governance surfaces, not product-runtime artifacts.
 
-1. Check in one canonical ownership manifest containing stable component IDs, responsibilities, why-separate rationale, owned production paths, relevant feature IDs, work IDs and direct verification paths.
-2. Define production roots explicitly; all production artifacts under those roots must be owned exactly once.
-3. Reject unowned production artifacts, duplicate/overlapping ownership, nonexistent owned paths and ownership outside declared production roots.
-4. Validate referenced feature IDs against the machine-readable `FEATURES.md` registry.
-5. Validate referenced work IDs against canonical `BACKLOG.md` work rows.
-6. Require at least one direct verification path per component and reject missing/non-test verification paths.
-7. Python verification profile proves referenced test files materially reference/import the owned Python module rather than merely existing.
-8. Component can own multiple cohesive files; validator does not impose one-file/one-feature or arbitrary file-count minimization.
-9. CI runs the ownership gate before the full unit suite.
-10. Deterministic tests cover unowned/overlap/missing path/unknown feature/work/missing verification and the real repository manifest.
-11. Inventory all current `mira/*.py` production files without reclassifying tests/docs/workflows as product code.
-12. No provider/Google/Android/legacy production state changes.
+## Objective
+
+Implement a language-neutral component ownership manifest and CI validator so every production artifact has exactly one bounded owner, relevant feature/work linkage and direct verification evidence before provider/client code fan-out.
+
+## Acceptance criteria
+
+1. One canonical ownership manifest with stable component IDs, responsibility, why-separate rationale, owned production paths, feature IDs, work IDs and direct verification paths.
+2. Explicit production roots; every production artifact under them is owned exactly once.
+3. Reject unowned artifacts, duplicate ownership, missing paths and ownership outside roots.
+4. Validate feature IDs against canonical `FEATURES.md` registry.
+5. Validate work IDs against canonical `BACKLOG.md` rows.
+6. Require direct verification paths and reject missing/non-test evidence.
+7. Python verification profile proves verification source materially imports/references the owned module.
+8. Multiple cohesive files per component are allowed; no one-file/one-feature rule.
+9. CI runs ownership validation before the full suite.
+10. Tests cover invalid manifests plus the real repository manifest.
+11. Inventory all current `mira/*.py` including the validator itself.
+12. No provider/Google/Android/legacy-state changes.
 
 ## Exact next action
 
-1. Create `impl/g1-006-code-ownership` from this exact main checkpoint.
-2. Activate `M2-G1-006` on that branch.
-3. Inventory current production files and map them into bounded components.
-4. Implement manifest validator/tests and CI gate.
-5. Require exact PR scope and remote CI green, merge/read back main.
-6. Then proceed to Wave 2 provider/deployment work, beginning with the isolated MIRA 2.0 data sandbox.
+1. Add `project/code_ownership.json` with current bounded components.
+2. Implement `mira/code_ownership.py` validator/CLI over feature/work registries and filesystem inventory.
+3. Add deterministic tests and CI gate.
+4. Open bounded PR, require remote CI green and exact file scope.
+5. Merge/read back main, then begin Wave 2 with the isolated MIRA 2.0 data sandbox.
 
 ## Recovery protocol
 
 On any new conversation/session:
 1. read this file first;
 2. verify repository/branch/head;
-3. continue from the exact next action;
+3. continue from exact next action;
 4. do not broaden scope from chat history;
 5. capture unrelated ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
