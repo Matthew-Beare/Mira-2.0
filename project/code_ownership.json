@@ -27,6 +27,15 @@
       "verification": ["tests/test_structured_state.py", "tests/test_synthetic_roundtrip.py"]
     },
     {
+      "id": "google-sheets-state",
+      "responsibility": "Google Sheets REST persistence gateway and single-writer StructuredStateAdapter implementation for the M2-M0 provider-backed authority path.",
+      "why_separate": "Provider-specific tab/row persistence and credential injection stay behind the provider-neutral STORE-001 contract so Authority Registry and API code remain unaware of spreadsheet identifiers or ranges.",
+      "owned_paths": ["mira/google_sheets_store.py"],
+      "feature_ids": ["STORE-001"],
+      "work_ids": ["GOOGLE-STORE-ADAPTER-001"],
+      "verification": ["tests/test_google_sheets_store.py"]
+    },
+    {
       "id": "authority-registry",
       "responsibility": "Persistent one-authority-per-data-class registry and explicit runtime adapter resolution.",
       "why_separate": "Canonical authority selection is an integrity boundary independent of storage implementation and client/API transport.",
