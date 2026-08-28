@@ -19,61 +19,81 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-010-dependency-closeout`
 - **Branch start SHA:** `e03e4fa0a6ad323442d4ec33c7c5c30afb54b5c8`
-- **Status:** activated; graph audit and ranking next.
+- **Activation commit:** `30a02a196b8ad1f40bc3d5d3e7418097c86e7465`
+- **Feature graph normalization:** `64622bab93f2c4c6a90d16d0703ff2daa1effc85`
+- **Roadmap normalization:** `a166bf77dfcaeb5992405d6579e19c1751cfbd6f`
+- **Ranked backlog / first-packet selection:** `e6332c46defef8e1a771ccb1cbc5ef9d3e6e930c`
+- **Status:** acceptance complete; diff gate, bounded PR, merge and main readback remain.
 
-## Objective
+## Canonical dependency result
 
-Produce the final acyclic dependency/enables model and ranked engineering backlog from the completed feature audit. Remove circular/over-broad dependencies, separate first-proof prerequisites from later release/onboarding/hardening work, define the shortest safe M2-M0 -> M2-M1 path, and choose exactly one first implementation packet.
+The M2-M0/M2-M1 critical path is acyclic and no longer over-blocked by unrelated family, provider-routing, onboarding, enterprise or later infrastructure work.
 
-## Scope
+### Defects repaired
 
-1. Audit all current implementation work dependencies for direct cycles and milestone overreach.
-2. Normalize the first synthetic storage/API proof separately from full Personal Google bootstrap/nontechnical installation.
-3. Preserve privacy/security blockers where truly required, but do not make family/enterprise/later features universal core prerequisites.
-4. Rank work by data integrity/security -> hard milestone prerequisites -> architectural leverage -> vertical value -> hardening -> later.
-5. Define explicit M2-M0 stock ChatGPT core proof and M2-M1 Android proof dependency chains.
-6. Select one bounded first implementation packet small enough to complete/test/checkpoint reliably.
+- `DEP-GRAPH` no longer depends on implementation task `FEATURE-REGISTRY-001`.
+- `STORE-ADAPTER-001` / `DATA-SANDBOX` direct cycle is removed.
+- Full `GOOGLE-BOOTSTRAP-001` is no longer required before the first Google-backed integration proof.
+- Same-user `API-CORE-001` no longer waits on cross-person `PROFILE-013`/`PERMISSION-SCOPE-001`; cross-person commands remain fail-closed until that work lands.
+- Android client core no longer waits on unrelated AI/provider runtime routing.
+- Feature-level cycles in schedule/clock, identifier/evidence, grocery/par and Person/permission semantics were removed by defining one-way foundations rather than mutual prerequisites.
 
-No executable MIRA 2.0 product code is implemented in this packet.
+### Shortest safe implementation waves
 
-## Known graph defects entering packet
+1. `STORE-ADAPTER-001A` — structured-state contract + deterministic in-memory adapter.
+2. `AUTHORITY-REGISTRY-001` — one canonical mutable authority per data class.
+3. `API-CORE-001` — authenticated/authorized shared service with mandatory idempotency/version/conflict/readback semantics.
+4. `CORE-SYNTHETIC-ROUNDTRIP` — complete synthetic API proof without external provider state.
+5. `FEATURE-REGISTRY-001` + `CODE-OWNERSHIP-001` — early repository growth gates before broad implementation fan-out.
+6. `DATA-SANDBOX` + `GOOGLE-STORE-ADAPTER-001` — isolated synthetic Google-backed authority path.
+7. `API-DEPLOYMENT-001` + `CHATGPT-API-CLIENT-001` — managed HTTPS shared service and stock ChatGPT client path; no required self-hosted server.
+8. `CORE-ROUNDTRIP` — M2-M0 stock ChatGPT Google-backed canonical entity proof.
+9. `ANDROID-CLIENT-CORE-001` — protected shared-API Android client with offline replay/reconnect semantics.
+10. `ANDROID-SYNC` — M2-M1 Android and stock ChatGPT read/write the same canonical entity.
+11. Native Android delivery/capture/release hardening follows the shared-state proof.
 
-1. `DEP-GRAPH` depends on `FEATURE-REGISTRY-001`, an implementation task, creating a process-order contradiction because G0-010 must close before implementation begins.
-2. `STORE-ADAPTER-001` depends on `DATA-SANDBOX`, while `DATA-SANDBOX` depends on `STORE-ADAPTER-001`, creating a direct dependency cycle.
-3. `DATA-SANDBOX` depends on full `GOOGLE-BOOTSTRAP-001`, which itself depends on installer/skill/provider/source/service infrastructure broader than necessary for the first synthetic state proof.
-4. `CORE-ROUNDTRIP` currently couples the first canonical state proof to full Google bootstrap/onboarding instead of a minimal synthetic provider adapter/resource.
-5. `API-CORE-001` includes `PROFILE-013` globally even though cross-person sharing authorization is not required for a same-user minimal core entity roundtrip; exact API authorization is required, but full cross-person sharing enforcement can remain a blocker for shared-person features rather than M2-M0 itself.
+## First implementation packet selected
 
-## Preliminary normalization direction
+### `M2-G1-001A` — Synthetic structured-state adapter core
 
-- G0-010 can derive/rank dependencies directly from canonical `FEATURES.md`/`BACKLOG.md`; `FEATURE-REGISTRY-001` becomes the **first implementation governance gate** rather than a prerequisite for completing the graph audit.
-- Introduce a bounded **synthetic storage harness** work packet rather than requiring the full Google bootstrap before adapter/API tests.
-- `STORE-ADAPTER-001` should depend on storage contracts + recovery boundaries, not on an already-created provider sandbox.
-- `DATA-SANDBOX` should depend on working Authority Registry + adapters and create the actual isolated Google/MIRROR integration namespace later.
-- A **synthetic core roundtrip** should precede Google-backed integration proof so API correctness can be tested without provider complexity.
-- M2-M0 remains Google-backed stock ChatGPT as the integration milestone, but internal implementation packets can and should prove storage/API semantics on synthetic adapters first.
-- `PERMISSION-SCOPE-001` remains a BLOCKER for cross-person/shared/minor/caregiver features, but not for same-person M2-M0 state unless the API command exercises shared resources.
+**Work ID:** `STORE-ADAPTER-001A`
 
-## Acceptance criteria
+**Objective:** implement the provider-neutral structured-state contract and deterministic in-memory synthetic adapter that all canonical mutable-state tests can use without Google, network access or legacy production state.
 
-1. No dependency cycles remain in the ranked critical path.
-2. G0-010 no longer depends on implementation work.
-3. Synthetic unit/integration harness separated from live/sandbox provider integration.
-4. M2-M0 shortest safe chain is explicit.
-5. M2-M1 shortest safe chain is explicit and strictly downstream of shared API/core proof.
-6. Cross-person privacy blockers remain enforced only where relevant rather than globally over-blocking same-user core.
-7. Full onboarding/distribution/enterprise/local/later work does not block first core proof.
-8. First implementation packet selected and bounded with objective/acceptance/resume point.
-9. BACKLOG priority order reflects the normalized graph rather than historical insertion order.
-10. No executable product code/provider state changes in G0-010.
-11. Bounded PR/merge/readback, then immediate activation of selected implementation packet.
+**Acceptance criteria:**
+1. Define a bounded structured-state adapter interface for health/schema, exact read, bounded query, idempotent upsert and append-event behavior.
+2. Use stable caller-supplied canonical IDs; adapter does not invent competing identities during replay.
+3. Maintain monotonic revision/version state and expose exact material readback after mutation.
+4. Replaying the same idempotency key + same request returns the prior material result without a second mutation.
+5. Reusing an idempotency key for materially different input fails closed.
+6. Stale expected revision/conflicting mutation fails explicitly and leaves canonical state unchanged.
+7. Unknown entity/resource types and invalid envelopes fail explicitly rather than permissively writing arbitrary state.
+8. Deterministic synthetic tests prove create/read/query/update/replay/conflict/append-event/readback semantics.
+9. No provider/network/evidence-store implementation, credentials, protected state or legacy production data is touched.
+10. New production artifacts have bounded ownership and tests; packet remains small enough for one coherent PR.
+
+## G0-010 acceptance
+
+1. No dependency cycles remain in the M2-M0/M2-M1 critical path. **Satisfied.**
+2. G0-010 has no implementation prerequisite. **Satisfied.**
+3. Synthetic state proof is separate from provider integration. **Satisfied.**
+4. M2-M0 shortest safe chain is explicit. **Satisfied.**
+5. M2-M1 shortest safe chain is explicit and downstream of shared API/core proof. **Satisfied.**
+6. Cross-person privacy blockers remain enforced only where relevant. **Satisfied.**
+7. Full onboarding/distribution/enterprise/local/later work does not block first core proof. **Satisfied.**
+8. First implementation packet is explicitly bounded. **Satisfied.**
+9. `BACKLOG.md` is dependency-ranked rather than insertion-ranked. **Satisfied.**
+10. No executable product code/provider state changed in G0-010. **Satisfied.**
+11. Bounded PR/merge/readback. **Pending.**
 
 ## Exact next action
 
-1. Read current `BACKLOG.md` implementation rows and identify cycles/over-broad edges.
-2. Define normalized dependency waves and first-proof work IDs.
-3. Update `BACKLOG.md` and `ROADMAP.md`/`FEATURES.md` only if semantic milestone/dependency wording must change.
-4. Checkpoint the chosen first implementation packet before PR close.
+1. Compare this branch to `main`; expected changed files are exactly `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, `CURRENT_WORK.md`.
+2. Open/verify/merge the bounded G0-010 PR at the exact head and read back `main`.
+3. Commit a main completion checkpoint naming `M2-G1-001A` as successor.
+4. Create the implementation branch from that exact checkpoint.
+5. Activate `M2-G1-001A` in `CURRENT_WORK.md` before writing product code.
+6. Implement `STORE-ADAPTER-001A` only; adjacent provider/API/evidence work remains queued.
 
 ## Recovery protocol
 
