@@ -1,85 +1,65 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
+Git is authoritative. This file records the completed Authority Registry packet and exact API successor.
 
-## Completed packet before this branch
-
-### `M2-G1-001A` — Synthetic structured-state adapter core
-
-- **Merged PR:** #37
-- **Merge SHA / main readback:** `a6550d6a44bbe8b02285204e9f475f8caa085d95`
-- **Post-merge completion checkpoint / this branch start SHA:** `6b9f9c362da2732f938958810b030d007a543ffe`
-- **Remote CI:** GitHub Actions run `33209577735`; compile + 11 unit tests passed.
-- **Result:** `STORE-ADAPTER-001A` is implemented/test-verified.
-
-## Active packet
+## Completed packet
 
 ### `M2-G1-002` — Canonical Authority Registry core
 
 - **Work ID:** `AUTHORITY-REGISTRY-001`
-- **Class:** implementation / foundational prerequisite
-- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Merged PR:** #38
+- **Merge SHA / main readback:** `a453e54c437a697daa592e51f336a9604dffd8e2`
 - **Branch:** `impl/g1-002-authority-registry`
 - **Branch start SHA:** `6b9f9c362da2732f938958810b030d007a543ffe`
-- **Activation commit:** `98c9cd8896b66e4621849617d2b2a0c5df155125`
-- **Registry implementation:** `33b74fac03c3666c0d0bd6580fd616c16fc7768a`
-- **Registry tests:** `beb0278e2b488f6c1121195ba4a5998caeab70f3`
-- **Package export update:** `266fab94ffa600a3435d2b5bab23e0614572009e`
-- **Status:** implementation complete locally; full suite 19 tests pass; bounded PR/remote CI next.
+- **CI-verified PR head:** `f6ac3c983d5cbf625cb6023b578abd66b53e839a`
+- **GitHub Actions run:** `33209898891`
+- **Remote verification:** compile succeeded; full suite **19 tests, 0 failures/errors**.
+- **Result:** persisted Authority metadata, one binding per data class, optimistic/idempotent binding replacement, explicit runtime adapter mounts, fail-closed disabled/unverified/unregistered/unhealthy/schema-mismatched resolution and data-class failure isolation are implemented/test-verified.
 
-## Implemented component
+## API umbrella split before implementation
 
-Component: **authority-registry**
+`API-CORE-001` is too large for one safe packet. It is split before growth:
 
-Owned production surface:
-- `mira/authority.py` — persisted Authority metadata, one binding per data class, explicit runtime adapter registration and safe route resolution.
-- `mira/__init__.py` — package export surface.
+1. **`API-CORE-001A` — in-process API service semantics**: authenticated-principal contract, command/query envelopes, same-user resource/action authorization, API/schema compatibility preflight, Authority Registry routing, mandatory idempotency, conflict mapping, exact read-after-write verification and synthetic audit sink. No HTTP/network/session issuance.
+2. **`API-CORE-001B` — client authentication + transport boundary**: scoped/revocable client/session identity, HTTP transport, request parsing/error mapping and transport security hooks over 001A. No deployment/provider work.
 
-Direct verification:
-- `tests/test_authority.py` plus existing structured-state tests.
-- existing `.github/workflows/ci.yml` compiles package/tests and runs all stdlib unit tests.
+The umbrella `API-CORE-001` is complete only after both children are verified. This preserves the selected architecture while keeping packets bounded.
 
-## Implemented semantics
+## Selected successor
 
-- Authority records use caller-supplied IDs and non-secret adapter/resource/namespace/failure-domain/owner/schema/verification metadata;
-- Authority records and bindings persist only through `StructuredStateAdapter`;
-- stable one-binding-per-data-class identity enforces one active canonical authority;
-- activation/replacement is optimistic-revision checked and inherits structured-state idempotency/replay semantics;
-- registration never activates an Authority;
-- disabled/unverified Authorities fail closed;
-- runtime adapter mount/unmount is explicit and nonauthoritative;
-- unregistered, unhealthy or schema-mismatched runtime adapter fails route resolution;
-- routing returns exact persisted Authority + binding + mounted adapter;
-- one unavailable data-class route does not prevent a healthy unrelated data-class route.
+### `M2-G1-003A` — API service semantics core
 
-## Verification evidence
+- **Work ID:** `API-CORE-001A`
+- **Class:** implementation / security-data-integrity prerequisite
+- **Planned branch:** `impl/g1-003a-api-service-core`
+- **Dependencies satisfied:** `STORE-ADAPTER-001A`, `AUTHORITY-REGISTRY-001`.
 
-Local deterministic full-suite run against the implemented content:
-- command: `python -m unittest discover -s tests -v`
-- result: **19 tests passed, 0 failures/errors**.
+### Objective
 
-Remote PR CI is pending and is not yet counted as test-verified evidence for this packet.
+Implement a transport-independent API service core that accepts already-authenticated principal context, authorizes exact same-user actions, rejects incompatible/invalid mutation envelopes before state access, routes only through `AuthorityRegistry`, requires idempotency for commands, maps conflicts explicitly, verifies read-after-write and emits audit events.
 
-## Acceptance criteria
+### Acceptance criteria
 
-1. Stable bounded Authority records. **Implemented/local-test-verified.**
-2. Persist through `StructuredStateAdapter` only. **Implemented/local-test-verified.**
-3. Exactly one binding per mutable data class; missing binding explicit. **Implemented/local-test-verified.**
-4. Optimistic revision + replay-safe activation/replacement. **Implemented/local-test-verified.**
-5. Unknown/disabled/unverified/unregistered/unhealthy/schema-mismatched route fails closed. **Implemented/local-test-verified.**
-6. Registration never silently activates. **Implemented/local-test-verified.**
-7. Runtime adapter registration is explicit and nonauthoritative. **Implemented/local-test-verified.**
-8. Resolution returns exact metadata + adapter without credentials. **Implemented.**
-9. Deterministic routing/replacement/replay/failure-isolation tests. **8 new tests; 19 total pass locally.**
-10. No HTTP/API/provider-specific/cross-person/evidence/Android work. **Satisfied.**
+1. Define versioned query/command envelopes with actor subject, data class, action/resource identity and explicit API/schema versions.
+2. Define an authenticated-principal contract with stable actor/client IDs and explicit grants; this packet does **not** issue/authenticate tokens.
+3. Same-user only: subject must equal authenticated actor; cross-person requests fail closed until permission-scope work exists.
+4. Exact resource/action authorization is checked before authority resolution/mutation; query requires class-level query grant.
+5. API-major/schema incompatibility and malformed/unknown action fail before mutation.
+6. Commands require non-empty idempotency keys and forward expected revision to the structured adapter.
+7. All canonical reads/writes route through `AuthorityRegistry`; no direct provider/store selection in service code.
+8. Upsert mutation performs exact read-after-write comparison; mismatch fails explicitly.
+9. Structured revision/idempotency/validation conflicts map to stable API error categories without hiding canonical state.
+10. Synthetic audit sink records actor/client/action/resource/outcome for allowed, denied and failed requests without becoming business-state authority.
+11. Deterministic tests prove compatible read/query/upsert/replay, authz denial, cross-person denial, compatibility failure, conflict mapping, readback verification and audit behavior.
+12. No HTTP server, token/session issuance, provider-specific adapter, Google, Android, evidence store or legacy production state.
 
 ## Exact next action
 
-1. Compare branch to `main`; verify only Authority Registry/test/current-work/package-export files changed.
-2. Open bounded PR at exact head and verify server-side changed-file list.
-3. Require PR-triggered CI success.
-4. Merge exact green head/read back `main`.
-5. Checkpoint completion and activate `API-CORE-001` as successor.
+1. Create `impl/g1-003a-api-service-core` from this exact main checkpoint.
+2. Activate `M2-G1-003A` on the branch.
+3. Implement transport-independent service core and tests only.
+4. Require full local + GitHub CI green before merge.
+5. Then activate `M2-G1-003B` for authentication/HTTP transport.
 
 ## Recovery protocol
 
