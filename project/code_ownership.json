@@ -63,6 +63,24 @@
       "verification": ["tests/test_runtime.py"]
     },
     {
+      "id": "cloud-run-deployment",
+      "responsibility": "Cloud Run service identity, restart-stable injected bearer authentication, HTTPS proxy adaptation, rate/audit controls, and live Google deployment composition for the bounded M2-M0 proof.",
+      "why_separate": "Cloud-specific identity and hosting behavior must remain outside provider-neutral API/runtime semantics while still being directly tested and fail-closed before live provider writes.",
+      "owned_paths": [
+        "mira/cloud_run.py",
+        "mira/cloud_run_entrypoint.py",
+        "mira/google_runtime_auth.py",
+        "mira/managed_auth.py"
+      ],
+      "feature_ids": ["API-001", "STORE-001"],
+      "work_ids": ["API-DEPLOYMENT-001"],
+      "verification": [
+        "tests/test_cloud_run.py",
+        "tests/test_google_runtime_auth.py",
+        "tests/test_managed_auth.py"
+      ]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation of canonical feature dependencies and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
