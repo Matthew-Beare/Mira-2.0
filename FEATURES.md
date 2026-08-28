@@ -18,6 +18,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `DATA-001` | Legacy production preservation | governance | history | -
 - `AUTH-001` | Canonical Authority Registry and one-authority-per-data-class routing | required/foundational | specified+tested-boundary | RECOVERY-002
 - `STORE-001` | Provider-neutral structured-state and evidence-store adapter contracts with verified mutation/readback | required/foundational | specified+tested-boundary+candidate_unmerged | RECOVERY-002
+- `API-001` | Versioned authenticated MIRROR client service boundary with bounded commands, queries, synchronization and verified mutation readback | required/foundational | specified+test-supported-boundary+candidate_unmerged | AUTH-001,STORE-001,PROFILE-013,RECOVERY-002,PROVIDER-001
 - `ONBOARD-001` | Full-replacement instruction delivery | governance | implemented/specified | -
 - `BRAND-001` | Canonical MIRA brand asset system | governance | history | -
 - `OPS-001` | Canonical twice-daily Ops Brief schedule | required | test_verified | OPS-003,OPS-004
@@ -142,65 +143,23 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 ## Category-G foundation mappings
 
 - G1 Canonical mutable authority foundation | AUTH-001,STORE-001,DEV-001,SOURCE-001,g-01 | provider-neutral-repair
+- G7 Policy/data API foundation | API-001,AUTH-001,STORE-001,PROFILE-013,RECOVERY-002,PROVIDER-001,g-07 | android-prerequisite
 
-## Canonical authority integrity
+## Integrity summary
 
-- G1 normalizes the historical “Sheets/Drive as current mutable authority” wording into two provider-neutral contracts: `AUTH-001` owns exact canonical authority routing; `STORE-001` owns structured-state/evidence adapter behavior and verified mutation/readback.
-- Google Workspace remains an accepted/default ordinary-user adapter profile, not the semantic identity of MIRROR. Provider brand never proves read/write/readback capability.
-- `AUTH-001` requires exactly one canonical authority per mutable data class. Physical workbooks/databases/resources may be split by failure domain, privacy, sharing or volume without creating multiple truths for the same data class.
-- Authority Registry metadata includes Authority UUID, data class, capability contract, adapter/provider type, exact provider resource/namespace, failure domain, owner/scope, read/write/readback status, schema/migration version, sharing policy, last verified timestamp and recovery/backup reference.
-- `STORE-001` keeps structured-state and evidence-store roles distinct. Structured state supports exact-key/bounded reads, idempotent writes, append-only events where required, atomic-or-compensated mutation, exact readback and migration export; evidence supports hash-preserving put/read/metadata/readback/retention/export.
-- Normal mutations cross a bounded MIRROR service/adapter boundary with dependency preflight, authorization, schema validation, stable identity/idempotency, smallest required mutation, audit and exact readback before success. Clients and AI runtimes are not direct canonical database writers.
-- Git source authority remains under `DEV-001`/`SOURCE-001`: Git is authoritative for durable code/policy/schema/migrations/tests/manifests/non-secret configuration and lineage, not for routine mutable life state, retained evidence bodies or provider secrets.
-- Legacy G1 over-bundles `source-mutation` and `integration-registry` into aggregate readiness. Source mutation gates behavior/policy/schema changes, not every routine state write. Integration Registry is capability/configuration health, not a second business-state authority and does not become part of `AUTH-001`.
-- Required authority/capability failure blocks only affected state-changing paths; unrelated healthy authorities/modules continue under `RECOVERY-002`. A recovery/export/migration copy is never a second writable master.
-- Provider/backend migration is staged and reversible: candidate target remains nonauthoritative until UUID/row/hash/relationship parity, bounded mutation/readback and recovery evidence pass; only then may `AUTH-001` switch the canonical authority reference. Canonical IDs never change because the adapter changes.
-- Legacy capability routing is test-verified for observed structured-state/evidence read-write-readback and provider-name non-proof, but no audited legacy-main generic persistent Authority Registry router or provider-neutral adapter execution layer exists. `AUTH-001` therefore remains `specified+tested-boundary`; `STORE-001` remains `specified+tested-boundary+candidate_unmerged`.
-- PR #31 is mixed candidate evidence only: it has Google-default provider configuration, a separate storage-portability experiment and a SQLite service with bounded commands/readback, but no generic Authority Registry/cutover engine or coherent proof that those topologies form one canonical deployment. It supplies no MIRA 2.0 integration/live credit.
-- Historical G1 `live_external` catalog state describes protected legacy deployment evidence. MIRA 2.0 does not inherit that evidence, and this audit performed no live provider read/write/readback.
-
-## F7 integrity
-
-- F16 `travel_planning` = `TRIP-001` + `ROUTE-001`; no `TRAVEL-*` authority.
-- F17 `work_trip_tracking` adds `MILE-001` + `MILE-002` only for selected paid-work tracking.
-- Ordered multi-leg grouping/revision is not implemented; `TRIP-ROUTE-CORE-001` owns the gap.
-- Generic travel does not imply paid work, ROAD context, weather watch, Calendar, reservations, documents, equipment, or budgets.
-
-## F8 integrity
-
-- F18 service key is `assets`; no new asset, maintenance, warranty, manual or specification authority is created.
-- Base asset registry/query uses `ASSET-001` + `ASSET-003`; fitment, identifier/evidence enrichment, maintenance/warranty evidence, retained manuals and verified specs are selected paths with their existing canonical authorities.
-- Legacy `f-18` hard-requires D1-D7; MIRA 2.0 repairs that to selected-path readiness so missing manual/spec/fitment/warranty capability does not block basic asset use.
-- `ASSET-SERVICE-001` remains the implementation gap for structured maintenance/warranty lifecycle; `KNOW-001` and `SPEC-001` retain their own provider/provenance boundaries.
-- Service activation or recommendation cannot infer ownership, installation, warranty coverage, maintenance completion, retained manual state, or verified specification correctness.
-
-## Knowledge/reference integrity
-
-- G17/G18/F19 normalize around one canonical Knowledge authority. `KNOW-001` owns durable source/object identity and retained-source lifecycle; `KNOW-002` owns provenance-bound excerpts/derived facts. Neither folder paths nor AI-generated summaries create competing identity.
-- `KNOW-001` keeps its legacy test-verified manual/reference behavior while removing the semantic dependency on asset ownership. Manuals remain a selected relationship path, not the definition of Knowledge itself.
-- `KNOW-002` requires stable excerpt/fact identity, exact parent Knowledge UUID, source locator/range, applicable timestamp/page/section/revision, provenance and explicit retention/pinning state sufficient to re-ground later answers. The audited legacy core does not implement this collection.
-- Raw/research source may be temporary when canonical provenance can be retained honestly; full source retention/pinning is explicit. When retention is selected, provider write/readback is required before claiming retained/pinned status.
-- General Knowledge relationships must support explicit typed links to canonical people, projects, education, tasks, assets and other entities without duplicating the Knowledge source or inferring a relationship from folder placement.
-- G18 Drive organization is a private configurable provider projection. Folder names/paths/shortcuts/native views are not canonical IDs and may change without changing Knowledge UUID, excerpt/fact IDs or provenance.
-- Searchable metadata belongs to canonical Knowledge/index state. Provider folders are human navigation. The legacy Personal Google blueprint's Knowledge Index under the `assets` module is a migration/reference design, not the final general-knowledge authority boundary.
-- F19 exact service key is `knowledge`. Base readiness derives from canonical Knowledge behaviors; selected durable Drive organization/search projection additionally requires exact evidence-store capability/readback and may degrade independently without erasing Knowledge truth.
-- Legacy G17 is only partially executable: durable Knowledge source identity is test-verified, but generic excerpt/timestamp/provenance and optional-pin semantics are specification/workflow gaps. G18 is workflow/specification evidence. PR #31 supplies no dedicated generic knowledge implementation credit.
-
-## Backup/disaster-recovery integrity
-
-- G16 and F20 normalize to `BACKUP-001`; F20 exact service key is `recovery`. Data backup/restore remains distinct from runtime `RECOVERY-001`/`RECOVERY-002`.
-- Recovery artifacts are nonauthoritative copies, never a second writable master. Provider/database/object-storage mechanisms are adapters beneath one backup/restore contract.
-- Backup creation/readback and restore verification are separate evidence states. Archive creation, digest verification or cloud upload alone cannot prove recoverability.
-- `BACKUP-001` records selected protected authorities/data classes, Backup ID, requested/effective type, destination, timestamps, integrity evidence, target readback and separately linked restore-test evidence.
-- Policy must capture selected cadence, retention/rotation, encryption requirements, RPO/RTO goals and restore-test cadence. Historical twice-daily incremental, daily-cloud and weekly-full requirements are deployment evidence, not universal new-user defaults.
-- True incremental status requires complete proven delta/change-journal semantics. A clearly labelled full fallback is valid when incrementality cannot be proven.
-- Source/config protection and mutable structured-state/evidence protection remain separate paths; Git never becomes a private runtime-state/evidence/secret dump.
-- Backup failure cannot mutate live canonical state or destroy the last verified good recovery artifact. Restore testing uses isolated synthetic/sandbox targets and verifies restored identities/material state before any recovery claim.
-- Legacy dependency profile requires `backup-catalog`, `backup_target` and `restore_test`; generic dependency CI proves only dependency mechanics, not backup correctness.
-- PR #31 contains an unmerged partial backup candidate with Backup UUID/history, SQLite snapshot, evidence archive, SHA-256 and provider readback, but no restore implementation/tests, no proven archive encryption/rotation/RPO/RTO, no true incrementals, a cadence mismatch and a noncanonical silent scheduler thread. It supplies no MIRA 2.0 implementation/integration/live credit.
+- G1: `AUTH-001` owns exactly one canonical authority per mutable data class; `STORE-001` owns provider-neutral structured/evidence adapter contracts. Git/source, runtime mutable state, evidence, capabilities, backups and projections remain separate authorities/roles. Provider migration preserves canonical IDs and switches authority only after parity, bounded mutation/readback and recovery evidence.
+- G7: `API-001` is the versioned authenticated client/service boundary in front of `AUTH-001`/`STORE-001`. Mutations require actor/client authentication, least-privilege authorization, dependency/capability and API/schema preflight, stable IDs, mandatory idempotency, canonical write, exact readback and audit. Source-code writes remain separate.
+- API compatibility is fail-closed for mutation; the service is conflict authority; remote access requires TLS/server authorization and publicly reachable deployments additionally require scoped short-lived credentials, rate limiting and audit. Clients never receive direct database credentials.
+- PR #31 is salvage/reference only: it contains FastAPI query/command/evidence paths, compatibility, device enrollment/auth, audit/readback and optional idempotency, but lacks canonical resource/action scopes, mandatory idempotency/version preflight, full command-envelope enforcement, audited optimistic conflicts and `AUTH-001`/`STORE-001` adapter routing.
+- G10 Android/mobile is downstream of `API-001`; Android and stock ChatGPT must use the same canonical mutation path, never separate client-specific authorities.
+- F7: travel reuses `TRIP-001`/`ROUTE-001`; selected work tracking adds `MILE-001`/`MILE-002`. Ordered multi-leg grouping/revision remains `TRIP-ROUTE-CORE-001`.
+- F8: `assets` uses selected-path readiness across existing asset/fitment/evidence/maintenance/manual/spec authorities; missing optional paths cannot block basic asset registry/query.
+- G17/G18/F19: `KNOW-001` owns durable Knowledge source identity; `KNOW-002` owns provenance-bound excerpts/derived facts; provider folders are noncanonical projections.
+- G16/F20: `BACKUP-001` owns provider-neutral backup/restore lifecycle; backups are nonauthoritative copies and restore verification is separate from backup creation/readback.
+- Legacy or PR #31 evidence never grants MIRA 2.0 integration/live status without MIRA 2.0 implementation and provider/runtime readback.
 
 ## Audit status
 
 - Categories A-E complete.
 - F1-F20 audited except F21-F23; F19/G17/G18 completed in `M2-G0-008B`, F20/G16 in `M2-G0-008A`.
-- Category G is partially audited: G1 and G16-G18 complete through `M2-G0-008C`; remaining G rows unaudited.
+- Category G is partially audited: G1, G7 and G16-G18 complete through `M2-G0-008D`; remaining G rows unaudited.
