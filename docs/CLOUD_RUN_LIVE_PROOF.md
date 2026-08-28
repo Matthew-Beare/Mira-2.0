@@ -10,6 +10,7 @@ The live proof is constrained to:
 
 - the isolated synthetic MIRA 2.0 Google Sheet;
 - one dedicated Cloud Run runtime service account;
+- one separate dedicated Cloud Build service account;
 - one Secret Manager bearer secret;
 - Cloud Run service-wide **manual scaling = 1**;
 - Cloud Run request **concurrency = 1**;
@@ -19,7 +20,7 @@ The live proof is constrained to:
 - short-lived Google service-identity OAuth tokens from the Cloud Run metadata path;
 - no downloaded service-account JSON key.
 
-Google documents `gcloud run deploy SERVICE --scaling=1` as service-wide manual scaling and `gcloud run services update SERVICE --concurrency 1` / deployment concurrency as the maximum simultaneous requests per instance. The operator script sets both at deployment and independently reads the Cloud Run v2 service resource back before any canonical write.
+Google documents `gcloud run deploy SERVICE --scaling=1` as service-wide manual scaling and concurrency `1` as the maximum simultaneous requests per instance. Google also documents a dedicated build service account as the preferred source-deploy path. The operator script sets these explicitly and independently reads the Cloud Run v2 service resource back before any canonical write.
 
 ## Phase 1: prepare Cloud resources
 
@@ -35,19 +36,22 @@ The prepare phase:
 
 1. verifies the active Google Cloud project and authenticated deployer;
 2. enables Cloud Run, Cloud Build, Artifact Registry, Secret Manager, and IAM APIs;
-3. creates or reuses the dedicated `mira-m0-runtime` service account;
-4. grants only the active deployer permission to attach that runtime identity;
-5. creates the `mira-m0-bearer` secret if missing and generates the bearer without printing it;
-6. grants only the runtime service account Secret Manager accessor permission;
-7. prints `MIRA_SERVICE_ACCOUNT_EMAIL=...` and stops.
+3. creates or reuses the dedicated `mira-m0-runtime` Cloud Run service identity;
+4. creates or reuses the separate `mira-m0-builder` source-build identity;
+5. grants the active deployer only the documented source-deploy roles `roles/run.sourceDeveloper` and `roles/serviceusage.serviceUsageConsumer` on the project;
+6. grants the deployer `roles/iam.serviceAccountUser` on only the two bounded service accounts;
+7. grants the build identity only `roles/run.builder` on the project;
+8. creates the `mira-m0-bearer` secret if missing and generates the bearer without printing it;
+9. grants only the runtime service account Secret Manager accessor permission;
+10. prints `MIRA_SERVICE_ACCOUNT_EMAIL=...` and stops.
 
 Do not paste the bearer secret into chat or Git. The raw bearer stays in Secret Manager.
 
 ## Drive handoff
 
-After phase 1, grant **writer** access on only the isolated synthetic MIRA Sheet to the exact service-account email printed by the script. Do not share legacy production artifacts or the entire Drive folder.
+After phase 1, grant **writer** access on only the isolated synthetic MIRA Sheet to the exact runtime service-account email printed by the script. Do not share legacy production artifacts or the entire Drive folder.
 
-When this workflow is being driven through ChatGPT with connected Google Drive access, MIRA can perform this single-file share after the service-account email is supplied.
+When this workflow is being driven through ChatGPT with connected Google Drive access, MIRA can perform this single-file share after the runtime service-account email is supplied.
 
 ## Phase 2: deploy and prove live behavior
 
@@ -61,7 +65,7 @@ The script prompts for the isolated synthetic spreadsheet ID unless `MIRA_GOOGLE
 
 The deploy phase:
 
-1. deploys the repository source to Cloud Run with the dedicated runtime identity;
+1. deploys the repository source to Cloud Run using the dedicated build identity and dedicated runtime identity;
 2. injects the bearer from Secret Manager;
 3. sets `MIRA_GOOGLE_SPREADSHEET_ID` and the bounded rate limit as runtime environment values;
 4. sets manual service scaling to exactly one instance and request concurrency to exactly one;
