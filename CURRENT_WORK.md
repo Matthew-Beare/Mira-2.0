@@ -8,6 +8,7 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 - **Merged PR:** #30
 - **Merge SHA / main readback:** `cbb64ab0939b1b10d62d40c8bd52f778cdf30d8f`
+- **Main activation commit for this packet:** `b457c531164510fe1e294dc93965521d42f688f5`
 - **Result:** added `AUTH-001` Canonical Authority Registry and `STORE-001` provider-neutral structured/evidence-store adapter contracts; Google remains the accepted/default ordinary-user adapter direction rather than MIRROR semantic identity; routine state mutation does not require source-code mutation; provider/backend cutover is staged and never creates dual writable masters.
 
 ## Active packet
@@ -17,7 +18,7 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / foundational prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-008d-api-service-foundation`
-- **Branch start SHA:** `cbb64ab0939b1b10d62d40c8bd52f778cdf30d8f`
+- **Branch start SHA:** `b457c531164510fe1e294dc93965521d42f688f5`
 - **Status:** activated; research not yet checkpointed.
 
 ## Exact audited scope
@@ -53,7 +54,7 @@ Do **not** expand this packet into G10 Android/mobile-client behavior, G2/G3 pro
 
 ## Exact next action
 
-1. Create branch `audit/g0-008d-api-service-foundation` from `cbb64ab0939b1b10d62d40c8bd52f778cdf30d8f`.
+1. Create branch `audit/g0-008d-api-service-foundation` from `b457c531164510fe1e294dc93965521d42f688f5`.
 2. Audit legacy G7 ledger/dependency profiles and runtime/platform/API contracts.
 3. Search PR #31 only for bounded API/service candidate evidence.
 4. Checkpoint research before normalizing `FEATURES.md` or `BACKLOG.md`.
