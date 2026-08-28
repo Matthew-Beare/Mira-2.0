@@ -4,100 +4,64 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 ## Completed packet before this branch
 
-### `M2-G0-008A` — Backup and disaster recovery foundation audit — legacy G16 + F20
+### `M2-G0-008B` — Personal knowledge/reference foundation audit — legacy G17 + G18 + F19
 
-- **Merged PR:** #28
-- **Merge SHA:** `3abcb58d920ee552fe344527c21669c0b5aa0844`
-- **Main activation commit for this packet:** `c21f82fdfe54964c8d864618bc4912cf72f04232`
+- **Merged PR:** #29
+- **Merge SHA:** `156bbd3f7c654b2e3bef08a9b37dbe4d93726da1`
+- **Result:** refined `KNOW-001`, added `KNOW-002`, normalized F19 exact service key `knowledge`, and separated provider filing/search projection from canonical Knowledge identity.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-008B`
-- **Name:** Personal knowledge/reference foundation audit — legacy G17 + G18 + F19
-- **Class:** forensic audit / prerequisite
+- **Packet ID:** `M2-G0-008C`
+- **Name:** Canonical mutable authority boundary audit — legacy G1
+- **Class:** forensic audit / foundational prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-008b-knowledge-reference`
-- **Branch start SHA:** `c21f82fdfe54964c8d864618bc4912cf72f04232`
-- **Research checkpoint:** `ba6d5780a02a609b6dabdb1b30aa6c9819283b1d`
-- **Feature registry commit:** `7e3808d78a321b7dfc960186155837019900a441`
-- **Backlog commit:** `4eb5a4b411d031298ab90c424b3089a27a19fc46`
-- **Status:** acceptance complete; bounded PR/merge/readback pending.
+- **Branch:** `audit/g0-008c-canonical-authority`
+- **Base main SHA:** `156bbd3f7c654b2e3bef08a9b37dbe4d93726da1`
+- **Status:** activated; branch creation and bounded forensic audit next.
 
-## Exact audited scope
+## Exact scope
 
-1. **G17 — Knowledge ingestion with relevant excerpts, timestamps, URL/title/metadata, provenance, relationships, optional full pin.**
-2. **G18 — Drive organization by domain and searchable metadata.**
-3. **F19 — Personal knowledge/reference library**, exact legacy service key `knowledge`, requiring G17 and G18.
+1. **G1 — Sheets/Drive as current mutable authority with Git for policy/schema/tests.**
+2. Normalize the historical Google-first implementation statement into the provider-neutral MIRA 2.0 canonical-authority contract without changing the accepted stock Google-first product direction.
+3. Identify stable semantic feature IDs and implementation gaps for Authority Registry, structured-state/evidence adapters, bounded mutation/readback, and authority migration/cutover boundaries only as required by G1.
 
-No F21-F23, other category-G rows, implementation porting, live Drive mutation, migration, or executable MIRA 2.0 product changes entered this packet.
+No G2/G3 portability audit, no remaining G rows, no F21-F23, no live provider provisioning, no migration execution, and no executable MIRA 2.0 product changes enter this packet.
 
-## Canonical result
+## Preliminary boundary evidence
 
-1. **`KNOW-001` refined** to **Canonical durable Knowledge source identity and retained-source lifecycle**. It remains the one immutable source/object authority and keeps its legacy test-verified manual/reference behavior.
-2. `KNOW-001` no longer semantically depends on asset ownership. Manuals/assets are selected relationships, not the definition of Knowledge.
-3. Added **`KNOW-002` — Provenance-bound knowledge excerpts and derived facts**.
-4. `KNOW-002` owns stable excerpt/fact identity, exact parent Knowledge UUID, source locator/range, applicable timestamp/page/section/revision, provenance/source tier, correction/supersession and explicit temporary-source versus pinned/retained semantics.
-5. The audited legacy executable core does **not** implement a dedicated excerpt/chunk collection. `KNOW-002` evidence is therefore `specified/not_present`.
-6. Legacy `asset_evidence.py` and tests do prove `KNOW-001` immutable IDs, idempotent replay, retained/queued lifecycle, Drive-file/revision requirements for retained manuals, fail-closed knowledge links and exact source locators for verified technical specifications.
-7. General Knowledge relationships must later support explicit typed links to canonical people/projects/education/tasks/assets/other entities without duplicating the Knowledge source. The legacy relationship model is asset-centric.
-8. G18 Drive organization is a **provider projection/configuration**, not canonical identity. Folder names/layout stay private deployment state and moving/renaming them cannot change Knowledge UUID/provenance.
-9. Searchable metadata belongs to canonical Knowledge/index state; Drive folders/shortcuts/native views are human navigation projections.
-10. The legacy Personal Google blueprint places Knowledge Index/Relationships under the `assets` module. That is valid historical evidence for manuals but must not remain the general F19 authority boundary.
-11. Raw/research source may remain temporary when provenance is preserved honestly. Full source retention/pinning is explicit; selected provider retention requires exact write/readback before `retained`/`pinned` may be claimed.
-12. Later answers must be re-groundable from exact provenance. Chat/model memory or copied snippets without source identity/locator do not become canonical evidence.
-13. Exact F19 service key is **`knowledge`**. It composes `KNOW-001` + `KNOW-002` through `SERVICE-001`/`SERVICE-002`; selected provider filing/search projection may degrade independently without erasing Knowledge truth.
-14. F19 service activation/recommendation never proves that content is retained, pinned, grounded or provider-synchronized.
-15. PR #31 contains no dedicated generic knowledge-ingestion/excerpt implementation. Its AI processor contract only reinforces that MIRROR owns canonical state/provenance and processors are interchangeable workers.
-16. No live Google production state was touched and no executable MIRA 2.0 behavior changed.
-
-## Durable normalization evidence
-
-- `FEATURES.md` commit `7e3808d78a321b7dfc960186155837019900a441`:
-  - immediate diff gate: only `FEATURES.md` changed;
-  - 17 additions / 4 replacements;
-  - refines `KNOW-001`, adds `KNOW-002`, adds F19 mapping and knowledge/reference integrity notes.
-- `BACKLOG.md` commit `4eb5a4b411d031298ab90c424b3089a27a19fc46`:
-  - immediate diff gate: only `BACKLOG.md` changed;
-  - 19 additions / 3 replacements;
-  - adds exactly `AUDIT-G17-G18-F19`, `SERVICE-DEPS-010`, `KNOWLEDGE-CORE-001`, `KNOWLEDGE-PROVENANCE-001`, and `KNOWLEDGE-PROJECTION-001` plus bounded dependency findings.
-
-## Evidence paths
-
-- `docs/feature-ledger-2026-08-24.md`
-- `docs/feature-catalog.md`
-- `starter/behavior-dependencies.json`
-- `skill/ops-brief-policy/references/knowledge-manual-ingestion.md`
-- `skill/ops-brief-policy/scripts/asset_evidence.py`
-- `skill/ops-brief-policy/scripts/test_asset_evidence.py`
-- `docs/drive-layout.md`
-- `docs/lyfeos-data-model.md`
-- `starter/life-planner/assets/personal-google-blueprint.json`
-- `starter/tools/onboarding_profile_router.py`
-- PR #31 `starter/ai-processor-contract.json` as candidate/reference only.
+1. Legacy `STATE_AUTHORITY_MODEL.md` states storage providers are adapters and canonical identities, schemas, events, provenance and business rules belong to MIRROR rather than Sheets/Drive/SQL/client layout.
+2. Every mutable data class has exactly one canonical authority recorded in an Authority Registry; one canonical authority does not require one giant physical workbook/database.
+3. Git owns durable source/policy/schema/tests/migrations/non-secret config and lineage, but is explicitly not the mutable database for ordinary life state.
+4. Structured state and retained evidence are separate adapter roles. Google Sheets/Drive are current candidates, not architectural requirements.
+5. Normal state mutation crosses a bounded service/API contract with authorization, dependency preflight, schema validation, stable identity/idempotency, write, readback and audit. Clients and AI runtimes do not write canonical storage directly.
+6. The runtime-interface contract requires provider-neutral structured-state operations including health/schema/get/bounded-query/idempotent-upsert/append-event/atomic-or-compensated mutation/readback/export-for-migration and corresponding evidence-store hash/readback/retention/export operations.
+7. Backend migration preserves canonical UUIDs and changes Authority Registry references only after parity/readback/restore evidence; a migration copy is nonauthoritative until verified cutover.
+8. Therefore the historical phrase “Sheets/Drive as current mutable authority” is deployment evidence for the Google-first adapter, not the MIRA 2.0 semantic feature name.
 
 ## Acceptance criteria
 
-1. Stable/refined IDs. **Satisfied: `KNOW-001` refined; new `KNOW-002`.**
-2. User-facing descriptions/rationale and evidence separation. **Satisfied.**
-3. F19 exact service key `knowledge` through `SERVICE-001`/`SERVICE-002`. **Satisfied.**
-4. Temporary raw source vs explicit pin/retention. **Satisfied at contract boundary.**
-5. Immutable Knowledge identity across provider/folder changes. **Satisfied.**
-6. Excerpt/source locator/timestamp/revision provenance. **Specified under `KNOW-002`; implementation absent and honestly recorded.**
-7. Drive layout configurable/private/non-authoritative. **Satisfied.**
-8. General typed relationships not asset-only. **Gap recorded in `KNOWLEDGE-CORE-001`.**
-9. Conservative legacy/PR31 evidence reconciliation. **Satisfied.**
-10. Only `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` on branch. **Satisfied so far; final branch gate pending.**
-11. Bounded PR/merge/readback. **Pending.**
-12. No legacy production/executable changes. **Satisfied.**
+1. Assign stable semantic feature ID(s) for canonical authority registry/data-class routing and provider-neutral mutable-state/evidence adapter contract without making Google the domain identity.
+2. Preserve the stock product direction that Google Workspace may be the default ordinary-user adapter while keeping provider choice replaceable.
+3. State exactly what Git is authoritative for and explicitly what it is not authoritative for.
+4. Preserve one canonical authority per mutable data class, with physical resource isolation/failure domains treated separately.
+5. Preserve bounded service/API mutation, idempotency, authorization and exact readback before success claims.
+6. Preserve structured-state versus evidence-store separation and stable identity across provider relocation.
+7. Preserve Authority Registry minimum semantics: authority UUID/data class/adapter/resource/failure domain/scope/capability/schema/sharing/verification/recovery metadata.
+8. Preserve failure isolation: unavailable authority blocks only affected state-changing paths unless a shared invariant requires wider stop.
+9. Preserve staged reversible backend migration and explicit cutover/readback; no dual writable masters.
+10. Reconcile legacy tests/contracts and PR #31 candidate evidence conservatively; requirement and evidence levels remain separate.
+11. Update only `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` on the packet branch.
+12. Open bounded PR, verify exact changed files/mergeability, merge exact head and remotely read back normalized state.
+13. No live legacy production state and no executable MIRA 2.0 behavior changes.
 
 ## Exact next action
 
-1. Compare `audit/g0-008b-knowledge-reference` against `main`; require zero commits behind and exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
-2. Open a bounded PR to `main`.
-3. Verify GitHub server-side changed filenames and mergeability.
-4. Merge using the exact verified PR head SHA.
-5. Remotely read back `KNOW-001`, `KNOW-002`, F19 mapping and new knowledge backlog work from `main`.
-6. Rerank remaining unaudited F21-F23 and category-G rows; activate the next bounded packet from actual dependency priority.
+1. Create branch `audit/g0-008c-canonical-authority` from the activation commit containing this file.
+2. Audit `STATE_AUTHORITY_MODEL.md`, `runtime-interface-contract.json`, runtime/platform portability tests and relevant dependency assignments for actual implementation/test evidence.
+3. Inspect PR #31 only for materially relevant Authority Registry/storage-portability/service-boundary candidate evidence.
+4. Decide stable MIRA 2.0 semantic IDs and exact evidence ceiling.
+5. Checkpoint findings in `CURRENT_WORK.md` before modifying `FEATURES.md` or `BACKLOG.md`.
 
 ## Recovery protocol
 
