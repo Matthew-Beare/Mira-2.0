@@ -2,100 +2,82 @@
 
 Git is authoritative. This file identifies exactly one active packet and its exact resume point.
 
-## Completed packet before this branch
+## Completed packet before this activation
 
-### `M2-G0-007G` — Feature Audit Slice F7 — travel planning and work-trip/pay composition
+### `M2-G0-007H` — Feature Audit Slice F8 — assets/maintenance/warranties/manuals service composition
 
-- **Merged PR:** #26
-- **Merge SHA:** `ad9a97a74ac0cec164a6b0f424dd47407bbebeaa`
-- **Main handoff commit activating F8:** `3db7203c9f7f1b232c63122e94f478898c1ae975`
-- **Result:** no `TRAVEL-*`; F16/F17 reuse canonical Trip/Route and independent paid-mileage state; multi-leg gap remains `TRIP-ROUTE-CORE-001`.
+- **Merged PR:** #27
+- **Merge SHA:** `442c68b777444678957f241c3219eedd588afe35`
+- **Result:** F18 service key `assets`; no new asset-service domain authority; legacy all-D1-through-D7 readiness normalized to selected paths over existing `ASSET-*`/`FITMENT-001`/`IDENT-001`/`EVID-001`/`KNOW-001`/`SPEC-001` authorities.
+- **Backlog:** added `AUDIT-F8` and `SERVICE-DEPS-008`; historical explanatory prose compacted while every pre-F8 ranked work row was preserved unchanged.
+- **Remote readback:** F18 `FEATURES.md` mapping and F8 backlog rows verified on `main` after merge.
+- **Live Google production touched:** no.
+- **Executable MIRA 2.0 product behavior changed:** no.
 
 ## Active packet
 
-- **Packet ID:** `M2-G0-007H`
-- **Name:** Feature Audit Slice F8 — assets/maintenance/warranties/manuals service composition
-- **Class:** forensic audit / prerequisite
+- **Packet ID:** `M2-G0-008A`
+- **Name:** Backup and disaster recovery foundation audit — legacy G16 + F20
+- **Class:** forensic audit / data-integrity prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `audit/g0-007h-asset-service`
-- **Branch start SHA:** `3db7203c9f7f1b232c63122e94f478898c1ae975`
-- **Status:** acceptance complete; bounded PR/merge/readback pending.
+- **Branch:** `audit/g0-008a-backup-disaster-recovery`
+- **Activation base SHA:** `442c68b777444678957f241c3219eedd588afe35`
+- **Status:** activated; branch creation and forensic evidence pass next.
 
-## Exact category-F scope
+## Exact scope
 
-18. **Assets/maintenance/warranties/manuals**.
+Audit exactly these two historically linked behaviors:
 
-F19 remains excluded because legacy `f-19` requires still-unaudited G17/G18. No F19+, category-G or executable MIRA 2.0 behavior entered this packet.
+1. **G16 — Twice-daily incremental, daily cloud, weekly full, rotation, encryption, restore tests** — REQUIRED backlog; specification-level.
+2. **F20 — Backup/disaster recovery** — REQUIRED backlog; specification-level; legacy service key `recovery`; requires G16.
 
-## Canonical F8 result
+Do not expand this packet into G17/G18 knowledge ingestion/Drive organization, F19 knowledge service, F21 custom builder, F22 wearables, F23 weather onboarding, other category-G infrastructure, migration execution, or live backup operations.
 
-1. Exact service key is `assets`.
-2. F18 creates no new asset/maintenance/warranty/manual/specification authority.
-3. Historical D1-D7 map to existing stable features:
-   - D1 → `ASSET-001` plus selected `FITMENT-001`;
-   - D2 → `ASSET-002`;
-   - D3 → `ASSET-003`;
-   - D4 → `IDENT-001`;
-   - D5 → `EVID-001`;
-   - D6 → `KNOW-001`;
-   - D7 → `SPEC-001`.
-4. MIRA 2.0 uses selected-path readiness rather than legacy F18's all-D1-through-D7 requirement:
-   - base asset registry/query → `ASSET-001` + `ASSET-003`;
-   - fitment/assignment → add `FITMENT-001`;
-   - identifiers/evidence enrichment → add `IDENT-001` + `EVID-001` where selected;
-   - maintenance/warranty/reference evidence → add `ASSET-002`; full structured maintenance/warranty lifecycle remains `ASSET-SERVICE-001`;
-   - retained manuals → add `KNOW-001`;
-   - verified technical specifications → add `SPEC-001`.
-5. Missing manual/spec/fitment/warranty capability cannot block basic asset registry/query. A working base path cannot make an unavailable selected path look ready.
-6. `KNOW-001` retained state requires actual retained-document identity/revision evidence; filename/URL presence alone is insufficient.
-7. `SPEC-001` remains the only verified safety-critical specification authority and retains exact applicability/provenance requirements.
-8. Service activation/recommendation cannot infer ownership, installation, warranty coverage, maintenance completion, retained-manual state or verified specification correctness.
-9. Existing work remains authoritative: `ASSET-SERVICE-001`, `KNOWLEDGE-INTEGRATION-001`, `SPEC-INTEGRATION-001`, `FITMENT-ENGINE-001` and other category-D implementation tickets. F8 adds no duplicate engine.
-10. PR #31 remains category-D-bounded candidate/salvage evidence only and gives F18 no MIRA 2.0 integration/live credit.
-11. F19 remains dependency-blocked on G17/G18.
-12. No live Google production state was touched and no executable MIRA 2.0 behavior changed.
+## Packet-boundary rationale
 
-## Durable packet commits
-
-- **Exact branch checkpoint:** `2c8d28d888220e25b616780e262e2b643c7d15ed`
-- **Research checkpoint:** `7e38df2347bcf3c87cc0fd274245e4ee0f707961`
-- **Feature registry normalization:** `a19f04b735a84630d63ce40dfefa0829b802c3fb`
-  - only `FEATURES.md` changed for the registry write;
-  - 11 additions / 1 audit-status replacement;
-  - added F18 `assets` selected-path mapping and F8 integrity notes;
-  - no new stable feature ID.
-- **Backlog normalization/compaction:** `1607217de641cb95fa3f6371f13f7bde9642a149`
-  - added only `AUDIT-F8` and `SERVICE-DEPS-008` to ranked work;
-  - GitHub commit diff proves the pre-existing work tables had no row deletion or modification: the only table changes are the two F8 additions;
-  - 117 deleted lines are historical explanatory dependency prose intentionally compacted after the ranked tables, with forensic detail retained in `FEATURES.md`, prior packet commits and Git history;
-  - preserved every pre-F8 Work ID, Class, Work description, Dependencies and Status.
+- G16 is a required data-integrity prerequisite and directly blocks F20.
+- G16 and F20 share one backup/restore authority and verification boundary, so auditing them together is a bounded vertical dependency slice rather than unrelated scope growth.
+- F19 remains blocked on G17/G18 and is not next merely because it has the lower row number.
+- F21 is proposed/accepted and already has category-E source-builder foundations; F22 is proposed; F23 is current-required but does not outrank a required data-integrity prerequisite.
+- Existing `RECOVERY-001`/`RECOVERY-002` cover runtime Run Log/checkpoint/circuit-breaker and module failure isolation. Data backup/restore must remain semantically separate unless the evidence proves otherwise.
 
 ## Acceptance criteria
 
-1. Exact service key/composition. **Satisfied.**
-2. D1-D7 stable-ID mapping without duplication. **Satisfied.**
-3. Preserve asset/fitment/evidence/query/identifier/manual/spec boundaries. **Satisfied.**
-4. Preserve maintenance/warranty implementation gap rather than invent completion. **Satisfied.**
-5. Preserve `KNOW-001`/`SPEC-001` evidence boundaries. **Satisfied.**
-6. No inference from activation/recommendation. **Satisfied.**
-7. Evidence levels remain separate from MIRA 2.0 integration/live status. **Satisfied.**
-8. PR #31 remains reference evidence. **Satisfied.**
-9. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`. **Satisfied on branch; final branch scope gate pending.**
-10. Bounded PR/merge/readback. **Pending.**
-11. No legacy production/executable changes. **Satisfied.**
+1. Assign stable semantic MIRA 2.0 feature ID(s) for durable data backup/restore behavior only if a distinct lifecycle/authority is justified; prefer a `BACKUP-*` family rather than overloading runtime `RECOVERY-*` semantics.
+2. Record exact user-facing F20 service key `recovery` and map it through `SERVICE-001`/`SERVICE-002` to the canonical backup behavior without creating a duplicate service database.
+3. Define backup/recovery copies as nonauthoritative recovery artifacts, never a second writable master or silent failover authority.
+4. Separate backup creation evidence from restore verification. A completed/uploaded snapshot alone must never prove recoverability.
+5. Preserve explicit scope for what is protected: portable source/configuration, mutable structured state, retained evidence/files, and any separately selected authorities. Git must not become a dump target for private mutable state or secrets.
+6. Preserve provider-neutral adapter semantics: provider version history/snapshots, database-native backup/WAL, object-storage versioning and export archives are implementations beneath one canonical backup/restore contract rather than architecture-specific truth.
+7. Define or recover policy semantics for retention/rotation, encryption, backup cadence, recovery-point objective (RPO), recovery-time objective (RTO), last successful backup evidence and restore-test evidence without inventing unsupported numeric defaults.
+8. Backup/restore identity and status must be replay/audit safe, with exact source authority/scope, target/provider reference, timestamps, integrity evidence and restore-test result where applicable.
+9. Restore testing must use synthetic/sandbox state during MIRA 2.0 development and must not overwrite or repurpose protected legacy production data.
+10. Provider/target success requires exact write/readback or equivalent backup-target evidence; restore success requires separate restored-state verification/reconciliation.
+11. Failure isolation must preserve canonical live state when backup target/restore testing is unavailable; the recovery service reports blocked/degraded honestly rather than claiming protection.
+12. Record requirement status separately from implementation/test/integration/live evidence; legacy contracts/spec prose do not become implementation credit.
+13. Reconcile PR #31 and any other legacy backup candidates as evidence only; do not promote unmerged/reference code to MIRA 2.0 integration/live status.
+14. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` in this forensic packet.
+15. Open a bounded PR, verify server-side scope/mergeability, merge using exact head SHA and remotely read back the resulting backup/recovery registry state.
+16. Touch no legacy Google production state and change no executable MIRA 2.0 product behavior.
+
+## Authoritative evidence already identified
+
+- Legacy feature catalog: G16 is REQUIRED backlog, `specification`/`documented`; F20 Backup/disaster recovery is REQUIRED backlog, `specification`/`documented`.
+- Legacy dependency graph: `f-20` requires `g-16`; G16 uses dependency profile `backup`.
+- Backup dependency profile requires canonical `backup-catalog` authority plus `backup_target` and `restore_test` capabilities.
+- Legacy stock-service router exposes exact service key `recovery` and recommends it as a baseline service without auto-enabling it.
+- `STATE_AUTHORITY_MODEL.md` says a recovery copy is never a second writable master; provider/native version history/export/snapshot mechanisms are adapter-specific; PostgreSQL uses native backup/WAL plus restore testing; object storage may use versioning/backup; migration snapshots remain nonauthoritative until verified cutover.
 
 ## Exact next action
 
-1. Compare `audit/g0-007h-asset-service` against `main`; require zero commits behind and exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
-2. Open a bounded PR to `main`.
-3. Verify GitHub server-side changed filenames and mergeability.
-4. Merge using the exact verified PR head SHA.
-5. Remotely read back F18 `FEATURES.md` and F8 `BACKLOG.md` state from `main`.
-6. Inspect authoritative legacy dependency assignments for F19-F23 and their category-G dependencies. Determine the next packet by dependency order rather than row adjacency, checkpoint it on `main`, then create its branch.
+1. Create branch `audit/g0-008a-backup-disaster-recovery` from this activation commit.
+2. Inspect legacy G16/F20 evidence across feature catalog/ledger, `behavior-dependencies.json`, `BEHAVIOR_DEPENDENCIES.md`, `STATE_AUTHORITY_MODEL.md`, backup/recovery references, tests, schemas and PR #31 candidates.
+3. Determine the minimum canonical backup/restore lifecycle and stable semantic ID, explicitly separating it from `RECOVERY-001`/`RECOVERY-002`.
+4. Checkpoint the forensic finding in this file before changing `FEATURES.md` or `BACKLOG.md`.
 
-## Next packet after F8
+## Next packet after `M2-G0-008A`
 
-Not yet assigned. F19 cannot proceed until G17/G18 are normalized. After merge/readback, inspect F19-F23 dependency assignments plus category-G ordering and activate the highest-priority bounded prerequisite packet.
+Not preassigned. After G16/F20 closes, rerank remaining unaudited F19/F21/F22/F23 and their category-G prerequisites. Dependency and integrity order, not row order, decides the next packet.
 
 ## Recovery protocol
 
@@ -105,4 +87,4 @@ On any new conversation/session:
 3. continue from the exact next action;
 4. do not broaden scope from chat history;
 5. capture new customer ideas in BACKLOG unless required for acceptance or explicitly reprioritized;
-6. finish each MIRA-development response with the current packet tag and the configured continuation fallback when no customer action is needed.
+6. finish each MIRA-development response with the configured continuation fallback and packet recovery tag.
