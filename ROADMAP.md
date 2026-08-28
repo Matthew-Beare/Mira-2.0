@@ -1,94 +1,86 @@
 # MIRA 2.0 ROADMAP
 
-Git is authoritative. This roadmap is milestone ordering, not a FIFO task list.
+Git is authoritative. This roadmap defines milestone ordering; `BACKLOG.md` owns ranked work and `CURRENT_WORK.md` owns the one active packet.
 
 ## M2-G0 — Governance and forensic reconstruction
 
 Goal: establish a clean, resumable development operating system and reconstruct the complete MIRA feature/dependency picture before new product implementation.
 
-### G0-001 — Governance/branding baseline
-- establish MIRA as the primary product brand;
-- define MIRA as Modular Intelligence & Reasoning Assistant;
-- define MIRROR as MIRA's companion reality database;
-- install full-replacement Project Instructions;
-- install packet/recovery rules;
-- protect legacy Google production data;
-- define brand-asset integration spec.
+- G0-001 governance/branding baseline — complete.
+- G0-002 through G0-008 feature audits — complete.
+- G0-009 legacy branch/PR reconciliation — complete; PR #31 selective salvage only, wholesale mega-merge prohibited.
+- G0-010 dependency graph and audit closeout — active/final G0 packet.
 
-### G0-002 — Feature Audit Slice A
-Governance/core runtime + Brief/Time/Operational State.
+G0-010 closes only when the feature/work graph is acyclic on the M2-M0/M2-M1 critical path, later/conditional work is no longer over-blocking core, and the first bounded implementation packet is selected.
 
-### G0-003 — Feature Audit Slice B
-Calendar, appointments, reminders, mail, and communication safety.
+## M2-G1 — Clean reality foundation and synthetic proof
 
-### G0-004 — Feature Audit Slice C
-Orders, shipments, receipts, payments, spending, and reconciliation.
+Goal: implement MIRA's canonical state foundation without touching legacy production or requiring an external provider for basic correctness tests.
 
-### G0-005 — Feature Audit Slice D
-Assets, fitment, inventory, shopping, household storage, identifiers, and evidence.
+Ordered foundation proof:
+1. provider-neutral structured-state adapter contract plus deterministic in-memory synthetic adapter;
+2. canonical Authority Registry using those adapters;
+3. shared `API-001` runtime with same-user scoped authorization, mandatory idempotency/version preflight, conflict handling, audit, and exact readback;
+4. synthetic API roundtrip proving create/read/mutate/replay/readback without provider state;
+5. provider-neutral evidence-store adapter path and central component/feature integrity gates before broad code growth.
 
-### G0-006 — Feature Audit Slice E
-Profiles, onboarding, family/dependents, customization, accessibility, and user modes.
-
-### G0-007 — Feature Audit Slice F
-Providers, Google/Microsoft/Apple portability, distribution, update channels, institutional/locked-down deployment.
-
-### G0-008 — Feature Audit Slice G
-ChatGPT, Android, web/PWA, Windows/Linux desktop, CLI, notifications, packaging, scanning, device/hardware surfaces.
-
-### G0-009 — Legacy branch/PR reconciliation
-Map PR #31 and other meaningful unmerged/legacy work against stable MIRA 2.0 feature IDs. Salvage bounded components only; never merge the historical mega-PR wholesale.
-
-### G0-010 — Dependency graph and audit closeout
-- stable semantic feature IDs;
-- full descriptions;
-- dependency and enables relationships;
-- duplicate/superseded/rejected reconciliation;
-- implementation/evidence level;
-- acceptance criteria where appropriate;
-- final ranked backlog.
-
-## M2-G1 — MIRA 2.0 clean reality sandbox
-
-Goal: create a separate development Google/MIRROR environment without touching legacy production data.
-
-- define canonical entity/state/evidence contracts from audited requirements;
-- create separate MIRA 2.0 Google sandbox namespace;
-- synthetic test data only unless explicitly approved;
-- provider read/write/readback proof;
-- verify no legacy artifact overwritten, renamed, repurposed, or migrated.
+Synthetic fixtures only. No legacy Google artifact may be overwritten, renamed, repurposed, migrated, or used as a development fixture.
 
 ## M2-M0 — Stock ChatGPT core vertical slice
 
-Goal: MIRA works in stock ChatGPT with Google-backed MIRROR reality state and no required self-hosted server.
+Goal: MIRA works in stock ChatGPT with Google-backed MIRROR reality state and **no required self-hosted server**.
 
-Candidate first proof, subject to dependency audit:
-- identify canonical MIRA 2.0 reality authority;
-- create one canonical entity;
-- read it back;
-- mutate it;
-- deduplicate/reconcile repeat requests;
-- prove read-after-write.
+Integration proof requires:
+1. a secure ordinary-user-compatible managed/shared API deployment path;
+2. a minimal Google structured/evidence adapter and a separate MIRA 2.0 synthetic sandbox namespace, independent from full end-user onboarding/bootstrap;
+3. one canonical entity created through the shared API;
+4. exact readback;
+5. mutation through the same API;
+6. replay/idempotency and conflict behavior;
+7. verified Google-backed read-after-write;
+8. stock ChatGPT and the deployed service using the same canonical authority path.
+
+Full nontechnical installation, full Personal Google bootstrap, Calendar/Gmail/scheduler setup, and enterprise distribution are later release/onboarding work and do not block this first core proof.
 
 ## M2-M1 — Android companion vertical slice
 
-Goal: Android reads and mutates the same canonical reality state without becoming a second authority.
+Goal: Android reads and mutates the same canonical entity as M2-M0 without becoming a second authority.
+
+Ordered proof:
+1. Android client core against the shared API, with scoped/revocable client identity and OS-protected durable credentials;
+2. replay-safe offline queue and reconnect/cursor synchronization;
+3. Android read of the M2-M0 canonical entity;
+4. Android mutation of that entity through `API-001`;
+5. stock ChatGPT reads the Android mutation back from the same authority;
+6. representative-device proof.
+
+Native notifications/TTS, camera/barcode/NFC/BLE capture, release signing, and broader UI polish follow the shared-state proof unless required to demonstrate the client core itself.
 
 ## M2-M2 — Ops Brief vertical slice
 
-Goal: generate and deliver a real brief from MIRA 2.0 canonical state with deterministic run identity, correct scheduling semantics, and failure isolation.
+Goal: generate and deliver one real MIRA Ops Brief from canonical MIRA 2.0 state with deterministic run identity, correct scheduling semantics, dependency-derived service readiness, and failure isolation.
+
+## Release/onboarding hardening after core proofs
+
+- machine-readable feature registry/drift tooling and component-ownership enforcement before broad growth;
+- provider/account onboarding and full Personal Google bootstrap;
+- browser-only nontechnical installation;
+- deterministic starter/distribution promotion;
+- service composition/readiness normalization;
+- backup/restore and observability hardening;
+- signed Android release/update continuity.
 
 ## Later milestone families
 
-Exact order is determined after the G0 dependency audit.
+Exact order remains dependency-ranked after M2-M1/M2-M2 evidence.
 
 - orders/shipments/receipts;
 - assets/inventory/location/scanning;
 - finance/reconciliation;
 - calendar/reminders;
-- meal/household workflows;
+- recipes/meals/household workflows;
 - web/desktop parity;
 - local-service integrations;
-- enterprise/locked-down portability;
+- enterprise/locked-down deployment;
 - migration from legacy MIRA production;
-- RFID and specialized hardware.
+- wearables, voice, RFID, and specialized hardware.

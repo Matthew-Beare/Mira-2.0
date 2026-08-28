@@ -1,10 +1,10 @@
 # MIRA 2.0 FEATURES
 
-Canonical feature index. Detailed descriptions, rationale, evidence paths/tests, and verification boundaries remain durable in Git history and packet checkpoints. This index is authoritative for stable IDs, current requirement/evidence status, canonical dependencies, and audited service mappings.
+Canonical feature index. Detailed rationale and evidence remain durable in Git history and packet checkpoints. This file is authoritative for stable semantic feature IDs, current requirement/evidence state, canonical dependencies, and audited service/foundation mappings.
 
 ## Rules
 
-Stable semantic IDs do not change with priority/provider/backend/order. Requirement and evidence are separate; code existence is not completion.
+Stable semantic IDs do not change with priority, provider, backend, or display order. Requirement and evidence are separate; code existence is not completion. `deps` contains universal semantic prerequisites only. Conditional provider, sharing, deployment, or selected-service requirements belong in mappings/backlog work rather than being promoted to universal dependencies.
 
 ## Feature index
 
@@ -20,16 +20,16 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `DATA-001` | Legacy production preservation | governance | history | -
 - `AUTH-001` | Canonical Authority Registry and one-authority-per-data-class routing | required/foundational | specified+tested-boundary | RECOVERY-002
 - `STORE-001` | Provider-neutral structured-state and evidence-store adapter contracts with verified mutation/readback | required/foundational | specified+tested-boundary+candidate_unmerged | RECOVERY-002
-- `API-001` | Versioned authenticated MIRROR client service boundary with bounded commands, queries, synchronization and verified mutation readback | required/foundational | specified+test-supported-boundary+candidate_unmerged | AUTH-001,STORE-001,PROFILE-013,RECOVERY-002,PROVIDER-001
-- `CLIENT-ANDROID-001` | Android native client adapter using the shared API, protected client credentials, offline replay-safe sync and evidence-based device capabilities | required/M2-M1 | specified+legacy-build-verified+candidate_unmerged | API-001,PROFILE-013,RECOVERY-002,PROVIDER-001
+- `API-001` | Versioned authenticated MIRROR client service boundary with bounded commands, queries, synchronization and verified mutation readback | required/foundational | specified+test-supported-boundary+candidate_unmerged | AUTH-001,STORE-001,RECOVERY-002
+- `CLIENT-ANDROID-001` | Android native client adapter using the shared API, protected client credentials, offline replay-safe sync and evidence-based device capabilities | required/M2-M1 | specified+legacy-build-verified+candidate_unmerged | API-001,RECOVERY-002
 - `OBS-001` | Provider-neutral operational observability and read-only dashboard projection that never becomes mutable-state authority | optional/proposed | specified/legacy-architecture | AUTH-001,RECOVERY-002
-- `LOCAL-001` | Explicit local-service integration bridge with scoped network/service permissions, verified capability/readback and no assumed cloud reachability or blanket LAN trust | optional/proposed | specified/not_present | API-001,PROVIDER-001,RECOVERY-002
-- `VOICE-001` | Optional voice query and command client surface using shared API authorization with explicit confirmation for consequential actions | optional/proposed | specified/not_present | API-001,PROVIDER-001
+- `LOCAL-001` | Explicit local-service integration bridge with scoped network/service permissions, verified capability/readback and no assumed cloud reachability or blanket LAN trust | optional/proposed | specified/not_present | API-001,RECOVERY-002
+- `VOICE-001` | Optional voice query and command client surface using shared API authorization with explicit confirmation for consequential actions | optional/proposed | specified/not_present | API-001
 - `ONBOARD-001` | Full-replacement instruction delivery | governance | implemented/specified | -
 - `BRAND-001` | Canonical MIRA brand asset system | governance | history | -
 - `OPS-001` | Canonical twice-daily Ops Brief schedule | required | test_verified | OPS-003,OPS-004
 - `OPS-002` | Single canonical dispatcher and prohibited duplicate schedules | required | specified | OPS-001
-- `OPS-003` | Canonical runtime clock gate with DST-safe slot matching | required by failure evidence | test_verified | OPS-001
+- `OPS-003` | Canonical runtime clock gate with DST-safe slot matching | required by failure evidence | test_verified | -
 - `OPS-004` | Fresh standalone run delivery with deterministic Run ID | required | test_verified | OPS-003,RECOVERY-001
 - `OPS-005` | Deterministic HOME/ROAD context with explicit overrides | required | test_verified | -
 - `CTX-001` | Configurable operating-context pairs | accepted-direction | test_verified | -
@@ -44,7 +44,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `TASK-002` | Evidence-grounded next actions and honest completion state | accepted/integrity rule | specified | -
 - `RECOVERY-001` | Phase-aware Run Log, durable checkpoints and circuit-breaker recovery | required | test_verified | -
 - `RECOVERY-002` | Explicit module dependency boundaries and failure isolation | required | test_verified | -
-- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | specified+candidate_unmerged | PROVIDER-001,RECOVERY-002
+- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | specified+candidate_unmerged | RECOVERY-002
 - `CAL-001` | Saturday AM seven-day appointment lookahead | required | test_verified | -
 - `CAL-002` | Day-before and morning-of appointment reminders | required | test_verified | -
 - `CAL-003` | Configurable relative appointment reminder, default one hour before | required | test_verified | -
@@ -72,7 +72,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `FITMENT-001` | Explicit assignment, installation and fitment relationships | required | test_verified | ASSET-001
 - `ASSET-002` | Provenance-linked asset acquisition, reference and lifecycle evidence | accepted/required-direction | partial-test/specified | ASSET-001,RECEIPT-001
 - `ASSET-003` | Bidirectional receipt, asset and identifier graph queries | required | test_verified | ASSET-001,FITMENT-001,RECEIPT-001,IDENT-001
-- `IDENT-001` | Namespaced product and device identifiers with collision safety | required | test_verified | ASSET-001,EVID-001
+- `IDENT-001` | Namespaced product and device identifiers with collision safety | required | test_verified | ASSET-001
 - `EVID-001` | Multi-source asset evidence enrichment without identity replacement | required | test_verified | ASSET-001,IDENT-001,RECOVERY-002
 - `KNOW-001` | Canonical durable Knowledge source identity and retained-source lifecycle | required | test_verified+scope-refined | RECOVERY-002
 - `KNOW-002` | Provenance-bound knowledge excerpts and derived facts | required/accepted | specified/not_present | KNOW-001,RECOVERY-002
@@ -82,11 +82,11 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `LOC-001` | Hierarchical locations with intended placement separate from observed/last-moved state | required / under active design | specified | INV-001
 - `MOVE-001` | QR/barcode-driven inventory movement with explicit event/readback semantics | accepted/required-direction | candidate_unmerged | INV-001,IDENT-001,LOC-001,LOCATION-STATE-001
 - `INV-002` | Queryable household, loft and shop inventory projection | required | candidate_unmerged | INV-001,LOC-001,IDENT-001,ASSET-003,LOCATION-STATE-001
-- `PAR-001` | Target/par quantity with opt-in under-level notification | accepted | specified | INV-001,GROCERY-001
+- `PAR-001` | Target/par quantity with opt-in under-level notification | accepted | specified | INV-001
 - `PAR-002` | Optional scale-based passive stock sensing | optional/proposed | not_present | PAR-001
-- `GROCERY-001` | Grocery list, pantry and freezer stock reconciliation | accepted | specified | SHOP-001,INV-001,LOC-001,PAR-001,RECEIPT-001
-- `RECIPE-001` | Durable recipe library with structured ingredients and provenance | required | specified | KNOW-001,GROCERY-001
-- `MEAL-001` | Dated meal planning with pantry-aware ingredient-gap and shopping reconciliation | required | specified | RECIPE-001,GROCERY-001,SHOP-001,PAR-001
+- `GROCERY-001` | Grocery list, pantry and freezer stock reconciliation | accepted | specified | SHOP-001,INV-001,LOC-001,RECEIPT-001
+- `RECIPE-001` | Durable recipe library with structured ingredients and provenance | required | specified | KNOW-001
+- `MEAL-001` | Dated meal planning with pantry-aware ingredient-gap and shopping reconciliation | required | specified | RECIPE-001,GROCERY-001,SHOP-001
 - `ONBOARD-002` | Sanitized generic starter with no inherited personal production state | required/privacy | test_verified | DATA-001
 - `ONBOARD-003` | Four-question Minimum Useful Setup with resumable bounded interview | required | implemented/specified | ONBOARD-002
 - `ONBOARD-004` | Capability, friction, AI-use and work-context discovery without silent activation | required | partial-test/specified | ONBOARD-003,SERVICE-001,CTX-002
@@ -103,7 +103,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `PROFILE-009` | Mixed/custom role composition preserves underlying roles and explicit primary routing | required | test_verified | SERVICE-001
 - `PROFILE-010` | Preference-driven usability and accessibility without demographic inference | accepted-direction | partial-test/specified | SERVICE-001
 - `PROFILE-011` | Public “Boomer mode” is rejected; private user-chosen alias remains presentation-only | rejected/public; private-alias accepted | rejected+alias-partial-test | PROFILE-010,ONBOARD-002
-- `PROFILE-012` | Canonical per-person identity and explicit relationship graph | accepted | specified | PROFILE-013
+- `PROFILE-012` | Canonical per-person identity and explicit relationship graph | accepted | specified | -
 - `PROFILE-013` | Explicit permission and sharing scopes separate from relationship labels | required/privacy-critical | specified | PROFILE-012
 - `DIST-001` | Private deployment lineage and controlled upstream feature sharing | required | partial-test/specified | ONBOARD-002
 - `DIST-002` | Deterministic sanitized starter/distribution from one canonical source revision | required/release | test_verified | ONBOARD-002
@@ -122,7 +122,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `HEALTH-001` | Non-clinical administrative health organization | accepted-direction | specified | PROFILE-013,CAL-005,REMIND-001,REMIND-002
 - `ROUTINE-001` | Recurring and staged routine definition plus occurrence lifecycle | required | specified+tested-boundary | TASK-001,TASK-002
 - `REMIND-003` | Consolidated routine and stage reminder planning/projection | required | specified+tested-boundary | ROUTINE-001,RECOVERY-002
-- `WEARABLE-001` | Optional activity and wearable data ingestion with explicit authorization, capability/provenance evidence and no dependency from core routine or fitness truth | optional/proposed | not_present | PROVIDER-001
+- `WEARABLE-001` | Optional activity and wearable data ingestion with explicit authorization, capability/provenance evidence and no dependency from core routine or fitness truth | optional/proposed | not_present | -
 - `EDU-001` | Durable education track, academic-work and deadline identity | required | specified | TASK-001,TASK-002,ROUTINE-001,CAL-007
 - `CAL-007` | Generic source-linked Calendar projection with stable identity and provider readback | accepted/required-direction | specified | RECOVERY-002,PROFILE-013
 
@@ -137,7 +137,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - F7 Appointments/calendar/reminders | appointments_calendar,CAL-005,CAL-006,CAL-004,appointment_reminders,CAL-002,CAL-003,CAL-001 | repair
 - F8 Administrative health organization | health_organization,HEALTH-001,SERVICE-001,SERVICE-002,medication_reminders,REMIND-001,REMIND-002 | repair
 - F9 Shopping/procurement | shopping,SHOP-001,SERVICE-001,SERVICE-002,f-09 | confirmed
-- F10 Recipes/meals/groceries | recipes_meals,SERVICE-001,SERVICE-002,RECIPE-001,MEAL-001,GROCERY-001,SHOP-001 | repair+migration
+- F10 Recipes/meals/groceries | recipes_meals,SERVICE-001,SERVICE-002,RECIPE-001,MEAL-001,GROCERY-001,SHOP-001 | selected-submodule-repair
 - F11 Household/errands/admin/maintenance | household_admin,TASK-001,TASK-002,SERVICE-001,SERVICE-002,ASSET-002,SPEC-001 | confirmed
 - F12 Laundry stages and drop-off/pickup reminders | household_routines,TASK-001,TASK-002,ROUTINE-001,REMIND-003,household_routines_enabled,household_admin | repair
 - F13 Routines/fitness/accountability | routines_fitness,ROUTINE-001,TASK-001,TASK-002,SERVICE-001,SERVICE-002,REMIND-003 | repair
@@ -149,7 +149,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - F19 Personal knowledge/reference library | knowledge,SERVICE-001,SERVICE-002,KNOW-001,KNOW-002,f-19,g-17,g-18 | provider-projection-repair
 - F20 Backup/disaster recovery | recovery,SERVICE-001,SERVICE-002,BACKUP-001,f-20,g-16 | new-canonical-backup-core
 - F21 Custom skill/automation builder | DEV-004,SKILL-BUILDER-001,f-21 | existing-feature/work
-- F22 Activity trackers/wearable data | WEARABLE-001,PROVIDER-001,f-22 | optional-later
+- F22 Activity trackers/wearable data | WEARABLE-001,f-22 | optional-later
 - F23 Weather-in-briefs onboarding/preferences | WEATHER-001,WEATHER-002,ONBOARD-004,ONBOARD-005,SERVICE-001,f-23 | generic-onboarding-hardening
 
 ## Category-G foundation mappings
@@ -160,48 +160,36 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - G4 Locked-down and regulated enterprise/VA deployment lane | ENTERPRISE-001,ONBOARD-006,PROVIDER-001,PROVIDER-002,SOURCE-002,DIST-002,PROFILE-013,g-04 | managed-regulated-boundary
 - G5 Deterministic Personal/Public/Institutional release channels | DIST-001,DIST-002,SOURCE-001,g-05 | confirmed-distribution-boundary
 - G6 Eventual PostgreSQL/private SQL canonical service | STORE-001,AUTH-001,API-001,g-06 | backend-adapter-choice-not-product-authority
-- G7 Policy/data API foundation | API-001,AUTH-001,STORE-001,PROFILE-013,RECOVERY-002,PROVIDER-001,g-07 | android-prerequisite
+- G7 Policy/data API foundation | API-001,AUTH-001,STORE-001,RECOVERY-002,g-07 | shared-client-prerequisite; PROFILE-013 conditional for cross-person/shared resources
 - G8 Operational observability/Grafana dashboards | OBS-001,AUTH-001,RECOVERY-002,g-08 | optional-read-only-projection
 - G9 Object storage/NAS evidence and attachments | STORE-001,g-09 | evidence-adapter-choice
-- G10 Android/mobile client boundary | CLIENT-ANDROID-001,API-001,PROFILE-013,RECOVERY-002,PROVIDER-001,g-10 | native-client-repair
+- G10 Android/mobile client boundary | CLIENT-ANDROID-001,API-001,RECOVERY-002,g-10 | native-client-repair; PROFILE-013 conditional for cross-person/shared resources
 - G11 Home Assistant bridge | LOCAL-001,g-11 | later-local-adapter
 - G12 Plex bridge | LOCAL-001,g-12 | later-local-adapter
 - G13 Voice queries/commands | VOICE-001,API-001,g-13 | later-client-surface
 - G14 NAS/LAN/private-service bridge and VPN access | LOCAL-001,API-001,g-14 | later-private-bridge
 - G15 Family site-to-site VPN/redundancy/failover | LOCAL-001,g-15 | deferred-external-infrastructure
-- G16 Backup/restore foundation | BACKUP-001,PROVIDER-001,RECOVERY-002,g-16 | canonical-backup-core
+- G16 Backup/restore foundation | BACKUP-001,RECOVERY-002,g-16 | provider adapters conditional
 - G17 Knowledge ingestion/provenance | KNOW-001,KNOW-002,RECOVERY-002,g-17 | canonical-knowledge-core
 - G18 Provider organization/search metadata projection | KNOW-001,KNOW-002,STORE-001,g-18 | noncanonical-provider-projection
 - G19 Machine-readable feature catalog and CI drift enforcement | DEV-005,DEV-001,DEV-003,g-19 | stable-id/generated-projection-repair
 - G20 Production-code ownership inventory and anti-bloat gate | DEV-006,DEV-001,g-20 | component-ownership/language-neutral-repair
 
-## Integrity summary
+## Dependency closeout findings
 
-- G1: `AUTH-001` owns exactly one canonical authority per mutable data class; `STORE-001` owns provider-neutral structured/evidence adapter contracts. Git/source, runtime mutable state, evidence, capabilities, backups and projections remain separate authorities/roles. Provider migration preserves canonical IDs and switches authority only after parity, bounded mutation/readback and recovery evidence.
-- G7: `API-001` is the versioned authenticated client/service boundary in front of `AUTH-001`/`STORE-001`. Mutations require actor/client authentication, least-privilege authorization, dependency/capability and API/schema preflight, stable IDs, mandatory idempotency, canonical write, exact readback and audit. Source-code writes remain separate.
-- API compatibility is fail-closed for mutation; the service is conflict authority; remote access requires TLS/server authorization and publicly reachable deployments additionally require scoped short-lived credentials, rate limiting and audit. Clients never receive direct database credentials.
-- PR #31 is salvage/reference only: it contains FastAPI query/command/evidence paths, compatibility, device enrollment/auth, audit/readback and optional idempotency, but lacks canonical resource/action scopes, mandatory idempotency/version preflight, full command-envelope enforcement, audited optimistic conflicts and `AUTH-001`/`STORE-001` adapter routing.
-- G10: `CLIENT-ANDROID-001` is an Android client adapter over `API-001`, not a provider/data authority. It owns presentation/local capture/native delivery/device capability reporting/protected client credentials/offline replay-safe client state; canonical policy, conflict resolution and mutation/readback remain server/service responsibilities.
-- Legacy Android main is build-verified for a debug APK and partially implements native reminder/TTS scheduling. Legacy PR #31 adds build-verified candidate WebView, camera/barcode, NFC/BLE and release machinery, but its direct Android-to-Google OAuth/API path is rejected because it bypasses `API-001`; the PR head also has unrelated failing required checks and remains unmerged salvage evidence only.
-- Android capability health requires observed device evidence where hardware/platform behavior matters. Source presence or CI build success does not prove notification timing, audio routing, reconnect, camera/NFC/BLE behavior, production signing identity or live canonical integration.
-- G19: `DEV-005` keeps `FEATURES.md` canonical and makes machine-readable JSON/other views reproducible projections with exact source revision/hash and CI drift enforcement. Stable semantic IDs are authored identities; legacy row-position-generated IDs are rejected because insert/reorder would renumber dependencies. Requirement and evidence remain separate and file existence never upgrades live/integration claims.
-- G20: `DEV-006` requires every production artifact to map to one bounded owning component with declared responsibility, owned surface and direct verification evidence; unowned or overlapping ownership fails closed. Components may cover multiple cohesive files. Python-specific AST/lint rules remain language-specific tooling rather than universal MIRA semantics.
-- F21 reuses `DEV-004`; F22 is optional `WEARABLE-001` and never a prerequisite for core routines/fitness; F23 adds `WEATHER-002` preferences over `WEATHER-001` rather than a second weather engine.
-- G2/G3 provider portability is adapter/capability routing under `STORE-001`/`PROVIDER-*`/`SOURCE-002`; Apple remains manual unless an exact adapter proves automation.
-- G4 `ENTERPRISE-001` is a managed/regulated deployment policy boundary. Organization approval is mutable external evidence and cannot be manufactured by product configuration.
-- G5 is distribution behavior under `DIST-001`/`DIST-002`; G6 PostgreSQL and G9 object/NAS storage are backend adapters, not semantic product authorities.
-- G8 `OBS-001` is read-only operational projection; dashboards/alerts cannot mutate or replace canonical state, reminders or scheduler truth.
-- G11/G12/G14 share `LOCAL-001`; Home Assistant, Plex, NAS, Paperless, Node-RED, MQTT and similar services are later adapters under one scoped local-network/service trust boundary.
-- G13 `VOICE-001` is an optional client/input surface over normal API/approval rules. G15 family VPN/redundancy remains external/deferred infrastructure and cannot block M2-M0/M2-M1.
-- Anti-bloat means preventing unowned/duplicate responsibilities, accidental debug/test payloads and unjustified parallel implementations; it does not mean arbitrary one-file/one-feature architecture or rewarding fragmentation.
-- F7: travel reuses `TRIP-001`/`ROUTE-001`; selected work tracking adds `MILE-001`/`MILE-002`. Ordered multi-leg grouping/revision remains `TRIP-ROUTE-CORE-001`.
-- F8: `assets` uses selected-path readiness across existing asset/fitment/evidence/maintenance/manual/spec authorities; missing optional paths cannot block basic asset registry/query.
-- G17/G18/F19: `KNOW-001` owns durable Knowledge source identity; `KNOW-002` owns provenance-bound excerpts/derived facts; provider folders are noncanonical projections.
-- G16/F20: `BACKUP-001` owns provider-neutral backup/restore lifecycle; backups are nonauthoritative copies and restore verification is separate from backup creation/readback.
-- Legacy or PR #31 evidence never grants MIRA 2.0 integration/live status without MIRA 2.0 implementation and provider/runtime readback.
+- Universal feature dependencies are now acyclic on the audited graph. G0-010 removed cycles caused by `OPS-001`/`OPS-003`, `IDENT-001`/`EVID-001`, `PAR-001`/`GROCERY-001`, and `PROFILE-012`/`PROFILE-013`.
+- Recipe identity no longer depends on grocery stock; par levels are optional inventory behavior rather than a prerequisite for grocery or meal planning. Selected service paths add those optional relationships when enabled.
+- Same-user core API/Android behavior requires `AUTH-001`, `STORE-001`, `RECOVERY-002`, and `API-001`; `PROFILE-013` is conditional when a command/query crosses person or sharing boundaries rather than a universal prerequisite.
+- AI-runtime/provider routing (`PROVIDER-001`) is deployment/onboarding capability evidence, not a universal semantic dependency of API, Android, backup, wearables, local bridges, or voice.
+- Provider/backend products remain adapters. PostgreSQL, Google, Microsoft, Apple, NAS/object storage, and similar choices never become canonical authority merely by selection.
+- `AUTH-001` owns exactly one canonical authority per mutable data class; `STORE-001` owns provider-neutral structured/evidence adapter contracts. Git/source, runtime mutable state, evidence, capabilities, backups, and projections remain separate roles.
+- `API-001` is the authenticated client/service boundary in front of `AUTH-001`/`STORE-001`. Mutations require actor/client authentication, least-privilege authorization, compatibility/dependency preflight, stable IDs, mandatory idempotency, conflict handling, canonical write, exact readback, and audit.
+- `CLIENT-ANDROID-001` is a client adapter over `API-001`, never a provider/data/source authority. Offline state is a replay queue/cache, not a second writable master.
+- `DEV-005` keeps `FEATURES.md` canonical and machine-readable views derived; `DEV-006` uses bounded component ownership rather than one-file/one-feature fragmentation.
+- PR #31 and independent legacy productization code remain selective salvage only. Direct client-to-provider mutation, coarse authorization, dual writable masters, silent schedulers, path identity, collapsed intended/observed location, and CI-implied live/signing/device/provider claims remain rejected.
 
 ## Audit status
 
-- Categories A-E complete.
-- Category F is audited through F23; all recovered F rows are mapped to stable semantic IDs or explicit existing work.
-- Category G is audited through G20; all recovered G rows are mapped to stable semantic IDs, provider/backend adapter choices, or explicit deferred external infrastructure.
+- Categories A-G recovered feature coverage is complete.
+- G0-009 legacy reconciliation is complete.
+- G0-010 final dependency graph/ranking closeout owns the remaining pre-implementation work; after it merges, implementation begins.
