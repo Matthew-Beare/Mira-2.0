@@ -8,7 +8,7 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 - **Merged PR:** #29
 - **Merge SHA:** `156bbd3f7c654b2e3bef08a9b37dbe4d93726da1`
-- **Result:** refined `KNOW-001`, added `KNOW-002`, normalized F19 exact service key `knowledge`, and separated provider filing/search projection from canonical Knowledge identity.
+- **Main activation commit for this packet:** `491acd9573ad70b1d45c8b20f0d1ec687cbd2c24`
 
 ## Active packet
 
@@ -17,51 +17,91 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / foundational prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-008c-canonical-authority`
-- **Base main SHA:** `156bbd3f7c654b2e3bef08a9b37dbe4d93726da1`
-- **Status:** activated; branch creation and bounded forensic audit next.
+- **Branch start SHA:** `491acd9573ad70b1d45c8b20f0d1ec687cbd2c24`
+- **Research checkpoint:** `28bc902046bf7f0fc361fcaa4d3dfbcf2994daff`
+- **Feature registry commit:** `d53959e43888038e27e469c73f1f0be52c138338`
+- **Backlog commit:** `bf8fa0ee5e34b5aaad6dcaf4944cb781b105a58f`
+- **Status:** acceptance complete; bounded PR/merge/readback pending.
 
-## Exact scope
+## Exact audited scope
 
 1. **G1 — Sheets/Drive as current mutable authority with Git for policy/schema/tests.**
 2. Normalize the historical Google-first implementation statement into the provider-neutral MIRA 2.0 canonical-authority contract without changing the accepted stock Google-first product direction.
-3. Identify stable semantic feature IDs and implementation gaps for Authority Registry, structured-state/evidence adapters, bounded mutation/readback, and authority migration/cutover boundaries only as required by G1.
+3. Identify stable semantic feature IDs and implementation gaps for Authority Registry, structured-state/evidence adapters, bounded mutation/readback and authority migration/cutover boundaries only as required by G1.
 
-No G2/G3 portability audit, no remaining G rows, no F21-F23, no live provider provisioning, no migration execution, and no executable MIRA 2.0 product changes enter this packet.
+No G2/G3 portability audit, no remaining G rows, no F21-F23, no live provider provisioning, no migration execution, and no executable MIRA 2.0 product changes entered this packet.
 
-## Preliminary boundary evidence
+## Canonical result
 
-1. Legacy `STATE_AUTHORITY_MODEL.md` states storage providers are adapters and canonical identities, schemas, events, provenance and business rules belong to MIRROR rather than Sheets/Drive/SQL/client layout.
-2. Every mutable data class has exactly one canonical authority recorded in an Authority Registry; one canonical authority does not require one giant physical workbook/database.
-3. Git owns durable source/policy/schema/tests/migrations/non-secret config and lineage, but is explicitly not the mutable database for ordinary life state.
-4. Structured state and retained evidence are separate adapter roles. Google Sheets/Drive are current candidates, not architectural requirements.
-5. Normal state mutation crosses a bounded service/API contract with authorization, dependency preflight, schema validation, stable identity/idempotency, write, readback and audit. Clients and AI runtimes do not write canonical storage directly.
-6. The runtime-interface contract requires provider-neutral structured-state operations including health/schema/get/bounded-query/idempotent-upsert/append-event/atomic-or-compensated mutation/readback/export-for-migration and corresponding evidence-store hash/readback/retention/export operations.
-7. Backend migration preserves canonical UUIDs and changes Authority Registry references only after parity/readback/restore evidence; a migration copy is nonauthoritative until verified cutover.
-8. Therefore the historical phrase “Sheets/Drive as current mutable authority” is deployment evidence for the Google-first adapter, not the MIRA 2.0 semantic feature name.
+1. Added **`AUTH-001` — Canonical Authority Registry and one-authority-per-data-class routing** with evidence `specified+tested-boundary`.
+2. Added **`STORE-001` — Provider-neutral structured-state and evidence-store adapter contracts with verified mutation/readback** with evidence `specified+tested-boundary+candidate_unmerged`.
+3. G1 now maps to provider-neutral `AUTH-001` + `STORE-001`, with existing `DEV-001`/`SOURCE-001` retaining Git/source authority. Google Sheets/Drive remain accepted/default adapter choices, not semantic domain IDs.
+4. `AUTH-001` owns exact canonical authority routing and metadata: Authority UUID, data class, adapter/provider, exact resource/namespace, failure domain, owner/scope, read/write/readback capability state, schema/migration version, sharing policy, last verification and recovery/backup reference.
+5. Exactly one writable canonical authority exists per mutable data class. Physical resources may be split for failure-domain/privacy/volume reasons without creating multiple truths.
+6. `STORE-001` keeps structured-state and evidence-store roles distinct. Structured state requires bounded/exact reads, idempotent mutation, append-event where appropriate, atomic-or-compensated semantics, audit, readback and export. Evidence requires hash-preserving put/read/metadata/readback/retention/export semantics.
+7. Normal mutation crosses a bounded MIRROR service/adapter boundary with dependency preflight, authorization, schema validation, stable identity/idempotency, smallest required write, audit and exact readback. Clients/AI runtimes are not unrestricted canonical database writers.
+8. Git is authoritative for durable code, policy, schemas, migrations, tests, feature manifests, non-secret configuration and source lineage. It is not the ordinary mutable-state database, evidence-body store or provider-secret store.
+9. Legacy G1 `source-mutation` is over-bundled as a universal runtime dependency. Source write/readback gates durable behavior/policy/schema changes, not every routine canonical-state transaction.
+10. Legacy G1 `integration-registry` is also over-bundled as a universal canonical-state blocker. Integration health/config remains separate and will be audited later; unrelated integration-catalog failure cannot manufacture canonical-state failure.
+11. Dependency/capability routing is executable/test-supported for provider-name non-proof, structured/evidence read-write-readback gates, fail-closed unknowns and module-scoped failure/degradation.
+12. No audited legacy-main executable provides a generic persistent Authority Registry router or complete provider-neutral storage adapter runtime, so runtime implementation credit is not claimed.
+13. PR #31 is mixed unmerged candidate evidence only: Google-default provider configuration, a separate storage-portability experiment, and direct SQLite service commands/readback exist, but no generic Authority Registry/cutover engine or coherent proof of one reconciled canonical topology.
+14. Provider/backend migration is staged and reversible. Candidate target is nonauthoritative until UUID/row/hash/relationship parity, bounded mutation/readback and recovery evidence pass; then `AUTH-001` may switch the authority reference. There are never two writable masters.
+15. Provider/backend cutover remains an integrity rule plus implementation work `AUTHORITY-MIGRATION-001`; G2/G3 may later promote/refine portability-specific semantic features without changing `AUTH-001` or `STORE-001` identity.
+16. `DATA-SANDBOX` dependency is now explicit: `AUTHORITY-REGISTRY-001` + `STORE-ADAPTER-001` + `GOOGLE-BOOTSTRAP-001` replace the previous vague “canonical state contract” wording.
+17. Historical legacy G1 `live_external` status is not transferred to MIRA 2.0. No protected legacy provider state was queried or mutated and no MIRA 2.0 live-provider credit is claimed.
+18. No live Google production state was touched and no executable MIRA 2.0 behavior changed.
+
+## Durable normalization evidence
+
+- `FEATURES.md` commit `d53959e43888038e27e469c73f1f0be52c138338`:
+  - immediate diff gate: only `FEATURES.md` changed;
+  - 23 additions / 1 audit-status replacement;
+  - adds `AUTH-001`, `STORE-001`, G1 foundation mapping and canonical-authority integrity notes.
+- `BACKLOG.md` commit `bf8fa0ee5e34b5aaad6dcaf4944cb781b105a58f`:
+  - immediate diff gate: only `BACKLOG.md` changed;
+  - 20 additions / 3 replacements;
+  - adds `AUDIT-G1`, `AUTHORITY-REGISTRY-001`, `STORE-ADAPTER-001`, `AUTHORITY-MIGRATION-001`, bounded findings, and exact `DATA-SANDBOX` prerequisites.
+
+## Evidence paths
+
+- `starter/STATE_AUTHORITY_MODEL.md`
+- `starter/runtime-interface-contract.json`
+- `docs/runtime-platform-architecture.md`
+- `starter/behavior-dependencies.json`
+- `starter/tools/provider_capability_router.py`
+- `starter/tests/test_platform_portability.py`
+- `starter/tests/test_behavior_dependency_check.py`
+- `tests/test_failure_domain_architecture.py`
+- PR #31 `starter/provider-defaults.json` — candidate/reference only.
+- PR #31 `starter/storage-portability-contract.json` — candidate/reference only.
+- PR #31 `starter/service/app.py` — partial SQLite/service candidate only.
+- PR #31 `starter/chatgpt-google-native/authority-schema.json` — Google-native schema candidate only.
 
 ## Acceptance criteria
 
-1. Assign stable semantic feature ID(s) for canonical authority registry/data-class routing and provider-neutral mutable-state/evidence adapter contract without making Google the domain identity.
-2. Preserve the stock product direction that Google Workspace may be the default ordinary-user adapter while keeping provider choice replaceable.
-3. State exactly what Git is authoritative for and explicitly what it is not authoritative for.
-4. Preserve one canonical authority per mutable data class, with physical resource isolation/failure domains treated separately.
-5. Preserve bounded service/API mutation, idempotency, authorization and exact readback before success claims.
-6. Preserve structured-state versus evidence-store separation and stable identity across provider relocation.
-7. Preserve Authority Registry minimum semantics: authority UUID/data class/adapter/resource/failure domain/scope/capability/schema/sharing/verification/recovery metadata.
-8. Preserve failure isolation: unavailable authority blocks only affected state-changing paths unless a shared invariant requires wider stop.
-9. Preserve staged reversible backend migration and explicit cutover/readback; no dual writable masters.
-10. Reconcile legacy tests/contracts and PR #31 candidate evidence conservatively; requirement and evidence levels remain separate.
-11. Update only `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` on the packet branch.
-12. Open bounded PR, verify exact changed files/mergeability, merge exact head and remotely read back normalized state.
-13. No live legacy production state and no executable MIRA 2.0 behavior changes.
+1. Stable semantic IDs. **Satisfied: `AUTH-001`, `STORE-001`.**
+2. Google-first default remains adapter direction, not domain identity. **Satisfied.**
+3. Git authority/non-authority boundary explicit. **Satisfied.**
+4. One canonical authority per mutable data class; physical isolation separate. **Satisfied.**
+5. Bounded mutation/idempotency/authorization/readback semantics. **Satisfied at contract boundary; MIRA 2.0 runtime unverified.**
+6. Structured state versus evidence-store separation. **Satisfied.**
+7. Authority Registry minimum semantics. **Satisfied at specification boundary.**
+8. Failure isolation/module-scoped blocking. **Test-supported and satisfied.**
+9. Staged reversible migration/no dual writable masters. **Satisfied at contract boundary.**
+10. Conservative legacy/PR31 evidence reconciliation. **Satisfied.**
+11. Only `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` on branch. **Satisfied so far; final branch gate pending.**
+12. Bounded PR/merge/readback. **Pending.**
+13. No legacy production/executable changes. **Satisfied.**
 
 ## Exact next action
 
-1. Create branch `audit/g0-008c-canonical-authority` from the activation commit containing this file.
-2. Audit `STATE_AUTHORITY_MODEL.md`, `runtime-interface-contract.json`, runtime/platform portability tests and relevant dependency assignments for actual implementation/test evidence.
-3. Inspect PR #31 only for materially relevant Authority Registry/storage-portability/service-boundary candidate evidence.
-4. Decide stable MIRA 2.0 semantic IDs and exact evidence ceiling.
-5. Checkpoint findings in `CURRENT_WORK.md` before modifying `FEATURES.md` or `BACKLOG.md`.
+1. Compare `audit/g0-008c-canonical-authority` against `main`; require zero commits behind and exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
+2. Open a bounded PR to `main`.
+3. Verify GitHub server-side changed filenames and mergeability.
+4. Merge using the exact verified PR head SHA.
+5. Remotely read back `AUTH-001`, `STORE-001`, G1 mapping and new authority/store backlog work from `main`.
+6. Rerank G2/G3, remaining category-G rows and F21-F23; activate the next bounded packet from actual dependency priority.
 
 ## Recovery protocol
 

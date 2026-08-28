@@ -16,6 +16,8 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `CORE-001` | MIRA product identity | governance | history | -
 - `MIRROR-001` | Companion reality database | governance | history | -
 - `DATA-001` | Legacy production preservation | governance | history | -
+- `AUTH-001` | Canonical Authority Registry and one-authority-per-data-class routing | required/foundational | specified+tested-boundary | RECOVERY-002
+- `STORE-001` | Provider-neutral structured-state and evidence-store adapter contracts with verified mutation/readback | required/foundational | specified+tested-boundary+candidate_unmerged | RECOVERY-002
 - `ONBOARD-001` | Full-replacement instruction delivery | governance | implemented/specified | -
 - `BRAND-001` | Canonical MIRA brand asset system | governance | history | -
 - `OPS-001` | Canonical twice-daily Ops Brief schedule | required | test_verified | OPS-003,OPS-004
@@ -137,6 +139,26 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - F19 Personal knowledge/reference library | knowledge,SERVICE-001,SERVICE-002,KNOW-001,KNOW-002,f-19,g-17,g-18 | provider-projection-repair
 - F20 Backup/disaster recovery | recovery,SERVICE-001,SERVICE-002,BACKUP-001,f-20,g-16 | new-canonical-backup-core
 
+## Category-G foundation mappings
+
+- G1 Canonical mutable authority foundation | AUTH-001,STORE-001,DEV-001,SOURCE-001,g-01 | provider-neutral-repair
+
+## Canonical authority integrity
+
+- G1 normalizes the historical “Sheets/Drive as current mutable authority” wording into two provider-neutral contracts: `AUTH-001` owns exact canonical authority routing; `STORE-001` owns structured-state/evidence adapter behavior and verified mutation/readback.
+- Google Workspace remains an accepted/default ordinary-user adapter profile, not the semantic identity of MIRROR. Provider brand never proves read/write/readback capability.
+- `AUTH-001` requires exactly one canonical authority per mutable data class. Physical workbooks/databases/resources may be split by failure domain, privacy, sharing or volume without creating multiple truths for the same data class.
+- Authority Registry metadata includes Authority UUID, data class, capability contract, adapter/provider type, exact provider resource/namespace, failure domain, owner/scope, read/write/readback status, schema/migration version, sharing policy, last verified timestamp and recovery/backup reference.
+- `STORE-001` keeps structured-state and evidence-store roles distinct. Structured state supports exact-key/bounded reads, idempotent writes, append-only events where required, atomic-or-compensated mutation, exact readback and migration export; evidence supports hash-preserving put/read/metadata/readback/retention/export.
+- Normal mutations cross a bounded MIRROR service/adapter boundary with dependency preflight, authorization, schema validation, stable identity/idempotency, smallest required mutation, audit and exact readback before success. Clients and AI runtimes are not direct canonical database writers.
+- Git source authority remains under `DEV-001`/`SOURCE-001`: Git is authoritative for durable code/policy/schema/migrations/tests/manifests/non-secret configuration and lineage, not for routine mutable life state, retained evidence bodies or provider secrets.
+- Legacy G1 over-bundles `source-mutation` and `integration-registry` into aggregate readiness. Source mutation gates behavior/policy/schema changes, not every routine state write. Integration Registry is capability/configuration health, not a second business-state authority and does not become part of `AUTH-001`.
+- Required authority/capability failure blocks only affected state-changing paths; unrelated healthy authorities/modules continue under `RECOVERY-002`. A recovery/export/migration copy is never a second writable master.
+- Provider/backend migration is staged and reversible: candidate target remains nonauthoritative until UUID/row/hash/relationship parity, bounded mutation/readback and recovery evidence pass; only then may `AUTH-001` switch the canonical authority reference. Canonical IDs never change because the adapter changes.
+- Legacy capability routing is test-verified for observed structured-state/evidence read-write-readback and provider-name non-proof, but no audited legacy-main generic persistent Authority Registry router or provider-neutral adapter execution layer exists. `AUTH-001` therefore remains `specified+tested-boundary`; `STORE-001` remains `specified+tested-boundary+candidate_unmerged`.
+- PR #31 is mixed candidate evidence only: it has Google-default provider configuration, a separate storage-portability experiment and a SQLite service with bounded commands/readback, but no generic Authority Registry/cutover engine or coherent proof that those topologies form one canonical deployment. It supplies no MIRA 2.0 integration/live credit.
+- Historical G1 `live_external` catalog state describes protected legacy deployment evidence. MIRA 2.0 does not inherit that evidence, and this audit performed no live provider read/write/readback.
+
 ## F7 integrity
 
 - F16 `travel_planning` = `TRIP-001` + `ROUTE-001`; no `TRAVEL-*` authority.
@@ -181,4 +203,4 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 
 - Categories A-E complete.
 - F1-F20 audited except F21-F23; F19/G17/G18 completed in `M2-G0-008B`, F20/G16 in `M2-G0-008A`.
-- Category G is partially audited: G16-G18 complete through `M2-G0-008B`; remaining G rows unaudited.
+- Category G is partially audited: G1 and G16-G18 complete through `M2-G0-008C`; remaining G rows unaudited.
