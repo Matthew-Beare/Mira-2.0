@@ -15,7 +15,7 @@ import json
 import re
 import secrets
 import time
-from typing import Callable, Iterable, Mapping
+from typing import Callable, Iterable, Mapping, Protocol
 from uuid import uuid4
 
 from .api_core import (
@@ -50,6 +50,12 @@ class SessionValidationError(SessionError):
 
 class SessionAuthenticationError(SessionError):
     """Raised when a bearer credential cannot authenticate a live session."""
+
+
+class BearerAuthenticator(Protocol):
+    """Authentication boundary consumed by the WSGI transport."""
+
+    def authenticate(self, token: str) -> AuthenticatedPrincipal: ...
 
 
 @dataclass(frozen=True)
@@ -191,11 +197,13 @@ class WsgiApiApp:
     def __init__(
         self,
         service: ApiService,
-        sessions: InMemorySessionStore,
+        authenticator: BearerAuthenticator,
         *,
         require_https: bool = True,
         max_body_bytes: int = _DEFAULT_MAX_BODY_BYTES,
     ) -> None:
+        if not callable(getattr(authenticator, "authenticate", None)):
+            raise ValueError("authenticator must implement authenticate(token)")
         if not isinstance(require_https, bool):
             raise ValueError("require_https must be boolean")
         if (
@@ -205,7 +213,7 @@ class WsgiApiApp:
         ):
             raise ValueError("max_body_bytes must be from 1 through 1048576")
         self._service = service
-        self._sessions = sessions
+        self._authenticator = authenticator
         self._require_https = require_https
         self._max_body_bytes = max_body_bytes
 
@@ -289,7 +297,7 @@ class WsgiApiApp:
         parts = authorization.split()
         if len(parts) != 2 or parts[0].lower() != "bearer" or not parts[1]:
             raise SessionAuthenticationError("malformed bearer credential")
-        return self._sessions.authenticate(parts[1])
+        return self._authenticator.authenticate(parts[1])
 
     def _json_body(self, environ: Mapping[str, object]) -> dict[str, object]:
         raw_length = environ.get("CONTENT_LENGTH")
