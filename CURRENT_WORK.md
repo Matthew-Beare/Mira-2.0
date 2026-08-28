@@ -1,66 +1,53 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file records the completed synthetic integration proof and exact repository-growth successor.
+Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
 
-## Completed packet
+## Completed packet before this branch
 
 ### `M2-G1-004` — Synthetic HTTP roundtrip integration proof
 
-- **Work ID:** `CORE-SYNTHETIC-ROUNDTRIP`
 - **Merged PR:** #41
 - **Merge SHA / main readback:** `3f6a616f3b71f9724d2d51b0e03d3a85d14cef94`
-- **Branch:** `verify/g1-004-synthetic-roundtrip`
-- **Branch start SHA:** `e32d7ee0093aedf70dcec7ca87746a6c726c35e0`
-- **CI-verified PR head:** `ccc00dab59f08874914796760190da5ff526330d`
-- **GitHub Actions run:** `33210781237`
-- **Remote verification:** compile + full repository unit/integration suite succeeded.
-- **Result:** create/read/update/replay/conflict/auth isolation/audit/direct-readback all pass through the real WSGI -> session auth -> API service -> Authority Registry -> canonical structured-state stack. `CORE-SYNTHETIC-ROUNDTRIP` is integration-verified.
+- **Post-merge completion checkpoint / this branch start SHA:** `4fd0de9441ed549200eb7039d18ab25145309a1c`
+- **Remote CI:** GitHub Actions run `33210781237`; compile + full unit/integration suite passed.
+- **Result:** `CORE-SYNTHETIC-ROUNDTRIP` is integration-verified.
 
-## Product-state checkpoint
-
-MIRA 2.0 now has a working synthetic same-user service stack:
-- canonical mutable structured-state adapter: implemented/test-verified;
-- one-authority-per-data-class routing: implemented/test-verified;
-- shared API service semantics: implemented/test-verified;
-- scoped/revocable client sessions + HTTP transport: implemented/test-verified;
-- complete synthetic HTTP roundtrip: integration-verified.
-
-No Google-backed/live deployment or Android client proof is claimed yet.
-
-## Selected successor
+## Active packet
 
 ### `M2-G1-005` — Machine-readable feature registry gate
 
 - **Work ID:** `FEATURE-REGISTRY-001`
 - **Class:** implementation / repository-growth prerequisite
-- **Planned branch:** `impl/g1-005-feature-registry`
-- **Dependency satisfied:** G0 feature audit is complete and canonical `FEATURES.md` exists.
+- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Branch:** `impl/g1-005-feature-registry`
+- **Branch start SHA:** `4fd0de9441ed549200eb7039d18ab25145309a1c`
+- **Status:** activated; parser/validator/generator implementation next.
 
-### Engineering decision
+## Engineering decision
 
-The machine-readable registry will be **generated on demand directly from canonical `FEATURES.md`**, not checked in as an independently editable JSON mirror. This removes an unnecessary second file that can drift while still providing deterministic JSON output, exact source hashing, graph validation and CI enforcement. Git `FEATURES.md` remains the only editable feature authority.
+`FEATURES.md` remains the only editable feature authority. Machine-readable JSON is generated on demand from those exact source bytes and is never checked in as a second editable registry. CI validates the source graph and deterministic generation on every change.
 
-### Acceptance criteria
+## Acceptance criteria
 
-1. Parse only the canonical `## Feature index` records from `FEATURES.md`; mapping/summary prose cannot silently create features.
-2. Preserve authored stable semantic IDs exactly; no row-position/title-derived IDs.
-3. Parse title, requirement, evidence and dependency fields distinctly.
-4. Reject malformed rows, duplicate IDs, invalid ID shape, self-dependencies and dependencies on unknown feature IDs.
-5. Detect dependency cycles and report a deterministic cycle path.
-6. Produce deterministic JSON projection containing schema version, source path/hash and sorted feature records/dependencies.
-7. Repeated generation from identical bytes is byte-for-byte identical.
-8. CLI supports validation/check and JSON emission without modifying `FEATURES.md` or keeping a second editable registry.
-9. Repository CI validates the actual checked-in `FEATURES.md` on every PR/push.
-10. Tests include malformed/duplicate/unknown/self/cycle fixtures and the real repository registry.
-11. If canonical `FEATURES.md` currently contains invalid feature-to-work dependencies, normalize them in this packet rather than weakening validation.
-12. No product runtime/provider/Android/legacy production state changes.
+1. Parse only canonical `## Feature index` records.
+2. Preserve authored stable semantic IDs exactly.
+3. Parse title/requirement/evidence/dependencies distinctly.
+4. Reject malformed rows, duplicate/invalid IDs, self/unknown dependencies.
+5. Detect dependency cycles deterministically.
+6. Deterministic JSON includes schema version and exact source path/SHA-256.
+7. Identical source bytes generate byte-for-byte identical JSON.
+8. CLI supports `check` and `json` without source mutation/second registry.
+9. CI validates actual `FEATURES.md` on every PR/push.
+10. Tests cover bad fixtures and actual repository registry.
+11. Repair canonical dependency errors rather than weakening validation.
+12. No product runtime/provider/Android/legacy-state changes.
 
 ## Exact next action
 
-1. Create `impl/g1-005-feature-registry` from this exact main checkpoint.
-2. Activate `M2-G1-005`.
-3. Implement parser/validator/deterministic generator/CLI plus tests.
-4. Run CI against real `FEATURES.md`; repair any invalid canonical dependency entries discovered.
+1. Implement `mira/feature_registry.py` parser/graph validator/projection/CLI.
+2. Add deterministic fixture tests plus actual `FEATURES.md` validation.
+3. Add CI registry-check step.
+4. Use CI failure evidence to normalize any invalid current feature dependencies.
 5. Merge exact green head, then activate `CODE-OWNERSHIP-001`.
 
 ## Recovery protocol
@@ -68,6 +55,6 @@ The machine-readable registry will be **generated on demand directly from canoni
 On any new conversation/session:
 1. read this file first;
 2. verify repository/branch/head;
-3. continue from the exact next action;
+3. continue from exact next action;
 4. do not broaden scope from chat history;
 5. capture unrelated ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
