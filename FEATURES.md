@@ -64,7 +64,8 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `ASSET-003` | Bidirectional receipt, asset and identifier graph queries | required | test_verified | ASSET-001,FITMENT-001,RECEIPT-001,IDENT-001
 - `IDENT-001` | Namespaced product and device identifiers with collision safety | required | test_verified | ASSET-001,EVID-001
 - `EVID-001` | Multi-source asset evidence enrichment without identity replacement | required | test_verified | ASSET-001,IDENT-001,RECOVERY-002
-- `KNOW-001` | Canonical manual/reference knowledge identity and retained-document lifecycle | required | test_verified | EVID-001,ASSET-001,RECOVERY-002
+- `KNOW-001` | Canonical durable Knowledge source identity and retained-source lifecycle | required | test_verified+scope-refined | RECOVERY-002
+- `KNOW-002` | Provenance-bound knowledge excerpts and derived facts | required/accepted | specified/not_present | KNOW-001,RECOVERY-002
 - `SPEC-001` | Provenance-locked technical specifications with exact applicability | required | test_verified | ASSET-001,KNOW-001,EVID-001
 - `SHOP-001` | Active shopping intent distinct from durable purchase history | accepted | specified | RECEIPT-001,FITMENT-001
 - `INV-001` | Inventory participation reuses canonical Entity UUID identity | accepted | test_verified | ASSET-001
@@ -133,6 +134,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - F16 Travel/vacation/outdoor planning | travel_planning,SERVICE-001,SERVICE-002,TRIP-001,ROUTE-001,TASK-001,TASK-002,CAL-007,WEATHER-001 | confirmed
 - F17 Work-trip/route/paid-work tracking | work_trip_tracking,TRIP-001,ROUTE-001,MILE-001,MILE-002 | multi-leg-gap
 - F18 Assets/maintenance/warranties/manuals | assets,SERVICE-001,SERVICE-002,ASSET-001,ASSET-003,FITMENT-001,IDENT-001,EVID-001,ASSET-002,KNOW-001,SPEC-001 | selected-path-repair
+- F19 Personal knowledge/reference library | knowledge,SERVICE-001,SERVICE-002,KNOW-001,KNOW-002,f-19,g-17,g-18 | provider-projection-repair
 - F20 Backup/disaster recovery | recovery,SERVICE-001,SERVICE-002,BACKUP-001,f-20,g-16 | new-canonical-backup-core
 
 ## F7 integrity
@@ -149,7 +151,18 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - Legacy `f-18` hard-requires D1-D7; MIRA 2.0 repairs that to selected-path readiness so missing manual/spec/fitment/warranty capability does not block basic asset use.
 - `ASSET-SERVICE-001` remains the implementation gap for structured maintenance/warranty lifecycle; `KNOW-001` and `SPEC-001` retain their own provider/provenance boundaries.
 - Service activation or recommendation cannot infer ownership, installation, warranty coverage, maintenance completion, retained manual state, or verified specification correctness.
-- F19 is deferred because it depends on unaudited G17/G18.
+
+## Knowledge/reference integrity
+
+- G17/G18/F19 normalize around one canonical Knowledge authority. `KNOW-001` owns durable source/object identity and retained-source lifecycle; `KNOW-002` owns provenance-bound excerpts/derived facts. Neither folder paths nor AI-generated summaries create competing identity.
+- `KNOW-001` keeps its legacy test-verified manual/reference behavior while removing the semantic dependency on asset ownership. Manuals remain a selected relationship path, not the definition of Knowledge itself.
+- `KNOW-002` requires stable excerpt/fact identity, exact parent Knowledge UUID, source locator/range, applicable timestamp/page/section/revision, provenance and explicit retention/pinning state sufficient to re-ground later answers. The audited legacy core does not implement this collection.
+- Raw/research source may be temporary when canonical provenance can be retained honestly; full source retention/pinning is explicit. When retention is selected, provider write/readback is required before claiming retained/pinned status.
+- General Knowledge relationships must support explicit typed links to canonical people, projects, education, tasks, assets and other entities without duplicating the Knowledge source or inferring a relationship from folder placement.
+- G18 Drive organization is a private configurable provider projection. Folder names/paths/shortcuts/native views are not canonical IDs and may change without changing Knowledge UUID, excerpt/fact IDs or provenance.
+- Searchable metadata belongs to canonical Knowledge/index state. Provider folders are human navigation. The legacy Personal Google blueprint's Knowledge Index under the `assets` module is a migration/reference design, not the final general-knowledge authority boundary.
+- F19 exact service key is `knowledge`. Base readiness derives from canonical Knowledge behaviors; selected durable Drive organization/search projection additionally requires exact evidence-store capability/readback and may degrade independently without erasing Knowledge truth.
+- Legacy G17 is only partially executable: durable Knowledge source identity is test-verified, but generic excerpt/timestamp/provenance and optional-pin semantics are specification/workflow gaps. G18 is workflow/specification evidence. PR #31 supplies no dedicated generic knowledge implementation credit.
 
 ## Backup/disaster-recovery integrity
 
@@ -167,5 +180,5 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 ## Audit status
 
 - Categories A-E complete.
-- F1-F18 audited through `M2-G0-007H`; F19 waits on G17/G18 dependency audit; F20/G16 audited in `M2-G0-008A`.
-- Category G is partially audited: G16 complete in `M2-G0-008A`; remaining G rows unaudited.
+- F1-F20 audited except F21-F23; F19/G17/G18 completed in `M2-G0-008B`, F20/G16 in `M2-G0-008A`.
+- Category G is partially audited: G16-G18 complete through `M2-G0-008B`; remaining G rows unaudited.

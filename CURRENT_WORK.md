@@ -8,7 +8,7 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 - **Merged PR:** #28
 - **Merge SHA:** `3abcb58d920ee552fe344527c21669c0b5aa0844`
-- **Result:** added `BACKUP-001`; normalized F20 exact service key `recovery`; preserved backup creation/readback separately from restore verification; PR #31 remains partial candidate only.
+- **Main activation commit for this packet:** `c21f82fdfe54964c8d864618bc4912cf72f04232`
 
 ## Active packet
 
@@ -17,49 +17,87 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-008b-knowledge-reference`
-- **Base main SHA:** `3abcb58d920ee552fe344527c21669c0b5aa0844`
-- **Status:** activated; branch creation and bounded forensic normalization next.
+- **Branch start SHA:** `c21f82fdfe54964c8d864618bc4912cf72f04232`
+- **Research checkpoint:** `ba6d5780a02a609b6dabdb1b30aa6c9819283b1d`
+- **Feature registry commit:** `7e3808d78a321b7dfc960186155837019900a441`
+- **Backlog commit:** `4eb5a4b411d031298ab90c424b3089a27a19fc46`
+- **Status:** acceptance complete; bounded PR/merge/readback pending.
 
-## Exact scope
+## Exact audited scope
 
 1. **G17 — Knowledge ingestion with relevant excerpts, timestamps, URL/title/metadata, provenance, relationships, optional full pin.**
 2. **G18 — Drive organization by domain and searchable metadata.**
 3. **F19 — Personal knowledge/reference library**, exact legacy service key `knowledge`, requiring G17 and G18.
 
-No F21-F23, other category-G rows, implementation porting, live Drive mutation, migration, or executable MIRA 2.0 product changes enter this packet.
+No F21-F23, other category-G rows, implementation porting, live Drive mutation, migration, or executable MIRA 2.0 product changes entered this packet.
 
-## Boundary decision already established
+## Canonical result
 
-1. Existing `KNOW-001` is broader than its original manual-focused title: it already supplies immutable Knowledge UUID/source identity, generic `reference` records, retained-file state, URL/hash/metadata/tags/summary, dedupe and provider-neutral reconciliation.
-2. G17 requires a distinct excerpt/derived-knowledge lifecycle with exact source locator/timestamp/page/section provenance and optional full-source pinning; raw source may remain temporary unless explicitly retained.
-3. Therefore the current design target is to **refine `KNOW-001` as generic durable Knowledge source/object identity** and add a narrower semantic feature for provenance-bound excerpts/derived knowledge if the remaining forensic evidence supports that separation.
-4. G18 Drive organization is a provider projection/configuration over canonical Knowledge identity and searchable metadata, not a second canonical knowledge authority. Folder names/layout remain private deployment state.
-5. F19 exact service key `knowledge` composes the canonical knowledge behaviors through `SERVICE-001`/`SERVICE-002`; it does not create another personal-knowledge database.
-6. Legacy `g-17` and `g-18` share `knowledge-state` and evidence-store dependency boundaries; `f-19` requires both.
-7. PR #31 has no dedicated generic knowledge-ingestion implementation that earns MIRA 2.0 implementation/integration/live credit.
+1. **`KNOW-001` refined** to **Canonical durable Knowledge source identity and retained-source lifecycle**. It remains the one immutable source/object authority and keeps its legacy test-verified manual/reference behavior.
+2. `KNOW-001` no longer semantically depends on asset ownership. Manuals/assets are selected relationships, not the definition of Knowledge.
+3. Added **`KNOW-002` — Provenance-bound knowledge excerpts and derived facts**.
+4. `KNOW-002` owns stable excerpt/fact identity, exact parent Knowledge UUID, source locator/range, applicable timestamp/page/section/revision, provenance/source tier, correction/supersession and explicit temporary-source versus pinned/retained semantics.
+5. The audited legacy executable core does **not** implement a dedicated excerpt/chunk collection. `KNOW-002` evidence is therefore `specified/not_present`.
+6. Legacy `asset_evidence.py` and tests do prove `KNOW-001` immutable IDs, idempotent replay, retained/queued lifecycle, Drive-file/revision requirements for retained manuals, fail-closed knowledge links and exact source locators for verified technical specifications.
+7. General Knowledge relationships must later support explicit typed links to canonical people/projects/education/tasks/assets/other entities without duplicating the Knowledge source. The legacy relationship model is asset-centric.
+8. G18 Drive organization is a **provider projection/configuration**, not canonical identity. Folder names/layout stay private deployment state and moving/renaming them cannot change Knowledge UUID/provenance.
+9. Searchable metadata belongs to canonical Knowledge/index state; Drive folders/shortcuts/native views are human navigation projections.
+10. The legacy Personal Google blueprint places Knowledge Index/Relationships under the `assets` module. That is valid historical evidence for manuals but must not remain the general F19 authority boundary.
+11. Raw/research source may remain temporary when provenance is preserved honestly. Full source retention/pinning is explicit; selected provider retention requires exact write/readback before `retained`/`pinned` may be claimed.
+12. Later answers must be re-groundable from exact provenance. Chat/model memory or copied snippets without source identity/locator do not become canonical evidence.
+13. Exact F19 service key is **`knowledge`**. It composes `KNOW-001` + `KNOW-002` through `SERVICE-001`/`SERVICE-002`; selected provider filing/search projection may degrade independently without erasing Knowledge truth.
+14. F19 service activation/recommendation never proves that content is retained, pinned, grounded or provider-synchronized.
+15. PR #31 contains no dedicated generic knowledge-ingestion/excerpt implementation. Its AI processor contract only reinforces that MIRROR owns canonical state/provenance and processors are interchangeable workers.
+16. No live Google production state was touched and no executable MIRA 2.0 behavior changed.
+
+## Durable normalization evidence
+
+- `FEATURES.md` commit `7e3808d78a321b7dfc960186155837019900a441`:
+  - immediate diff gate: only `FEATURES.md` changed;
+  - 17 additions / 4 replacements;
+  - refines `KNOW-001`, adds `KNOW-002`, adds F19 mapping and knowledge/reference integrity notes.
+- `BACKLOG.md` commit `4eb5a4b411d031298ab90c424b3089a27a19fc46`:
+  - immediate diff gate: only `BACKLOG.md` changed;
+  - 19 additions / 3 replacements;
+  - adds exactly `AUDIT-G17-G18-F19`, `SERVICE-DEPS-010`, `KNOWLEDGE-CORE-001`, `KNOWLEDGE-PROVENANCE-001`, and `KNOWLEDGE-PROJECTION-001` plus bounded dependency findings.
+
+## Evidence paths
+
+- `docs/feature-ledger-2026-08-24.md`
+- `docs/feature-catalog.md`
+- `starter/behavior-dependencies.json`
+- `skill/ops-brief-policy/references/knowledge-manual-ingestion.md`
+- `skill/ops-brief-policy/scripts/asset_evidence.py`
+- `skill/ops-brief-policy/scripts/test_asset_evidence.py`
+- `docs/drive-layout.md`
+- `docs/lyfeos-data-model.md`
+- `starter/life-planner/assets/personal-google-blueprint.json`
+- `starter/tools/onboarding_profile_router.py`
+- PR #31 `starter/ai-processor-contract.json` as candidate/reference only.
 
 ## Acceptance criteria
 
-1. Assign/refine stable semantic feature IDs for durable Knowledge source identity and provenance-bound excerpt/derived knowledge without duplicate authority.
-2. Record complete user-facing descriptions/rationale and keep requirement state separate from evidence level.
-3. Normalize F19 exact service key `knowledge` through `SERVICE-001`/`SERVICE-002`.
-4. Preserve raw-source-temporary versus explicitly pinned/retained semantics.
-5. Preserve immutable Knowledge identity across provider/folder/layout changes.
-6. Define excerpt/source locator/timestamp/page/section/revision provenance sufficient to re-ground later answers.
-7. Keep Drive domain/folder organization configurable/private and explicitly nonauthoritative.
-8. Keep knowledge relationships separate from asset-only applicability so future people/projects/education/other domains can link by stable IDs without duplicating the source.
-9. Reconcile legacy executable/tests and PR #31 candidate evidence conservatively; no blind evidence promotion.
-10. Update only `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` on the packet branch.
-11. Open bounded PR, verify changed files/mergeability, merge exact verified head and remotely read back normalized state.
-12. No live legacy production state and no executable MIRA 2.0 behavior changes.
+1. Stable/refined IDs. **Satisfied: `KNOW-001` refined; new `KNOW-002`.**
+2. User-facing descriptions/rationale and evidence separation. **Satisfied.**
+3. F19 exact service key `knowledge` through `SERVICE-001`/`SERVICE-002`. **Satisfied.**
+4. Temporary raw source vs explicit pin/retention. **Satisfied at contract boundary.**
+5. Immutable Knowledge identity across provider/folder changes. **Satisfied.**
+6. Excerpt/source locator/timestamp/revision provenance. **Specified under `KNOW-002`; implementation absent and honestly recorded.**
+7. Drive layout configurable/private/non-authoritative. **Satisfied.**
+8. General typed relationships not asset-only. **Gap recorded in `KNOWLEDGE-CORE-001`.**
+9. Conservative legacy/PR31 evidence reconciliation. **Satisfied.**
+10. Only `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` on branch. **Satisfied so far; final branch gate pending.**
+11. Bounded PR/merge/readback. **Pending.**
+12. No legacy production/executable changes. **Satisfied.**
 
 ## Exact next action
 
-1. Create branch `audit/g0-008b-knowledge-reference` from the activation commit containing this file.
-2. Read the legacy G17 executable/provenance tests and knowledge-index implementation deeply enough to determine the final `KNOW-001` refinement and whether the excerpt capability receives stable ID `KNOW-002`.
-3. Audit G18 Drive/searchable-metadata workflow and its authority/readback boundary.
-4. Reconcile F19 service composition and PR #31 only as candidate/reference evidence.
-5. Checkpoint forensic conclusions in `CURRENT_WORK.md` before modifying `FEATURES.md` or `BACKLOG.md`.
+1. Compare `audit/g0-008b-knowledge-reference` against `main`; require zero commits behind and exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
+2. Open a bounded PR to `main`.
+3. Verify GitHub server-side changed filenames and mergeability.
+4. Merge using the exact verified PR head SHA.
+5. Remotely read back `KNOW-001`, `KNOW-002`, F19 mapping and new knowledge backlog work from `main`.
+6. Rerank remaining unaudited F21-F23 and category-G rows; activate the next bounded packet from actual dependency priority.
 
 ## Recovery protocol
 
