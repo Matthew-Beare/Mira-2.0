@@ -19,64 +19,146 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-008g-remaining-ledger-closeout`
 - **Branch start SHA:** `f7f0608849e96da19cc871c119e11afd0052f319`
-- **Status:** activated; row-by-row reconciliation next.
+- **Activation commit:** `4c1001f1b230328d370ad3789f29ccba422252db`
+- **Status:** row-by-row forensic reconciliation complete and checkpointed by this commit; feature/backlog normalization next.
 
-## Objective
+## Recovered evidence boundary
 
-Close every remaining unaudited row from the recovered legacy feature ledger without drifting into implementation. Reuse existing semantic IDs wherever the row is already covered by provider/source/distribution/storage/onboarding architecture; create a new stable feature ID only for a genuinely distinct user-facing or platform capability. Explicitly classify backend/vendor choices and optional infrastructure so they do not become false blockers for M2-M0/M2-M1.
+The authoritative legacy ledger is `MIRA-Personal-Production/docs/feature-ledger-2026-08-24.md`. Supporting evidence inspected in this packet includes `starter/platform-capabilities.json`, `starter/PROVIDER_ONBOARDING.md`, `starter/ENTERPRISE_PILOT.md`, `distribution/channels.json`, `starter/questions.json`, `docs/architecture.md` and `docs/data-platform-grafana.md`.
 
-## Exact scope
+Legacy evidence is retained only at its proven level. A contract, architecture document or old CI pass does not create MIRA 2.0 implementation/integration/live credit.
 
-### Category F
-- **F21** Custom skill/automation builder.
-- **F22** Activity trackers/wearable data.
-- **F23** Explicit weather-in-briefs onboarding with slot, location, units, detail and severe-alert choices.
+## Category-F reconciliation
 
-### Category G
-- **G2** Google Workspace and Microsoft 365 state/evidence portability.
-- **G3** Apple/iCloud and portable-file manual bridge.
-- **G4** Locked-down and regulated enterprise/VA pilot lane.
-- **G5** Personal-Production/Public-Experimental/Institutional-Experimental release channels.
-- **G6** Eventual PostgreSQL/private SQL canonical service.
-- **G8** Grafana/observability dashboards.
-- **G9** Object storage/NAS evidence and attachments.
-- **G11** Home Assistant bridge.
-- **G12** Plex bridge.
-- **G13** Voice queries/commands.
-- **G14** NAS/LAN/private-service bridge and VPN access.
-- **G15** Family site-to-site VPN/redundancy/failover.
+### F21 — Custom skill/automation builder
 
-Do not implement these capabilities, touch provider state, migrate data, build Android/API code, or expand into G0-009/G0-010 in this packet.
+- Already owned by **`DEV-004`** and implementation work **`SKILL-BUILDER-001`**.
+- No new semantic feature ID.
+- Existing boundary remains: bounded private feature creation, declared contracts/capabilities/dependencies/tests, rollback/checkpoint, source readback; publication is a separate approval path.
 
-## Reconciliation rules
+### F22 — Activity trackers/wearable data
 
-1. Provider/backend names do not automatically create semantic features when `STORE-001`, `PROVIDER-*`, `SOURCE-*`, `DIST-*` or existing service features already own the behavior.
-2. PostgreSQL, object storage, NAS and similar implementation choices remain adapters/topology choices unless they introduce a distinct product behavior.
-3. Enterprise/regulated deployment is a product capability only to the extent it changes user-visible policy/compliance/deployment behavior; it does not grant organizational authorization or regulated-data approval by declaration.
-4. Home Assistant/Plex/NAS bridges should share a generic local-service/network trust boundary where practical rather than each inventing a second authority model.
-5. Wearable/activity ingestion remains optional and cannot block routines/fitness core.
-6. Voice is a client/input surface; consequential actions retain normal approval/authorization semantics.
-7. Family VPN/redundancy is infrastructure, not a required MIRA core behavior unless a later deployment explicitly selects it.
+- Genuine distinct optional capability not currently represented by a stable semantic ID.
+- Normalize to **`WEARABLE-001` — Optional activity/wearable data ingestion with explicit authorization, provenance/capability evidence and no dependency from core routine/fitness truth.**
+- Requirement: proposed/optional; evidence: not present in MIRA 2.0 and no executable legacy adapter located.
+- Wearable absence must never block `ROUTINE-001`, fitness/accountability or basic health-administration behavior.
 
-## Preliminary acceptance criteria
+### F23 — Explicit weather-in-briefs onboarding
 
-1. Every remaining F/G ledger row is mapped to stable semantic IDs or explicitly classified as backend/topology/external-infrastructure rather than left unaudited.
-2. Category F closes through F23.
-3. Category G ledger coverage closes through G20.
-4. Existing provider/source/distribution/storage IDs are reused instead of duplicating authority concepts.
-5. Genuine distinct capabilities receive stable IDs only where necessary.
-6. Optional/later infrastructure does not block M2-M0/M2-M1.
-7. No provider/live/implementation evidence is fabricated from legacy contracts or documentation.
-8. No protected legacy state or executable MIRA 2.0 product code changes.
-9. `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` normalization only unless a governance artifact is demonstrably required.
-10. Bounded PR/merge/readback before G0-009 activation.
+- Distinct preference/configuration behavior over existing `WEATHER-001`; the legacy starter has explicit slot, location-policy, detail, units and severe-alert questions with tested onboarding-contract evidence.
+- Normalize to **`WEATHER-002` — Explicit weather delivery preferences/onboarding for selected brief slots, location policy, units, detail and severe-alert behavior.**
+- Dependencies: `WEATHER-001`, `ONBOARD-004`, `ONBOARD-005`, `SERVICE-001`, context/location capability as selected.
+- Weather provider failure remains failure-isolated and cannot corrupt brief/core state.
+
+## Category-G reconciliation
+
+### G2 — Google Workspace + Microsoft 365 state/evidence portability
+
+- Already owned by `STORE-001`, `PROVIDER-001`, `PROVIDER-002`, `SOURCE-002` and provider projection features such as `CAL-007` where selected.
+- Google Sheets/Drive and Microsoft Lists/Excel/OneDrive/SharePoint are adapters/resources, not semantic authorities.
+- No new feature ID.
+
+### G3 — Apple/iCloud + portable-file manual bridge
+
+- Already owned by `PROVIDER-002`, `SOURCE-002`, `STORE-001` and selected projection/import-export semantics.
+- Apple/iCloud remains an honest user-mediated/manual lane unless a future exact adapter proves more. No arbitrary unattended iCloud Drive claim.
+- No new feature ID.
+
+### G4 — Locked-down/regulated enterprise and VA deployment lane
+
+- Genuine distinct deployment capability because it adds organization approval/data-classification/managed-source/synthetic-first/fail-closed behavior beyond ordinary personal onboarding.
+- Normalize to **`ENTERPRISE-001` — Policy-compliant managed/regulated deployment lane with synthetic-first evaluation, exact organization approval/data-classification gates, managed source/provider resources and no personal-account workarounds.**
+- Existing legacy contracts are strong/test-supported boundary evidence only; live organization approval is always deployment-specific and mutable.
+
+### G5 — Personal/Public/Institutional deterministic release channels
+
+- Already owned by `DIST-001` + `DIST-002` and implementation work `DIST-STARTER-001`/`FEATURE-SHARE-001`.
+- Channel names/topology are distribution configuration; one source revision and sanitized projection semantics are the feature.
+- No new ID.
+
+### G6 — Eventual PostgreSQL/private SQL canonical service
+
+- **Not a semantic product feature.** It is a `STORE-001` structured-state adapter/topology choice behind `API-001`/`AUTH-001`.
+- Any cutover is owned by `AUTHORITY-MIGRATION-001`; PostgreSQL never becomes a client-facing authority by brand name.
+- No new ID; not a blocker for stock Google-backed M2-M0/M2-M1.
+
+### G8 — Grafana/observability dashboards
+
+- Genuine distinct optional operational capability.
+- Normalize to **`OBS-001` — Provider-neutral operational observability/telemetry and read-only dashboard projection that never becomes mutable-state authority.**
+- Grafana is one adapter/view choice, not the semantic feature.
+- Alerts may report conditions but do not create competing task/reminder/scheduler truth.
+
+### G9 — Object storage/NAS evidence and attachments
+
+- **Not a semantic product feature.** It is an evidence-store adapter/topology under `STORE-001` with hash/provenance/readback/retention boundaries.
+- No new ID; not a core blocker.
+
+### G11/G12/G14 — Home Assistant, Plex, NAS/LAN/private-service bridge + VPN access
+
+- These share one generic local-service/network trust boundary rather than each creating an authority model.
+- Normalize foundation to **`LOCAL-001` — Explicit local-service integration bridge with scoped network/service permissions, verified capability/readback and no assumption of cloud reachability or blanket LAN trust.**
+- Home Assistant, Plex, Paperless, Node-RED, MQTT, NAS/filesystem and similar integrations are later adapters/modules under this boundary and can receive dedicated IDs only when promoted to actual product work.
+
+### G13 — Voice queries/commands
+
+- Genuine optional client/input surface.
+- Normalize to **`VOICE-001` — Optional voice query/command client surface using the shared API/authorization path with explicit confirmation for consequential actions.**
+- Voice input does not bypass `API-001`, permissions, approval gates or canonical readback.
+
+### G15 — Family site-to-site VPN/redundancy/failover
+
+- External deployment/network infrastructure, not required MIRA product behavior.
+- May support `LOCAL-001`/private deployment when explicitly selected, but no semantic MIRA feature ID now.
+- Remains deferred and cannot block M2-M0/M2-M1.
+
+## Stable feature additions to normalize
+
+- `WEARABLE-001` — optional activity/wearable ingestion.
+- `WEATHER-002` — explicit weather delivery preferences/onboarding.
+- `ENTERPRISE-001` — managed/regulated deployment lane.
+- `OBS-001` — operational observability/read-only dashboard projection.
+- `LOCAL-001` — local-service/network bridge boundary.
+- `VOICE-001` — voice query/command client surface.
+
+No new IDs for F21, G2, G3, G5, G6, G9 or G15.
+
+## Backlog normalization direction
+
+Reuse existing rows where possible:
+- F21 -> `SKILL-BUILDER-001`.
+- G2/G3 -> `PROVIDER-ONBOARD-001`, `SOURCE-LANES-001`, `STORE-ADAPTER-001` and selected provider projections.
+- G5 -> `DIST-STARTER-001`, `FEATURE-SHARE-001`.
+- G6/G9 -> `STORE-ADAPTER-001`, `AUTHORITY-MIGRATION-001` when selected.
+- G11/G12/G14 -> existing `LOCAL-INTEGRATIONS`, refined to depend on `LOCAL-001`.
+
+Add bounded rows only for genuinely distinct gaps:
+- `WEARABLE-ADAPTER-001` — LATER/optional.
+- `WEATHER-ONBOARD-001` — HARDENING/required for fully generic brief onboarding, not Android core.
+- `ENTERPRISE-LANE-001` — LATER until stock core/provider abstraction is proven.
+- `OBSERVABILITY-001` — HARDENING/LATER after core runtime exists.
+- `LOCAL-BRIDGE-001` — LATER foundation for local adapters.
+- `VOICE-CLIENT-001` — LATER client surface after API/client authorization core.
+
+## Acceptance criteria
+
+1. Every remaining F/G ledger row mapped or explicitly classified. **Satisfied conceptually; registry normalization pending.**
+2. Category F closes through F23. **Pending feature/backlog write.**
+3. Category G ledger coverage closes through G20. **Pending feature/backlog write.**
+4. Existing authority/provider/distribution/storage semantics reused. **Satisfied.**
+5. Genuine distinct capabilities limited to six new semantic IDs. **Satisfied conceptually.**
+6. Backend/topology choices do not become false M2-M0/M2-M1 blockers. **Satisfied.**
+7. No false MIRA 2.0 implementation/live evidence. **Satisfied.**
+8. No protected provider/legacy production state or executable MIRA 2.0 product code touched. **Satisfied so far.**
+9. Bounded normalization/PR/merge/readback. **Pending.**
 
 ## Exact next action
 
-1. Re-read the legacy ledger rows and relevant current `FEATURES.md` mappings.
-2. Reconcile F21-F23 first, then G2-G6, then G8-G9/G11-G15.
-3. Check PR #31/legacy implementation only where needed to classify evidence, not to broaden scope.
-4. Checkpoint the complete mapping before modifying `FEATURES.md` or `BACKLOG.md`.
+1. Add the six stable feature IDs and F21-F23/G2-G15 mappings/closure notes to `FEATURES.md`.
+2. Normalize `BACKLOG.md` with completed `AUDIT-F21-F23-G2-G15` plus only the bounded new work rows listed above; refine existing `LOCAL-INTEGRATIONS` rather than duplicate it.
+3. Update this file with exact normalization SHAs.
+4. Diff gate exactly the intended authority files, then PR/merge/readback.
+5. Activate G0-009 legacy branch/PR reconciliation next.
 
 ## Recovery protocol
 
