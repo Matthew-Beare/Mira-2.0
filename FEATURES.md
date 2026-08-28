@@ -19,6 +19,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `AUTH-001` | Canonical Authority Registry and one-authority-per-data-class routing | required/foundational | specified+tested-boundary | RECOVERY-002
 - `STORE-001` | Provider-neutral structured-state and evidence-store adapter contracts with verified mutation/readback | required/foundational | specified+tested-boundary+candidate_unmerged | RECOVERY-002
 - `API-001` | Versioned authenticated MIRROR client service boundary with bounded commands, queries, synchronization and verified mutation readback | required/foundational | specified+test-supported-boundary+candidate_unmerged | AUTH-001,STORE-001,PROFILE-013,RECOVERY-002,PROVIDER-001
+- `CLIENT-ANDROID-001` | Android native client adapter using the shared API, protected client credentials, offline replay-safe sync and evidence-based device capabilities | required/M2-M1 | specified+legacy-build-verified+candidate_unmerged | API-001,PROFILE-013,RECOVERY-002,PROVIDER-001
 - `ONBOARD-001` | Full-replacement instruction delivery | governance | implemented/specified | -
 - `BRAND-001` | Canonical MIRA brand asset system | governance | history | -
 - `OPS-001` | Canonical twice-daily Ops Brief schedule | required | test_verified | OPS-003,OPS-004
@@ -144,6 +145,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 
 - G1 Canonical mutable authority foundation | AUTH-001,STORE-001,DEV-001,SOURCE-001,g-01 | provider-neutral-repair
 - G7 Policy/data API foundation | API-001,AUTH-001,STORE-001,PROFILE-013,RECOVERY-002,PROVIDER-001,g-07 | android-prerequisite
+- G10 Android/mobile client boundary | CLIENT-ANDROID-001,API-001,PROFILE-013,RECOVERY-002,PROVIDER-001,g-10 | native-client-repair
 
 ## Integrity summary
 
@@ -151,7 +153,9 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - G7: `API-001` is the versioned authenticated client/service boundary in front of `AUTH-001`/`STORE-001`. Mutations require actor/client authentication, least-privilege authorization, dependency/capability and API/schema preflight, stable IDs, mandatory idempotency, canonical write, exact readback and audit. Source-code writes remain separate.
 - API compatibility is fail-closed for mutation; the service is conflict authority; remote access requires TLS/server authorization and publicly reachable deployments additionally require scoped short-lived credentials, rate limiting and audit. Clients never receive direct database credentials.
 - PR #31 is salvage/reference only: it contains FastAPI query/command/evidence paths, compatibility, device enrollment/auth, audit/readback and optional idempotency, but lacks canonical resource/action scopes, mandatory idempotency/version preflight, full command-envelope enforcement, audited optimistic conflicts and `AUTH-001`/`STORE-001` adapter routing.
-- G10 Android/mobile is downstream of `API-001`; Android and stock ChatGPT must use the same canonical mutation path, never separate client-specific authorities.
+- G10: `CLIENT-ANDROID-001` is an Android client adapter over `API-001`, not a provider/data authority. It owns presentation/local capture/native delivery/device capability reporting/protected client credentials/offline replay-safe client state; canonical policy, conflict resolution and mutation/readback remain server/service responsibilities.
+- Legacy Android main is build-verified for a debug APK and partially implements native reminder/TTS scheduling. Legacy PR #31 adds build-verified candidate WebView, camera/barcode, NFC/BLE and release machinery, but its direct Android-to-Google OAuth/API path is rejected because it bypasses `API-001`; the PR head also has unrelated failing required checks and remains unmerged salvage evidence only.
+- Android capability health requires observed device evidence where hardware/platform behavior matters. Source presence or CI build success does not prove notification timing, audio routing, reconnect, camera/NFC/BLE behavior, production signing identity or live canonical integration.
 - F7: travel reuses `TRIP-001`/`ROUTE-001`; selected work tracking adds `MILE-001`/`MILE-002`. Ordered multi-leg grouping/revision remains `TRIP-ROUTE-CORE-001`.
 - F8: `assets` uses selected-path readiness across existing asset/fitment/evidence/maintenance/manual/spec authorities; missing optional paths cannot block basic asset registry/query.
 - G17/G18/F19: `KNOW-001` owns durable Knowledge source identity; `KNOW-002` owns provenance-bound excerpts/derived facts; provider folders are noncanonical projections.
@@ -162,4 +166,4 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 
 - Categories A-E complete.
 - F1-F20 audited except F21-F23; F19/G17/G18 completed in `M2-G0-008B`, F20/G16 in `M2-G0-008A`.
-- Category G is partially audited: G1, G7 and G16-G18 complete through `M2-G0-008D`; remaining G rows unaudited.
+- Category G is partially audited: G1, G7, G10 and G16-G18 complete through `M2-G0-008E`; remaining G rows unaudited.
