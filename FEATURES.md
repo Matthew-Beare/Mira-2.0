@@ -80,8 +80,8 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `SHOP-001` | Active shopping intent distinct from durable purchase history | accepted | specified | RECEIPT-001,FITMENT-001
 - `INV-001` | Inventory participation reuses canonical Entity UUID identity | accepted | test_verified | ASSET-001
 - `LOC-001` | Hierarchical locations with intended placement separate from observed/last-moved state | required / under active design | specified | INV-001
-- `MOVE-001` | QR/barcode-driven inventory movement with explicit event/readback semantics | accepted/required-direction | candidate_unmerged | INV-001,IDENT-001,LOC-001,LOCATION-STATE-001
-- `INV-002` | Queryable household, loft and shop inventory projection | required | candidate_unmerged | INV-001,LOC-001,IDENT-001,ASSET-003,LOCATION-STATE-001
+- `MOVE-001` | QR/barcode-driven inventory movement with explicit event/readback semantics | accepted/required-direction | candidate_unmerged | INV-001,IDENT-001,LOC-001
+- `INV-002` | Queryable household, loft and shop inventory projection | required | candidate_unmerged | INV-001,LOC-001,IDENT-001,ASSET-003
 - `PAR-001` | Target/par quantity with opt-in under-level notification | accepted | specified | INV-001
 - `PAR-002` | Optional scale-based passive stock sensing | optional/proposed | not_present | PAR-001
 - `GROCERY-001` | Grocery list, pantry and freezer stock reconciliation | accepted | specified | SHOP-001,INV-001,LOC-001,RECEIPT-001
