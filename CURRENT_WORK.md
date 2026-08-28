@@ -1,33 +1,32 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file records the completed G0 closeout and exact implementation successor.
+Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
 
-## Completed packet
+## Completed packet before this branch
 
 ### `M2-G0-010` — Final dependency graph and implementation ranking closeout
 
-- **Repository:** `Matthew-Beare/Mira-2.0`
 - **Merged PR:** #36
 - **Merge SHA / main readback:** `a7d3e947ac71803c3c19777668c0ea79d844463f`
-- **Branch:** `audit/g0-010-dependency-closeout`
-- **Branch start SHA:** `e03e4fa0a6ad323442d4ec33c7c5c30afb54b5c8`
-- **Feature graph normalization:** `64622bab93f2c4c6a90d16d0703ff2daa1effc85`
-- **Roadmap normalization:** `a166bf77dfcaeb5992405d6579e19c1751cfbd6f`
-- **Ranked backlog:** `e6332c46defef8e1a771ccb1cbc5ef9d3e6e930c`
-- **Packet-close head:** `5d663563f6dd9f9df743e34b470998718beec273`
-- **Server-side file scope verified:** exactly `BACKLOG.md`, `CURRENT_WORK.md`, `FEATURES.md`, `ROADMAP.md`.
-- **Result:** G0 forensic reconstruction, legacy reconciliation and dependency closeout are complete. The M2-M0/M2-M1 critical path is acyclic and the first bounded implementation packet is selected.
+- **Post-merge completion checkpoint / this branch start SHA:** `15b8842e9058cf09b5b8294ff10ceac22a3d5422`
+- **Result:** G0 is complete; M2-M0/M2-M1 critical path is acyclic and ranked.
 
-## Selected successor
+## Active packet
 
 ### `M2-G1-001A` — Synthetic structured-state adapter core
 
 - **Work ID:** `STORE-ADAPTER-001A`
 - **Class:** implementation / foundational prerequisite
-- **Planned branch:** `impl/g1-001a-structured-state-adapter`
-- **Objective:** implement the provider-neutral structured-state contract and deterministic in-memory synthetic adapter used by later Authority Registry and API work.
+- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Branch:** `impl/g1-001a-structured-state-adapter`
+- **Branch start SHA:** `15b8842e9058cf09b5b8294ff10ceac22a3d5422`
+- **Status:** activated; repository layout inspection and implementation next.
 
-### Acceptance criteria
+## Objective
+
+Implement the provider-neutral structured-state contract and deterministic in-memory synthetic adapter used by later Authority Registry and API work. This packet deliberately excludes Google/provider/network/evidence-store behavior.
+
+## Acceptance criteria
 
 1. Bounded interface for health/schema, exact read, bounded query, idempotent upsert and append-event behavior.
 2. Stable caller-supplied canonical IDs; replay never invents competing identities.
@@ -40,13 +39,31 @@ Git is authoritative. This file records the completed G0 closeout and exact impl
 9. No Google/provider/network/evidence-store work, credentials or legacy production state.
 10. Bounded production ownership and tests; one coherent PR.
 
+## Scope guard
+
+Allowed:
+- structured-state interface/types/errors;
+- deterministic in-memory adapter;
+- synthetic tests;
+- minimal packaging/test configuration required to run those tests;
+- packet evidence updates.
+
+Excluded:
+- Authority Registry implementation;
+- HTTP/FastAPI/API runtime;
+- Google/SQL/provider adapters;
+- evidence/document storage;
+- Android code;
+- legacy production data or credentials.
+
 ## Exact next action
 
-1. Create `impl/g1-001a-structured-state-adapter` from this exact main checkpoint.
-2. Activate `M2-G1-001A` in `CURRENT_WORK.md` on that branch with the exact branch-start SHA.
-3. Inspect current repository layout and choose the smallest coherent production/test paths.
-4. Implement `STORE-ADAPTER-001A` only.
-5. Run/verify applicable tests and baseline gates, update BACKLOG/CURRENT_WORK evidence, then bounded PR/merge/readback.
+1. Inspect repository directories, Python/test conventions and baseline CI configuration.
+2. Choose the smallest coherent module/test paths.
+3. Implement the interface, errors and in-memory adapter.
+4. Add deterministic tests for every acceptance behavior.
+5. Run applicable repository tests/gates; fix failures without expanding scope.
+6. Record evidence in BACKLOG/CURRENT_WORK and bounded PR/merge/readback.
 
 ## Recovery protocol
 
