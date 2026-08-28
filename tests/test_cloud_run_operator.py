@@ -25,6 +25,7 @@ class CloudRunOperatorTests(unittest.TestCase):
         self.assertIn("--scaling=1", text)
         self.assertIn("--concurrency=1", text)
         self.assertIn("--service-account=", text)
+        self.assertIn("--build-service-account=", text)
         self.assertIn("MIRA_BEARER_TOKEN=", text)
         self.assertIn('scaling.get("scalingMode") != "MANUAL"', text)
         self.assertIn('scaling.get("manualInstanceCount") != 1', text)
@@ -32,6 +33,17 @@ class CloudRunOperatorTests(unittest.TestCase):
         self.assertIn('any(item.get("tag") for item in traffic)', text)
         self.assertNotIn("--tag=", text)
         self.assertNotIn("--max-instances", text)
+
+    def test_operator_uses_documented_bounded_source_deploy_roles(self) -> None:
+        text = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("mira-m0-runtime", text)
+        self.assertIn("mira-m0-builder", text)
+        self.assertIn("roles/run.sourceDeveloper", text)
+        self.assertIn("roles/serviceusage.serviceUsageConsumer", text)
+        self.assertIn("roles/iam.serviceAccountUser", text)
+        self.assertIn("roles/run.builder", text)
+        self.assertNotIn("roles/editor", text.lower())
+        self.assertNotIn("roles/owner", text.lower())
 
     def test_operator_preserves_secret_and_private_id_boundary(self) -> None:
         text = SCRIPT.read_text(encoding="utf-8")
