@@ -24,5 +24,8 @@ jobs:
       - name: Compile
         run: python -m compileall -q mira tests
 
+      - name: Feature registry
+        run: python -m mira.feature_registry check FEATURES.md
+
       - name: Unit tests
         run: python -m unittest discover -s tests -v
