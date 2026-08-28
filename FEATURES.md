@@ -13,6 +13,8 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `DEV-001` | Git-authoritative development control plane | governance | implemented/specified | -
 - `DEV-002` | Resumable bounded work packets | governance | implemented/specified | -
 - `DEV-003` | Dependency-ranked backlog | governance | implemented/specified | -
+- `DEV-005` | Machine-readable projection of canonical feature/dependency/evidence state with reproducible generation and CI drift enforcement | required/governance | specified+legacy-test-verified | DEV-001,DEV-003
+- `DEV-006` | Production component ownership and direct-verification inventory with anti-bloat/unowned-code release gate | required/governance | specified+legacy-test-verified | DEV-001
 - `CORE-001` | MIRA product identity | governance | history | -
 - `MIRROR-001` | Companion reality database | governance | history | -
 - `DATA-001` | Legacy production preservation | governance | history | -
@@ -146,6 +148,8 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - G1 Canonical mutable authority foundation | AUTH-001,STORE-001,DEV-001,SOURCE-001,g-01 | provider-neutral-repair
 - G7 Policy/data API foundation | API-001,AUTH-001,STORE-001,PROFILE-013,RECOVERY-002,PROVIDER-001,g-07 | android-prerequisite
 - G10 Android/mobile client boundary | CLIENT-ANDROID-001,API-001,PROFILE-013,RECOVERY-002,PROVIDER-001,g-10 | native-client-repair
+- G19 Machine-readable feature catalog and CI drift enforcement | DEV-005,DEV-001,DEV-003,g-19 | stable-id/generated-projection-repair
+- G20 Production-code ownership inventory and anti-bloat gate | DEV-006,DEV-001,g-20 | component-ownership/language-neutral-repair
 
 ## Integrity summary
 
@@ -156,6 +160,9 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - G10: `CLIENT-ANDROID-001` is an Android client adapter over `API-001`, not a provider/data authority. It owns presentation/local capture/native delivery/device capability reporting/protected client credentials/offline replay-safe client state; canonical policy, conflict resolution and mutation/readback remain server/service responsibilities.
 - Legacy Android main is build-verified for a debug APK and partially implements native reminder/TTS scheduling. Legacy PR #31 adds build-verified candidate WebView, camera/barcode, NFC/BLE and release machinery, but its direct Android-to-Google OAuth/API path is rejected because it bypasses `API-001`; the PR head also has unrelated failing required checks and remains unmerged salvage evidence only.
 - Android capability health requires observed device evidence where hardware/platform behavior matters. Source presence or CI build success does not prove notification timing, audio routing, reconnect, camera/NFC/BLE behavior, production signing identity or live canonical integration.
+- G19: `DEV-005` keeps `FEATURES.md` canonical and makes machine-readable JSON/other views reproducible projections with exact source revision/hash and CI drift enforcement. Stable semantic IDs are authored identities; legacy row-position-generated IDs are rejected because insert/reorder would renumber dependencies. Requirement and evidence remain separate and file existence never upgrades live/integration claims.
+- G20: `DEV-006` requires every production artifact to map to one bounded owning component with declared responsibility, owned surface and direct verification evidence; unowned or overlapping ownership fails closed. Components may cover multiple cohesive files. Python-specific AST/lint rules remain language-specific tooling rather than universal MIRA semantics.
+- Anti-bloat means preventing unowned/duplicate responsibilities, accidental debug/test payloads and unjustified parallel implementations; it does not mean arbitrary one-file/one-feature architecture or rewarding fragmentation.
 - F7: travel reuses `TRIP-001`/`ROUTE-001`; selected work tracking adds `MILE-001`/`MILE-002`. Ordered multi-leg grouping/revision remains `TRIP-ROUTE-CORE-001`.
 - F8: `assets` uses selected-path readiness across existing asset/fitment/evidence/maintenance/manual/spec authorities; missing optional paths cannot block basic asset registry/query.
 - G17/G18/F19: `KNOW-001` owns durable Knowledge source identity; `KNOW-002` owns provenance-bound excerpts/derived facts; provider folders are noncanonical projections.
@@ -166,4 +173,4 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 
 - Categories A-E complete.
 - F1-F20 audited except F21-F23; F19/G17/G18 completed in `M2-G0-008B`, F20/G16 in `M2-G0-008A`.
-- Category G is partially audited: G1, G7, G10 and G16-G18 complete through `M2-G0-008E`; remaining G rows unaudited.
+- Category G is partially audited: G1, G7, G10, G16-G20 complete through `M2-G0-008F`; remaining G rows unaudited.
