@@ -1,117 +1,75 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active provider-adapter packet and its resume point.
+Git is authoritative. This file records the completed Google structured-state adapter packet and exact deployment prerequisite discovered during runtime assembly.
 
-## Completed packet before this branch
-
-### `M2-M0-001` — Isolated Google/MIRROR data sandbox
-
-- **Merged PR:** #44
-- **Merge SHA / main readback:** `2796562f5d1d9233141d598c9385851dd4789da9`
-- **Post-merge completion checkpoint / this branch start SHA:** `ae30e8b304da097570d3d0061fd9c863b654f3ca`
-- **Remote CI:** run `33211875224`; compile + feature registry + code ownership + full suite succeeded.
-- **Result:** isolated MIRA 2.0 Google sandbox hierarchy is provider-verified and legacy LyfeOS resources remain untouched.
-
-## Active packet
+## Completed packet
 
 ### `M2-M0-002` — Minimal Google structured-state adapter
 
 - **Work ID:** `GOOGLE-STORE-ADAPTER-001`
-- **Class:** provider adapter implementation / M2-M0 prerequisite
-- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Merged PR:** #45
+- **Merge SHA / main readback:** `88d7b4666fbcf4b77ea60baa3c4b3735bfa5aadb`
 - **Branch:** `integration/m0-002-google-store-adapter`
 - **Branch start SHA:** `ae30e8b304da097570d3d0061fd9c863b654f3ca`
-- **Activation commit:** `482a42ad0c57accbd080e03d5b2c032554e56264`
-- **Adapter implementation:** `dfcd41e8821a4eee2c3695fd357f00904b266c02`
-- **Adapter/gateway tests:** `e5565704878317f15bdc484997b178d6e518ba9c`
-- **Code ownership update:** `97893a6249846f2c319562ed15de8ca5dd1c7f3c`
-- **Initial implementation checkpoint:** `e970aa504c7e7414e2580627d1c15c16b3a0c800`
-- **PR:** #45
-- **GitHub Actions run:** `33212406023`
-- **Status:** adapter implementation/test-verified and live sandbox schema/write-readback verified; final evidence commit CI + merge remain.
+- **CI-verified PR head:** `3018a23bf45f79066c5e1f1d65bbb0cf9c3b5145`
+- **Final GitHub Actions run:** `33212658200`
+- **Remote verification:** compile + feature registry + code ownership + full unit/integration suite succeeded.
+- **Result:** Google Sheets REST gateway and single-writer `StructuredStateAdapter` are implemented/test-verified. The isolated live Sheet schema and equivalent create/update/idempotency/readback pattern are provider-readback verified. Live Python OAuth execution is not yet claimed.
+- **Provider integrity:** synthetic-only Sheet, corrected event schema, replay-compatible seed fixture, readable rendered tables, no committed provider IDs/credentials/private data.
 
-## Provider resource evidence
+## Product-state checkpoint
 
-- One native Google Sheet named `MIRROR Structured State - Synthetic` exists under the verified `Structured State` sandbox child.
-- Provider metadata shows exactly four tabs: `Metadata`, `Resources`, `Events`, `Idempotency`.
-- Bounded provider reads verified headers and synthetic rows.
-- Imported timestamps were normalized to literal UTC strings.
-- Metadata declares schema version, `STORE-001`, `resource_types_json=["entity"]`, `event_types_json=["created","updated"]`, and `writer_model=single_writer`.
-- Initial provider inspection caught an event-schema defect: `stream_type` was missing. The live sandbox was repaired before adapter implementation to use `event_type,event_id,stream_type,stream_id,stream_revision,payload_json,occurred_at,idempotency_key`.
-- The original seed resource/event fixture was normalized to adapter-compatible request fingerprints and idempotency result envelopes; the seed event now has an explicit idempotency record.
-- Visual verification used a native-Sheets export rendered through the spreadsheet verifier. Long JSON/hash fields were initially overflowing; only the affected data-heavy columns were wrapped/widened and re-exported. Final rendered ranges are readable and the workbook has no formula-error matches.
-- All provider content is generic/synthetic. Live IDs/URLs remain outside Git.
+MIRA 2.0 has a tested shared API core and a tested Google Sheets persistence adapter, plus a real isolated Google Sheet whose schema/mutation pattern is provider-verified. The service is not yet hosted and the Python gateway has not yet authenticated live to Google.
 
-## Live provider write/readback proof
+## Hard dependency discovered before deployment
 
-A fresh synthetic entity was exercised on the live sandbox provider surface using the same row/idempotency contract produced by the adapter:
+`AuthorityRegistry` is defined as persistent. A managed service cannot safely bootstrap it into an in-memory store on every process restart. The first deployment therefore needs persisted `authority` and `authority_binding` records before hosting.
 
-1. **Create:** one atomic Sheets batch appended the new resource at revision 1 and its `upsert` idempotency record with the adapter-equivalent canonical request fingerprint/result envelope.
-2. **Create readback:** bounded provider reads returned the exact synthetic payload, revision 1, idempotency key, request fingerprint, and result envelope.
-3. **Update:** after revision-1 readback, one atomic Sheets batch replaced the same resource identity at revision 2 and appended a second `upsert` idempotency record using an expected-revision-1 fingerprint.
-4. **Update readback:** bounded provider reads returned the same identity at revision 2 with the exact updated payload and matching idempotency result.
-5. No legacy or personal state was involved.
+For M2-M0, the smallest safe model is to use the same isolated Google Sheets `StructuredStateAdapter` as both:
+- registry store for `authority` / `authority_binding`; and
+- canonical store for `entity`.
 
-### Evidence ceiling
+API routing still asks the registry for data class `entity`, and the service only operates on the routed data class, so registry rows do not become client-visible entity rows. A later backend split remains possible through `AUTH-001` migration semantics.
 
-- `GoogleSheetsStructuredStateAdapter` + `GoogleSheetsRestGateway`: **implemented/test-verified** through deterministic fake-gateway/REST request tests and the full repository CI suite.
-- Live Google Sheet schema and equivalent mutation/readback contract: **provider-readback verified**.
-- The Python REST gateway has **not yet executed against a live Google OAuth token**. That integration/live tier requires the managed API deployment/runtime authorization path and is not claimed here.
+## Selected successor
 
-## Engineering boundary
+### `M2-M0-003` — Persistent Google Authority Registry bootstrap
 
-M2-M0 uses a **single-writer** Google Sheets authority model. `GoogleSheetsStructuredStateAdapter` holds an adapter-local mutation lock and submits each resource/event mutation plus idempotency record as one Sheets batch. Optimistic revision/idempotency checks are exact for one writer process. Google Sheets does not provide distributed cell compare-and-swap, so multi-process/multi-writer safety is not claimed. Initial managed deployment must therefore enforce a single writer instance until a later backend/hardening packet supplies distributed concurrency control.
+- **Related work IDs:** `AUTHORITY-REGISTRY-001`, `GOOGLE-STORE-ADAPTER-001`
+- **Class:** hard deployment prerequisite / integrity bootstrap
+- **Planned branch:** `integration/m0-003-google-authority-bootstrap`
 
-## Implemented component
+### Objective
 
-`mira/google_sheets_store.py` provides:
-- provider-neutral `SheetsGateway` and atomic `SheetRowMutation` boundary;
-- stdlib `GoogleSheetsRestGateway` with runtime-injected spreadsheet ID/access-token provider and no hard-coded credential/resource identifiers;
-- `GoogleSheetsStructuredStateAdapter` implementing health/schema/get/query/upsert/append-event/events-for semantics;
-- exact schema/header validation;
-- stable caller IDs, monotonic revisions, bounded queries, idempotency replay/material-conflict checks, stale revision checks and exact post-write readback;
-- Google-specific range/tab/row behavior isolated below `STORE-001`.
+Persist and verify the canonical M2-M0 `entity` Authority binding in the isolated Google store and implement an idempotent runtime bootstrap that creates missing routing state once but fails closed on unexpected existing metadata.
 
-`tests/test_google_sheets_store.py` covers fake-gateway contract behavior and REST request construction/bearer injection. `project/code_ownership.json` owns the module under `google-sheets-state` with direct test evidence.
+### Acceptance criteria
 
-## Verification evidence
-
-PR #45 exact implementation head `e970aa504c7e7414e2580627d1c15c16b3a0c800` passed GitHub Actions run `33212406023`:
-- compile: success;
-- feature registry: success;
-- code ownership: success;
-- full unit/integration suite including new Google Sheets adapter tests: success.
-
-This final evidence commit changes only `CURRENT_WORK.md`; it must receive a fresh exact-head CI run before merge.
-
-## Acceptance criteria
-
-1. One native synthetic Sheet inside verified child. **Satisfied/provider-read-back.**
-2. Four tabs/schema synthetic-only. **Satisfied/provider-read-back; schema defect repaired.**
-3. Gateway + adapter without committed credentials/IDs. **Implemented/test-verified.**
-4. Contract semantics preserved. **Implemented/test-verified.**
-5. Provider details isolated below adapter. **Implemented/test-verified.**
-6. Deterministic fake-gateway tests. **Test-verified.**
-7. Live synthetic create/update/readback cycle. **Satisfied at provider-surface readback tier; live Python OAuth execution explicitly pending deployment.**
-8. Production ownership manifest updated. **Satisfied; ownership gate green.**
-9. All CI gates green. **Satisfied on implementation head; final evidence head pending.**
-10. No personal/legacy/Gmail/Calendar/scheduler/Android/deployment state. **Satisfied.**
-11. Live provider IDs/URLs/account identifiers excluded from Git. **Satisfied.**
-12. Bounded PR/merge/readback. **Pending final CI/merge.**
+1. Extend live sandbox metadata resource types to exactly include `authority`, `authority_binding`, and `entity`.
+2. Persist one synthetic verified/enabled Authority record for the Google Sheets adapter using a logical non-secret resource reference, not a live provider ID.
+3. Persist one `authority_binding` record binding data class `entity` to that Authority.
+4. Authority and binding writes use normal adapter-compatible fingerprints/idempotency result envelopes and provider readback.
+5. Implement `runtime_bootstrap` helper over `AuthorityRegistry` that registers the runtime adapter, creates missing Authority/binding with deterministic idempotency keys, and is safe to call repeatedly.
+6. If an Authority/binding already exists with materially different metadata, startup fails closed rather than overwriting/rebinding it.
+7. Unit tests prove first bootstrap, replay/restart, mismatch rejection, and successful `resolve("entity")` to the mounted adapter.
+8. Update code ownership/direct verification for new production code.
+9. No live provider IDs/credentials in Git; all live provider rows remain synthetic.
+10. All CI gates green; bounded PR/merge/readback.
+11. After this packet, managed runtime/container work may proceed without an ephemeral Authority Registry.
 
 ## Exact next action
 
-1. Verify PR #45 final changed-file scope remains exactly packet files.
-2. Require fresh PR-triggered compile + feature-registry + code-ownership + full-suite green on this evidence head.
-3. Merge exact green head/read back `main`.
-4. Checkpoint `GOOGLE-STORE-ADAPTER-001` at implemented/test-verified + provider-readback-verified, not live-OAuth-executed.
-5. Activate `API-DEPLOYMENT-001` with a mandatory **single writer instance** constraint and runtime Google OAuth/token injection requirement.
+1. Create `integration/m0-003-google-authority-bootstrap` from this exact main checkpoint.
+2. Activate `M2-M0-003`.
+3. Extend live sandbox metadata and write/read back Authority + entity binding using adapter-equivalent provider rows.
+4. Implement/test idempotent runtime bootstrap and update ownership manifest.
+5. PR/CI/merge, then activate the provider-neutral managed-runtime deployment packet.
 
 ## Recovery protocol
 
 On any new conversation/session:
-1. read this file first and verify branch/head;
-2. rediscover sandbox resources by exact provider search when needed;
+1. read this file first and verify repository/branch/head;
+2. rediscover provider resources by exact search when needed;
 3. never commit live provider IDs/private data;
-4. do not claim live Python Google execution until the deployed runtime actually performs it;
+4. do not claim live Python Google OAuth execution until a managed runtime actually performs it;
 5. continue only the active packet unless a blocker forces scope change.
