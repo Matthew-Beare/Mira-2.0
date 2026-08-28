@@ -8,12 +8,8 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 
 - **Merged PR:** #26
 - **Merge SHA:** `ad9a97a74ac0cec164a6b0f424dd47407bbebeaa`
-- **Rows audited:** F16 Travel/vacation/outdoor planning; F17 Work-trip/route/paid-work tracking.
-- **Result:** no `TRAVEL-*` authority. F16 composes `TRIP-001` + `ROUTE-001`; F17 adds independent `MILE-001` + `MILE-002` when paid-work tracking is selected. Ordered multi-leg grouping/revision remains explicit implementation gap `TRIP-ROUTE-CORE-001`.
-- **Registry maintenance:** `FEATURES.md` was compacted into the canonical index while verbose forensic detail remains durable in Git history/checkpoints; all stable IDs and audited service mappings were preserved.
-- **Remote readback:** F16/F17 registry mappings and F7 backlog findings verified on `main` after merge.
-- **Live Google production touched:** no.
-- **Executable product behavior changed:** no.
+- **Main handoff commit activating F8:** `3db7203c9f7f1b232c63122e94f478898c1ae975`
+- **Result:** no `TRAVEL-*`; F16/F17 reuse canonical Trip/Route and independent paid-mileage state; multi-leg gap remains `TRIP-ROUTE-CORE-001`.
 
 ## Active packet
 
@@ -22,46 +18,84 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Class:** forensic audit / prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `audit/g0-007h-asset-service`
-- **Branch start SHA:** this `main` handoff commit; create branch immediately after this write and record exact SHA on branch checkpoint.
-- **Status:** activated; F18 forensic audit next.
+- **Branch start SHA:** `3db7203c9f7f1b232c63122e94f478898c1ae975`
+- **Status:** acceptance complete; bounded PR/merge/readback pending.
 
 ## Exact category-F scope
 
 18. **Assets/maintenance/warranties/manuals**.
 
-Do not expand this packet into F19 personal knowledge/reference library. Legacy dependency evidence shows F19 requires G17/G18, which are still unaudited category-G behaviors; F19 therefore belongs after those dependencies are normalized. Do not expand into F20+, category G, or executable MIRA 2.0 coding.
+F19 remains excluded because legacy `f-19` requires still-unaudited G17/G18. No F19+, category-G or executable MIRA 2.0 behavior entered this packet.
 
-## Packet-boundary evidence
+## Canonical F8 result
 
-- Legacy `starter/behavior-dependencies.json` maps `f-18` to D1-D7 only.
-- Category D has already normalized D1-D7 into asset identity/relationships/evidence/query/identifier/manual/specification authorities.
-- Legacy `f-19` depends on G17/G18, so F19 is dependency-distinct and cannot be audited honestly before those category-G authorities are normalized.
+1. Exact service key is `assets`.
+2. F18 creates no new asset/maintenance/warranty/manual/specification authority.
+3. Historical D1-D7 map to existing stable features:
+   - D1 → `ASSET-001` plus selected `FITMENT-001`;
+   - D2 → `ASSET-002`;
+   - D3 → `ASSET-003`;
+   - D4 → `IDENT-001`;
+   - D5 → `EVID-001`;
+   - D6 → `KNOW-001`;
+   - D7 → `SPEC-001`.
+4. MIRA 2.0 uses selected-path readiness rather than legacy F18's all-D1-through-D7 requirement:
+   - base asset registry/query → `ASSET-001` + `ASSET-003`;
+   - fitment/assignment → add `FITMENT-001`;
+   - identifiers/evidence enrichment → add `IDENT-001` + `EVID-001` where selected;
+   - maintenance/warranty/reference evidence → add `ASSET-002`; full structured maintenance/warranty lifecycle remains `ASSET-SERVICE-001`;
+   - retained manuals → add `KNOW-001`;
+   - verified technical specifications → add `SPEC-001`.
+5. Missing manual/spec/fitment/warranty capability cannot block basic asset registry/query. A working base path cannot make an unavailable selected path look ready.
+6. `KNOW-001` retained state requires actual retained-document identity/revision evidence; filename/URL presence alone is insufficient.
+7. `SPEC-001` remains the only verified safety-critical specification authority and retains exact applicability/provenance requirements.
+8. Service activation/recommendation cannot infer ownership, installation, warranty coverage, maintenance completion, retained-manual state or verified specification correctness.
+9. Existing work remains authoritative: `ASSET-SERVICE-001`, `KNOWLEDGE-INTEGRATION-001`, `SPEC-INTEGRATION-001`, `FITMENT-ENGINE-001` and other category-D implementation tickets. F8 adds no duplicate engine.
+10. PR #31 remains category-D-bounded candidate/salvage evidence only and gives F18 no MIRA 2.0 integration/live credit.
+11. F19 remains dependency-blocked on G17/G18.
+12. No live Google production state was touched and no executable MIRA 2.0 behavior changed.
+
+## Durable packet commits
+
+- **Exact branch checkpoint:** `2c8d28d888220e25b616780e262e2b643c7d15ed`
+- **Research checkpoint:** `7e38df2347bcf3c87cc0fd274245e4ee0f707961`
+- **Feature registry normalization:** `a19f04b735a84630d63ce40dfefa0829b802c3fb`
+  - only `FEATURES.md` changed for the registry write;
+  - 11 additions / 1 audit-status replacement;
+  - added F18 `assets` selected-path mapping and F8 integrity notes;
+  - no new stable feature ID.
+- **Backlog normalization/compaction:** `1607217de641cb95fa3f6371f13f7bde9642a149`
+  - added only `AUDIT-F8` and `SERVICE-DEPS-008` to ranked work;
+  - GitHub commit diff proves the pre-existing work tables had no row deletion or modification: the only table changes are the two F8 additions;
+  - 117 deleted lines are historical explanatory dependency prose intentionally compacted after the ranked tables, with forensic detail retained in `FEATURES.md`, prior packet commits and Git history;
+  - preserved every pre-F8 Work ID, Class, Work description, Dependencies and Status.
 
 ## Acceptance criteria
 
-1. Determine the exact F18 service key and whether it is pure `SERVICE-002` composition over already-canonical category-D features or requires any distinct lifecycle/authority.
-2. Map historical D1-D7 dependencies to current stable IDs without duplicating asset, evidence, knowledge or specification authorities.
-3. Keep physical asset identity, fitment/assignment, lifecycle/evidence, graph queries, identifiers, retained manuals and technical specifications separate where their authority/evidence boundaries differ.
-4. Maintenance/warranty service readiness must not imply a dedicated lifecycle engine unless implementation/test evidence actually supports one; preserve existing `ASSET-SERVICE-001` gap if applicable.
-5. Manual/reference availability must depend on `KNOW-001` retained-document truth rather than filenames/URLs alone; safety-critical technical values remain `SPEC-001` with exact provenance.
-6. Service activation/recommendation cannot infer asset ownership, installation, warranty coverage, maintenance completion or specification correctness.
-7. Preserve requirement/evidence separation; legacy deterministic category-D cores do not prove MIRA 2.0 service integration/live behavior.
-8. Reconcile PR #31 as candidate/reference evidence only.
-9. Update only `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md`.
-10. Open bounded PR, verify exact changed-file scope/mergeability, merge using exact head SHA and remotely read back before advancing.
-11. Touch no legacy Google production state and change no executable MIRA 2.0 behavior.
+1. Exact service key/composition. **Satisfied.**
+2. D1-D7 stable-ID mapping without duplication. **Satisfied.**
+3. Preserve asset/fitment/evidence/query/identifier/manual/spec boundaries. **Satisfied.**
+4. Preserve maintenance/warranty implementation gap rather than invent completion. **Satisfied.**
+5. Preserve `KNOW-001`/`SPEC-001` evidence boundaries. **Satisfied.**
+6. No inference from activation/recommendation. **Satisfied.**
+7. Evidence levels remain separate from MIRA 2.0 integration/live status. **Satisfied.**
+8. PR #31 remains reference evidence. **Satisfied.**
+9. Update only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md`. **Satisfied on branch; final branch scope gate pending.**
+10. Bounded PR/merge/readback. **Pending.**
+11. No legacy production/executable changes. **Satisfied.**
 
 ## Exact next action
 
-1. Create branch `audit/g0-007h-asset-service` from this exact handoff commit.
-2. Update branch checkpoint with the exact branch-start SHA.
-3. Inspect legacy F18 ledger wording, service/router/catalog key and D1-D7 dependency/evidence paths.
-4. Determine whether F18 introduces any new canonical feature ID or only an audited service composition over existing category-D features.
-5. Check PR #31 only for evidence ceiling, never implementation credit.
+1. Compare `audit/g0-007h-asset-service` against `main`; require zero commits behind and exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
+2. Open a bounded PR to `main`.
+3. Verify GitHub server-side changed filenames and mergeability.
+4. Merge using the exact verified PR head SHA.
+5. Remotely read back F18 `FEATURES.md` and F8 `BACKLOG.md` state from `main`.
+6. Inspect authoritative legacy dependency assignments for F19-F23 and their category-G dependencies. Determine the next packet by dependency order rather than row adjacency, checkpoint it on `main`, then create its branch.
 
 ## Next packet after F8
 
-Determine from authoritative dependency evidence after F18 closes. F19 is explicitly blocked on unaudited G17/G18 and must not be pulled into this packet merely by adjacency.
+Not yet assigned. F19 cannot proceed until G17/G18 are normalized. After merge/readback, inspect F19-F23 dependency assignments plus category-G ordering and activate the highest-priority bounded prerequisite packet.
 
 ## Recovery protocol
 
@@ -71,4 +105,4 @@ On any new conversation/session:
 3. continue from the exact next action;
 4. do not broaden scope from chat history;
 5. capture new customer ideas in BACKLOG unless required for acceptance or explicitly reprioritized;
-6. finish each MIRA-development response with the current packet tag followed by either a concise customer action needed or exact fallback `Just tell me to continue.`
+6. finish each MIRA-development response with the current packet tag and the configured continuation fallback when no customer action is needed.

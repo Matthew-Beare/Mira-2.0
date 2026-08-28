@@ -131,6 +131,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - F15 Parent/child school coordination | family_school,SERVICE-001,SERVICE-002,EDU-001,PROFILE-012,PROFILE-013,PROFILE-004,PROFILE-005,CAL-007 | repair
 - F16 Travel/vacation/outdoor planning | travel_planning,SERVICE-001,SERVICE-002,TRIP-001,ROUTE-001,TASK-001,TASK-002,CAL-007,WEATHER-001 | confirmed
 - F17 Work-trip/route/paid-work tracking | work_trip_tracking,TRIP-001,ROUTE-001,MILE-001,MILE-002 | multi-leg-gap
+- F18 Assets/maintenance/warranties/manuals | assets,SERVICE-001,SERVICE-002,ASSET-001,ASSET-003,FITMENT-001,IDENT-001,EVID-001,ASSET-002,KNOW-001,SPEC-001 | selected-path-repair
 
 ## F7 integrity
 
@@ -139,8 +140,17 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - Ordered multi-leg grouping/revision is not implemented; `TRIP-ROUTE-CORE-001` owns the gap.
 - Generic travel does not imply paid work, ROAD context, weather watch, Calendar, reservations, documents, equipment, or budgets.
 
+## F8 integrity
+
+- F18 service key is `assets`; no new asset, maintenance, warranty, manual or specification authority is created.
+- Base asset registry/query uses `ASSET-001` + `ASSET-003`; fitment, identifier/evidence enrichment, maintenance/warranty evidence, retained manuals and verified specs are selected paths with their existing canonical authorities.
+- Legacy `f-18` hard-requires D1-D7; MIRA 2.0 repairs that to selected-path readiness so missing manual/spec/fitment/warranty capability does not block basic asset use.
+- `ASSET-SERVICE-001` remains the implementation gap for structured maintenance/warranty lifecycle; `KNOW-001` and `SPEC-001` retain their own provider/provenance boundaries.
+- Service activation or recommendation cannot infer ownership, installation, warranty coverage, maintenance completion, retained manual state, or verified specification correctness.
+- F19 is deferred because it depends on unaudited G17/G18.
+
 ## Audit status
 
 - Categories A-E complete.
-- F1-F17 audited through `M2-G0-007G`; F18 **Assets/maintenance/warranties/manuals** is next.
+- F1-F18 audited through `M2-G0-007H`; F19 waits on G17/G18 dependency audit.
 - Category G unaudited.

@@ -38,6 +38,7 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `AUDIT-F5` | PREREQUISITE | F rows 13-14: Routines/fitness/accountability and Education/study/deadlines/offline preparation; routine reuse, education identity and generic Calendar projection boundaries. | AUDIT-F4 | complete in `M2-G0-007E`; F13 reuses `ROUTINE-001`/`TASK-*`/optional `REMIND-003`; new `EDU-001`, `CAL-007` |
 | `AUDIT-F6` | PREREQUISITE | F row 15: Parent/child school coordination; actor/subject permission, education-authority and role-versus-readiness boundaries. | AUDIT-F5 | complete in `M2-G0-007F`; no new family domain ID; `family_school` composes `EDU-001`/`PROFILE-012`/`PROFILE-013` with optional selected paths |
 | `AUDIT-F7` | PREREQUISITE | F rows 16-17: Travel/vacation/outdoor planning and Work-trip/route/paid-work tracking; shared Trip/Route core, paid-mileage specialization and multi-leg evidence boundary. | AUDIT-F6 | complete in `M2-G0-007G`; no new travel domain ID; canonical `TRIP-001`/`ROUTE-001`/`MILE-*` composition |
+| `AUDIT-F8` | PREREQUISITE | F row 18: Assets/maintenance/warranties/manuals service composition; selected-path readiness over canonical category-D authorities. | AUDIT-F7 | complete in `M2-G0-007H`; no new asset-service domain ID; `assets` composes existing `ASSET-*`/`FITMENT-001`/`IDENT-001`/`EVID-001`/`KNOW-001`/`SPEC-001` paths |
 | `AUDIT-G` | PREREQUISITE | ChatGPT/Android/web/desktop/CLI/device surfaces. | AUDIT-F | queued |
 | `AUDIT-LEGACY` | HARDENING | Reconcile PR #31 plus meaningful legacy branches/repos against stable MIRA 2.0 features. | audits A-G | queued; inspect earlier only when materially relevant |
 | `DEP-GRAPH` | PREREQUISITE | Build complete dependency/enables graph, dedupe/supersession map, and ranked engineering backlog. | completed forensic registry | queued |
@@ -54,6 +55,7 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `SERVICE-DEPS-005` | PREREQUISITE | Normalize/test F5 service bundles: `routines_fitness` requires `ROUTINE-001` + `TASK-001` + `TASK-002`, with `REMIND-003` only for selected accountability/reminder paths and wearable input optional; `education` requires `EDU-001` + `TASK-001` + `TASK-002`, with routine/accountability, retained/offline evidence and `CAL-007` Calendar projection independently optional. Prove missing wearable/Calendar/offline-provider capability cannot block the basic service or falsify canonical completion/deadline state. | `SERVICE-002`, `ROUTINE-001`, `TASK-001`, `TASK-002`, `REMIND-003`, `EDU-001`, `CAL-007`, dependency registry | queued; legacy F13/F14 catalog/profile assignments are semantically incomplete and have no dedicated domain engines |
 | `SERVICE-DEPS-006` | PREREQUISITE | Normalize/test F6 `family_school` readiness around exact actor/subject/scope rather than role tokens: require subject `EDU-001` + `PROFILE-012`; require `PROFILE-013` only for cross-person/shared access; keep `PROFILE-004`/`PROFILE-005` recommendation-only; add `TASK-*`, `ROUTINE-001`, `REMIND-003` and `CAL-007` only for selected workflow/projection paths. Prove parent/dependent labels never satisfy permission/readiness, same-person private education support does not require a sharing grant, revoked/narrowed grants block affected cross-person paths, and provider sharing/mutation requires exact readback. | `SERVICE-001`, `SERVICE-002`, `EDU-001`, `PROFILE-012`, `PROFILE-013`, dependency registry; optional `TASK-*`, `ROUTINE-001`, `REMIND-003`, `CAL-007` | queued; legacy `f-15` over-bundles parent/dependent role behaviors and has no permission-aware readiness enforcement |
 | `SERVICE-DEPS-007` | PREREQUISITE | Normalize/test F7 bundles: `travel_planning` requires `TRIP-001` + `ROUTE-001`, adding `TASK-*`, `CAL-007`, `WEATHER-001`, retained evidence/equipment/finance paths only when selected; `work_trip_tracking` requires `TRIP-001` + `ROUTE-001` + `MILE-001` + `MILE-002`. Prove generic travel never requires paid-work state, route/map/odometer distance never satisfies company-paid mileage, and optional Calendar/weather/evidence failures cannot erase Trip/Route truth. | `SERVICE-001`, `SERVICE-002`, `TRIP-001`, `ROUTE-001`, `MILE-001`, `MILE-002`, dependency registry; optional `TASK-*`, `CAL-007`, `WEATHER-001` and selected domain adapters | queued; legacy F16/F17 mappings are structurally sound but need canonical service/readiness tests and MIRA 2.0 state integration |
+| `SERVICE-DEPS-008` | PREREQUISITE | Normalize/test F8 `assets` selected-path readiness: base asset registry/query requires `ASSET-001` + `ASSET-003`; add `FITMENT-001`, `IDENT-001`/`EVID-001`, `ASSET-002`, `KNOW-001`, and `SPEC-001` only for selected paths. Prove missing fitment/evidence/maintenance-warranty/manual/spec paths do not block basic assets, while base readiness cannot mask an unavailable selected path. | `SERVICE-001`, `SERVICE-002`, `ASSET-001`, `ASSET-003`, dependency registry; optional selected `FITMENT-001`, `IDENT-001`, `EVID-001`, `ASSET-002`, `KNOW-001`, `SPEC-001` | queued; legacy `f-18` over-bundles D1-D7 as universal requirements and needs selected-path readiness normalization |
 | `TRIP-ROUTE-CORE-001` | PREREQUISITE | Port/prove canonical `TRIP-001`/`ROUTE-001` state in MIRA 2.0 with stable Trip/Route identities, endpoint-to-endpoint lifecycle, route-average versus explicit-user ETA precedence, current-location provenance, active-trip uniqueness/override precedence, no fabricated arrival/cancellation, and synthetic persistence/readback. Close the current multi-leg gap by defining and testing stable itinerary grouping plus ordered leg references/revision semantics only if multi-leg grouping is selected/required; keep each Route reusable and paid mileage outside Trip/Route truth. | `TRIP-001`, `ROUTE-001`, `RECOVERY-002`, canonical state/time semantics, `DATA-SANDBOX`; optional `CAL-007`, `WEATHER-001` | queued; legacy endpoint Trip/Route runtime is test-verified, durable ordered multi-leg grouping and MIRA 2.0 persistence/readback are unverified |
 | `ROUTINE-CORE-001` | PREREQUISITE | Implement/test `ROUTINE-001` recurring/staged routine definitions and occurrence lifecycle with stable identities, replay-safe occurrence generation, ordered/conditional stages, explicit completion evidence, skip/reschedule/miss semantics, cadence edits preserving history, explicit/unresolved responsibility without ownership inference, and optional session-component/result/progression/review metadata plus context-valid minimum-viable variants. | `TASK-001`, `TASK-002`, canonical Person identity when assigned, canonical time/window semantics | queued; legacy router/tests and planning reference prove routing/safety semantics but no durable routine lifecycle/progression engine was located |
 | `ROUTINE-REMINDER-001` | PREREQUISITE | Implement/test `REMIND-003` consolidated routine/stage/accountability reminder planning and projection with deterministic IDs, replay/dedupe, completion/cancellation suppression, reschedule handling, acknowledgement/anti-nag behavior, selected review/progression cadence, multiple routines per control cycle, no per-chore scheduler fan-out, selected notification/brief/optional Calendar channels and exact provider readback where mutation occurs. Delivery failure must not mutate routine truth. | `ROUTINE-001`, `RECOVERY-002`, canonical time semantics, verified delivery adapters; optional `CAL-007` Calendar projection | queued; anti-fan-out routing boundary is test-verified, dedicated routine/accountability reminder planner and provider integration are absent |
@@ -122,129 +124,27 @@ This backlog is **not FIFO**. Arrival order never determines implementation orde
 | `LOCAL-INTEGRATIONS` | LATER | Home Assistant/Plex/Paperless/Node-RED/MQTT integrations. | stable authority/integration contracts | deferred |
 | `ENTERPRISE` | LATER | Institutional/locked-down deployment. | stock core + provider abstraction | deferred |
 
-## Category-E1/E2/E3/E4/E5/E6 dependency findings
+## Category-F8 dependency findings
 
-- `ONBOARD-002` is a privacy/lineage prerequisite. New deployments begin generic and synthetic; protected legacy state remains outside portable/public source.
-- `ONBOARD-003` owns bounded interview pacing and durable resume state, not service activation.
-- `ONBOARD-004` owns discovery/recommendation. Job titles, duties, existing apps and AI-use evidence may inform recommendations but cannot silently enable services or permissions.
-- `ONBOARD-005` owns new-user cadence/timezone capture; scheduler runtime semantics remain under `OPS-*`, and an existing deployment’s schedule is never inherited as a default.
-- `SERVICE-001` owns activation state and explicitly separates `unresolved/enabled/disabled/not_applicable/deferred` from capability availability, catalog presence and recommendation.
-- `PROFILE-001` through `PROFILE-009` are routing/profile facts, not authorization. Role recommendations cannot mutate service activation.
-- Retirement and nonworking remain distinct; neither may imply age, health, disability, financial or competence facts.
-- Parent/guardian, caregiver and dependent-minor labels do not grant custody, calendar, school, health, financial or sharing authority. `PROFILE-012` owns Person/relationship truth; `PROFILE-013` owns explicit grants, with `PERMISSION-SCOPE-001` now the privacy-critical implementation blocker.
-- Household-manager does not imply universal chore/property ownership; dedicated legacy tests already prohibit ownership inference and per-chore scheduler fan-out.
-- Student role does not silently activate HOME/CAMPUS. Context remains explicit/recommended configuration under `CTX-*`.
-- `mixed` preserves underlying roles and explicit primary routing. `custom` cannot erase established role semantics.
-- `PROFILE-010` keeps usability/accessibility preference-driven and prohibits demographic inference.
-- `PROFILE-011` rejects public “Boomer mode”; private user-chosen aliases remain presentation-only private state.
-- `PROFILE-012` Person identity/relationships and `PROFILE-013` authorization are separate; beneficiary, family or caregiver relationships never become permissions.
-- `DIST-001` keeps custom behavior private/user-owned by default and requires separate sanitized publication approval; private source-write authority is not publication authority.
-- `DIST-002` keeps generated starter/distribution channels pinned to one canonical source revision and forbids independent feature drift.
-- `DEV-004` supports bounded private extensibility but does not receive completed-builder evidence merely because manifest/reconciliation validators exist.
-- Historical automatic instruction updates are normalized into `ONBOARD-001`: complete replacement + nontechnical UI steps are the supported fallback, while direct UI writes require exact capability and readback.
-- `ONBOARD-006` makes no-terminal browser installation a product contract, not a friendly suggestion; missing browser/runtime capabilities stay explicitly blocked.
-- `SOURCE-001` separates source read, write and remote readback. Read-only ChatGPT GitHub access cannot authorize or prove Codex/source write.
-- `PROVIDER-001` routes by observed capability, data classification and approval evidence rather than AI/provider name; unknown claims fail closed.
-- `SOURCE-002` supports personal Git, organization Git, managed-central and no-Git/manual lanes. Institutional/manual users are never forced into personal Git/shadow accounts.
-- Managed/no-Git source lanes never move mutable personal state into source or fabricate unattended automation/write capability.
-- `PROVIDER-002` owns exact provider account/resource onboarding and bounded provider read/write/readback; it is separate from source setup and AI-runtime capability routing.
-- `ONBOARD-007` is the portable MIRA orchestration package. Its legacy package identifier is compatibility-only, and it must never install the developer/reference deployment’s private Ops state for another user.
-- `PROVIDER-003` is the first deterministic Personal Google adapter beneath MIRA’s provider-neutral contracts. Google resource shapes do not become universal MIRROR architecture.
-- Apple/iCloud stays manual/user-mediated unless a verified adapter proves more; a file exchange or ICS handoff is not background synchronization.
-- Legacy unsafe/rejected universal-onboarding behavior stays rejected and cannot become a default through old branch/code resurrection.
+- F18 service key is `assets`; it is selected-path service composition rather than a new asset, maintenance, warranty, manual or specification authority.
+- Base asset registry/query readiness uses `ASSET-001` + `ASSET-003`.
+- Fitment/assignment adds `FITMENT-001`; identifiers/evidence enrichment add `IDENT-001` + `EVID-001` when selected; maintenance/warranty/reference evidence adds `ASSET-002`; retained manuals add `KNOW-001`; verified technical specifications add `SPEC-001`.
+- Missing manual/spec/fitment/warranty capability cannot block the base asset registry/query path, while a healthy base path cannot make an unavailable selected path appear ready.
+- `ASSET-SERVICE-001` remains the dedicated structured maintenance/warranty lifecycle gap; F18 does not manufacture implementation evidence from generic asset evidence links.
+- `KNOW-001` retained status requires retained-document identity/revision evidence rather than a filename or URL alone.
+- `SPEC-001` remains the verified safety-critical specification authority with exact applicability and provenance.
+- Service activation/recommendation cannot infer ownership, installation, warranty coverage, maintenance completion, retained-manual state or specification correctness.
+- Existing `ASSET-SERVICE-001`, `KNOWLEDGE-INTEGRATION-001`, `SPEC-INTEGRATION-001`, `FITMENT-ENGINE-001` and category-D work remain authoritative implementation gaps. F8 adds only `SERVICE-DEPS-008`.
+- PR #31 remains candidate/salvage evidence and gives F18 no MIRA 2.0 integration/live credit.
+- F19 remains deferred until its still-unaudited category-G dependencies are normalized.
 
-## Category-F1 dependency findings
+## Backlog preservation note
 
-- Category F is a life-service composition/catalog layer, not a new provider/distribution family. Earlier backlog shorthand is superseded by the forensic ledger.
-- `SERVICE-001` owns explicit activation state; `SERVICE-002` owns dependency composition/readiness. Recommendation, activation, implementation evidence and provider capability remain separate facts.
-- The first five F services reuse existing canonical behavior features. They do not receive duplicate domain IDs merely because the service catalog gives them friendly labels.
-- Legacy `f-01` Briefs is structurally valid but semantically incomplete because it omits A2 / `OPS-002`; MIRA 2.0 must not call Briefs ready without single-dispatcher/no-duplicate-schedule safety.
-- Legacy `f-04` Orders/shipments is structurally valid but semantically incomplete because it omits C4 / `ORDER-004`; MIRA 2.0 must not call the service ready without replacement/supersession correctness.
-- `f-02` Next-action service cannot outrank `TASK-002`, which remains below test-verified.
-- `f-03` Email triage explicitly includes outbound-contact safety and archive-approval behavior; enabling triage never grants send permission.
-- `f-05` Receipt archive has direct generic aggregate-block test evidence, but complete readiness is still constrained by specification-level `RECEIPT-003`.
-- Legacy `order_lifecycle_enabled` compatibility input is not canonical service state. Migration must preserve separate `orders_shipments` and `receipt_archive` choices and fail unresolved when historical intent is ambiguous.
-- Service failure isolation follows `RECOVERY-002`: missing required dependencies block only affected services/dependents, optional failures degrade only affected paths, and no dependency remediation auto-enables or auto-installs anything.
-- No F1 service receives MIRA 2.0 integration/live verification from legacy catalog/skill/test evidence alone.
-
-## Category-F2 dependency findings
-
-- `SERVICE-002` now requires selected goal/submodule dependency semantics for umbrella services. Readiness is evaluated only for the paths the user selected; working paths cannot confer readiness on unsupported adjacent goals.
-- Finance remains a service composition over `SPEND-001`, `PAYMENT-001`, `REIMB-001`, optional `SUB-001`, and future `FIN-001`. Budgeting, debt, savings and broad cash-flow goals are not silently claimed from those existing children.
-- Legacy `f-06` is semantically incomplete because its historical single required child collapses now-separated payment/reimbursement concerns and omits spending visibility/optional finance modules.
-- `CAL-005` owns appointment/provider identity reconciliation; its legacy provider-identity subcore is test-verified, while canonical appointment lifecycle/persistence remains to prove.
-- `CAL-006` owns idempotent provider Calendar projection/update/readback and is not implemented merely because deterministic reminder timing exists.
-- `appointments_calendar` and `appointment_reminders` are separate service activations. Legacy `f-07` must not universally require personal `CAL-001` Saturday lookahead.
-- `HEALTH-001` is non-clinical administrative organization only and remains specification-level. Medication reminders (`REMIND-001`) and caregiver sharing (`REMIND-002`) are independent opt-in/permission surfaces.
-- Legacy `f-08` incorrectly defines broader health organization through medication reminders; MIRA 2.0 must remove that coupling in both directions.
-- Provider Calendar/financial mutations require exact target identity/scope and readback. A connected provider or readable resource never upgrades a service to ready/live by itself.
-- No F2 service receives MIRA 2.0 integration/live verification from legacy subcores, workflow prose or unmerged PR #31 evidence alone.
-
-## Category-F3 dependency findings
-
-- F9 `shopping` is a clean service wrapper over `SHOP-001`; the narrow legacy `f-09` → D8 mapping is structurally sound and should not duplicate receipt/order/fitment dependencies already owned by the canonical shopping behavior.
-- F10 `recipes_meals` must use selected-submodule semantics. Recipe-library readiness requires `RECIPE-001`; pantry-aware meal planning requires `MEAL-001` + `RECIPE-001` + `GROCERY-001` and inherits shopping reconciliation through the canonical child dependencies.
-- Historical D16 is no longer one canonical behavior. `RECIPE-001` and `MEAL-001` have separate identities/lifecycles and must stay separate in service readiness.
-- `recipe_library_enabled` is compatibility evidence for recipe-library intent only. It cannot silently activate meal planning, grocery/pantry state, shopping linkage or stock/purchase mutation.
-- `SHOP-CORE-001`, `GROCERY-CORE-001`, `RECIPE-CORE-001`, and `MEAL-CORE-001` remain the existing domain implementation gaps; F3 creates no duplicate engines.
-- Planning cannot fabricate stock consumption, purchase evidence or shopping fulfillment; service composition cannot weaken the category-D authority boundaries.
-- No F3 service receives MIRA 2.0 integration/live verification from catalog/router exposure, compatibility booleans, contract prose or unmerged PR #31 evidence alone.
-
-## Category-F4 dependency findings
-
-- F11 `household_admin` is a service composition over `TASK-001`/`TASK-002`; no household-admin database or competing task identity is created.
-- Asset maintenance evidence/history remains an optional `ASSET-002`/`SPEC-001` integration, not a universal household-admin dependency.
-- F12 `household_routines` is independently activatable from `household_admin`; the legacy aggregate-to-aggregate dependency is normalized to shared canonical task behaviors.
-- `ROUTINE-001` owns recurring/staged routine definitions and occurrence truth. Generic task state and reminder delivery cannot substitute for routine identity/history.
-- `REMIND-003` owns reminder planning/projection only. Delivery success or failure cannot mark stages complete, erase occurrences or become routine authority.
-- `household_routines_enabled` is a narrow compatibility input for the household-routines service and does not require a migration ambiguity ticket; it cannot authorize sibling services, Calendar projection or person responsibility.
-- Responsibility/ownership is explicit. Household-manager role, service activation and observed completion do not assign future work to a person.
-- Per-chore/stage/occurrence scheduler fan-out is prohibited; selected notification/brief/optional Calendar channels use consolidated deterministic delivery and provider readback.
-- The legacy anti-fan-out/activation test is real routing evidence but does not promote the absent routine lifecycle or household reminder planner/provider adapters to `test_verified`.
-- No F4 service receives MIRA 2.0 integration/live verification from legacy routing tests, contract prose or unmerged PR #31 evidence alone.
-
-## Category-F5 dependency findings
-
-- F13 `routines_fitness` is composition, not a fitness database. Basic readiness requires `ROUTINE-001` + `TASK-001` + `TASK-002`; selected accountability/reminder behavior adds `REMIND-003`.
-- Session blocks, duration/sets/reps/load/variation, minimum-viable context variants and progression/review rules are optional routine occurrence/result metadata. They do not justify `FITNESS-*` identity by label alone.
-- Routine completion, partial completion, miss and reschedule require supported evidence or explicit user action. Elapsed time, reminder delivery, silence or absent wearable data never proves completion.
-- Wearable ingestion is F22 and optional. A missing wearable cannot block basic F13 service readiness or be treated as a failed routine.
-- F14 `education` needs distinct `EDU-001` because program/course/certification identity, academic-work/deadline/prerequisite state and source provenance outlive individual tasks and study sessions.
-- `TASK-001`/`TASK-002` continue to own actionable work/next actions; optional recurring study/accountability uses `ROUTINE-001`/`REMIND-003` rather than a second study scheduler.
-- `CAL-007` is the generic source-linked Calendar projection authority. Stable Projection identity, provider-event linkage, update/cancel/dedupe/recreate and exact readback are reusable across education and other event classes; appointment-specific `CAL-006` is a specialization, not the generic engine.
-- Education Calendar projection, retained/offline materials and routine/accountability are independently optional paths. Failure of any optional provider path cannot erase or falsify canonical education/task/routine state.
-- Offline readiness must reflect actual retained/downloaded evidence. A source link alone does not prove material will be available away from connectivity.
-- MIRA may help study, quiz or plan but cannot fabricate submissions, attendance, grades, citations, proof of work or academic completion.
-- Legacy router/catalog presence and planning-reference prose are real specification/routing evidence, but no dedicated education/routine-progression/generic Calendar provider engine was located. No F5 service receives MIRA 2.0 integration/live credit from them or from unmerged PR #31.
-
-## Category-F6 dependency findings
-
-- F15 `family_school` is actor/subject/scope-aware service composition, not a new family or school database.
-- The subject's canonical school/education truth remains `EDU-001` and the subject/actor identities remain `PROFILE-012` Person identities.
-- `PROFILE-013` is required for cross-person/shared access, not because a parent/dependent role exists. Same-person/private education support needs no cross-person grant merely from enabling the service.
-- `PROFILE-004` parent/guardian and `PROFILE-005` dependent-minor are recommendation/routing inputs only. Legacy `f-15` is semantically defective because it treats those role behaviors as hard readiness dependencies.
-- Household membership, co-residence, school enrollment, observed Calendar traffic, relationship labels or profile roles never establish custody or access rights.
-- Optional task/routine/reminder/Calendar paths retain their own authority and failure domains. `CAL-007` projection does not grant invitations, attendees or access to another person's calendar.
-- Cross-person read/write/share must identify exact actor, subject, resource and action scope; provider/API sharing or mutation is successful only after exact readback.
-- `PERSON-GRAPH-001`, `PERMISSION-SCOPE-001`, `EDUCATION-CORE-001` and `CALENDAR-PROJECTION-001` already represent the underlying implementation gaps. F6 creates only `SERVICE-DEPS-006`, not another family-school engine.
-- Minimum-necessary dependent/minor data and synthetic public fixtures are mandatory.
-- No F6 service receives MIRA 2.0 integration/live verification from role-router tests, catalog/skill prose, relationship labels or unmerged PR #31 evidence alone.
-
-## Category-F7 dependency findings
-
-- F16 `travel_planning` is composition over `TRIP-001` + `ROUTE-001`; no second vacation/travel authority is created.
-- Destination research, reservations, packing/preparation, documents, optional budgets, equipment/maintenance, Calendar and weather are selected adjacent paths and retain their existing authorities/failure domains.
-- Generic travel never implies paid work, company mileage, payroll or a context mode. Active Trip context effects remain governed by the existing context precedence only when such Trip state exists.
-- F17 `work_trip_tracking` reuses the same Trip/Route core and adds `MILE-001` + `MILE-002`; paid-mileage failure cannot erase Trip/Route truth.
-- Route/map/odometer distance is not company-paid mileage. Work-trip readiness cannot synthesize pay evidence from Route distance or ETA.
-- ETA/location evidence can inform progress but cannot fabricate Trip departure, arrival, cancellation, reservation completion or mileage settlement.
-- The legacy endpoint Trip/Route runtime is deterministic/test-verified, but no durable ordered Trip-Leg entity or itinerary grouping/revision engine was located. `TRIP-ROUTE-CORE-001` records that explicit gap without minting a new semantic feature ID.
-- `CAL-007`, `WEATHER-001`, `TASK-*` and selected evidence/finance adapters remain optional service paths; their failures degrade only those paths.
-- PR #31 contains no qualifying travel engine that raises F16/F17 evidence to MIRA 2.0 integration/live status.
+During `M2-G0-007H`, the long historical category dependency prose was compacted because the same forensic conclusions are durable in `FEATURES.md`, prior packet commits and Git history. Every pre-F8 backlog table row was preserved with its existing **Work ID, Class, Work description, Dependencies and Status**; only `AUDIT-F8` and `SERVICE-DEPS-008` were added. This file remains the ranked engineering-work authority, while verbose forensic evidence remains recoverable from Git rather than being duplicated indefinitely in the active backlog.
 
 ## Prior-category closure
 
-Categories A-E are complete. Category F is in progress; F rows 1-5 are audited in `M2-G0-007A`, F rows 6-8 in `M2-G0-007B`, F rows 9-10 in `M2-G0-007C`, F rows 11-12 in `M2-G0-007D`, F rows 13-14 in `M2-G0-007E`, F row 15 in `M2-G0-007F`, F rows 16-17 in `M2-G0-007G`, and F row 18 **Assets/maintenance/warranties/manuals** is next. Category G remains queued. Earlier categories’ recorded implementation gaps/evidence levels remain authoritative, and no legacy evidence is promoted to MIRA 2.0 integration/live status merely because deterministic tests exist.
+Categories A-E are complete. Category F is in progress; F rows 1-5 are audited in `M2-G0-007A`, F rows 6-8 in `M2-G0-007B`, F rows 9-10 in `M2-G0-007C`, F rows 11-12 in `M2-G0-007D`, F rows 13-14 in `M2-G0-007E`, F row 15 in `M2-G0-007F`, F rows 16-17 in `M2-G0-007G`, and F row 18 in `M2-G0-007H`. Category G remains queued. F19 is dependency-blocked on still-unaudited G17/G18 rather than being treated as next merely by row order.
 
 ## New-idea triage rule
 
