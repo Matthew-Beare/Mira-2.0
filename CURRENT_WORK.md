@@ -20,82 +20,80 @@ Git is authoritative. This file identifies exactly one active packet and its exa
 - **Branch:** `audit/g0-008e-android-client-foundation`
 - **Branch start SHA:** `312907f24a624a1860cf48863cee26655ad326ab`
 - **Activation commit:** `63ac793ff856b8ef69029eb80e99c77821abe841`
-- **Status:** forensic research complete and checkpointed by this commit; feature/backlog normalization next.
+- **Research checkpoint:** `d884661b697d50fa961ab849f75c2fbe2ece94d8`
+- **Feature normalization:** `a34649776be61117cbd6816dec8b6a42d8481edd`
+- **Backlog normalization:** `4adcaadfab62975ce8edb487415ac8962a69c35b`
+- **Status:** audit and dependency normalization complete; PR/server-side verification and merge remain.
 
 ## Objective
 
-Determine the stable provider-neutral Android/mobile client semantics required for MIRA's first native mobile surface, separate those semantics from legacy implementation choices, and convert verified gaps into bounded feature/backlog work without implementing the Android application in this packet.
+Determine the stable provider-neutral Android/mobile client semantics required for MIRA's first native mobile surface, separate them from legacy implementation choices, and convert verified gaps into bounded feature/backlog work without implementing the Android application in this packet.
 
-## Canonical G10 findings
+## Canonical G10 result
 
-1. Android is a **client adapter**, never a canonical state/provider authority. It consumes the same `API-001` semantics as ChatGPT and other approved clients.
-2. The stable product requirement is not “PWA-first” or one Java implementation. The stable requirement is one Android client surface that can present/capture locally, report verified device capabilities, deliver Android-native notifications/TTS, queue supported offline work, and synchronize through the shared API without duplicating business policy.
-3. M2-M1 remains exactly: Android reads/mutates the same canonical reality state without becoming a second authority.
-4. Native Android credentials must be least-privilege client/session credentials, revocable, scope-bound by server authorization, and stored using an Android/OS protected-secret mechanism when durable storage is required. Database, provider-authority and source-control credentials do not belong in the client.
-5. Offline work is a client queue, not an authority. Canonical command/event IDs and idempotency survive reconnect; the service owns stale-version/conflict decisions and verified write/readback.
-6. Device capability state is evidence-based. Package/code presence, OS permission prompts or hardware connection alone cannot mark notification/TTS/camera/NFC/BLE paths healthy; device-specific paths require observed capability evidence where appropriate.
-7. Reminder delivery preserves one canonical reminder identity. Native scheduling/delivery must suppress replay, respect explicit speech opt-in/privacy detail, show visual notification independently, and report honest Android timing/audio-route limits rather than promising cloud control of device audio.
-8. Native camera/barcode/QR, NFC and BLE/RFID inputs are observations/capture adapters. They emit canonical envelopes and never silently become asset/location identity or infer an asset move from one passive observation.
-9. Release evidence is tiered: source exists -> build succeeds -> distributable/signing state verified -> integration with canonical API verified -> representative-device behavior observed. CI cannot prove physical-device behavior or production signing identity by implication.
-10. Legacy implementation may share a PWA/WebView surface with native bridges, but MIRA 2.0 does not make that implementation choice a permanent semantic requirement.
+1. G10 normalizes to stable semantic feature **`CLIENT-ANDROID-001` — Android native client adapter using the shared API, protected client credentials, offline replay-safe sync and evidence-based device capabilities**.
+2. Android is a replaceable client adapter over `API-001`, never a canonical data/provider/source authority.
+3. The stable requirement is not PWA-first, WebView-first or one Java implementation. Presentation technology may change while shared-API authority, protected credentials, offline replay safety, native capability boundaries and evidence requirements remain invariant.
+4. Native client/session credentials must be scoped, revocable and stored with Android/OS protected-secret facilities when durable storage is required. Database/provider/source credentials do not belong in the client.
+5. Offline queue/cache state is nonauthoritative. Canonical command/event IDs and idempotency survive reconnect; the service owns stale-version/conflict resolution and verified write/readback.
+6. Native notification/TTS delivery preserves one canonical reminder identity, suppresses replay, keeps visual delivery independent of speech, requires explicit speech/privacy policy and reports honest Android timing/audio-route limits.
+7. Camera/barcode/QR, NFC and BLE/RFID are nonauthoritative observation/capture adapters. Hardware reads never become canonical identity and one passive read never silently moves an asset.
+8. Device capability health requires observed evidence where physical/platform behavior matters; package/code/permission presence is not proof.
+9. Release evidence is tiered: source -> build -> distributable/signing state -> canonical API integration -> representative-device verification.
+10. M2-M1 remains: Android reads and mutates the same canonical entity as stock ChatGPT through the same `API-001` path without becoming a second authority.
 
-## Legacy evidence classification
+## Legacy / PR #31 evidence ceiling
 
-### Strong specification/test-supported boundary evidence
+- Legacy `docs/runtime-platform-architecture.md`, `starter/client-api-contract.json`, `starter/hardware-capture-contract.json`, `test_client_surfaces.py` and `test_cross_platform_clients.py` strongly specify the shared-API/no-direct-database client boundary and nonauthoritative hardware semantics.
+- Legacy main contains a real Android Gradle application with `MainActivity`, `ReminderScheduler`, `ReminderReceiver` and `SpeechService`.
+- Legacy main partially implements Android local TTS, foreground visual notification, reminder-ID replay suppression and exact-alarm/fallback timing behavior.
+- Legacy commit `00d9ea1ca45636fe9d1fb7c1e85527d9d4696b22` has a successful canonical Android Client CI run (`32912057501`), so the legacy debug Android project is build-verified at that revision. The historical APK artifact is no longer retained for current inspection.
+- Legacy `MIRA-Personal-Production` PR #31 remains open/unmerged mega-PR candidate evidence at head `eb2eae9e5405c350d227064b951963f7fe1a41f8`.
+- PR #31's Android build job succeeded at that head and adds candidate release APK/AAB/signature workflow, WebView/PWA bridge, ML Kit barcode scanning, NFC and BLE capture.
+- The overall PR #31 head is not green; other required checks fail, so it is not releasable/mergeable evidence.
+- PR #31 `MainActivity` directly obtains Google access tokens and calls Google APIs from Android. That path is **architecturally rejected for MIRA 2.0** because it bypasses `API-001` and turns the client into a provider-authority mutation surface. Separate native UI/capture pieces may be salvaged only after reconciliation to canonical API envelopes.
+- No MIRA 2.0 Android implementation, API integration, protected credential store, offline queue, signed release identity or representative-device proof is claimed.
 
-- `MIRA-Personal-Production/docs/runtime-platform-architecture.md` defines one versioned API for web/desktop/Android, client-only presentation/capture/TTS/capability/offline responsibilities, server-owned behavior, no client DB credentials and Android-first native mobile architecture.
-- `starter/client-api-contract.json` requires versioned transport, server auth/authz/preflight/schema/idempotency/canonical write/readback/audit, cursor sync, offline idempotency and server conflict authority.
-- `starter/hardware-capture-contract.json` makes hardware observations nonauthoritative and requires real-sample verification before capability health.
-- `starter/tests/test_client_surfaces.py` and `test_cross_platform_clients.py` test the shared API/no-direct-database boundary, background-TTS distinction, hardware observation rules and presence of canonical Android build workflow.
+## Normalized Git evidence
 
-### Legacy main candidate implementation evidence
-
-- `starter/clients/android/` contains a real Gradle Android application with `MainActivity`, `ReminderScheduler`, `ReminderReceiver` and `SpeechService`.
-- `SpeechService` implements foreground visual notification, local Android `TextToSpeech`, and local duplicate-speech suppression keyed by reminder ID.
-- `ReminderScheduler` implements exact alarm when permitted and `setAndAllowWhileIdle` fallback otherwise; `MainActivity` exposes the limitation honestly.
-- `AndroidManifest.xml` declares notification, foreground-media-playback and exact-alarm permissions and keeps receiver/service non-exported.
-- Canonical legacy workflow `.github/workflows/android-client.yml` builds `:app:assembleDebug` and uploads `app-debug.apk`.
-- Commit `00d9ea1ca45636fe9d1fb7c1e85527d9d4696b22` has a successful GitHub Actions Android Client build run (`32912057501`), so the debug Android project is **build/test-verified at that legacy revision**. The historical artifact is no longer retained by GitHub, so the APK itself is not current evidence available for inspection.
-
-### PR #31 candidate evidence ceiling
-
-- Legacy `MIRA-Personal-Production` PR #31 is open/unmerged at head `eb2eae9e5405c350d227064b951963f7fe1a41f8`; it changes 153 files and is salvage/reference only.
-- Its Android workflow successfully completed at head (`Android Client` run `33026778687`), proving that candidate Android debug/release compilation path passes its own build job.
-- The PR adds release APK/AAB build/signature-status machinery and a sane release-signing policy: permanent key outside Git, exact artifact signature verification, retained signing identity, representative-hardware testing required before ship.
-- However the overall PR head is **not green**: other required checks at that same head fail, including `python-and-config`, `build-and-smoke`, and `secret-patterns`. Green-before-growth therefore forbids treating the mega-PR as releasable or mergeable evidence.
-- Critically, PR #31 `MainActivity` adds direct Google OAuth/access-token handling and direct HTTPS calls to Google API hosts from the Android client. That violates the now-canonical G7 rule that Android must mutate/read canonical reality through `API-001` rather than becoming a provider-authority client. This direct-Google path is **architecturally rejected for MIRA 2.0** even though separate WebView/NFC/BLE/barcode/UI pieces may be salvageable.
-- PR #31 also adds native NFC, BLE observation, ML Kit barcode scanning and a shared WebView/PWA surface. Those are candidate implementation pieces only until reconciled to canonical `API-001` capture/observation envelopes and verified in MIRA 2.0.
-
-## Gaps that remain after audit
-
-- No MIRA 2.0 Android client implementation exists.
-- No MIRA 2.0 device enrollment/scoped-auth flow is implemented or integrated with `API-001`.
-- No MIRA 2.0 Android protected credential-store implementation is proven.
-- No canonical Android offline command/evidence queue + reconnect/conflict/readback implementation is proven.
-- No MIRA 2.0 integration proof shows Android and stock ChatGPT reading/mutating the same canonical entity through one shared API path.
-- No current signed MIRA 2.0 release artifact/signing identity exists.
-- No MIRA 2.0 observed-device evidence proves notification timing, TTS routing/dedupe, reconnect, camera/barcode, NFC or BLE capabilities.
-- The architecture must preserve the stock ChatGPT milestone's no-required-self-hosted-server rule; therefore `API-CORE-001`/deployment work must supply an ordinary-user-compatible shared API/service path rather than forcing Android to bypass it and call provider authorities directly.
+- `FEATURES.md` now contains `CLIENT-ANDROID-001`, the G10 mapping and G10 integrity findings.
+- `BACKLOG.md` now contains completed `AUDIT-G10` and bounded implementation rows:
+  - `ANDROID-CLIENT-CORE-001` — API-only client core, enrollment/scoped credentials, protected storage, offline sync/replay/conflict handling;
+  - `ANDROID-NATIVE-DELIVERY-001` — native notification/TTS delivery hardening;
+  - `ANDROID-CAPTURE-001` — camera/barcode/QR/NFC/BLE/RFID nonauthoritative capture adapters;
+  - `ANDROID-RELEASE-001` — reproducible build/signing/update/device evidence.
+- `ANDROID-SYNC` now explicitly depends on `CORE-ROUNDTRIP` + `ANDROID-CLIENT-CORE-001` and forbids direct provider mutation.
+- No executable MIRA 2.0 code, provider state, protected legacy data or files outside `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` are intended to change in this packet.
 
 ## Acceptance criteria
 
-1. Stable Android/mobile semantic boundary identified without making Android an authority. **Satisfied.**
-2. Canonical state paths downstream of `API-001`, no direct DB/provider authority or duplicated business policy. **Satisfied as requirement; legacy PR direct-Google path explicitly rejected.**
-3. Identity/enrollment/revocation/scoped credential boundary explicit. **Satisfied as requirement; implementation gap remains.**
-4. Offline/reconnect/idempotency/conflict boundary explicit. **Satisfied as requirement; implementation gap remains.**
-5. Notification/TTS identity, opt-in/privacy, dedupe and Android-limit semantics explicit. **Satisfied; legacy candidate partially implemented/build-verified.**
-6. Hardware observations remain nonauthoritative canonical capture events. **Satisfied; legacy candidate partially implemented.**
+1. Stable Android/mobile semantic boundary. **Satisfied: `CLIENT-ANDROID-001`.**
+2. All canonical reads/mutations downstream of `API-001`; no direct provider/database authority or duplicated business policy. **Satisfied; legacy direct-Google path explicitly rejected.**
+3. Identity/enrollment/revocation/scoped protected credential boundary explicit. **Satisfied as requirement; implementation gap recorded.**
+4. Offline/reconnect/idempotency/conflict boundary explicit. **Satisfied as requirement; implementation gap recorded.**
+5. Notification/TTS identity, privacy, replay and Android-limit semantics explicit. **Satisfied; legacy candidate partial/build-verified.**
+6. Hardware observations remain nonauthoritative canonical capture events. **Satisfied; legacy candidate partial.**
 7. Capability health requires evidence, not code presence. **Satisfied.**
-8. Release evidence tiers separated. **Satisfied; legacy build proof exists, MIRA 2.0 release/device proof absent.**
-9. PWA/WebView implementation choice not promoted to eternal product semantics. **Satisfied.**
-10. Protected legacy production/provider state and executable MIRA 2.0 code untouched. **Satisfied.**
-11. Stable feature/work IDs and dependency normalization. **Pending.**
+8. Release evidence tiers separated. **Satisfied; MIRA 2.0 signing/device proof absent and explicit.**
+9. PWA/WebView implementation choice not promoted to permanent semantics. **Satisfied.**
+10. Protected legacy production/provider state and executable MIRA 2.0 code untouched. **Satisfied by intended scope; final diff verification pending.**
+11. Stable feature/work IDs and dependency normalization. **Satisfied.**
 12. Bounded PR/merge/readback. **Pending.**
 
 ## Exact next action
 
-1. Add one stable semantic Android-client feature ID to `FEATURES.md` unless existing IDs prove sufficient; avoid duplicating reminder, capture or API domain semantics.
-2. Add bounded implementation/release/integration work rows to `BACKLOG.md`, explicitly rejecting direct provider-authority client mutation and preserving `ANDROID-SYNC` as the M2-M1 vertical.
-3. Update `CURRENT_WORK.md` with normalized IDs and packet-close evidence.
-4. Compare branch against `main`; require only intended Git authority files.
-5. Open bounded PR, verify exact changed files/head/mergeability, merge exact head and remote-readback `main`.
+1. Compare `audit/g0-008e-android-client-foundation` against `main`; require exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
+2. Open bounded PR for `M2-G0-008E`.
+3. Verify server-side changed-file scope, mergeability and exact current head SHA.
+4. Merge using the exact verified head SHA.
+5. Remotely read back `main` and record the merge SHA/packet completion before activating the next dependency-ranked audit packet.
+6. Choose the next packet from remaining F21-F23 / G rows by dependency priority rather than numeric order; do not start implementation before forensic/dependency closeout permits it.
+
+## Recovery protocol
+
+On any new conversation/session:
+1. read this file first;
+2. verify repository/branch/head when tools permit;
+3. continue from the exact next action;
+4. do not broaden scope from chat history;
+5. capture unrelated customer ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
