@@ -23,8 +23,10 @@ Git is authoritative. This file identifies exactly one active live-deployment pr
 - **Merged PR:** #48
 - **Final PR head:** `f0b584a7e66b7349d349297150cebdde6915a206`
 - **Final GitHub Actions run:** `33217543700`
-- **Merge SHA / main readback:** `acb37af4aa378e8128d8591406859fe954af3474`
-- **Status:** code-only deployment readiness merged and remotely verified; packet remains active and blocked only on authenticated Google Cloud control-plane access for live deployment/provider/restart evidence.
+- **Merge SHA:** `acb37af4aa378e8128d8591406859fe954af3474`
+- **Post-merge provider-boundary checkpoint:** `829bdbad75e18536fe96d3b262ec3ac11034528c`
+- **Backlog reconciliation commit:** `c683aceaf519636983e1304bc02c07594dc2191f`
+- **Status:** code-only deployment readiness merged and remotely verified; backlog is reconciled; packet remains active and blocked only on authenticated Google Cloud control-plane access for live deployment/provider/restart evidence.
 
 ## Objective
 
@@ -69,10 +71,11 @@ Make the verified runtime deployable to a one-instance Cloud Run service with re
 - `project/code_ownership.json`: direct ownership/evidence coverage for every new production module.
 - PR #48 final CI run `33217543700`: compile, feature registry, code ownership and full unit/integration suite succeeded.
 - PR #48 merge/main readback: `acb37af4aa378e8128d8591406859fe954af3474`.
+- `BACKLOG.md` critical-path status reconciliation: `c683aceaf519636983e1304bc02c07594dc2191f`; completed prerequisites are no longer shown as queued and `API-DEPLOYMENT-001` is explicitly active/partial.
 
 ## External account boundary
 
-Google Cloud / Cloud Run control-plane capability is not connected in the current tool set, and plugin discovery returned no installable Google Cloud or Cloud Run connector. Therefore these writes/readbacks have **not** occurred and must not be claimed:
+Google Cloud / Cloud Run control-plane capability is not connected in the current tool set. Plugin discovery was repeated after the readiness merge and returned no installable Google Cloud or Cloud Run connector. Therefore these writes/readbacks have **not** occurred and must not be claimed:
 - Google Cloud project/API setup or selection;
 - Cloud Run service creation/deployment;
 - dedicated Cloud Run service account creation/assignment;
@@ -80,22 +83,20 @@ Google Cloud / Cloud Run control-plane capability is not connected in the curren
 - sharing the isolated synthetic Google Sheet with the deployed service identity;
 - service-wide manual scaling = 1 readback;
 - request concurrency = 1 readback;
-- live Cloud Run HTTPS health/API/provider/restart proof.
+- live Cloud Run HTTPS/provider/restart proof.
 
 This is now the only blocking boundary for this packet. Do not switch to `CHATGPT-API-CLIENT-001` merely because the deployment code exists.
 
-## Backlog integrity note
-
-Several M2-M0 critical-path statuses in `BACKLOG.md` still reflect pre-implementation state. Reconcile completed rows and set `API-DEPLOYMENT-001` to active/partial before closing this packet. Do not mark it complete until live criteria 9-11 pass.
-
 ## Exact next action
 
-1. Reconcile stale critical-path statuses in `BACKLOG.md` while preserving dependency order and all later work.
-2. Re-attempt Google Cloud control-plane discovery only through authenticated supported tooling; do not substitute a different host that violates the single-writer deployment invariants.
-3. When Google Cloud control-plane access exists, configure one Cloud Run service with service-wide manual scaling = 1 and request concurrency = 1, dedicated service identity, Secret Manager bearer injection and no traffic-tag side write revision.
-4. Share only the isolated synthetic Google Sheet with that service identity.
-5. Deploy and execute live acceptance criteria 9-11 with exact Cloud Run and Google provider readback.
+1. Obtain an authenticated supported Google Cloud / Cloud Run control-plane capability for this project; do not substitute a host that violates the single-writer deployment invariants.
+2. Configure one Cloud Run service with service-wide manual scaling = 1 and request concurrency = 1, dedicated service identity, Secret Manager bearer injection and no traffic-tag side write revision.
+3. Share only the isolated synthetic Google Sheet with that service identity.
+4. Deploy and verify public HTTPS health readback before protected API testing.
+5. Execute one canonical synthetic entity mutation/exact Google readback through the deployed API.
+6. Restart/redeploy the one-instance service and prove the same injected bearer plus persisted Authority/entity state survive unchanged.
+7. Only then mark `API-DEPLOYMENT-001` complete and activate `CHATGPT-API-CLIENT-001`.
 
 ## Recovery protocol
 
-Read this file first, verify `main` contains merge SHA `acb37af4aa378e8128d8591406859fe954af3474` or a descendant carrying this checkpoint, enforce the deployment invariants above, keep provider identifiers/private data/secrets out of Git, and continue only `M2-M0-005` unless a blocker forces scope change.
+Read this file first, verify `main` contains merge SHA `acb37af4aa378e8128d8591406859fe954af3474` and backlog commit `c683aceaf519636983e1304bc02c07594dc2191f` or descendants carrying both checkpoints, enforce the deployment invariants above, keep provider identifiers/private data/secrets out of Git, and continue only `M2-M0-005` unless a blocker forces scope change.
