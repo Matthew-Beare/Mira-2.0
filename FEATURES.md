@@ -34,6 +34,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - `TASK-002` | Evidence-grounded next actions and honest completion state | accepted/integrity rule | specified | -
 - `RECOVERY-001` | Phase-aware Run Log, durable checkpoints and circuit-breaker recovery | required | test_verified | -
 - `RECOVERY-002` | Explicit module dependency boundaries and failure isolation | required | test_verified | -
+- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | specified+candidate_unmerged | PROVIDER-001,RECOVERY-002
 - `CAL-001` | Saturday AM seven-day appointment lookahead | required | test_verified | -
 - `CAL-002` | Day-before and morning-of appointment reminders | required | test_verified | -
 - `CAL-003` | Configurable relative appointment reminder, default one hour before | required | test_verified | -
@@ -132,6 +133,7 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - F16 Travel/vacation/outdoor planning | travel_planning,SERVICE-001,SERVICE-002,TRIP-001,ROUTE-001,TASK-001,TASK-002,CAL-007,WEATHER-001 | confirmed
 - F17 Work-trip/route/paid-work tracking | work_trip_tracking,TRIP-001,ROUTE-001,MILE-001,MILE-002 | multi-leg-gap
 - F18 Assets/maintenance/warranties/manuals | assets,SERVICE-001,SERVICE-002,ASSET-001,ASSET-003,FITMENT-001,IDENT-001,EVID-001,ASSET-002,KNOW-001,SPEC-001 | selected-path-repair
+- F20 Backup/disaster recovery | recovery,SERVICE-001,SERVICE-002,BACKUP-001,f-20,g-16 | new-canonical-backup-core
 
 ## F7 integrity
 
@@ -149,8 +151,21 @@ Stable semantic IDs do not change with priority/provider/backend/order. Requirem
 - Service activation or recommendation cannot infer ownership, installation, warranty coverage, maintenance completion, retained manual state, or verified specification correctness.
 - F19 is deferred because it depends on unaudited G17/G18.
 
+## Backup/disaster-recovery integrity
+
+- G16 and F20 normalize to `BACKUP-001`; F20 exact service key is `recovery`. Data backup/restore remains distinct from runtime `RECOVERY-001`/`RECOVERY-002`.
+- Recovery artifacts are nonauthoritative copies, never a second writable master. Provider/database/object-storage mechanisms are adapters beneath one backup/restore contract.
+- Backup creation/readback and restore verification are separate evidence states. Archive creation, digest verification or cloud upload alone cannot prove recoverability.
+- `BACKUP-001` records selected protected authorities/data classes, Backup ID, requested/effective type, destination, timestamps, integrity evidence, target readback and separately linked restore-test evidence.
+- Policy must capture selected cadence, retention/rotation, encryption requirements, RPO/RTO goals and restore-test cadence. Historical twice-daily incremental, daily-cloud and weekly-full requirements are deployment evidence, not universal new-user defaults.
+- True incremental status requires complete proven delta/change-journal semantics. A clearly labelled full fallback is valid when incrementality cannot be proven.
+- Source/config protection and mutable structured-state/evidence protection remain separate paths; Git never becomes a private runtime-state/evidence/secret dump.
+- Backup failure cannot mutate live canonical state or destroy the last verified good recovery artifact. Restore testing uses isolated synthetic/sandbox targets and verifies restored identities/material state before any recovery claim.
+- Legacy dependency profile requires `backup-catalog`, `backup_target` and `restore_test`; generic dependency CI proves only dependency mechanics, not backup correctness.
+- PR #31 contains an unmerged partial backup candidate with Backup UUID/history, SQLite snapshot, evidence archive, SHA-256 and provider readback, but no restore implementation/tests, no proven archive encryption/rotation/RPO/RTO, no true incrementals, a cadence mismatch and a noncanonical silent scheduler thread. It supplies no MIRA 2.0 implementation/integration/live credit.
+
 ## Audit status
 
 - Categories A-E complete.
-- F1-F18 audited through `M2-G0-007H`; F19 waits on G17/G18 dependency audit.
-- Category G unaudited.
+- F1-F18 audited through `M2-G0-007H`; F19 waits on G17/G18 dependency audit; F20/G16 audited in `M2-G0-008A`.
+- Category G is partially audited: G16 complete in `M2-G0-008A`; remaining G rows unaudited.
