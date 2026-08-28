@@ -1,64 +1,72 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file records the completed API service-semantics packet and exact transport/auth successor.
+Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
 
-## Completed packet
+## Completed packet before this branch
 
 ### `M2-G1-003A` — API service semantics core
 
-- **Work ID:** `API-CORE-001A`
 - **Merged PR:** #39
 - **Merge SHA / main readback:** `01c98c4ae404fc8a90cc1cdaba0065aca4c50a37`
-- **Branch:** `impl/g1-003a-api-service-core`
-- **Branch start SHA:** `1d4d0108408e76a34a1dea4dcef0cb690e5dd96c`
-- **CI-verified PR head:** `50229390a4831d80c84e5130abd8c1483f3d02b2`
-- **GitHub Actions run:** `33210306251`
-- **Remote verification:** compile succeeded; full suite **30 tests, 0 failures/errors**.
-- **Result:** versioned envelopes, already-authenticated principal/grants, same-user fail-closed authorization, compatibility preflight, Authority Registry-only routing, mandatory idempotency/revision propagation, exact readback, stable API error mapping and nonauthoritative audit recording are implemented/test-verified.
+- **Post-merge completion checkpoint / this branch start SHA:** `bcae2707444a57420b93c99c808adbdce64d9a5f`
+- **Remote CI:** GitHub Actions run `33210306251`; compile + 30 unit tests passed.
+- **Result:** `API-CORE-001A` is implemented/test-verified.
 
-## API umbrella state
-
-`API-CORE-001` has two bounded children:
-- `API-CORE-001A` — **complete/test-verified**.
-- `API-CORE-001B` — client/session authentication + HTTP transport — **next**.
-
-The umbrella becomes implemented/test-verified after 001B passes.
-
-## Selected successor
+## Active packet
 
 ### `M2-G1-003B` — Scoped client authentication and HTTP transport
 
 - **Work ID:** `API-CORE-001B`
 - **Class:** implementation / security-data-integrity prerequisite
-- **Planned branch:** `impl/g1-003b-http-auth-boundary`
-- **Dependency satisfied:** `API-CORE-001A` is merged/test-verified.
+- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Branch:** `impl/g1-003b-http-auth-boundary`
+- **Branch start SHA:** `bcae2707444a57420b93c99c808adbdce64d9a5f`
+- **Status:** activated; implementation next.
 
-### Objective
+## Objective
 
 Implement a stdlib-only HTTP transport/authentication boundary over `ApiService`: opaque scoped client sessions with hashed bearer-token storage, expiry/revocation, HTTPS enforcement hook, bounded JSON request parsing, stable HTTP error mapping and WSGI-compatible request handling without provider/deployment coupling.
 
-### Acceptance criteria
+## Acceptance criteria
 
-1. Issue opaque bearer credentials only from explicit actor/client/grant input; raw token is returned once and only a cryptographic hash is retained.
-2. Sessions have stable session IDs, issued/expiry timestamps and explicit revocation; expired/revoked/unknown tokens fail authentication.
-3. Authentication reconstructs the exact `AuthenticatedPrincipal` grants; no relationship/provider/device identity can add grants implicitly.
-4. WSGI HTTP boundary exposes bounded `/v1/query` and `/v1/commands` POST routes plus a non-secret `/v1/health` GET route.
-5. Protected routes require `Authorization: Bearer`; malformed/missing credentials return 401 without calling service state.
-6. Optional `require_https` transport hook rejects protected cleartext requests before authentication/service execution.
-7. Request bodies are JSON objects with bounded content length; malformed/oversized/unknown routes/methods fail explicitly.
-8. JSON requests are converted to existing 001A envelopes only; transport layer does not duplicate canonical policy/authorization/state semantics.
-9. API errors map deterministically to HTTP status + `{error:{code,message}}`; unexpected failures do not leak internals.
-10. Successful responses serialize exact service result/readback information without secrets.
-11. Deterministic tests cover issuance/authentication, token hashing, expiry/revocation, HTTPS gate, 401/403/409/404/400 mapping, query/command success and no-service-call auth failures.
-12. No external network deployment, TLS certificate management, provider adapter, Google, Android, evidence store or legacy production state.
+1. Issue opaque bearer credentials only from explicit actor/client/grant input; raw token returned once and only cryptographic hash retained.
+2. Stable session IDs, issue/expiry timestamps and explicit revocation; expired/revoked/unknown tokens fail authentication.
+3. Authentication reconstructs exact `AuthenticatedPrincipal` grants; no implicit relationship/provider/device grants.
+4. WSGI boundary exposes POST `/v1/query`, POST `/v1/commands`, GET `/v1/health` only.
+5. Protected routes require Bearer auth; malformed/missing credentials return 401 without service-state calls.
+6. Optional `require_https` rejects protected cleartext before authentication/service execution.
+7. JSON body must be object and bounded by content length; malformed/oversized/unknown route/method fail explicitly.
+8. Transport converts JSON to existing 001A envelopes only; canonical policy remains in `ApiService`.
+9. API errors map deterministically to HTTP status + stable JSON error shape; unexpected errors hide internals.
+10. Success responses serialize exact service result/readback information without secrets.
+11. Deterministic tests cover issuance/hash/expiry/revoke, HTTPS/401, status mapping, query/command success and no-service-call auth failures.
+12. No deployment/TLS certificate/provider/Google/Android/evidence/legacy-production work.
+
+## Scope guard
+
+Allowed:
+- in-memory session credential store/authenticator;
+- WSGI-compatible transport adapter;
+- request/response serialization and error mapping;
+- deterministic tests and package exports.
+
+Excluded:
+- Internet/cloud deployment;
+- certificate/proxy configuration;
+- provider adapters;
+- Google state;
+- Android/client implementation;
+- evidence store;
+- cross-person permission engine;
+- legacy production state.
 
 ## Exact next action
 
-1. Create `impl/g1-003b-http-auth-boundary` from this exact main checkpoint.
-2. Activate `M2-G1-003B` on the branch.
-3. Implement session auth + WSGI transport and deterministic tests.
-4. Require full local + GitHub CI green.
-5. Merge exact verified head; then `API-CORE-001` is complete and the next packet is `CORE-SYNTHETIC-ROUNDTRIP`.
+1. Implement `mira/http_transport.py` and tests.
+2. Update package exports.
+3. Run full suite, bounded PR, remote CI.
+4. Merge exact green head.
+5. Mark `API-CORE-001` umbrella complete/test-verified and activate `CORE-SYNTHETIC-ROUNDTRIP`.
 
 ## Recovery protocol
 
