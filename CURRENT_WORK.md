@@ -1,86 +1,50 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active packet and its exact resume point.
+Git is authoritative. This file records the completed packet and exact successor-selection point.
 
-## Completed packet before this branch
+## Completed packet
 
-### `M2-G0-008E` — Android/mobile client boundary audit — legacy G10
+### `M2-G0-008F` — Machine-readable feature catalog and code-ownership integrity audit — legacy G19 + G20
 
-- **Merged PR:** #32
-- **Merge SHA / main readback:** `4403af395c56677d30c9cfcae811057933ad27ce`
-- **Post-merge completion checkpoint / this branch start SHA:** `c7b9c1269939a41f12172eedf96010251847b664`
-- **Result:** `CLIENT-ANDROID-001` is canonical; Android remains a shared-`API-001` client and direct provider-authority mutation is rejected.
-
-## Active packet
-
-- **Packet ID:** `M2-G0-008F`
-- **Name:** Machine-readable feature catalog and code-ownership integrity audit — legacy G19 + G20
-- **Class:** forensic audit / governance and release-integrity prerequisite
 - **Repository:** `Matthew-Beare/Mira-2.0`
+- **Merged PR:** #33
+- **Merge SHA / main readback:** `4e332385c6394f58bfce88a03256ebaeec59ef99`
 - **Branch:** `audit/g0-008f-catalog-code-integrity`
 - **Branch start SHA:** `c7b9c1269939a41f12172eedf96010251847b664`
-- **Activation commit:** `d25063b86006ac3d79b8ddb122189fc88f1205d0`
 - **Research checkpoint:** `d0cb02666c918afc24068b4249638aab4d482015`
 - **Feature normalization:** `32fad9c2c0b063e09eb5de04e241c034a2aae90c`
 - **Backlog normalization:** `cdfb42510941ed6117241dc5964ac0484791f6cc`
-- **Status:** acceptance complete; final diff gate, PR, merge and main readback remain.
+- **Packet-close head:** `feb734b9d4f4947e8a8254d341e0e34f437602b3`
+- **Server-side file scope verified:** exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md`.
+- **Result:** `DEV-005` and `DEV-006` are canonical; generated feature views remain derived from `FEATURES.md`; row-position feature identity is rejected; component ownership replaces one-file/one-feature anti-bloat logic; `FEATURE-REGISTRY-001` and `CODE-OWNERSHIP-001` are queued and `DEP-GRAPH` now depends on the stable registry.
 
-## Canonical result
+## Current product-state checkpoint
 
-1. Added **`DEV-005` — Machine-readable projection of canonical feature/dependency/evidence state with reproducible generation and CI drift enforcement**.
-2. Added **`DEV-006` — Production component ownership and direct-verification inventory with anti-bloat/unowned-code release gate**.
-3. `FEATURES.md` remains the sole canonical feature authority. JSON/Markdown/dashboard catalogs are generated projections only.
-4. Stable semantic IDs are authored identities and never generated from row order, title text or display order. Legacy `<category>-<row_number>` identity is rejected.
-5. Requirement state, implementation evidence, test evidence, integration evidence and live evidence remain distinct. File existence or a matching regex cannot upgrade feature evidence.
-6. `FEATURE-REGISTRY-001` will implement the MIRA 2.0 stable-ID parser/schema/generator/drift gate and is now a prerequisite for `DEP-GRAPH`.
-7. `DEV-006` is component-based, not one-file/one-feature. Every production artifact must map to exactly one bounded component; one component may own several cohesive files.
-8. `CODE-OWNERSHIP-001` will implement the language-neutral component ownership/direct-evidence gate. Unowned or overlapping production ownership fails closed.
-9. Anti-bloat means no unowned/duplicated responsibilities, accidental debug/test payloads or unjustified parallel implementations; it does not reward arbitrary file fragmentation.
-10. Python AST/style/security rules found in the legacy implementation remain language-specific profiles rather than universal MIRA architecture.
-11. Legacy G19/G20 implementation and CI at `MIRA-Personal-Production` commit `2c2824c70ddc3268c25333063eb61428817a5bf4` remain valid legacy test evidence only; no MIRA 2.0 executable implementation is claimed.
-12. No protected legacy provider/production state or executable MIRA 2.0 product code changed in this packet.
+Android architecture is substantially specified but MIRA 2.0 implementation has not started. There is no MIRA 2.0 APK yet. The critical implementation path remains `AUTHORITY-REGISTRY-001` + `STORE-ADAPTER-001` -> `API-CORE-001` -> `CORE-ROUNDTRIP` -> `ANDROID-CLIENT-CORE-001` -> `ANDROID-SYNC`, followed by native delivery/capture and signed-release hardening.
 
-## Android product-state checkpoint
+## Remaining G0 closeout
 
-This packet does not change the Android implementation percentage. The current critical Android path remains:
+Before new product implementation, finish:
 
-1. `AUTHORITY-REGISTRY-001` + `STORE-ADAPTER-001`;
-2. `API-CORE-001` shared service runtime;
-3. `CORE-ROUNDTRIP` stock ChatGPT proof;
-4. `ANDROID-CLIENT-CORE-001`;
-5. `ANDROID-SYNC` proving Android and ChatGPT share one canonical entity;
-6. native delivery/capture and signed release hardening.
+1. remaining forensic ledger rows F21-F23 and G2-G6/G8-G9/G11-G15;
+2. G0-009 meaningful legacy branch/PR reconciliation against stable IDs;
+3. G0-010 final dependency graph/dedupe/ranked implementation backlog.
 
-Legacy Android code has successful CI build evidence, but there is still no MIRA 2.0 APK or shared-API integration proof.
-
-## Acceptance criteria
-
-1. Stable semantic feature boundary for G19/G20. **Satisfied: `DEV-005`, `DEV-006`.**
-2. `FEATURES.md` remains sole feature authority. **Satisfied.**
-3. Stable authored feature identity and no row-position identity. **Satisfied.**
-4. Requirement/evidence/dependency projection without false evidence promotion. **Satisfied.**
-5. Reproducible generated projection and material drift gate defined. **Satisfied at specification boundary; legacy test evidence exists.**
-6. Component ownership/direct-verification semantics defined. **Satisfied at specification boundary; legacy Python test evidence exists.**
-7. Anti-bloat avoids one-file/one-feature fragmentation. **Satisfied.**
-8. Language-specific rules remain implementation profiles. **Satisfied.**
-9. `AUDIT-G19-G20`, `FEATURE-REGISTRY-001`, `CODE-OWNERSHIP-001` and `DEP-GRAPH` dependencies normalized in `BACKLOG.md`. **Satisfied.**
-10. No production/provider state or executable MIRA 2.0 changes. **Satisfied.**
-11. Bounded PR/merge/readback. **Pending.**
+These are closeout/reconciliation packets, not new product design. Most remaining rows are already partially covered by audited provider/distribution/onboarding semantics or are optional/later infrastructure and should be reconciled rather than reinvented.
 
 ## Exact next action
 
-1. Compare `audit/g0-008f-catalog-code-integrity` against `main`; require zero commits behind and exactly `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` changed.
-2. Open bounded PR to `main`.
-3. Verify GitHub server-side changed filenames, exact head SHA and mergeability.
-4. Merge using the exact verified head SHA.
-5. Read back `DEV-005`, `DEV-006`, `AUDIT-G19-G20`, `FEATURE-REGISTRY-001`, `CODE-OWNERSHIP-001` and this completion checkpoint from `main`.
-6. Dependency-rank and activate one bounded successor packet. Prefer a closeout packet that reconciles the remaining F21-F23/G2-G6/G8-G9/G11-G15 rows without drifting into implementation, so G0 can finish and implementation can begin.
+1. Activate `M2-G0-008G` from this checkpoint to reconcile all remaining unaudited feature-ledger rows without implementation.
+2. Map each remaining row to existing stable IDs where possible; add a new semantic ID only when the requirement is genuinely distinct.
+3. Mark optional/later infrastructure honestly rather than creating blockers for M2-M0/M2-M1.
+4. Close category F and remaining category-G ledger coverage.
+5. Then proceed to G0-009 legacy reconciliation and G0-010 dependency closeout.
 
 ## Recovery protocol
 
 On any new conversation/session:
 1. read this file first;
-2. verify repository/branch/head;
+2. verify `main` and the successor branch when one exists;
 3. continue from the exact next action;
-4. do not broaden scope from chat history;
-5. capture unrelated customer ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
+4. do not reconstruct unfinished work from chat memory when Git contains the checkpoint;
+5. capture unrelated ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
