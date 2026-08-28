@@ -1,86 +1,76 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active implementation packet and its resume point.
+Git is authoritative. This file records the completed feature-registry gate and exact successor.
 
-## Completed packet before this branch
-
-### `M2-G1-004` — Synthetic HTTP roundtrip integration proof
-
-- **Merged PR:** #41
-- **Merge SHA / main readback:** `3f6a616f3b71f9724d2d51b0e03d3a85d14cef94`
-- **Post-merge completion checkpoint / this branch start SHA:** `4fd0de9441ed549200eb7039d18ab25145309a1c`
-- **Remote CI:** GitHub Actions run `33210781237`; compile + full unit/integration suite passed.
-- **Result:** `CORE-SYNTHETIC-ROUNDTRIP` is integration-verified.
-
-## Active packet
+## Completed packet
 
 ### `M2-G1-005` — Machine-readable feature registry gate
 
 - **Work ID:** `FEATURE-REGISTRY-001`
-- **Class:** implementation / repository-growth prerequisite
-- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Merged PR:** #42
+- **Merge SHA / main readback:** `d635d45cbdfc66dc8f3e8d9eda765340045a9111`
 - **Branch:** `impl/g1-005-feature-registry`
 - **Branch start SHA:** `4fd0de9441ed549200eb7039d18ab25145309a1c`
-- **Parser/validator/generator:** `0a81110536ed3d4906796d606d9026c944d5697c`
-- **Deterministic tests:** `55e918c4b0ec67f3f5599b34235250e063d1b2e8`
-- **CI registry gate:** `1017671b14d8f2a9b8d49159c19c287089be464c`
-- **Canonical dependency repair:** `e15d3ec6f029967cb59849b54467ca42e2bf1cd9`
-- **PR:** #42
-- **Status:** implementation/test/CI content committed; first CI failure correctly exposed invalid work-ID dependencies in canonical `FEATURES.md`; source repaired; second CI run pending.
+- **CI-verified PR head:** `3d4e89cb744675b6e7f595589719a1fede1c2938`
+- **GitHub Actions run:** `33211317703`
+- **Remote verification:** compile succeeded; canonical feature-registry validation succeeded; full unit/integration suite succeeded.
+- **Failure-driven repair evidence:** initial run `33211154761` correctly rejected `LOCATION-STATE-001` as an unknown feature dependency. `MOVE-001` and `INV-002` were repaired to retain `LOC-001` as the semantic feature dependency without weakening the validator.
+- **Result:** `FEATURES.md` is the only editable feature authority; authored IDs, malformed/duplicate/unknown/self/cyclic dependencies and deterministic source-bound JSON projection are CI-enforced.
 
-## Engineering decision
+## Product-state checkpoint
 
-`FEATURES.md` remains the only editable feature authority. Machine-readable JSON is generated on demand from those exact source bytes and is never checked in as a second editable registry. CI validates the source graph and deterministic generation on every change.
+MIRA 2.0 currently has:
+- structured canonical state: implemented/test-verified;
+- Authority Registry: implemented/test-verified;
+- API service semantics: implemented/test-verified;
+- scoped bearer auth + HTTP transport: implemented/test-verified;
+- synthetic HTTP canonical roundtrip: integration-verified;
+- machine-readable feature/dependency registry gate: implemented/test-verified.
 
-## Implemented component
+Google/provider deployment and Android shared-state proof are still pending.
 
-Component: **feature-registry**
+## Selected successor
 
-Owned production surface:
-- `mira/feature_registry.py` — canonical feature-index parser, graph validator, deterministic JSON projection and CLI.
+### `M2-G1-006` — Production component ownership and anti-bloat gate
 
-Direct verification:
-- `tests/test_feature_registry.py` — malformed row, duplicate/invalid ID, unknown/self/duplicate dependency, deterministic cycle path, deterministic projection/source hash, mapping-section isolation and real-repository validation.
-- `.github/workflows/ci.yml` — runs `python -m mira.feature_registry check FEATURES.md` before the full unit suite.
+- **Work ID:** `CODE-OWNERSHIP-001`
+- **Class:** implementation / repository-growth prerequisite
+- **Planned branch:** `impl/g1-006-code-ownership`
+- **Dependencies satisfied:** `DEV-006`, `DEV-001`, and `FEATURE-REGISTRY-001` are specified/available; current production surface is small enough to inventory exactly.
 
-## First CI evidence and canonical repair
+### Objective
 
-GitHub Actions run `33211154761` failed specifically at the new **Feature registry** step after compile succeeded:
+Implement a language-neutral production-component ownership manifest and CI validator so every production artifact has exactly one bounded owner, relevant feature/work linkage and direct verification evidence before provider/client code fan-out.
 
-`feature INV-002 depends on unknown feature ID LOCATION-STATE-001`
+### Acceptance criteria
 
-Inspection showed both `INV-002` and `MOVE-001` incorrectly included implementation work ID `LOCATION-STATE-001` in the semantic feature dependency column. Both already depended on canonical feature `LOC-001`. The repair removes `LOCATION-STATE-001` from those feature rows; no replacement feature, alias, or validator exception was added.
-
-This preserves the rule that `FEATURES.md` contains feature-to-feature semantic dependencies only; implementation work dependencies remain in `BACKLOG.md`.
-
-## Acceptance criteria status
-
-1. Parse only canonical `## Feature index` records. **Implemented/test-covered.**
-2. Preserve authored stable semantic IDs exactly. **Implemented/test-covered.**
-3. Parse title/requirement/evidence/dependencies distinctly. **Implemented/test-covered.**
-4. Reject malformed rows, duplicate/invalid IDs, self/unknown dependencies. **Implemented/test-covered.**
-5. Detect dependency cycles deterministically. **Implemented/test-covered.**
-6. Deterministic JSON includes schema version and exact source path/SHA-256. **Implemented/test-covered.**
-7. Identical source bytes generate byte-for-byte identical JSON. **Implemented/test-covered.**
-8. CLI supports `check` and `json` without source mutation/second registry. **Implemented.**
-9. CI validates actual `FEATURES.md` on every PR/push. **Implemented; first failure proved gate is active.**
-10. Tests cover bad fixtures and actual repository registry. **Implemented; full run pending after source repair.**
-11. Repair canonical dependency errors rather than weakening validation. **Satisfied for discovered `LOCATION-STATE-001` defect.**
-12. No product runtime/provider/Android/legacy-state changes. **Satisfied.**
+1. Check in one canonical ownership manifest containing stable component IDs, responsibilities, why-separate rationale, owned production paths, relevant feature IDs, work IDs and direct verification paths.
+2. Define production roots explicitly; all production artifacts under those roots must be owned exactly once.
+3. Reject unowned production artifacts, duplicate/overlapping ownership, nonexistent owned paths and ownership outside declared production roots.
+4. Validate referenced feature IDs against the machine-readable `FEATURES.md` registry.
+5. Validate referenced work IDs against canonical `BACKLOG.md` work rows.
+6. Require at least one direct verification path per component and reject missing/non-test verification paths.
+7. Python verification profile proves referenced test files materially reference/import the owned Python module rather than merely existing.
+8. Component can own multiple cohesive files; validator does not impose one-file/one-feature or arbitrary file-count minimization.
+9. CI runs the ownership gate before the full unit suite.
+10. Deterministic tests cover unowned/overlap/missing path/unknown feature/work/missing verification and the real repository manifest.
+11. Inventory all current `mira/*.py` production files without reclassifying tests/docs/workflows as product code.
+12. No provider/Google/Android/legacy production state changes.
 
 ## Exact next action
 
-1. Verify the PR-triggered CI run for repaired head succeeds through registry validation and full suite.
-2. If another canonical graph defect appears, repair `FEATURES.md` rather than weakening validation and rerun.
-3. Verify PR #42 changed-file scope and mergeability at exact green head.
-4. Merge/read back `main` and checkpoint `FEATURE-REGISTRY-001` as test-verified.
-5. Activate `M2-G1-006` / `CODE-OWNERSHIP-001` before provider/client fan-out.
+1. Create `impl/g1-006-code-ownership` from this exact main checkpoint.
+2. Activate `M2-G1-006` on that branch.
+3. Inventory current production files and map them into bounded components.
+4. Implement manifest validator/tests and CI gate.
+5. Require exact PR scope and remote CI green, merge/read back main.
+6. Then proceed to Wave 2 provider/deployment work, beginning with the isolated MIRA 2.0 data sandbox.
 
 ## Recovery protocol
 
 On any new conversation/session:
 1. read this file first;
 2. verify repository/branch/head;
-3. continue from exact next action;
+3. continue from the exact next action;
 4. do not broaden scope from chat history;
 5. capture unrelated ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
