@@ -59,26 +59,26 @@ These waves are the shortest safe path to a real shared-state Android proof. Lat
 | Rank | Work ID | Class | Work | Dependencies | Status |
 |---:|---|---|---|---|---|
 | 1 | `STORE-ADAPTER-001` | PREREQUISITE | Umbrella implementation of `STORE-001`; split into bounded structured-state and evidence-store packets rather than one mega-packet. | STORE-001,RECOVERY-002 | split; children below |
-| 1a | `STORE-ADAPTER-001A` | PREREQUISITE | **First implementation packet:** provider-neutral structured-state interface plus deterministic in-memory synthetic adapter; health/schema, exact read, bounded query, idempotent upsert, append event, revision/readback, audit-friendly errors. No network/provider/evidence-store work. | STORE-001,RECOVERY-002 | **NEXT after G0-010** |
+| 1a | `STORE-ADAPTER-001A` | PREREQUISITE | **First implementation packet:** provider-neutral structured-state interface plus deterministic in-memory synthetic adapter; health/schema, exact read, bounded query, idempotent upsert, append event, revision/readback, audit-friendly errors. No network/provider/evidence-store work. | STORE-001,RECOVERY-002 | complete; merged/test-verified |
 | 1b | `STORE-ADAPTER-001B` | PREREQUISITE | Provider-neutral evidence-store interface plus synthetic hash-preserving evidence put/read/metadata/retention/export/readback. | STORE-001,RECOVERY-002,STORE-ADAPTER-001A | queued; not required for minimal entity roundtrip |
-| 2 | `AUTHORITY-REGISTRY-001` | PREREQUISITE | Persistent `AUTH-001` registry and exact data-class routing using registered adapters; one active canonical authority per mutable class, no direct client/model authority mutation. | AUTH-001,RECOVERY-002,STORE-ADAPTER-001A | queued |
-| 3 | `API-CORE-001` | BLOCKER | Shared `API-001` runtime with actor/client authentication, same-user resource/action authorization, mandatory idempotency/API-schema preflight, conflict handling, audit, canonical write and exact readback through Authority Registry/structured adapter. Cross-person commands fail closed until `PERMISSION-SCOPE-001`. | API-001,AUTH-001,STORE-001,RECOVERY-002,AUTHORITY-REGISTRY-001,STORE-ADAPTER-001A | queued; legacy candidates selective salvage only |
-| 4 | `CORE-SYNTHETIC-ROUNDTRIP` | PREREQUISITE | Create/read/mutate/replay/read-back one canonical synthetic entity through `API-CORE-001`; prove conflict/idempotency/readback without external provider state. | API-CORE-001,AUTHORITY-REGISTRY-001,STORE-ADAPTER-001A | queued |
+| 2 | `AUTHORITY-REGISTRY-001` | PREREQUISITE | Persistent `AUTH-001` registry and exact data-class routing using registered adapters; one active canonical authority per mutable class, no direct client/model authority mutation. | AUTH-001,RECOVERY-002,STORE-ADAPTER-001A | complete in `M2-M0-003`; persisted routing provider-readback verified |
+| 3 | `API-CORE-001` | BLOCKER | Shared `API-001` runtime with actor/client authentication, same-user resource/action authorization, mandatory idempotency/API-schema preflight, conflict handling, audit, canonical write and exact readback through Authority Registry/structured adapter. Cross-person commands fail closed until `PERMISSION-SCOPE-001`. | API-001,AUTH-001,STORE-001,RECOVERY-002,AUTHORITY-REGISTRY-001,STORE-ADAPTER-001A | complete; merged/test-verified same-user API core |
+| 4 | `CORE-SYNTHETIC-ROUNDTRIP` | PREREQUISITE | Create/read/mutate/replay/read-back one canonical synthetic entity through `API-CORE-001`; prove conflict/idempotency/readback without external provider state. | API-CORE-001,AUTHORITY-REGISTRY-001,STORE-ADAPTER-001A | complete; merged/test-verified |
 
 ### Wave 1.5 — repository growth gates
 
 | Rank | Work ID | Class | Work | Dependencies | Status |
 |---:|---|---|---|---|---|
-| 5 | `FEATURE-REGISTRY-001` | PREREQUISITE | Implement `DEV-005` parser/generator/drift gate from canonical `FEATURES.md`; authored semantic IDs only. | DEV-005,DEV-001,DEV-003 | queued; early growth gate, not G0 prerequisite |
-| 6 | `CODE-OWNERSHIP-001` | PREREQUISITE | Implement `DEV-006` component ownership/direct-evidence manifest and central unowned/overlap gate; language-specific static rules remain profiles. | DEV-006,DEV-001 | queued; early growth gate |
+| 5 | `FEATURE-REGISTRY-001` | PREREQUISITE | Implement `DEV-005` parser/generator/drift gate from canonical `FEATURES.md`; authored semantic IDs only. | DEV-005,DEV-001,DEV-003 | complete; CI-enforced |
+| 6 | `CODE-OWNERSHIP-001` | PREREQUISITE | Implement `DEV-006` component ownership/direct-evidence manifest and central unowned/overlap gate; language-specific static rules remain profiles. | DEV-006,DEV-001 | complete; CI-enforced |
 
 ### Wave 2 — managed shared API + Google-backed stock ChatGPT proof (M2-M0)
 
 | Rank | Work ID | Class | Work | Dependencies | Status |
 |---:|---|---|---|---|---|
-| 7 | `DATA-SANDBOX` | PREREQUISITE | Create an isolated MIRA 2.0 Google/MIRROR development namespace with synthetic data only; inventory/read back exact resources and prove legacy production untouched. Full end-user bootstrap is explicitly out of scope. | DATA-001,AUTHORITY-REGISTRY-001 | queued; no `GOOGLE-BOOTSTRAP-001` dependency |
-| 8 | `GOOGLE-STORE-ADAPTER-001` | PREREQUISITE | Implement the minimal Google structured-state adapter needed for the first canonical entity proof against `DATA-SANDBOX`; exact identity/schema/read/write/readback, no Gmail/Calendar/scheduler/onboarding fan-out. | STORE-ADAPTER-001A,AUTHORITY-REGISTRY-001,DATA-SANDBOX | queued |
-| 9 | `API-DEPLOYMENT-001` | PREREQUISITE | Prove an ordinary-user-compatible managed/shared HTTPS deployment for `API-CORE-001` with server identity, scoped credentials, TLS, rate/audit controls and **no required self-hosted server**. Provider choice is implementation detail, not authority semantics. | API-CORE-001,CORE-SYNTHETIC-ROUNDTRIP | queued |
+| 7 | `DATA-SANDBOX` | PREREQUISITE | Create an isolated MIRA 2.0 Google/MIRROR development namespace with synthetic data only; inventory/read back exact resources and prove legacy production untouched. Full end-user bootstrap is explicitly out of scope. | DATA-001,AUTHORITY-REGISTRY-001 | complete; isolated synthetic Google namespace provider-readback verified |
+| 8 | `GOOGLE-STORE-ADAPTER-001` | PREREQUISITE | Implement the minimal Google structured-state adapter needed for the first canonical entity proof against `DATA-SANDBOX`; exact identity/schema/read/write/readback, no Gmail/Calendar/scheduler/onboarding fan-out. | STORE-ADAPTER-001A,AUTHORITY-REGISTRY-001,DATA-SANDBOX | complete in `M2-M0-002`; adapter test-verified + provider readback; live runtime OAuth is deployment evidence |
+| 9 | `API-DEPLOYMENT-001` | PREREQUISITE | Prove an ordinary-user-compatible managed/shared HTTPS deployment for `API-CORE-001` with server identity, scoped credentials, TLS, rate/audit controls and **no required self-hosted server**. Provider choice is implementation detail, not authority semantics. | API-CORE-001,CORE-SYNTHETIC-ROUNDTRIP | active/partial in `M2-M0-005`; runtime/readiness merged, live Cloud Run/provider/restart evidence blocked on control-plane access |
 | 10 | `CHATGPT-API-CLIENT-001` | PREREQUISITE | Prove the minimal supported stock-ChatGPT path to the deployed shared API using same-user scoped credentials/actions and no direct canonical-provider mutation. Full MIRA onboarding skill is not required for this proof. | API-DEPLOYMENT-001 | queued |
 | 11 | `CORE-ROUNDTRIP` | VERTICAL | **M2-M0:** stock ChatGPT create/read/mutate/replay/read-back one Google-backed canonical MIRROR entity through the shared deployed API. | CORE-SYNTHETIC-ROUNDTRIP,DATA-SANDBOX,GOOGLE-STORE-ADAPTER-001,API-DEPLOYMENT-001,CHATGPT-API-CLIENT-001 | provisional target |
 
@@ -191,15 +191,16 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 - Full `GOOGLE-BOOTSTRAP-001`, `MIRA-SKILL-001`, browser onboarding, Calendar/Gmail/scheduler setup, distribution, enterprise, local integrations, wearables and voice do **not** block M2-M0/M2-M1.
 - `PROFILE-013`/`PERMISSION-SCOPE-001` remain mandatory for cross-person/shared resources but do not over-block a same-user core entity roundtrip.
 - `API-DEPLOYMENT-001`, `CHATGPT-API-CLIENT-001`, and `GOOGLE-STORE-ADAPTER-001` make previously implicit M2-M0 deployment/client/provider gaps explicit without creating new semantic product authorities.
-- `STORE-ADAPTER-001A` is selected as the first implementation packet because every safe API/Android path depends on deterministic canonical structured-state semantics and it can be completed/tested without provider state.
+- `STORE-ADAPTER-001A` was selected as the first implementation packet because every safe API/Android path depends on deterministic canonical structured-state semantics and it can be completed/tested without provider state. It is now complete; `CURRENT_WORK.md` is authoritative for the active packet.
 
-## First implementation packet selected
+## Historical first implementation packet selection
 
 **Packet:** `M2-G1-001A` — Synthetic structured-state adapter core  
 **Related feature/work:** `STORE-001` / `STORE-ADAPTER-001A`  
+**Status:** completed; no longer active. See `CURRENT_WORK.md` for current work.  
 **Objective:** implement the smallest provider-neutral structured-state contract and deterministic in-memory adapter needed to prove exact read/write/readback semantics.
 
-Acceptance criteria for the packet:
+Acceptance criteria for the historical packet:
 1. bounded structured-state interface only; evidence store, Google, API, Android and provider provisioning are out of scope;
 2. health/schema inspection;
 3. exact read by stable ID and deterministic bounded query;
