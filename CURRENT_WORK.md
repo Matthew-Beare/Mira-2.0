@@ -1,80 +1,72 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active provider-integration packet and its resume point.
+Git is authoritative. This file records the completed Google sandbox packet and exact Google-backed state successor.
 
-## Completed packet before this branch
-
-### `M2-G1-006` — Production component ownership and anti-bloat gate
-
-- **Merged PR:** #43
-- **Merge SHA / main readback:** `1a8a3279ca3be55dac3371dab33155b996c0946b`
-- **Post-merge completion checkpoint / this branch start SHA:** `a0ab0541ec5317b2f73d473ef89be804856acc5c`
-- **Remote CI:** run `33211598736`; compile + feature registry + code ownership + full suite succeeded.
-- **Result:** repository growth gates are green before provider/client fan-out.
-
-## Active packet
+## Completed packet
 
 ### `M2-M0-001` — Isolated Google/MIRROR data sandbox
 
 - **Work ID:** `DATA-SANDBOX`
-- **Class:** provider integration prerequisite / protected-data boundary
-- **Repository:** `Matthew-Beare/Mira-2.0`
+- **Merged PR:** #44
+- **Merge SHA / main readback:** `2796562f5d1d9233141d598c9385851dd4789da9`
 - **Branch:** `integration/m0-001-google-sandbox`
 - **Branch start SHA:** `a0ab0541ec5317b2f73d473ef89be804856acc5c`
-- **Activation commit:** `f8573cf8fa419fb21676f1a274da09aa0a8b3faa`
-- **Status:** provider writes and readback complete; sanitized Git evidence committed by this change; bounded PR/merge next.
+- **CI-verified PR head:** `a1a2656806d479353d49555c90ddffa14a11deb4`
+- **GitHub Actions run:** `33211875224`
+- **Remote CI:** compile + feature registry + code ownership + full unit/integration suite succeeded.
+- **Provider result:** exact pre-write sandbox search found none; one isolated MIRA 2.0 sandbox and one `Structured State` child were created and provider-read-back; legacy LyfeOS folders were discovered and left untouched.
+- **Privacy result:** live provider IDs/URLs/account identifiers were not committed to public Git.
 
-## Objective
+## Product-state checkpoint
 
-Create and verify a separate Google Drive namespace for MIRA 2.0 synthetic integration work without touching, repurposing, migrating, or using any legacy MIRA production artifact as a fixture.
+MIRA 2.0 has an isolated Google provider namespace, but it does not yet have a Google-backed canonical adapter proof. The synthetic in-memory API stack remains integration-verified.
 
-## Provider privacy boundary
+## Selected successor
 
-Live Google Drive IDs, URLs, account identifiers, permissions and private content are intentionally omitted from this public repository. Git records only sanitized pass/fail evidence and generic resource roles.
+### `M2-M0-002` — Minimal Google structured-state adapter
 
-## Provider verification evidence
+- **Work ID:** `GOOGLE-STORE-ADAPTER-001`
+- **Class:** provider adapter implementation / M2-M0 prerequisite
+- **Planned branch:** `integration/m0-002-google-store-adapter`
+- **Dependencies satisfied:** `STORE-ADAPTER-001A`, `AUTHORITY-REGISTRY-001`, `DATA-SANDBOX`, feature-registry gate, code-ownership gate.
 
-- Pre-write exact folder search for `MIRA 2.0 Sandbox`: **0 results**.
-- Broader `MIRA` folder search: **0 matching folders** at search time.
-- Broader legacy `LyfeOS` folder search: **legacy folders were found** and explicitly left untouched; they were not renamed, moved, reused, read as fixtures, or modified.
-- Created exactly one new root-level folder named `MIRA 2.0 Sandbox`.
-- Provider metadata readback confirmed the new resource is a Drive folder with a root-level parent relationship.
-- Pre-child direct listing of the new sandbox: **empty**.
-- Created exactly one child folder named `Structured State` inside the new sandbox.
-- Child metadata readback confirmed its parent is the newly created sandbox.
-- Parent listing readback confirmed `Structured State` is the only direct child after the write.
-- Post-write exact search for `MIRA 2.0 Sandbox`: **exactly one result**.
-- No document, spreadsheet, state schema, credential, personal operational data, or legacy data was created/copied/modified in this packet.
+### Provider action timing note
 
-Provider resource identifiers were used only transiently for write/readback operations and are not persisted in public Git.
+Immediately after `M2-M0-001` merged and before this Git checkpoint was written, the successor work created the initial native Google Sheet resource for `M2-M0-002` and moved it under the verified `Structured State` sandbox child. This was successor-scope provider work, not a sandbox-packet acceptance change. The exact provider IDs remain private and are not recorded in Git.
 
-## Acceptance criteria
+### Objective
 
-1. Pre-write exact sandbox search. **Satisfied: absent before write.**
-2. At most one root-level sandbox and no legacy reuse. **Satisfied: one new sandbox created.**
-3. Dedicated `Structured State` child only inside verified parent. **Satisfied.**
-4. Generic/synthetic-only provider resources. **Satisfied: folder names only; no data payloads.**
-5. Metadata and parent relationships read back after writes. **Satisfied.**
-6. Legacy artifacts remain distinct/untouched. **Satisfied; legacy LyfeOS folders found but not modified.**
-7. Live provider IDs/URLs/account identifiers excluded from public Git. **Satisfied.**
-8. Sanitized verification evidence only. **Satisfied.**
-9. No Google Sheet/state schema yet. **Satisfied.**
-10. No Gmail/Calendar/scheduler/Android/deployment changes. **Satisfied.**
+Implement and integration-prove a minimal Google Sheets-backed `StructuredStateAdapter` path using only synthetic data inside the isolated MIRA 2.0 sandbox. Preserve the existing provider-neutral contract rather than letting Google Sheets become a second semantic authority model.
+
+### Acceptance criteria
+
+1. One native Google Sheet named `MIRROR Structured State - Synthetic` exists only inside the verified `Structured State` sandbox child.
+2. Sheet contains bounded `Metadata`, `Resources`, `Events`, and `Idempotency` tabs with synthetic-only state.
+3. Provider metadata/tab/range readback proves native conversion, placement, schema headers, and seed synthetic state.
+4. Implement a provider-neutral Sheets gateway boundary plus `GoogleSheetsStructuredStateAdapter` that satisfies existing `StructuredStateAdapter` semantics without embedding provider credentials/resource IDs.
+5. Stable caller-supplied resource/event IDs, monotonic revisions, bounded query, exact readback, append-only events, mandatory idempotency and stale-revision conflicts remain unchanged from synthetic contract.
+6. Google-specific row/tab persistence is isolated behind the adapter/gateway; API and Authority Registry code do not know sheet IDs/ranges.
+7. Unit tests use a deterministic fake Sheets gateway and cover create/read/query/update/replay/conflict/events/readback.
+8. Live provider integration proof performs at least one synthetic create/update/readback cycle in the sandbox Sheet and verifies provider values after each mutation.
+9. No personal operational data, legacy data, Gmail, Calendar, scheduler, or Android state.
+10. Live provider IDs/URLs/account identifiers are never committed to public Git.
+11. Update code ownership manifest for new production artifacts and keep all CI gates green.
+12. Bounded PR/merge/readback, then advance to managed API deployment.
 
 ## Exact next action
 
-1. Compare branch to `main`; expected changed file is only `CURRENT_WORK.md`.
-2. Open bounded provider-verification PR and require normal repository CI green.
-3. Merge exact green head/read back `main`.
-4. Checkpoint `DATA-SANDBOX` complete without provider IDs.
-5. Activate `GOOGLE-STORE-ADAPTER-001` next to create the first synthetic Google-backed structured-state resource inside the verified `Structured State` namespace.
+1. Create `integration/m0-002-google-store-adapter` from this exact checkpoint.
+2. Activate `M2-M0-002` and record the already-created provider resource only as sanitized evidence.
+3. Verify native spreadsheet metadata/tabs and bounded seed ranges.
+4. Implement Google Sheets gateway/adapter + tests and ownership mapping.
+5. Exercise a live synthetic provider mutation/readback in the sandbox.
+6. Require all CI gates green, merge/read back main, then select `API-DEPLOYMENT-001`.
 
 ## Recovery protocol
 
 On any new conversation/session:
 1. read this file first;
 2. verify repository/branch/head;
-3. continue from exact next action;
-4. never place live provider IDs/private data in public Git;
-5. rediscover the sandbox by exact provider search when its resource reference is needed;
-6. capture unrelated ideas in BACKLOG unless required for acceptance or explicitly reprioritized.
+3. rediscover sandbox/provider resources by exact provider search when needed;
+4. never commit live provider IDs/private data;
+5. continue only the active packet unless a blocker forces scope change.
