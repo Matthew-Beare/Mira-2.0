@@ -1,13 +1,14 @@
-"""Deterministic native Google Workspace mutation protocol for Personal MIRA.
+"""Deterministic native Google Workspace protocol for Personal MIRA.
 
 Stock ChatGPT can use its authenticated Google Drive/Sheets connection directly
-for the zero-infrastructure Personal lane.  This module defines the durable
-single-writer preflight/mutation/readback semantics that the orchestration layer
-must follow so direct connector writes remain compatible with STORE-001.
+for the zero-infrastructure Personal lane. This module defines the durable
+single-writer bootstrap/preflight/mutation/readback semantics that the
+orchestration layer must follow so direct connector writes remain compatible
+with AUTH-001 and STORE-001.
 
-It does not contain spreadsheet IDs, account data, credentials, or connector
-calls.  It produces runtime batchUpdate request shapes from already-grounded
-sheet IDs and provider state.
+It contains no spreadsheet IDs, account data, credentials, or connector calls.
+It produces runtime batchUpdate request shapes from already-grounded sheet IDs
+and freshly read provider state.
 """
 
 from __future__ import annotations
@@ -29,10 +30,18 @@ from .structured_state import (
 
 
 _ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+_PERSONAL_AUTHORITY_ID = "google-sheets-personal"
+_PERSONAL_BINDING_ID = "binding-entity"
+_PERSONAL_DATA_CLASS = "entity"
+_PERSONAL_SCHEMA_VERSION = "mira-structured-state-v1"
 
 
 class WorkspaceReadbackError(StructuredStateError):
     """Raised when native Google provider readback differs from the plan."""
+
+
+class WorkspaceBootstrapError(StructuredStateError):
+    """Raised when a copied Workspace starter cannot be safely initialized."""
 
 
 @dataclass(frozen=True)
@@ -137,6 +146,136 @@ class WorkspaceUpsertPlan:
                 }
             },
         )
+
+
+@dataclass(frozen=True)
+class WorkspaceBootstrapPlan:
+    """Atomic Authority + entity-binding initialization for one copied starter."""
+
+    authority: WorkspaceUpsertPlan
+    binding: WorkspaceUpsertPlan
+
+    @property
+    def idempotent_replay(self) -> bool:
+        return self.authority.idempotent_replay and self.binding.idempotent_replay
+
+    def batch_update_requests(
+        self,
+        *,
+        resources_sheet_id: int,
+        idempotency_sheet_id: int,
+        timestamp: str,
+    ) -> tuple[dict[str, object], ...]:
+        """Return zero requests on replay or one four-request atomic bootstrap."""
+
+        authority_requests = self.authority.batch_update_requests(
+            resources_sheet_id=resources_sheet_id,
+            idempotency_sheet_id=idempotency_sheet_id,
+            timestamp=timestamp,
+        )
+        binding_requests = self.binding.batch_update_requests(
+            resources_sheet_id=resources_sheet_id,
+            idempotency_sheet_id=idempotency_sheet_id,
+            timestamp=timestamp,
+        )
+        if bool(authority_requests) != bool(binding_requests):
+            raise WorkspaceBootstrapError(
+                "Workspace bootstrap is partially persisted; refuse non-atomic repair"
+            )
+        return authority_requests + binding_requests
+
+
+def plan_workspace_bootstrap(
+    *,
+    owner_id: str,
+    resource_rows: Sequence[tuple[int, ResourceRecord]],
+    idempotency_rows: Sequence[WorkspaceIdempotencyRecord],
+) -> WorkspaceBootstrapPlan:
+    """Plan first-run Personal Authority state for a clean copied Sheet.
+
+    Initialization is all-new or all-replay. A partial/conflicting bootstrap
+    fails closed so a copied starter never silently invents a second authority.
+    """
+
+    owner = _identifier(owner_id, "owner_id")
+    expected_binding_payload = {
+        "authority_id": _PERSONAL_AUTHORITY_ID,
+        "data_class": _PERSONAL_DATA_CLASS,
+    }
+    conflicting_bindings = [
+        record
+        for _, record in resource_rows
+        if record.resource_type == "authority_binding"
+        and record.payload.get("data_class") == _PERSONAL_DATA_CLASS
+        and (
+            record.resource_id != _PERSONAL_BINDING_ID
+            or dict(record.payload) != expected_binding_payload
+        )
+    ]
+    if conflicting_bindings:
+        raise WorkspaceBootstrapError(
+            "entity data class is already bound to a different persisted authority"
+        )
+
+    authority_payload = {
+        "adapter_key": "google-sheets",
+        "authority_id": _PERSONAL_AUTHORITY_ID,
+        "enabled": True,
+        "failure_domain": "google-sheets-personal",
+        "namespace": "mira-personal",
+        "owner_id": owner,
+        "resource_ref": "runtime:google-structured-state",
+        "schema_version": _PERSONAL_SCHEMA_VERSION,
+        "verified": True,
+    }
+    authority = plan_workspace_upsert(
+        "authority",
+        _PERSONAL_AUTHORITY_ID,
+        authority_payload,
+        idempotency_key="bootstrap-authority-google-sheets-personal",
+        expected_revision=0,
+        resource_rows=resource_rows,
+        idempotency_rows=idempotency_rows,
+    )
+    binding = plan_workspace_upsert(
+        "authority_binding",
+        _PERSONAL_BINDING_ID,
+        expected_binding_payload,
+        idempotency_key="bootstrap-binding-entity",
+        expected_revision=0,
+        resource_rows=resource_rows,
+        idempotency_rows=idempotency_rows,
+    )
+    if authority.idempotent_replay != binding.idempotent_replay:
+        raise WorkspaceBootstrapError(
+            "Workspace bootstrap is partially persisted; refuse non-atomic repair"
+        )
+    if authority.idempotent_replay:
+        if authority.record.payload.get("owner_id") != owner:
+            raise WorkspaceBootstrapError(
+                "persisted Personal authority belongs to a different owner identity"
+            )
+    return WorkspaceBootstrapPlan(authority=authority, binding=binding)
+
+
+def verify_workspace_bootstrap_readback(
+    plan: WorkspaceBootstrapPlan,
+    *,
+    resource_rows: Sequence[tuple[int, ResourceRecord]],
+    idempotency_rows: Sequence[WorkspaceIdempotencyRecord],
+) -> None:
+    """Require exact provider readback for both bootstrap records."""
+
+    verify_workspace_upsert_readback(
+        plan.authority,
+        resource_rows=resource_rows,
+        idempotency_rows=idempotency_rows,
+    )
+    verify_workspace_upsert_readback(
+        plan.binding,
+        resource_rows=resource_rows,
+        idempotency_rows=idempotency_rows,
+    )
 
 
 def plan_workspace_upsert(
@@ -356,10 +495,14 @@ def _cell(value: object) -> dict[str, object]:
 
 
 __all__ = [
+    "WorkspaceBootstrapError",
+    "WorkspaceBootstrapPlan",
     "WorkspaceIdempotencyRecord",
     "WorkspaceReadbackError",
     "WorkspaceUpsertPlan",
+    "plan_workspace_bootstrap",
     "plan_workspace_upsert",
+    "verify_workspace_bootstrap_readback",
     "verify_workspace_upsert_readback",
     "workspace_upsert_fingerprint",
 ]
