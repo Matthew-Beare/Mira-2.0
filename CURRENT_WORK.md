@@ -4,126 +4,100 @@ Git is authoritative. This file identifies exactly one active packet and the exa
 
 ## Product deployment invariant
 
-Default Personal MIRA is **Google Workspace first, zero infrastructure**. An ordinary user starts with Google Drive/Docs/Sheets and browser-managed Google authorization. Linux, SQL, Cloud Run, containers, tunnels and local services are advanced upgrade paths.
+Default Personal MIRA remains **Google Workspace first, zero infrastructure**. Stock ChatGPT may use the official same-user Google Drive/Sheets connection for the single-writer Personal lane. That convenience must not be generalized into unsafe multi-writer state mutation.
 
-Canonical ladder:
-1. Personal Google Workspace: Sheets as first structured MIRROR authority; stock ChatGPT uses its authenticated same-user Google Drive/Sheets connection as the Personal client authorization boundary. Bound Apps Script may provide embedded Google-side initialization/validation/automation but is not the required public API gateway for stock ChatGPT.
-2. Advanced profiles: Cloud Run, Linux VM, containers, SQL/local services or another stronger shared execution boundary when concurrency/infrastructure needs require one.
-3. Migration preserves `API-001`, `AUTH-001`, `STORE-001`; backend changes are explicit Authority/adapter cutovers, never dual writable masters.
+The Android milestone therefore adds a stronger shared execution boundary only where concurrency requires it. Provider-neutral `API-001`, `AUTH-001` and `STORE-001` remain canonical; no client becomes an independent authority and no dual writable masters are permitted.
 
-## Preserved displaced packet
-
-### `M2-M0-005` — Cloud Run credential + live Google deployment proof
-- Related work: `API-DEPLOYMENT-001B`.
-- Paused/deprioritized; not failed/deleted.
-- PR #48 merged `acb37af4aa378e8128d8591406859fe954af3474`; CI `33217543700` green.
-- PR #49 merged `3332081054d691eca646c1d7bb274d22096f1c62`; CI `33218561781` green.
-- Pre-pivot checkpoint: `c392b9b829fab989be8856c9272294c9907e409e`.
-- No live Cloud Run evidence claimed.
-
-## Active packet
+## Completed predecessor
 
 ### `M2-M0-006` — Google Workspace zero-infrastructure first run
 
-- **Primary work:** `API-DEPLOYMENT-001A`
-- **Adjacent client work:** `CHATGPT-API-CLIENT-001`, `CORE-ROUNDTRIP`
+- **Status:** complete and remotely verified.
+- PR #50 merge `e412405a475d1423edaac821d7a99481e4a6eb4b`; CI `33243206658` green.
+- PR #51 merge `641a7ce412bd0de46500c229910e52cb35a90bcc`; CI `33243533206` green.
+- PR #52 merge `07d79c3a72cc906e93316e213e282919a1fcc4ff`; CI `33243840207` green.
+- Closeout PR #53 merge `983444bf697a58a42c4482859d4fe7f0c17fb454`; CI `33274016785` green.
+- Proven Personal path: clean Workspace copy → Authority/binding bootstrap → stock ChatGPT native Google create/read/replay/mutate/readback with exact provider verification.
+- Truth boundary: native read-then-write Sheets mutation is single-writer only; it is not distributed compare-and-swap.
+
+### Preserved onboarding contract
+
+`ONBOARD-003`/`ONBOARD-004` remain preserved in Git and audited legacy source: four-question kickoff, resumable Interview Ledger, current AI-use/friction discovery, and evidence-first reuse of accessible conversation/files/connected sources. Full MIRA 2.0 interview runtime is still queued under `FIRSTBOOT-CORE-001` / `DISCOVERY-CORE-001`; this packet does not silently absorb it.
+
+## Preserved advanced deployment work
+
+### `M2-M0-005` — Cloud Run credential + live Google deployment proof
+
+- Related work: `API-DEPLOYMENT-001B`.
+- Paused/deprioritized as a Personal-baseline prerequisite; reusable candidate for stronger shared execution.
+- PR #48 merged `acb37af4aa378e8128d8591406859fe954af3474`; CI `33217543700` green.
+- PR #49 merged `3332081054d691eca646c1d7bb274d22096f1c62`; CI `33218561781` green.
+- Pre-pivot checkpoint: `c392b9b829fab989be8856c9272294c9907e409e`.
+- No live Cloud Run evidence is claimed.
+
+## Active packet
+
+### `M2-M1-001` — Concurrent canonical command boundary
+
+- **Primary work:** first bounded slice of `ANDROID-CLIENT-CORE-001`
+- **Related features:** `CLIENT-ANDROID-001`, `API-001`, `AUTH-001`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Closeout branch:** `integration/m0-006-closeout`
-- **Closeout base:** `07d79c3a72cc906e93316e213e282919a1fcc4ff`
-- **Status:** implementation/live acceptance is complete. Only Git reconciliation/CI/merge of the closeout checkpoint remains before the next packet is activated.
+- **Branch:** `integration/m1-001-concurrent-boundary`
+- **Base SHA:** `983444bf697a58a42c4482859d4fe7f0c17fb454`
+- **Status:** active architecture/contract packet; no Android UI or live canonical mutation yet.
 
 ## Objective
 
-Prove the ordinary-user Personal MIRA path without infrastructure administration. Stock ChatGPT uses the user's authenticated Google Drive/Sheets connection to access canonical MIRROR state while preserving MIRA Authority, revision, idempotency and exact-readback semantics.
+Select and prove the smallest stronger execution boundary that allows stock ChatGPT and a future Android client to submit canonical commands without racing direct Google Sheets read-then-write operations. The selected boundary must serialize or transactionally reject conflicting mutations, preserve MIRA's existing idempotency/revision/readback semantics, and keep Google Workspace as a valid Personal authority rather than forcing a product-model rewrite.
 
-Target first use: **copy starter → connect/authorize Google → initialize MIRA → use MIRA in ChatGPT**.
+This packet is deliberately **not** “build the Android app.” It establishes the safe command/mutation seam Android will depend on.
 
-## Acceptance evidence
+## Candidate boundary set
 
-### 1. No infrastructure prerequisite — PASSED
-No server, Cloud Run project, Linux/SQL administration, tunnel, terminal or paid OpenAI API was required for the Personal proof.
+Evaluate only credible minimal candidates:
 
-### 2. Clean/copyable Workspace starter — PASSED for live proof
-A copied synthetic workbook was sanitized to metadata/schema + empty Resources/Events/Idempotency tables. A separate reusable clean template was then created and verified with the same clean structure. No provider IDs, personal data or live row contents are committed to public Git.
+1. **Existing managed API / Cloud Run profile** — reuse the already-implemented `API-001` managed runtime and single-instance Google adapter path, adding whatever stronger concurrency semantics are actually required rather than rebuilding the product model.
+2. **Google-native serialized command worker** — a Workspace-side command inbox/worker is viable only if official Google behavior proves API-written commands can be processed reliably, authenticated clients cannot bypass the single writer, latency/recovery are acceptable, and the worker can provide deterministic command result/readback semantics.
 
-Deterministic public distribution promotion remains separate under `DIST-STARTER-001` / `STARTER-SANITIZE-001`; the live Drive template is evidence, not a Git source of truth.
+Do not select a design because it sounds elegant. Provider behavior must be verified from current authoritative documentation and backed by deterministic tests.
 
-### 3. Same MIRA semantics — PASSED
-`mira/workspace_native.py` preserves STORE-001-compatible request fingerprints, revision behavior, idempotency behavior, exact provider readback and failure categories. Google-specific transport does not create a second product model.
+## Acceptance criteria
 
-### 4. Canonical Authority — PASSED
-A clean copied workbook was bootstrapped from empty state to exactly one verified Google Sheets Authority plus one `entity` Authority binding. The Authority/binding + matching idempotency rows were written as one atomic four-request Sheets batch and read back exactly.
+1. **No direct multi-writer Sheets mutation.** ChatGPT native connector and Android may not both independently perform canonical read-then-write mutations.
+2. **One canonical mutation sequencer.** Every Android-era write reaches one execution boundary that owns revision/idempotency conflict decisions before the provider mutation.
+3. **Existing semantics preserved.** `API-001` command envelope, Authority routing, `STORE-001` revision/idempotency behavior and exact provider readback remain canonical.
+4. **Same-user authentication is explicit.** Stock ChatGPT and Android each have a supported authentication path; no secret is embedded in prompts, Sheet cells, public Git or URL query parameters.
+5. **Replay safety.** Same command/idempotency material returns the original result without duplicate provider mutation.
+6. **Conflict safety.** Two commands based on the same stale revision cannot both succeed.
+7. **Restart/retry safety.** Boundary restart or client retry cannot silently duplicate a successful command.
+8. **No dual writable masters.** The Personal native Sheets path must be placed in read-only/client-command mode when the stronger Android boundary becomes active for mutation.
+9. **Provider portability.** Google Sheets remains behind `STORE-001`; selection must not make Android depend on spreadsheet row coordinates or Google-specific schema.
+10. **Synthetic first.** Prove the command/concurrency contract with deterministic tests before any live Android or production-provider writes.
+11. **Legacy preservation.** No legacy MIRA production artifact is used as a fixture or modified.
+12. **Bounded scope.** No Android UI, notifications/TTS, camera/NFC/BLE, Gmail/Calendar fan-out, full onboarding port or Cloud Run live deployment unless required to prove the selected command boundary.
 
-### 5. Scoped authentication — PASSED
-Stock ChatGPT's official same-user Google Drive/Sheets connection is the Personal client authorization boundary. No bearer credential is hidden in Sheet cells, URL parameters, prompt text or Git.
+## Decision evidence required
 
-### 6. Google-backed roundtrip — PASSED
-On the clean copied starter:
-- a fresh entity and idempotency key were proven absent;
-- create + idempotency wrote atomically;
-- exact revision-1 provider readback passed;
-- replay preflight resolved same key + same material to the stored result and required zero additional write;
-- revision 1 was re-read before mutation;
-- revision-2 update + idempotency wrote atomically;
-- exact resource/idempotency provider readback passed.
+For each candidate, record:
+- client authentication feasibility for stock ChatGPT and Android;
+- whether API-originated writes trigger/queue Google-side execution as assumed;
+- concurrency/locking/transaction guarantees;
+- command latency and retry behavior;
+- restart/recovery semantics;
+- provider readback capability;
+- operational burden for an ordinary Personal user;
+- whether the design preserves the M2-M0 no-infrastructure baseline for users who do not enable Android.
 
-### 7. Browser-first — PASSED
-All live Personal proof actions used browser/account-connected Google capabilities only.
-
-### 8. Legacy preservation — PASSED
-Only isolated MIRA 2.0 synthetic/copied starter state was modified. Legacy production Google artifacts were not used as fixtures or mutated.
-
-### 9. Portability — PASSED as architecture/evidence boundary
-Provider-neutral `API-001`, `AUTH-001`, `STORE-001` remain intact. `AUTHORITY-MIGRATION-001` owns later controlled cutover. The native connector path is not promoted to universal multi-client architecture.
-
-### 10. Cloud Run nonblocking — PASSED
-Cloud Run remains advanced hardening at the preserved `M2-M0-005` checkpoint.
-
-## Merged implementation evidence
-
-### PR #50 — embedded Workspace read slice
-- merge: `e412405a475d1423edaac821d7a99481e4a6eb4b`
-- CI: `33243206658` green
-- copy-bound Apps Script initialization, health/schema/read-only query, persisted Authority resolution, commands fail closed, executable Apps Script tests.
-
-### PR #51 — native stock-ChatGPT Workspace protocol
-- merge: `641a7ce412bd0de46500c229910e52cb35a90bcc`
-- CI: `33243533206` green
-- deterministic single-writer native Google protocol; STORE-001 fingerprint/material parity; atomic resource+idempotency batches; replay/no-write; revision/idempotency conflicts; exact readback.
-
-### PR #52 — clean-copy Workspace bootstrap
-- merge: `07d79c3a72cc906e93316e213e282919a1fcc4ff`
-- CI: `33243840207` green
-- deterministic all-new/all-replay Personal Authority bootstrap; atomic four-request Authority+binding initialization; partial/conflicting bootstrap fails closed; live clean-copy bootstrap/provider proof recorded without provider IDs/private rows.
-
-## Concurrency boundary
-
-The Personal native Google path is intentionally **single writer**. Google Sheets `batchUpdate` is atomic inside each mutation, but a separate provider read followed by write is not distributed compare-and-swap. Android or another concurrent writer must not mutate Sheets directly through this protocol. M2-M1 must select/use a stronger shared execution boundary before enabling concurrent canonical mutation.
-
-## Onboarding interview preservation
-
-The user's existing new-user interview design is preserved as audited semantic/source evidence, not silently discarded:
-
-- `ONBOARD-003` requires exactly four kickoff questions before deeper discovery: system name, authoritative IANA timezone, broad life/work pattern, and biggest remembering/organizing/deciding/planning/follow-through problems.
-- Follow-up is bounded to at most four related questions at a time and persists a resumable Interview Ledger with `Answered`, `Resolved from evidence`, `Not applicable`, `Deferred`, and `Unresolved` behavior.
-- `ONBOARD-004` includes current AI-use/friction discovery and requires inspecting accessible current conversation, files/File Library, Drive/Calendar/email and other connected evidence before asking the user to rebuild history. Inaccessible prior chats must be disclosed rather than invented.
-- Preferences, permissions, sharing and destructive choices are never inferred from evidence.
-- Legacy detailed source remains in `MIRA-Public-Experimental` (`starter/START_HERE.md`, `starter/LIFE_INTERVIEW.md`, question banks).
-- **Truth boundary:** the full Interview Ledger/question-bank engine is not yet ported into MIRA 2.0 runtime code. `FIRSTBOOT-CORE-001` / `DISCOVERY-CORE-001` remain queued; the contract is preserved, not falsely claimed live.
-
-This clarification does not expand M2-M0-006 into onboarding implementation.
-
-## Scope control
-
-Do not fan out into Gmail, Calendar, scheduler, Ops Briefs, family sharing, Android implementation, enterprise, Linux/SQL implementation or Cloud Run during this closeout. Do not touch legacy production artifacts.
+Reject any candidate whose correctness depends on undocumented trigger behavior, best-effort polling being mistaken for a transaction, or two independent writers “probably not colliding.”
 
 ## Exact next action
 
-1. Open the `integration/m0-006-closeout` PR containing `ROADMAP.md`, `BACKLOG.md`, and this checkpoint.
-2. Run full CI and fix only reconciliation/integrity failures.
-3. Merge and remotely verify the merge/head.
-4. After merge, activate the next dependency-ranked packet. Current roadmap/backlog points to the first bounded M2-M1 prerequisite: select and prove the stronger concurrent execution boundary required before Android can become a canonical writer.
+1. Verify current official Google Apps Script trigger/LockService/web-app behavior relevant to API-written command queues and concurrent executions.
+2. Re-read the existing managed runtime/Cloud Run implementation and tests from main.
+3. Write a bounded architecture decision plus deterministic concurrency contract tests for the selected execution seam.
+4. Do not touch live provider state until those tests are green.
+5. Update `BACKLOG.md` only if the evidence changes dependency ordering or splits `ANDROID-CLIENT-CORE-001` further.
 
 ## Recovery protocol
 
-Read this file first. Verify main contains PR #52 merge `07d79c3a72cc906e93316e213e282919a1fcc4ff` or a descendant. If the closeout PR is still open, finish only `M2-M0-006`. If it is merged, treat M2-M0 core proof as complete and create the next packet from the verified merge head. Preserve Cloud Run checkpoint `c392b9b829fab989be8856c9272294c9907e409e`. Keep provider IDs, secrets, personal data and live row contents out of public Git.
+Read this file first. Verify main contains M2-M0 closeout merge `983444bf697a58a42c4482859d4fe7f0c17fb454` or a descendant. Continue only `M2-M1-001` on `integration/m1-001-concurrent-boundary`. Preserve M2-M0 Personal native Google proof as single-writer evidence; do not reinterpret it as safe Android concurrency. Preserve the Cloud Run checkpoint without claiming live proof. Keep provider IDs, secrets, personal data and live row contents out of public Git.
