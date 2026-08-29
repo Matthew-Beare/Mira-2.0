@@ -15,7 +15,7 @@ import re
 import sys
 from typing import Sequence
 
-from .feature_registry import FeatureRegistryError, load_registry
+from .feature_registry import FeatureRegistryError, parse_registry_bytes
 
 
 class WorkSessionAlignmentError(Exception):
@@ -25,7 +25,10 @@ class WorkSessionAlignmentError(Exception):
 _WORK_ROW_RE = re.compile(r"^\|\s*`(?P<id>[A-Z0-9][A-Z0-9-]+)`\s*\|")
 _ACTIVE_PACKET_RE = re.compile(r"^### `(?P<id>M2-[A-Z0-9-]+)`\s+—\s+.+$")
 _FIELD_RE = re.compile(r"^- \*\*(?P<label>[^*]+):\*\*\s*(?P<value>.+)$")
-_BACKTICK_ID_RE = re.compile(r"`([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}|[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)`")
+_BACKTICK_ID_RE = re.compile(
+    r"`([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}|[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)`"
+)
+_SESSION_ALIGNMENT_PREFIX = "## Session-start alignment verification"
 
 
 @dataclass(frozen=True)
@@ -60,6 +63,23 @@ def _section(text: str, heading: str) -> str:
         start = lines.index(heading) + 1
     except ValueError as exc:
         raise WorkSessionAlignmentError(f"CURRENT_WORK.md missing {heading!r}") from exc
+    return _section_after_index(lines, start)
+
+
+def _section_with_prefix(text: str, heading_prefix: str) -> str:
+    lines = text.splitlines()
+    matches = [
+        index for index, line in enumerate(lines) if line.startswith(heading_prefix)
+    ]
+    if not matches:
+        raise WorkSessionAlignmentError(
+            f"CURRENT_WORK.md missing heading beginning {heading_prefix!r}"
+        )
+    start = matches[-1] + 1
+    return _section_after_index(lines, start)
+
+
+def _section_after_index(lines: list[str], start: int) -> str:
     end = len(lines)
     for index in range(start, len(lines)):
         if lines[index].startswith("## "):
@@ -95,6 +115,16 @@ def _ids_from_field(fields: dict[str, str], label: str) -> tuple[str, ...]:
     return ids
 
 
+def _feature_ids(features: str) -> frozenset[str]:
+    try:
+        registry = parse_registry_bytes(
+            features.encode("utf-8"), source_path="FEATURES.md"
+        )
+    except FeatureRegistryError as exc:
+        raise WorkSessionAlignmentError(str(exc)) from exc
+    return frozenset(feature.feature_id for feature in registry.features)
+
+
 def check_alignment_texts(
     *,
     current_work: str,
@@ -102,11 +132,7 @@ def check_alignment_texts(
     backlog: str,
     roadmap: str,
 ) -> AlignmentReport:
-    try:
-        registry = load_registry_from_text(features)
-    except FeatureRegistryError as exc:
-        raise WorkSessionAlignmentError(str(exc)) from exc
-    feature_ids = frozenset(registry)
+    feature_ids = _feature_ids(features)
     work_ids = parse_backlog_work_ids(backlog)
 
     active = _section(current_work, "## Active packet")
@@ -128,7 +154,7 @@ def check_alignment_texts(
             "active features missing from FEATURES.md: " + ", ".join(unknown_features)
         )
 
-    alignment = _section(current_work, "## Session-start alignment verification — 2026-08-29")
+    alignment = _section_with_prefix(current_work, _SESSION_ALIGNMENT_PREFIX)
     for authority in ("### `FEATURES.md`", "### `BACKLOG.md`", "### `ROADMAP.md`"):
         if authority not in alignment:
             raise WorkSessionAlignmentError(
@@ -149,14 +175,6 @@ def check_alignment_texts(
         primary_work_ids=tuple(sorted(set(primary_work_ids))),
         feature_ids=tuple(sorted(referenced_features)),
     )
-
-
-def load_registry_from_text(text: str) -> tuple[str, ...]:
-    # Keep FEATURES.md parsing owned by the canonical feature-registry parser.
-    from .feature_registry import parse_registry_bytes
-
-    registry = parse_registry_bytes(text.encode("utf-8"), source_path="FEATURES.md")
-    return tuple(feature.feature_id for feature in registry.features)
 
 
 def check_paths(
