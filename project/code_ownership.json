@@ -117,6 +117,15 @@
       "verification": ["tests/test_onboarding.py"]
     },
     {
+      "id": "service-state",
+      "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
+      "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
+      "owned_paths": ["mira/service_state.py"],
+      "feature_ids": ["SERVICE-001", "SERVICE-002", "RECOVERY-002", "PROVIDER-001"],
+      "work_ids": ["SERVICE-STATE-001"],
+      "verification": ["tests/test_service_state.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation of canonical feature dependencies, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
