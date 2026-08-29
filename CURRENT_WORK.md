@@ -20,24 +20,43 @@ Provider-neutral `API-001`, `AUTH-001` and `STORE-001` remain canonical. No clie
 - Proven Personal path: clean Workspace copy → Authority/binding bootstrap → stock ChatGPT native Google create/read/replay/mutate/readback with exact provider verification.
 - Native read-then-write Sheets mutation is single-writer only; it is not distributed compare-and-swap.
 
-### Preserved onboarding contract
-
-`ONBOARD-003`/`ONBOARD-004` remain preserved in Git and audited legacy source: four-question kickoff, resumable Interview Ledger, current AI-use/friction discovery, and evidence-first reuse of accessible conversation/files/connected sources. Full MIRA 2.0 interview runtime remains queued under `FIRSTBOOT-CORE-001` / `DISCOVERY-CORE-001`; this packet does not absorb it.
-
 ## Active packet
 
 ### `M2-M1-001` — Concurrent canonical command boundary
 
-- **Primary work:** first bounded slices of `ANDROID-CLIENT-CORE-001`
+- **Primary work:** `ANDROID-COMMAND-BOUNDARY-001`, first prerequisite slice of `ANDROID-CLIENT-CORE-001`
 - **Related features:** `CLIENT-ANDROID-001`, `API-001`, `AUTH-001`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Provider-neutral sequencer PR #54:** merged `d21869d091cbcfce609d47665ef8872123f2be43`; CI `33274374052` green.
-- **Current child branch:** `integration/m1-001-workspace-worker`
-- **Child base SHA:** `d21869d091cbcfce609d47665ef8872123f2be43`
+- **Main implementation baseline:** PR #55 merge `1908629fc887b025a8acb2d6fd5321ca191ad0e7`
+- **Provider-neutral sequencer:** PR #54 merge `d21869d091cbcfce609d47665ef8872123f2be43`; CI `33274374052` green.
+- **Workspace queued-writer worker:** PR #55 merge `1908629fc887b025a8acb2d6fd5321ca191ad0e7`; CI `33274804921` green.
+- **Current requirement/governance capture branch:** `integration/m1-001-feature-contract-capture`
+- **Capture branch base:** `1a36010c2941a66a44c420fab441888cd76ac67c` (same product tree as PR #55 merge; intervening commits only removed accidental placeholder files)
 - **Architecture:** `docs/M1_CONCURRENT_COMMAND_BOUNDARY.md`
-- **Status:** provider-neutral sequencer merged/test-verified; synthetic Workspace Commands inbox + locked worker implemented and awaiting PR/CI. No live Google worker activation yet.
+- **Status:** synthetic concurrency and Workspace worker behavior are implemented/test-verified and merged. Live isolated Google Apps Script worker proof remains pending.
 
-## Selected architecture
+## Feature alignment
+
+### Primary behavior this packet must enable
+
+Android and stock ChatGPT must be able to participate in one canonical MIRROR reality without independent writers racing Google Sheets. The packet must establish one replay-safe mutation sequencer before Android becomes a canonical writer.
+
+### Product invariants this packet must preserve
+
+- `CORE-001`: product/assistant identity remains MIRA.
+- `API-001` / `AUTH-001` / `STORE-001`: Android is a client, not a second authority or alternate product model.
+- `DATA-001`: no legacy production artifact is a test fixture.
+- `ONBOARD-006`: ordinary Personal use remains browser-first/zero-infrastructure; Android must not retroactively force every user into Cloud Run/Linux/SQL.
+- `CAL-008` / `CAL-006`: the Android design must leave a clean path for appointment evidence capture from photos and preferred-Calendar projection rather than hard-coding entity-only UI or Google row coordinates.
+- `STUDIO-001`: Android/shared architecture must remain compatible with later user-generated bounded features/workflows and their declared dependencies.
+- `ONBOARD-003`: Android work must not replace or invalidate the four-question first-boot Interview Ledger contract.
+- `DEV-007`: passing concurrency tests does not permit a design that makes accepted downstream features impossible.
+
+### Explicitly deferred related features
+
+This packet does **not** implement Android UI, appointment photo/email parsing, preferred Calendar sync, reminder delivery, onboarding runtime, MIRA Studio, family sharing, Gmail/Calendar service fan-out, or Cloud Run live deployment. Those requirements are preserved in `FEATURES.md`/`BACKLOG.md` and must be re-read by the packet that implements them.
+
+## Selected command architecture
 
 For the ordinary Personal Android lane, use a **durable Google Workspace command inbox plus one serialized Apps Script worker** rather than allowing ChatGPT and Android to mutate canonical Sheets independently.
 
@@ -45,9 +64,11 @@ Command flow:
 
 `ChatGPT/Android command → Commands inbox → one ScriptLock worker → API-001 semantics → Authority → STORE-001 → exact readback → durable command result`
 
-The worker is asynchronous. Google documents that API writes do not fire installable edit triggers, so the inbox is polled by a time-driven trigger. Google supports a one-minute trigger cadence. Cloud Run remains the synchronous advanced profile if later accepted behavior requires consistently lower latency.
+The worker is asynchronous. Google documents that API writes do not fire installable edit triggers, so the inbox is polled by a time-driven trigger. The implementation uses a one-minute trigger cadence. Cloud Run remains the synchronous advanced profile if later accepted behavior requires consistently lower latency.
 
-## Merged provider-neutral proof
+## Completed M2-M1 synthetic evidence
+
+### Provider-neutral sequencer — merged
 
 `mira/command_sequencer.py` + `tests/test_command_sequencer.py` prove:
 
@@ -59,80 +80,117 @@ The worker is asynchronous. Google documents that API writes do not fire install
 
 PR #54 passed full CI and merged at `d21869d091cbcfce609d47665ef8872123f2be43`.
 
-## Current synthetic Workspace worker slice
+### Google Workspace queued-writer worker — merged
 
-### `workspace/apps_script/CommandWorker.gs`
+`workspace/apps_script/CommandWorker.gs` implements:
 
-Implemented:
-
-- dedicated 16-column `Commands` inbox carrying API-001 upsert material and durable result/error fields;
-- explicit `mutation_mode=queued_writer` activation in Metadata;
-- activation creates/validates exactly one one-minute Apps Script time-driven worker trigger;
-- trigger validation occurs **before** queued mode becomes authoritative, so activation failure leaves direct mode intact;
-- worker obtains `LockService.getScriptLock()` with bounded wait and flushes before release;
-- bounded processing of at most 20 pending commands per run;
-- first slice supports canonical `upsert` only;
+- dedicated `Commands` inbox carrying API-001 upsert material and durable result/error fields;
+- explicit `mutation_mode=queued_writer` activation;
+- exactly one one-minute Apps Script time-driven worker trigger;
+- activation validates/creates the trigger before queued mode becomes authoritative;
+- `LockService.getScriptLock()` critical section with bounded wait;
+- bounded command processing;
 - API/schema compatibility validation;
 - persisted Authority/binding resolution and same-user subject == Authority owner check;
-- STORE-001-compatible canonical request fingerprint;
+- STORE-001-compatible request fingerprint;
 - idempotency replay and same-key/different-material failure;
 - stale-revision conflict handling;
 - canonical Resource write + Idempotency append + exact readback;
-- command success persisted only after exact readback;
+- success acknowledgement only after exact readback;
 - retryable authority/readback/internal failures remain pending;
-- deterministic crash recovery when Resource write landed but Idempotency acknowledgement did not: Resource `last_idempotency_key` + `request_hash` + revision/payload prove the exact mutation, then the missing idempotency row is reconstructed without incrementing revision again.
+- recovery when Resource write landed but Idempotency acknowledgement did not, reconstructing the missing acknowledgement without incrementing revision again.
 
-This recovery protocol is intentional because SpreadsheetApp does not provide a documented cross-tab transaction for this path.
+`mira/workspace_native.py` fails closed on direct native mutation when `mutation_mode=queued_writer`, closing the second-writer side door.
 
-### Direct mutation side-door closed
+Executable fake-Apps-Script tests cover trigger activation, ScriptLock behavior, canonical create/readback, stale command conflict, crash/retry recovery, mode failure, and Authority-owner enforcement. PR #55 CI `33274804921` passed and merged at `1908629fc887b025a8acb2d6fd5321ca191ad0e7`.
 
-`mira/workspace_native.py` now accepts explicit mutation mode. `direct_single_writer` remains the default M2-M0 behavior. `queued_writer` raises `WorkspaceQueuedWriterRequiredError` and instructs orchestration to submit the API-001 command to the canonical inbox. Unknown modes fail validation.
+## Live proof blocker
 
-This is a MIRA software safety boundary, not a claim that a human file owner loses manual edit capability.
+The connected Google Drive/Sheets tooling available in this development environment can manipulate spreadsheet content but cannot create/update a bound Google Apps Script project. No installable Apps Script plugin/action is currently available.
 
-### Manifest / bundle
+Google's documented distribution behavior still supports the intended product: a whole spreadsheet copy carries its bound script, while installable triggers are per-user and can be created by `miraEnableQueuedWriter()` on that user's copy. Therefore the remaining provider step is to **seed one isolated MIRA 2.0 release/synthetic workbook with the Git-backed bound Apps Script**, then execute the live queued-writer proof on that isolated copy.
 
-- Apps Script manifest remains current-Sheet scoped and adds only the project trigger-management scope required for the worker.
-- `mira/workspace_bundle.py` now requires/validates `CommandWorker.gs`, ScriptLock, one-minute trigger construction and bounded scopes.
-- `workspace/apps_script/README.md` documents direct vs queued modes, asynchronous pending semantics, API-trigger limitations, crash recovery and the evidence boundary.
+Do not claim live worker evidence until that script is actually installed and provider behavior is read back.
 
-### Executable tests added
+## Newly refined product requirements captured during this packet
 
-`tests/apps_script/workspace_worker.test.js` provides a fake Workspace runtime with mutable Sheets, trigger management, ScriptLock and real SHA-256. It tests:
+These are durable requirements but **do not expand M2-M1-001 implementation scope**:
 
-1. queued-writer activation creates Commands + exactly one one-minute trigger and is idempotent;
-2. duplicate triggers fail before queued mode activation;
-3. worker locks, creates revision 1, writes one idempotency record, exact-readbacks and acknowledges success;
-4. two stale revision-0 commands produce one success + one terminal conflict;
-5. synthetic crash after Resource write but before Idempotency append leaves command pending; retry reconstructs acknowledgement and keeps revision 1;
-6. worker fails closed without queued mode and still releases ScriptLock;
-7. subject/Authority-owner mismatch is terminal authorization failure with no entity mutation.
+### Onboarding
 
-`tests/test_workspace_mutation_mode.py` verifies direct mode stays compatible, queued mode blocks native direct mutation, and unknown modes fail validation.
+`ONBOARD-003` is now explicitly:
+
+1. authoritative IANA timezone;
+2. broad life/work/study/caregiving pattern;
+3. biggest remembering/organizing/deciding/planning/follow-through goals;
+4. whether appointment/reminder help is wanted and, if so, preferred Calendar auto-sync lane.
+
+MIRA's name is fixed and must not be asked. After the four kickoff questions, onboarding tells the user they can ask MIRA at any time to continue the interview with additional questions that improve MIRA's function for them and introduces integrated MIRA Studio plus optional sharing.
+
+### Appointments
+
+`CAL-008` / `APPOINTMENT-INTAKE-001` explicitly require appointment evidence intake from inbound email, user-supplied image/photo, or user text. MIRA detects appointment intent, extracts date/time/timezone/location/provider/contact and provider specialty/type such as cardiologist, reconciles durable provider/appointment identity, preserves provenance/confidence, and only asks when material ambiguity remains.
+
+`CAL-006` / `CALENDAR-PROJECTION-001` require preferred-Calendar projection/sync with exact provider readback for the selected Google, Microsoft/Outlook/M365, or Apple/iCloud lane. Intake and Calendar-write success remain separate truths.
+
+Existing `MAIL-002` still means this requirement does **not** silently authorize MIRA to send outbound emails negotiating appointments with providers. The current interpretation is automatic appointment **capture/scheduling into the user's Calendar from received evidence**. Outbound provider contact remains a separate explicitly approved capability.
+
+### MIRA Studio
+
+`STUDIO-001` / `MIRA-STUDIO-001` define an integrated user-facing Studio for continuously improving MIRA through guided bounded features/workflows/preferences, preview/test/rollback, dependency/provenance awareness, and optional sanitized sharing. Shared/imported behavior never silently activates.
+
+### Development alignment
+
+`DEV-007` and the updated `project/WORK_PACKET_POLICY.md` require every implementation packet to read and record its alignment with the canonical feature set before implementation and before merge.
+
+## Android distance to first functional app
+
+The project is **past the architecture-foundation stage but not yet at an Android APK/UI stage**.
+
+Completed prerequisites:
+
+1. provider-neutral structured state;
+2. persistent Authority routing;
+3. shared API command/query semantics;
+4. stock ChatGPT Google-backed canonical roundtrip;
+5. provider-neutral concurrent command sequencer;
+6. synthetic Google Workspace queued-writer worker with conflict/replay/crash tests.
+
+Remaining critical slices before the first genuinely functional Android shared-state proof:
+
+1. live isolated Google queued-writer/trigger proof;
+2. Android project/client skeleton + same-user enrollment/authentication and OS-protected credentials;
+3. Android command submission/read path against the shared boundary;
+4. replay-safe offline queue + reconnect/cursor/conflict handling;
+5. Android mutates the exact canonical M2-M0 entity and stock ChatGPT reads it back;
+6. representative-device proof.
+
+So Android is no longer “we need to invent the backend.” It is roughly **one live provider gate plus four to five bounded client/integration slices away from the first ugly but real shared-state Android app**. Notifications/TTS, camera appointment capture, polished UI, signing/release, and broader services come after that first shared-state proof unless dependency evidence changes the order.
 
 ## Acceptance status
 
-1. No direct multi-writer Sheets mutation — implemented/test pending CI.
-2. One canonical mutation sequencer — provider-neutral proof merged; Workspace worker implemented/test pending CI.
-3. Existing API/Authority/STORE semantics — preserved by sequencer/worker design.
-4. Same-user authentication boundary — explicit; queued worker checks persisted Authority owner, no prompt/Sheet/URL/Git bearer secrets.
-5. Replay safety — merged sequencer proof + Workspace recovery tests pending CI.
-6. Stale conflict safety — merged sequencer proof + Workspace tests pending CI.
-7. Restart/retry safety — merged sequencer proof + Workspace partial-write recovery tests pending CI.
-8. No dual writable masters — direct native planner now fails in `queued_writer` mode; test pending CI.
-9. Provider portability — Android/domain command envelope does not depend on Sheet IDs/row coordinates.
-10. Synthetic first — satisfied so far; no live worker activation.
-11. Legacy preservation — no legacy production touched.
-12. Bounded scope — no Android UI, Gmail/Calendar fan-out, onboarding port or live Cloud Run work.
+1. No direct multi-writer Sheets mutation — test-verified/merged; live pending.
+2. One canonical mutation sequencer — test-verified/merged; live pending.
+3. Existing API/Authority/STORE semantics — preserved/test-verified.
+4. Same-user authentication boundary — specified/synthetic checked; live Android path pending.
+5. Replay safety — test-verified/merged.
+6. Stale conflict safety — test-verified/merged.
+7. Restart/retry safety — test-verified/merged.
+8. No dual writable masters — direct native planner guard test-verified/merged.
+9. Provider portability — preserved in command/API model.
+10. Synthetic first — passed.
+11. Legacy preservation — passed so far.
+12. Bounded scope — maintained.
+13. **Live isolated Google worker/trigger evidence — pending.**
 
 ## Exact next action
 
-1. Open PR for `integration/m1-001-workspace-worker` and run full CI.
-2. Fix only worker/direct-mode/bundle defects discovered by CI.
-3. Merge/read back when green.
-4. Only after merge, perform a live proof against an isolated synthetic/copied MIRA 2.0 workbook: add/verify Commands inbox, enable queued mode/trigger, submit a synthetic command through Google Sheets, verify worker result and canonical provider readback, then exercise one retry/conflict path without touching legacy production.
-5. Do not begin Android UI/client implementation until live queued-writer provider behavior is proven or the packet records a blocking provider defect.
+1. Finish and merge the requirement/governance capture PR from `integration/m1-001-feature-contract-capture`; this PR changes authoritative feature/backlog/policy/checkpoint state only and does not implement appointment/Studio/onboarding features.
+2. Resume `M2-M1-001` live proof from the merged head.
+3. Seed one isolated synthetic/release MIRA 2.0 workbook with the Git-backed bound Apps Script through an approved provider/operator path; never use a legacy production workbook.
+4. Enable queued-writer mode and independently verify the Commands tab, exactly one worker trigger, mutation mode, synthetic command result, canonical Resource/Idempotency readback, and at least one stale/retry behavior.
+5. If live proof passes, close `ANDROID-COMMAND-BOUNDARY-001` and create the next bounded `ANDROID-CLIENT-CORE-001` implementation packet.
 
 ## Recovery protocol
 
-Read this file first. Verify main contains PR #54 merge `d21869d091cbcfce609d47665ef8872123f2be43` or a descendant. Continue only `M2-M1-001` on `integration/m1-001-workspace-worker` while this worker slice is unmerged. Preserve M2-M0 native Google as single-writer evidence; do not reinterpret it as safe Android concurrency. Preserve Cloud Run checkpoint without claiming live proof. Keep provider IDs, secrets, personal data and live row contents out of public Git.
+Read this file first. Verify main contains PR #55 merge `1908629fc887b025a8acb2d6fd5321ca191ad0e7` or a descendant. If `integration/m1-001-feature-contract-capture` is still open, merge only the feature/governance capture after CI. Then continue live provider proof under `M2-M1-001`; do not jump to Android UI until the queued-writer boundary is live-verified or explicitly rejected. Preserve appointment intake, Calendar preference onboarding, MIRA Studio, and feature-alignment requirements in Git without pulling their implementation into this packet. Keep provider IDs, secrets, personal data and live row contents out of public Git.
