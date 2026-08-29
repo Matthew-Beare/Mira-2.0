@@ -16,13 +16,13 @@ import sys
 from typing import Sequence
 
 from .feature_registry import FeatureRegistryError, parse_registry_bytes
+from .product_ledger import ProductLedgerError, parse_backlog
 
 
 class WorkSessionAlignmentError(Exception):
     """Raised when CURRENT_WORK is not grounded in canonical project state."""
 
 
-_WORK_ROW_RE = re.compile(r"^\|\s*`(?P<id>[A-Z0-9][A-Z0-9-]+)`\s*\|")
 _ACTIVE_PACKET_RE = re.compile(r"^### `(?P<id>M2-[A-Z0-9-]+)`\s+—\s+.+$")
 _FIELD_RE = re.compile(r"^- \*\*(?P<label>[^*]+):\*\*\s*(?P<value>.+)$")
 _BACKTICK_ID_RE = re.compile(
@@ -47,14 +47,13 @@ def _read(path: str | Path) -> str:
 
 
 def parse_backlog_work_ids(text: str) -> frozenset[str]:
-    ids = {
-        match.group("id")
-        for line in text.splitlines()
-        if (match := _WORK_ROW_RE.match(line)) is not None
-    }
-    if not ids:
-        raise WorkSessionAlignmentError("BACKLOG.md contains no parseable work IDs")
-    return frozenset(ids)
+    """Return work IDs from every ranked or unranked canonical backlog table."""
+
+    try:
+        records = parse_backlog(text)
+    except ProductLedgerError as exc:
+        raise WorkSessionAlignmentError(str(exc)) from exc
+    return frozenset(record.work_id for record in records)
 
 
 def _section(text: str, heading: str) -> str:
