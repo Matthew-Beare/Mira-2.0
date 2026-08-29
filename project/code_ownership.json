@@ -99,6 +99,15 @@
       "verification": ["tests/test_workspace_native.py"]
     },
     {
+      "id": "canonical-command-sequencer",
+      "responsibility": "Provider-neutral one-at-a-time queued command execution with durable replay, stale-revision conflict, crash-before-acknowledgement recovery, and API-001 authorization semantics for the Android-era shared writer boundary.",
+      "why_separate": "Multi-client mutation requires one canonical sequencing seam above Authority/store semantics. Keeping the command sequencer provider-neutral lets Google Workspace or a managed runtime supply execution without making Android depend on spreadsheet rows or Cloud Run details.",
+      "owned_paths": ["mira/command_sequencer.py"],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "AUTH-001", "STORE-001"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": ["tests/test_command_sequencer.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation of canonical feature dependencies and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
