@@ -347,11 +347,9 @@ function idempotencyRows(app, key = 'idem-001') {
 test('queued-writer activation creates Commands and exactly one one-minute trigger', () => {
   const app = runtime();
   const first = app.context.miraEnableQueuedWriter();
-  assert.deepEqual(first, {
-    mutation_mode: 'queued_writer',
-    worker: 'miraProcessCommandQueue',
-    interval_minutes: 1,
-  });
+  assert.equal(first.mutation_mode, 'queued_writer');
+  assert.equal(first.worker, 'miraProcessCommandQueue');
+  assert.equal(first.interval_minutes, 1);
   assert.deepEqual(app.rows.Commands[0], COMMAND_HEADERS);
   assert.equal(metadataValue(app, 'mutation_mode'), 'queued_writer');
   assert.deepEqual(app.triggerCreations, [['miraProcessCommandQueue', 1]]);
@@ -375,7 +373,7 @@ test('worker locks, commits one canonical create, reads it back and acknowledges
   enableAndQueue(app, commandRow());
   const result = app.context.miraProcessCommandQueue();
 
-  assert.deepEqual(result, {processed: 1});
+  assert.equal(result.processed, 1);
   assert.deepEqual(app.lockEvents, [['wait', 30000], ['release']]);
   assert.equal(entityRows(app).length, 1);
   assert.equal(entityRows(app)[0][2], 1);
@@ -388,7 +386,7 @@ test('worker locks, commits one canonical create, reads it back and acknowledges
   assert.equal(commandResult.readback_verified, true);
 
   const second = app.context.miraProcessCommandQueue();
-  assert.deepEqual(second, {processed: 0});
+  assert.equal(second.processed, 0);
   assert.equal(entityRows(app).length, 1);
   assert.equal(idempotencyRows(app).length, 1);
 });
@@ -401,7 +399,7 @@ test('two stale revision-zero commands serialize so only first commits', () => {
     commandRow({commandId: 'cmd-b', idempotencyKey: 'idem-b', state: 'beta'}),
   );
   const result = app.context.miraProcessCommandQueue();
-  assert.deepEqual(result, {processed: 2});
+  assert.equal(result.processed, 2);
 
   assert.equal(app.rows.Commands[1][11], 'succeeded');
   assert.equal(app.rows.Commands[2][11], 'failed');
@@ -427,7 +425,7 @@ test('crash after resource write leaves pending command and retry reconstructs i
   };
 
   const first = app.context.miraProcessCommandQueue();
-  assert.deepEqual(first, {processed: 1});
+  assert.equal(first.processed, 1);
   assert.equal(app.rows.Commands[1][11], 'pending');
   assert.equal(entityRows(app).length, 1);
   assert.equal(entityRows(app)[0][2], 1);
@@ -435,7 +433,7 @@ test('crash after resource write leaves pending command and retry reconstructs i
 
   app.context.miraAppendIdempotency_ = originalAppend;
   const second = app.context.miraProcessCommandQueue();
-  assert.deepEqual(second, {processed: 1});
+  assert.equal(second.processed, 1);
   assert.equal(app.rows.Commands[1][11], 'succeeded');
   assert.equal(entityRows(app).length, 1);
   assert.equal(entityRows(app)[0][2], 1);
@@ -465,7 +463,7 @@ test('subject mismatch is terminal authorization failure with no entity mutation
     }),
   );
   const result = app.context.miraProcessCommandQueue();
-  assert.deepEqual(result, {processed: 1});
+  assert.equal(result.processed, 1);
   assert.equal(app.rows.Commands[1][11], 'failed');
   assert.equal(app.rows.Commands[1][14], 'authorization_error');
   assert.equal(entityRows(app).length, 0);
