@@ -35,6 +35,15 @@ jobs:
       - name: Product lifecycle ledger
         run: python -m mira.product_ledger check
 
+      - name: Personal starter distribution
+        run: |
+          python -m mira.personal_distribution check
+          SOURCE_SHA="$(git rev-parse HEAD)"
+          python -m mira.personal_distribution manifest "$SOURCE_SHA" > /tmp/mira-release-1.json
+          python -m mira.personal_distribution manifest "$SOURCE_SHA" > /tmp/mira-release-2.json
+          diff -u /tmp/mira-release-1.json /tmp/mira-release-2.json
+          python -m mira.personal_distribution verify-manifest /tmp/mira-release-1.json
+
       - name: Work-session alignment
         run: python -m mira.work_session_alignment check
 
