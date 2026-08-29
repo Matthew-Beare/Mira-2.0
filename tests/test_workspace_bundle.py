@@ -32,6 +32,10 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("Replace the existing Personal MIRA operating-instruction block", protocol)
         self.assertIn("Never ask the user to rename MIRA.", protocol)
         self.assertIn("Chat history, model memory, Git", protocol)
+        self.assertIn("Every mutable data class used by MIRA must resolve", protocol)
+        self.assertIn("authority_binding/binding-onboarding-ledger", protocol)
+        self.assertIn("authority_binding/binding-service-state", protocol)
+        self.assertIn("resource id: `google-sheets-personal`", protocol)
         self.assertIn("resource type: `onboarding_ledger`", protocol)
         self.assertIn("resource id: `minimum-useful-setup`", protocol)
         self.assertIn("`timezone`", protocol)
@@ -56,6 +60,15 @@ class WorkspaceBundleTests(unittest.TestCase):
         files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
             "MIRA_NO_APP_INSTRUCTIONS.md"
         ].replace("Do **not** mark the service active.", "")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_authority_binding_clause(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("authority_binding/binding-service-state", "authority_binding/missing")
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)
 
