@@ -2,6 +2,20 @@
 
 Git is authoritative. This roadmap defines milestone ordering; `BACKLOG.md` owns ranked work and `CURRENT_WORK.md` owns the one active packet.
 
+## Product deployment invariant — easy first, advanced later
+
+MIRA's default Personal path must be useful to an ordinary Google user before that user needs to understand servers, Linux, SQL, Cloud Run, networking, containers, Git, or paid model APIs.
+
+The default deployment ladder is therefore:
+
+1. **Personal Google Workspace baseline** — Google Drive/Docs/Sheets provide the user's ordinary Workspace substrate; Sheets is the first structured MIRROR authority, and a copied/bound Apps Script provides the lightweight HTTPS execution boundary needed by stock ChatGPT. First-run setup must be browser-only and require no self-hosted server or terminal.
+2. **Advanced managed/self-hosted runtime** — users who need higher scale, local integrations, heavier automation, or stronger infrastructure control may move the same MIRA API/Authority semantics to Cloud Run, a Linux VM, containers, SQL, or another supported backend.
+3. **Migration, not reinvention** — provider-neutral `API-001`, `AUTH-001`, and `STORE-001` contracts must prevent Google-specific storage/execution details from becoming canonical product semantics. `AUTHORITY-MIGRATION-001` owns staged cutover with parity, readback, rollback, and no dual writable masters.
+
+Cloud Run work already completed remains valid as an advanced deployment path. It is not a prerequisite for the ordinary Personal Google first-run experience.
+
+Google documentation confirms the intended low-friction packaging model: copying a spreadsheet copies attached bound Apps Script, and bound scripts can be deployed as web apps. MIRA should exploit that capability rather than make ordinary users provision infrastructure.
+
 ## M2-G0 — Governance and forensic reconstruction
 
 Goal: establish a clean, resumable development operating system and reconstruct the complete MIRA feature/dependency picture before new product implementation.
@@ -9,9 +23,7 @@ Goal: establish a clean, resumable development operating system and reconstruct 
 - G0-001 governance/branding baseline — complete.
 - G0-002 through G0-008 feature audits — complete.
 - G0-009 legacy branch/PR reconciliation — complete; PR #31 selective salvage only, wholesale mega-merge prohibited.
-- G0-010 dependency graph and audit closeout — active/final G0 packet.
-
-G0-010 closes only when the feature/work graph is acyclic on the M2-M0/M2-M1 critical path, later/conditional work is no longer over-blocking core, and the first bounded implementation packet is selected.
+- G0-010 dependency graph and audit closeout — complete.
 
 ## M2-G1 — Clean reality foundation and synthetic proof
 
@@ -26,21 +38,23 @@ Ordered foundation proof:
 
 Synthetic fixtures only. No legacy Google artifact may be overwritten, renamed, repurposed, migrated, or used as a development fixture.
 
-## M2-M0 — Stock ChatGPT core vertical slice
+## M2-M0 — Stock ChatGPT + Personal Google Workspace core vertical slice
 
-Goal: MIRA works in stock ChatGPT with Google-backed MIRROR reality state and **no required self-hosted server**.
+Goal: MIRA works in stock ChatGPT with Google-backed MIRROR reality state through an **ordinary-user, browser-only Google Workspace first-run path**. No self-hosted server, Cloud Run project, terminal, Linux administration, SQL administration, or OpenAI API billing is required for the baseline proof.
 
-Integration proof requires:
-1. a secure ordinary-user-compatible managed/shared API deployment path;
-2. a minimal Google structured/evidence adapter and a separate MIRA 2.0 synthetic sandbox namespace, independent from full end-user onboarding/bootstrap;
-3. one canonical entity created through the shared API;
-4. exact readback;
-5. mutation through the same API;
-6. replay/idempotency and conflict behavior;
-7. verified Google-backed read-after-write;
-8. stock ChatGPT and the deployed service using the same canonical authority path.
+Ordered proof:
+1. preserve the existing provider-neutral API, Authority Registry, canonical state semantics, and isolated synthetic Google namespace;
+2. package the first Personal Google runtime around a copyable Google Workspace starter, with Sheets as the first structured-state authority and bound Apps Script as the lightweight HTTPS execution boundary;
+3. prove first-run setup without terminal or cloud-infrastructure provisioning;
+4. prove authenticated health/query/command behavior through the same `API-001` semantics rather than creating a Google-specific second API;
+5. stock ChatGPT creates one canonical entity through that endpoint;
+6. exact Google-backed readback;
+7. mutation through the same endpoint;
+8. replay/idempotency and conflict behavior;
+9. verified provider read-after-write;
+10. confirm the deployment remains portable: Google-specific concerns stay behind adapters and later Linux/SQL/managed migration uses `AUTHORITY-MIGRATION-001`, not a new product model.
 
-Full nontechnical installation, full Personal Google bootstrap, Calendar/Gmail/scheduler setup, and enterprise distribution are later release/onboarding work and do not block this first core proof.
+Broader Personal Google bootstrap for Calendar/Gmail/brief scheduling, full provider discovery, and polished onboarding remain subsequent hardening. The **baseline installation itself**, however, must already satisfy the ordinary-user/no-terminal product invariant.
 
 ## M2-M1 — Android companion vertical slice
 
@@ -63,12 +77,12 @@ Goal: generate and deliver one real MIRA Ops Brief from canonical MIRA 2.0 state
 ## Release/onboarding hardening after core proofs
 
 - machine-readable feature registry/drift tooling and component-ownership enforcement before broad growth;
-- provider/account onboarding and full Personal Google bootstrap;
-- browser-only nontechnical installation;
-- deterministic starter/distribution promotion;
+- expand the baseline Personal Google Workspace starter into full deterministic provider/account onboarding;
+- deterministic starter/distribution promotion and upgrade flow;
 - service composition/readiness normalization;
 - backup/restore and observability hardening;
-- signed Android release/update continuity.
+- signed Android release/update continuity;
+- advanced managed/self-hosted deployment profiles and verified backend migration.
 
 ## Later milestone families
 
