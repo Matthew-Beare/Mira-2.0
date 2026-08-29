@@ -1,122 +1,86 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This file identifies exactly one active live-deployment proof packet and its recovery point.
+Git is authoritative. This file identifies exactly one active packet and the exact recovery point for displaced work.
 
-## Completed prerequisite packet
+## Product-owner correction captured 2026-08-29
 
-### `M2-M0-004` — Managed API runtime assembly
+The default Personal MIRA path is **Google Workspace first, zero infrastructure**. An ordinary user should be able to start with Google Drive/Docs/Sheets and a browser-only setup. Linux, SQL, Cloud Run, containers, tunnels, and other infrastructure are advanced upgrade paths, not prerequisites for first use.
 
-- **Merged PR:** #47
-- **Merge SHA / main readback:** `51f4bd3c6281558ff7312def4491b8d99d35b6ff`
-- **Final GitHub Actions run:** `33216893134`; compile + feature registry + code ownership + full suite succeeded.
-- **Result:** provider-neutral fail-closed managed runtime composition and pluggable bearer authentication are implemented/test-verified.
+Canonical deployment ladder:
 
-## Active packet
+1. Personal Google Workspace baseline: Sheets as the first structured MIRROR authority; copied/bound Apps Script as the lightweight HTTPS execution boundary; no terminal or server required.
+2. Advanced managed/self-hosted profiles: Cloud Run, Linux VM, containers, SQL, local services, or other supported backends when the user needs them.
+3. Migration preserves MIRA semantics: `API-001`, `AUTH-001`, and `STORE-001` remain provider-neutral so backend changes are Authority/adapter cutovers, not product rewrites.
+
+Google documentation was rechecked before this correction: copying a spreadsheet copies attached bound Apps Script, and a bound script can be deployed as a web app. This makes a copy/authorize/deploy style Personal starter technically viable.
+
+## Displaced packet checkpoint
 
 ### `M2-M0-005` — Cloud Run credential + live Google deployment proof
 
-- **Related work ID:** `API-DEPLOYMENT-001`
-- **Class:** hard deployment prerequisite / live integration proof
+- **Related work:** `API-DEPLOYMENT-001B` (formerly the only `API-DEPLOYMENT-001` implementation target)
+- **Disposition:** paused/deprioritized, not failed and not deleted.
+- **Reason:** Cloud Run is valid advanced infrastructure but violates the intended ordering if required before ordinary Personal Google first use.
+- **Deployment-readiness PR:** #48, merged at `acb37af4aa378e8128d8591406859fe954af3474`; CI `33217543700` green.
+- **Cloud Shell operator PR:** #49, merged at `3332081054d691eca646c1d7bb274d22096f1c62`; CI `33218561781` green.
+- **Exact pre-pivot main checkpoint:** `c392b9b829fab989be8856c9272294c9907e409e`.
+- **Exact resume point if/when advanced Cloud Run proof is selected again:** run the merged `ops/cloud_run_live_proof.sh prepare` phase in an authenticated Google Cloud project, return only the runtime service-account email, share only the synthetic MIRROR Sheet, then run `deploy` and perform independent provider readback. No live Cloud Run/provider/restart evidence has been claimed.
+
+All Cloud Run code, tests, IAM/scaling invariants, and operator work remain useful for an advanced deployment profile.
+
+## Active packet
+
+### `M2-M0-006` — Google Workspace zero-infrastructure first run
+
+- **Related work ID:** `API-DEPLOYMENT-001A`
+- **Class:** hard M2-M0 prerequisite / ordinary-user vertical deployment slice
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Deployment-readiness merged PR:** #48
-- **Deployment-readiness merge SHA:** `acb37af4aa378e8128d8591406859fe954af3474`
-- **Final deployment-readiness GitHub Actions run:** `33217543700`
-- **Backlog reconciliation commit:** `c683aceaf519636983e1304bc02c07594dc2191f`
-- **Provider-boundary checkpoint:** `8cfcb2101a07d1058a6248e0bd5b00f6d3c4908b`
-- **Cloud Shell operator merged PR:** #49
-- **Cloud Shell operator final head:** `744ece9b55377f92205af7d9620689b306c0289c`
-- **Cloud Shell operator CI:** run `33218561781`; compile + feature registry + code ownership + unit tests all succeeded.
-- **Cloud Shell operator merge/main readback:** `3332081054d691eca646c1d7bb274d22096f1c62`
-- **Status:** code/deployment/operator work is merged and remotely verified. Packet remains active solely for live Google Cloud execution and independent provider readback.
+- **Base checkpoint:** `313fdb3c14ef6dfd714e2587130b94838581e41d` or descendant carrying the same roadmap/backlog correction
+- **Planned branch:** `integration/m0-006-google-workspace-first-run`
+- **Status:** active/selected; implementation branch not yet checkpointed.
 
 ## Objective
 
-Deploy the verified runtime to a one-instance Cloud Run service with restart-stable injected same-user bearer authentication and short-lived Google service-identity access tokens, then prove live HTTPS startup and Google-backed canonical entity mutation/readback without committing provider IDs, tokens, credentials, or private data.
+Prove the default Personal MIRA deployment without requiring the user to provision or understand infrastructure: a copyable Google Workspace starter uses Sheets as the first structured MIRROR authority and bound Apps Script as the lightweight HTTPS endpoint while preserving the already-built provider-neutral MIRA API, Authority, idempotency, conflict, and readback semantics.
 
-## Deployment invariants
-
-1. Cloud Run service-wide manual scaling is fixed at exactly one instance for the M2-M0 Google Sheets writer proof.
-2. Request concurrency is fixed at exactly one.
-3. No traffic-tag side revision is permitted for live write testing.
-4. TLS terminates at Cloud Run; the container receives clear HTTP. The Cloud Run-only adapter may promote `X-Forwarded-Proto: https` to the WSGI scheme; without that explicit proxy signal protected routes retain the API core's HTTPS rejection.
-5. Google Sheets access uses short-lived Cloud Run service-identity OAuth tokens from the metadata/runtime identity path. Downloaded service-account JSON keys are prohibited.
-6. The bearer client token is injected from Secret Manager/runtime secret configuration and is hashed immediately; raw bearer material is not retained by the authenticator or emitted to logs/repository state.
-7. The live Google resource is the isolated synthetic MIRA 2.0 namespace only. Legacy production artifacts remain protected.
-8. Gunicorn is one worker / one thread; this complements rather than replaces Cloud Run manual instance count = 1 and request concurrency = 1.
-9. Source deployment uses a separate dedicated build service account with the documented Cloud Run Builder role rather than relying on an ambient/default build identity.
+The first-run experience should trend toward **copy starter → authorize MIRA → enable/deploy → connect ChatGPT**, not Cloud Console, SSH, Docker, Linux, SQL, or terminal commands.
 
 ## Acceptance criteria
 
-1. Restart-stable injected bearer authenticator with digest-only retention and constant-time comparison. **Implemented/test-verified/merged.**
-2. Testable Cloud Run Google service-identity access-token provider with short-lived token cache and no long-lived Google credential material. **Implemented/test-verified/merged.**
-3. Environment/secret-driven deployment composition through the existing Google adapter and `assemble_managed_runtime`. **Implemented/test-verified/merged.**
-4. Cloud Run HTTPS proxy adaptation preserving protected-route HTTPS rejection without proxy HTTPS assertion. **Implemented/test-verified/merged.**
-5. Managed WSGI packaging/entrypoint listening on `$PORT`; no development server. **Implemented/merged.**
-6. Manual service scaling = 1, request concurrency = 1, no traffic-tag write path, isolated synthetic namespace. **Encoded in the merged operator; live control-plane readback pending.**
-7. Direct tests for restart authentication, metadata token cache/refresh, config rejection, proxy handling, rate limit, audit output and authenticated canonical roundtrip with fake provider state. **Implemented; CI green.**
-8. Direct code ownership and no committed provider IDs/private data/secrets. **Implemented; CI green.**
-9. Live Cloud Run service returns healthy HTTPS readback before protected API testing. **Pending live execution.**
-10. Live service identity reads persisted Google Authority state and completes one canonical synthetic entity mutation/exact provider readback through the shared API. **Pending live execution.**
-11. Live restart proves the same injected bearer remains valid and persisted Authority/entity state remains unchanged/readable. **Synthetic reconstruction verified; live restart pending.**
-12. `API-DEPLOYMENT-001` may be marked complete only after 9-11 pass; only then may `CHATGPT-API-CLIENT-001` activate. **Not yet satisfied.**
+1. **No infrastructure prerequisite.** Baseline setup requires no self-hosted server, Cloud Run project, Linux/SQL administration, Cloudflare/WireGuard tunnel, terminal, or paid OpenAI API usage.
+2. **Copyable Workspace packaging.** The starter is designed around a Google Sheet whose attached bound Apps Script travels with a user-created copy; no live personal IDs or secrets are committed to the public repository.
+3. **Same MIRA API semantics.** Apps Script exposes the minimal health/query/command behavior needed for `API-001`; it must not create a second Google-specific canonical API model.
+4. **Same canonical authority semantics.** Structured state remains behind `AUTH-001`/`STORE-001` contracts with exact readback, revisions, idempotency and conflict behavior consistent with the implemented core.
+5. **Scoped authentication.** The external ChatGPT-facing endpoint has an explicit same-user authentication boundary; no secret is stored in ordinary visible Sheet cells or committed to Git.
+6. **Google-backed roundtrip.** A synthetic entity can be created, exactly read back, mutated, replay-checked and provider-readback verified through the Workspace endpoint.
+7. **Browser-first setup proof.** The bounded M2-M0 setup path itself is browser-only; full broader onboarding polish can follow, but terminal fallback is not allowed for the baseline.
+8. **Legacy preservation.** Only the isolated MIRA 2.0 synthetic namespace/starter is used. Legacy production Google artifacts remain untouched.
+9. **Portability preserved.** Google-specific execution/storage details stay behind adapter/runtime boundaries. The resulting canonical data and API model must remain migratable later through `AUTHORITY-MIGRATION-001` to Linux/SQL/Cloud Run without dual writable masters.
+10. **Cloud Run does not block M2-M0.** `API-DEPLOYMENT-001B` remains advanced hardening and may resume later without blocking this packet or `CHATGPT-API-CLIENT-001`.
 
-## Completed deployment-readiness evidence
+## Existing evidence available to reuse
 
-- `mira/managed_auth.py`: restart-stable `StaticSecretAuthenticator`; SHA-256 digest only; constant-time comparison; validated copied principal/grants.
-- `mira/google_runtime_auth.py`: Cloud Run metadata service-identity access-token provider with bounded refresh skew/cache/expiry validation and sanitized transport failures.
-- `mira/cloud_run.py`: runtime-only provider configuration, existing Google adapter/runtime assembly reuse, structured JSON audit sink, fixed-window protected-route rate limit and Cloud Run HTTPS proxy adaptation.
-- `mira/cloud_run_entrypoint.py`: Gunicorn import target.
-- `.python-version`: Python 3.12 major/minor buildpack target.
-- `requirements.txt`: pinned `gunicorn==26.2.0`.
-- `Procfile`: `$PORT`, one worker, one thread, 90-second worker timeout and stdout/stderr logs.
-- `tests/test_managed_auth.py`, `tests/test_google_runtime_auth.py`, `tests/test_cloud_run.py`: direct deployment-boundary evidence including authenticated canonical command/query roundtrip over injected synthetic state.
-- `project/code_ownership.json`: direct ownership/evidence coverage for every deployment production module.
-- PR #48 final CI run `33217543700` succeeded and merged at `acb37af4aa378e8128d8591406859fe954af3474`.
-- `BACKLOG.md` critical-path reconciliation is committed at `c683aceaf519636983e1304bc02c07594dc2191f`.
+- Provider-neutral structured-state, Authority Registry, API core, idempotency/conflict/readback behavior are already implemented and test-verified.
+- The isolated synthetic Google Sheet namespace and Google structured-state adapter already have provider readback evidence.
+- `ONBOARD-006` already defines browser-only nontechnical installation with no terminal fallback.
+- `ONBOARD-002` already requires a sanitized generic starter with no inherited personal production state.
+- Google documents that a copied spreadsheet copies attached scripts and that bound scripts can become web apps.
+- Cloud Run deployment code remains preserved as an advanced profile and should not be deleted or contorted into the Workspace baseline.
 
-## Completed control-plane operator evidence
+## Scope control
 
-PR #49 is merged and remotely verified:
+This packet is **not** full Personal Google service onboarding. Do not fan out into Gmail, Calendar, scheduler, Ops Briefs, family sharing, enterprise distribution, Android, Linux/SQL migration implementation, or general UI polish unless required to prove the baseline Workspace endpoint acceptance criteria.
 
-- `ops/cloud_run_live_proof.sh` implements two explicit phases:
-  - `prepare`: verifies project/authentication, enables required APIs, creates/reuses dedicated runtime and build identities, assigns bounded documented source-deploy roles, creates/reuses the Secret Manager bearer without printing it, grants runtime secret access, and prints the runtime service-account email;
-  - `deploy`: after the Sheet is shared, deploys from source using the dedicated build/runtime identities, sets `--scaling=1` and `--concurrency=1`, independently reads the Cloud Run v2 service resource, verifies no traffic tag, checks HTTPS health, executes a canonical entity write/read, redeploys with the same secret, proves bearer/state continuity, performs a post-restart mutation, and emits non-secret evidence for independent Google provider readback.
-- `docs/CLOUD_RUN_LIVE_PROOF.md` records the exact operator boundary and failure rules.
-- `tests/test_cloud_run_operator.py` checks Bash syntax, required single-writer flags/readback assertions, bounded IAM roles, secret handling, absence of the live spreadsheet ID, restart proof, and independent provider-readback requirement.
-- PR #49 final CI run `33218561781` succeeded at head `744ece9b55377f92205af7d9620689b306c0289c`.
-- PR #49 merged/main readback is `3332081054d691eca646c1d7bb274d22096f1c62`.
-
-The operator script itself is **not** live provider evidence. Acceptance criteria 9-11 remain pending until its phases execute against Google Cloud and the final Google row is independently read back.
-
-## External account boundary
-
-Google Cloud / Cloud Run control-plane capability is not connected in the current ChatGPT tool set, and plugin discovery found no installable Google Cloud or Cloud Run connector.
-
-The connected Google Drive tool can grant writer access to the isolated synthetic Sheet after phase `prepare` returns the exact runtime service-account email. That single-file share must target only `MIRROR Structured State - Synthetic`, not the sandbox folder or any legacy production artifact.
-
-The following live writes/readbacks still have **not** occurred and must not be claimed:
-
-- Google Cloud project/API setup or selection;
-- Cloud Run service creation/deployment;
-- dedicated runtime/build service account creation/assignment;
-- Secret Manager bearer secret creation/injection;
-- sharing the isolated synthetic Google Sheet with the runtime service identity;
-- service-wide manual scaling = 1 readback;
-- request concurrency = 1 readback;
-- live Cloud Run HTTPS/provider/restart proof;
-- independent post-restart Google row readback.
+Do not make the customer design Apps Script internals, auth format, schema mapping, or deployment mechanics unless a choice materially changes user-visible behavior, privacy, cost, or irreversibility.
 
 ## Exact next action
 
-1. In an authenticated Google Cloud Shell, use a Google Cloud project intended for this synthetic MIRA proof and clone/pull current `main`.
-2. From the repository root run `PROJECT_ID=<project> bash ops/cloud_run_live_proof.sh prepare`.
-3. Return only the printed `MIRA_SERVICE_ACCOUNT_EMAIL=...` line to MIRA. Do **not** return the bearer secret; the script does not print it.
-4. MIRA grants writer access on only `MIRROR Structured State - Synthetic` to that exact service-account email and verifies the Drive share.
-5. Run `PROJECT_ID=<project> bash ops/cloud_run_live_proof.sh deploy`; the operator prompts for the synthetic Sheet ID locally and performs the live Cloud Run/API/restart proof.
-6. Return the non-secret final evidence values (`MIRA_SERVICE_URL`, proof resource ID/revision/phase) to MIRA.
-7. MIRA independently reads the Google Sheet row and reconciles the live proof.
-8. Only then mark `API-DEPLOYMENT-001` complete and activate `CHATGPT-API-CLIENT-001`.
+1. Create `integration/m0-006-google-workspace-first-run` from the verified main checkpoint carrying the roadmap/backlog correction.
+2. Inspect the current `API-001` transport/core and Google structured-state adapter contracts and define the smallest Apps Script surface that preserves those semantics.
+3. Implement the first bounded slice: copyable bound-script package structure plus health/schema/read path against synthetic Workspace state, with direct tests and no provider/private IDs.
+4. Add write/idempotency/conflict/auth behavior only in subsequent bounded slices if the first slice is green.
+5. Keep `CURRENT_WORK.md` updated with exact branch/head/resume evidence after each slice.
 
 ## Recovery protocol
 
-Read this file first. Verify `main` contains PR #49 merge SHA `3332081054d691eca646c1d7bb274d22096f1c62` or a descendant carrying it. If live phase `prepare` has not run, the exact resume point is the first Cloud Shell command above. If it has run, resume from the returned runtime service-account email and perform only the synthetic Sheet share. Keep all provider identifiers/private data/secrets out of Git and continue only `M2-M0-005` until the live criteria close.
+Read this file first. Confirm `main` contains the Google Workspace first-run roadmap/backlog correction and that `M2-M0-005` remains preserved at checkpoint `c392b9b829fab989be8856c9272294c9907e409e`. Continue only `M2-M0-006` unless the customer explicitly reprioritizes or a hard integrity/security dependency blocks it. Do not resume Cloud Run merely because its code already exists.
