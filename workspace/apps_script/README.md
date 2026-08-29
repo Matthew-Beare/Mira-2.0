@@ -2,6 +2,14 @@
 
 This directory is the copyable Google Workspace execution artifact for the default Personal MIRA path.
 
+## Complete stock-ChatGPT operating instructions
+
+`MIRA_NO_APP_INSTRUCTIONS.md` is the complete source-backed Personal no-app operating-instruction block. It is part of the validated release bundle, not an optional example or a fragment to splice into older instructions.
+
+For a stock-ChatGPT Personal deployment, the entire current Personal MIRA operating-instruction block is replaced with that file's complete contents. The protocol defines canonical Workspace preflight/readback, safe direct-single-writer mutation, the four-question resumable Interview Ledger, explicit appointment-service intent, and fail-closed behavior when a provider capability or shared-writer path has not actually been verified.
+
+Bundle validation fails if safety-critical protocol clauses disappear, so the copyable Workspace artifact and the instructions that operate it cannot silently drift apart.
+
 ## Default Personal mode
 
 A normal stock-ChatGPT Personal setup remains **zero infrastructure**:
@@ -9,7 +17,8 @@ A normal stock-ChatGPT Personal setup remains **zero infrastructure**:
 1. copy the MIRA Workspace starter;
 2. authorize/connect Google;
 3. initialize the copied Sheet;
-4. use stock ChatGPT's official Google Drive/Sheets connection against that user's canonical MIRROR state.
+4. replace the Personal MIRA operating-instruction block with the complete `MIRA_NO_APP_INSTRUCTIONS.md` contents;
+5. use stock ChatGPT's official Google Drive/Sheets connection against that user's canonical MIRROR state.
 
 In this baseline, MIRA is intentionally `direct_single_writer`: stock ChatGPT is the only software writer. The existing native Google protocol preserves Authority, revision, idempotency and exact provider-readback semantics without requiring Cloud Run, Linux, SQL, a terminal, or paid OpenAI API usage.
 
@@ -84,6 +93,8 @@ No account/provider identifier or long-lived credential is stored in source.
 
 The queued-writer implementation is tested synthetically before any live Google worker activation. Code existence or fake-Apps-Script tests do **not** count as live provider proof. Legacy MIRA production Sheets remain protected and are never test fixtures.
 
+Likewise, validating `MIRA_NO_APP_INSTRUCTIONS.md` proves the stock-ChatGPT operating contract is source-controlled and internally consistent; it does not by itself prove every current ChatGPT connector surface can execute every mutation. Provider behavior is upgraded to live evidence only after exact read/write/readback proof against an isolated synthetic Workspace copy.
+
 ## Portability rule
 
-Apps Script is a Personal execution adapter, not MIRA's product model. Canonical `API-001`, `AUTH-001`, and `STORE-001` semantics remain the migration boundary so a later Cloud Run/Linux/SQL profile can take execution/authority through an explicit cutover rather than rewriting user data or creating dual writable masters.
+Apps Script and the native Google connection are Personal execution adapters, not MIRA's product model. Canonical `API-001`, `AUTH-001`, and `STORE-001` semantics remain the migration boundary so a later Cloud Run/Linux/SQL profile can take execution/authority through an explicit cutover rather than rewriting user data or creating dual writable masters.

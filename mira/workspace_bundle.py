@@ -1,10 +1,10 @@
 """Google Workspace first-run bundle contract for MIRA.
 
 The default Personal MIRA deployment begins with a copied Google Sheet and its
-bound Apps Script.  This module treats the Apps Script files as a release
-artifact: it validates the package shape and rejects provider identifiers or
-secrets from the public source tree without importing Google-specific runtime
-behavior into the provider-neutral API/storage core.
+bound Apps Script. This module treats the Apps Script files and complete no-app
+operating instructions as one release artifact: it validates package shape and
+rejects provider identifiers or secrets from the public source tree without
+importing Google-specific runtime behavior into provider-neutral core modules.
 """
 
 from __future__ import annotations
@@ -19,7 +19,13 @@ class WorkspaceBundleError(Exception):
     """Raised when the browser-first Workspace starter bundle is invalid."""
 
 
-_REQUIRED_FILES = ("Code.gs", "CommandWorker.gs", "appsscript.json", "README.md")
+_REQUIRED_FILES = (
+    "Code.gs",
+    "CommandWorker.gs",
+    "appsscript.json",
+    "README.md",
+    "MIRA_NO_APP_INSTRUCTIONS.md",
+)
 _PROVIDER_ID_PATTERNS = (
     re.compile(r"AKfycb[A-Za-z0-9_-]{8,}"),
     re.compile(r"\b\d{10,}-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com\b"),
@@ -30,11 +36,42 @@ _SECRET_MARKERS = (
     "client_secret\"",
     "MIRA_BEARER_TOKEN=",
 )
+_PROTOCOL_MARKERS = (
+    "Replace the existing Personal MIRA operating-instruction block with this entire document.",
+    "You are **MIRA — Modular Intelligence & Reasoning Assistant**.",
+    "Chat history, model memory, Git, documents, and prior prose are evidence or source material.",
+    "schema_version=mira-structured-state-v1",
+    "adapter_contract=STORE-001",
+    "writer_model=single_writer",
+    "mutation_mode=queued_writer",
+    "Every mutable data class used by MIRA must resolve through exactly one persisted `authority_binding`",
+    "resource id: `google-sheets-personal`",
+    "authority_binding/binding-entity",
+    "authority_binding/binding-onboarding-ledger",
+    "authority_binding/binding-service-state",
+    "resource type: `onboarding_ledger`",
+    "resource id: `minimum-useful-setup`",
+    "`timezone`",
+    "`life_pattern`",
+    "`goals`",
+    "`appointment_help`",
+    "`calendar_capability_verified`: false",
+    "`calendar_projection_active`: false",
+    "`appointment_service_activated`: false",
+    "resource type: `service_state`",
+    "resource id: `appointments_calendar`",
+    "`activation_state` to `requested`",
+    "Do **not** mark the service active.",
+    "SHA-256",
+    "expected_revision",
+    "Idempotency",
+    "exact provider readback",
+)
 
 
 @dataclass(frozen=True)
 class WorkspaceBundle:
-    """Validated copyable Apps Script starter files."""
+    """Validated copyable Workspace starter files and operating protocol."""
 
     files: Mapping[str, str]
 
@@ -64,7 +101,7 @@ def load_workspace_bundle(root: str | Path = "workspace/apps_script") -> Workspa
 
 
 def validate_workspace_bundle(files: Mapping[str, str]) -> None:
-    """Reject malformed, secret-bearing, or provider-bound public bundles."""
+    """Reject malformed, secret-bearing, provider-bound, or incomplete bundles."""
 
     if set(files) != set(_REQUIRED_FILES):
         missing = sorted(set(_REQUIRED_FILES) - set(files))
@@ -129,6 +166,25 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
         raise WorkspaceBundleError(
             "Workspace browser initializer must capture the copied Sheet identity"
         )
+
+    protocol = files["MIRA_NO_APP_INSTRUCTIONS.md"]
+    missing_protocol = [marker for marker in _PROTOCOL_MARKERS if marker not in protocol]
+    if missing_protocol:
+        raise WorkspaceBundleError(
+            "Workspace no-app instructions are missing required contract clauses: "
+            + ", ".join(missing_protocol)
+        )
+
+    if "Cloud Run" not in protocol or "must not require Cloud Run" not in protocol:
+        raise WorkspaceBundleError(
+            "Workspace no-app instructions must preserve the zero-external-infrastructure baseline"
+        )
+    if "Apple/iCloud" not in protocol or "Microsoft/Outlook/M365" not in protocol:
+        raise WorkspaceBundleError(
+            "Workspace no-app instructions must preserve accepted Calendar provider choices"
+        )
+    if "Never ask the user to rename MIRA." not in protocol:
+        raise WorkspaceBundleError("Workspace no-app instructions must keep MIRA's name fixed")
 
 
 __all__ = [

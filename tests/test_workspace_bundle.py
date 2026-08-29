@@ -26,6 +26,52 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("/v1/commands", code)
         self.assertIn("not_implemented", code)
 
+    def test_repository_bundle_contains_complete_no_app_protocol(self) -> None:
+        bundle = load_workspace_bundle()
+        protocol = bundle.file("MIRA_NO_APP_INSTRUCTIONS.md")
+        self.assertIn("Replace the existing Personal MIRA operating-instruction block", protocol)
+        self.assertIn("Never ask the user to rename MIRA.", protocol)
+        self.assertIn("Chat history, model memory, Git", protocol)
+        self.assertIn("Every mutable data class used by MIRA must resolve", protocol)
+        self.assertIn("authority_binding/binding-onboarding-ledger", protocol)
+        self.assertIn("authority_binding/binding-service-state", protocol)
+        self.assertIn("resource id: `google-sheets-personal`", protocol)
+        self.assertIn("resource type: `onboarding_ledger`", protocol)
+        self.assertIn("resource id: `minimum-useful-setup`", protocol)
+        self.assertIn("`timezone`", protocol)
+        self.assertIn("`life_pattern`", protocol)
+        self.assertIn("`goals`", protocol)
+        self.assertIn("`appointment_help`", protocol)
+        self.assertIn("`calendar_capability_verified`: false", protocol)
+        self.assertIn("resource type: `service_state`", protocol)
+        self.assertIn("resource id: `appointments_calendar`", protocol)
+        self.assertIn("`activation_state` to `requested`", protocol)
+        self.assertIn("Do **not** mark the service active.", protocol)
+        self.assertIn("SHA-256", protocol)
+        self.assertIn("expected_revision", protocol)
+        self.assertIn("exact provider readback", protocol)
+        self.assertIn("must not require Cloud Run", protocol)
+        self.assertIn("Microsoft/Outlook/M365", protocol)
+        self.assertIn("Apple/iCloud", protocol)
+
+    def test_bundle_rejects_missing_no_app_contract_clause(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("Do **not** mark the service active.", "")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_authority_binding_clause(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("authority_binding/binding-service-state", "authority_binding/missing")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
     def test_bundle_rejects_provider_identifiers(self) -> None:
         bundle = load_workspace_bundle()
         files = dict(bundle.files)
