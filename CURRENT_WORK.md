@@ -19,7 +19,7 @@ Every MIRA development work session must begin and end with a direction check ag
 3. `BACKLOG.md` — dependency-ranked implementation work and preserved displaced work;
 4. `ROADMAP.md` — milestone/product ordering.
 
-The developer must record the result in this file. A session is not considered safely checkpointed merely because code tests pass. If the active packet is no longer the highest-value valid work under the customer priority, it must be checkpointed and reprioritized before unrelated implementation continues.
+The developer must record the result in this file. CI runs `python -m mira.work_session_alignment check` to reject an active packet whose primary work is absent from `BACKLOG.md`, whose declared features/invariants are absent from `FEATURES.md`, or whose session-start authority review is missing. Semantic direction judgment remains the developer's responsibility because a parser cannot determine product value.
 
 ## Customer priority override — 2026-08-29
 
@@ -60,8 +60,10 @@ Relevant preserved work remains `ANDROID-COMMAND-BOUNDARY-001`, `ANDROID-CLIENT-
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-007-no-app-firstboot`
 - **Base SHA:** `a5f0f3596a53ddb2ea13ece97b4426aa9dd6d5c2`
-- **Current head:** update from branch readback after each checkpoint write
-- **Objective:** make stock-ChatGPT MIRA have a real deterministic first boot instead of merely possessing a working Google-backed state substrate.
+- **Head before closeout checkpoint:** `577a400ab71df338b37bc912d99dfc4c209ad841`
+- **Pull request:** #58
+- **Status:** implementation complete; direct tests green; isolated Google Workspace persistence/readback compatibility verified; merge pending latest-head CI.
+- **Objective:** give stock-ChatGPT Personal MIRA a deterministic first-boot state machine instead of merely possessing a working Google-backed storage substrate.
 
 ## Session-start alignment verification — 2026-08-29
 
@@ -80,79 +82,134 @@ Verified before implementation:
 
 Verified before implementation:
 
-- `FIRSTBOOT-CORE-001` already exists and is queued as a prerequisite.
+- `FIRSTBOOT-CORE-001` exists as the bounded prerequisite owning this work.
 - `DISCOVERY-CORE-001`, `ONBOARD-SCHEDULE-001`, `SERVICE-STATE-001`, `NONTECH-INSTALL-001`, `MIRA-SKILL-001`, and broader service/provider work remain separate follow-on packets.
 - Android work is already represented and therefore can be paused without losing scope.
-- receipts, assets, inventory, appointments, Ops Brief, and the remaining accepted feature families remain preserved and are not being removed by this packet.
+- receipts, assets, inventory, appointments, Ops Brief, and the remaining accepted feature families remain preserved and are not removed by this packet.
 
 ### `ROADMAP.md`
 
 Verified before implementation:
 
-- the product invariant says ordinary Google users must get useful MIRA before needing servers/Linux/SQL/Cloud Run/Git/paid model APIs;
-- M2-M0 core Google state proof is already complete;
-- onboarding hardening was previously listed after Android core proofs, but that ordering now conflicts with the customer's explicit priority to make the no-app product useful first;
-- this packet intentionally supersedes that priority ordering while preserving Android's checkpoint.
+- the product invariant requires useful Google-only Personal MIRA before advanced infrastructure;
+- M2-M0 core Google state proof was already complete;
+- old Android-before-onboarding ordering conflicted with the customer's explicit priority and was corrected in this packet;
+- M2-M0.5 now explicitly owns usable no-app product progress before Android resumes.
 
 ### Direction result
 
-**ALIGNED AFTER REPRIORITIZATION.** The shortest valid progress toward the customer-visible product is `FIRSTBOOT-CORE-001`, not further Android concurrency work.
+**ALIGNED AFTER REPRIORITIZATION.** `FIRSTBOOT-CORE-001` was the shortest valid progress toward a user-facing no-app MIRA.
 
-## User-visible behavior this packet must enable
+## Implemented behavior
 
-A fresh Personal MIRA session can:
+`mira/onboarding.py` now provides a provider-neutral `InterviewLedgerService` over the existing `StructuredStateAdapter` contract.
 
-1. identify that Minimum Useful Setup is incomplete;
-2. ask the four canonical kickoff questions in order;
-3. never ask the user to choose or rename MIRA;
-4. persist each answer in a durable Interview Ledger with explicit question identity and completion state;
-5. resume from the first unanswered question rather than restarting;
-6. preserve an explicit appointment-help / preferred-Calendar preference without falsely activating or claiming unavailable provider integration;
-7. after question four, mark Minimum Useful Setup complete and tell the user they can ask MIRA later to continue the interview for additional useful questions;
-8. introduce MIRA Studio and optional sharing without silently enabling either;
-9. expose deterministic state that can be stored through the existing provider-neutral structured-state contract and later projected into the Google Workspace starter.
+The canonical Minimum Useful Setup is exactly:
 
-## Explicitly deferred from this packet
+1. `timezone` — validated authoritative IANA timezone;
+2. `life_pattern` — broad work/study/household/caregiving/travel pattern;
+3. `goals` — remembering/organizing/deciding/planning/follow-through goals;
+4. `appointment_help` — explicit appointment-help intent plus requested Calendar lane.
 
-This packet does **not** implement:
+MIRA's fixed name is not an onboarding question.
 
-- full historical discovery/question banks (`DISCOVERY-CORE-001`);
-- automatic service activation;
-- Calendar provider writes/readback;
-- Gmail ingestion;
-- Ops Brief generation;
-- receipt/asset/inventory verticals;
-- Android UI/client behavior;
-- MIRA Studio implementation itself;
-- deterministic public installer/distribution promotion.
+The ledger:
 
-Those remain canonical backlog work.
+- creates deterministic empty first-boot state;
+- persists each answer with optimistic revision semantics;
+- resumes at the first unanswered question;
+- rejects out-of-order answers;
+- treats an exact repeated answer as a read-only replay;
+- requires explicit replacement for a materially changed prior answer;
+- validates timezones with IANA `ZoneInfo`;
+- normalizes Google, Microsoft/Outlook/M365, Apple/iCloud, other and manual Calendar preference lanes;
+- records `calendar_capability_verified=false`, `calendar_projection_active=false`, and `appointment_service_activated=false` when a Calendar lane is merely requested;
+- marks Minimum Useful Setup complete only after all four answers;
+- returns the required orientation that later interview continuation is available and MIRA Studio/sharing are optional rather than silently enabled.
 
-## Acceptance criteria
+## Verification evidence
 
-1. New provider-neutral onboarding runtime exists with no Google-specific row coordinates or provider IDs.
-2. Exactly four canonical kickoff question IDs and prompts are defined and deterministic.
-3. MIRA's name is fixed and never appears as an onboarding question.
-4. Ledger can start, answer, read, and resume deterministically.
-5. Answers are trimmed/validated and material re-answer behavior is explicit rather than silently duplicated.
-6. Appointment preference records interest plus requested Calendar lane separately from actual provider capability/activation.
-7. Completion occurs only when all four canonical answers exist.
-8. Completion orientation includes later interview continuation and MIRA Studio introduction without auto-activation.
-9. State serializes to JSON-compatible payloads suitable for `STORE-001`.
-10. Direct unit tests cover fresh start, ordered progression, resume, invalid input, fourth-question provider preference, completion, and no-name-question behavior.
-11. Repository ownership/evidence manifest covers all new production code.
-12. CI remains green.
-13. End-of-session alignment rechecks `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md` and records any drift before merge/closeout.
+### Direct executable tests
+
+`tests/test_onboarding.py` covers:
+
+- fresh start;
+- exactly four canonical questions and no assistant-name question;
+- ordered progression and resume;
+- out-of-order rejection;
+- invalid timezone rejection;
+- exact-answer replay without revision growth;
+- explicit material replacement;
+- appointment preference without fake provider/service activation;
+- declining appointment help;
+- completion only after all four answers;
+- completion orientation;
+- trimmed JSON-compatible text state.
+
+### Work-session alignment enforcement
+
+`mira/work_session_alignment.py`, `tests/test_work_session_alignment.py`, the work-packet policy, and CI now enforce the mechanical portion of the customer's per-session direction requirement.
+
+The gate confirms active primary work exists in `BACKLOG.md`, declared active features/invariants exist in `FEATURES.md`, and the session-start review explicitly covers FEATURES/BACKLOG/ROADMAP with an ALIGNED result.
+
+### Google Workspace state compatibility proof
+
+An isolated synthetic copy of the clean MIRA Personal Starter was created. The source template was not modified.
+
+On the isolated copy only:
+
+- `onboarding_ledger` was added to `resource_types_json` while preserving `STORE-001` and `single_writer` metadata;
+- a fully synthetic Minimum Useful Setup history was materialized using the exact `GoogleSheetsStructuredStateAdapter` persisted row/idempotency format;
+- the final canonical resource read back as `onboarding_ledger/minimum-useful-setup`, revision 5, status `complete`;
+- all five synthetic upsert idempotency records read back with deterministic request hashes;
+- the appointment answer requested the Google Calendar lane while capability verification, Calendar projection, and appointment-service activation all remained false;
+- written backend rows were checked for readable wrap/vertical formatting;
+- no personal production data, provider identifier, or legacy MIRA artifact was written into public Git.
+
+This is **provider persistence/readback compatibility evidence**, not a claim that stock ChatGPT has already executed the conversational Interview Ledger end-to-end against Google. That user-facing orchestration remains follow-on integration work.
+
+## Acceptance status
+
+1. Provider-neutral onboarding runtime — **passed**.
+2. Exactly four canonical kickoff question IDs/prompts — **passed**.
+3. Fixed MIRA name, never asked — **passed**.
+4. Start/answer/read/resume semantics — **passed**.
+5. Validation and explicit re-answer behavior — **passed**.
+6. Calendar preference separated from capability/activation — **passed**.
+7. Completion only after four answers — **passed**.
+8. Completion orientation / Studio introduction / optional sharing — **passed**.
+9. JSON-compatible STORE-001 state — **passed**.
+10. Direct unit-test coverage — **passed**.
+11. Production ownership/evidence manifest — **passed**.
+12. CI at PR head `577a400ab71df338b37bc912d99dfc4c209ad841` — **passed**, workflow run `33279242714`; latest closeout head still requires CI readback before merge.
+13. Session-end alignment review — **passed below**.
+
+## Session-end alignment verification — 2026-08-29
+
+### `FEATURES.md`
+
+Re-read against the implemented behavior. `ONBOARD-003`, `ONBOARD-002`, `CORE-001`, `CAL-006`, `SERVICE-001`, `STUDIO-001`, and `ONBOARD-006` remain compatible with this implementation. No accepted receipt, asset, inventory, appointment, brief, Android, Microsoft, or Apple feature was deleted or weakened.
+
+### `BACKLOG.md`
+
+Re-read after implementation. `FIRSTBOOT-CORE-001` is now implemented/test-verified by this branch and has Google state-format/readback evidence; the canonical row status still needs closeout bookkeeping after merge. The next no-app work should be selected from existing M2-M0.5 prerequisites/verticals rather than inventing Android or external infrastructure work.
+
+### `ROADMAP.md`
+
+Re-read after the roadmap correction. The branch now explicitly prioritizes useful no-app Personal MIRA, then companion/provider expansion, while preserving the exact Android resume point.
+
+### Direction result
+
+**ALIGNED.** The packet delivered real no-app product behavior plus provider-state compatibility and strengthened future direction control. It did not silently expand into service activation, Calendar writes, Ops Brief, receipts/assets/inventory, or Android.
 
 ## Exact next action
 
-1. Add the automatic work-session/packet alignment checker and CI gate so future sessions cannot rely only on memory.
-2. Implement `FIRSTBOOT-CORE-001` provider-neutral Interview Ledger runtime and direct tests.
-3. Update production ownership evidence.
-4. Run CI through the PR and repair failures.
-5. Re-run feature/backlog/roadmap alignment before merge.
-6. If green and aligned, merge this packet and then select the next highest-value no-app user-visible packet.
+1. Wait for CI on this closeout checkpoint commit and repair only if the latest head is red.
+2. Merge PR #58 only after latest-head CI is green.
+3. Remotely verify `main` contains the merge and read back `CURRENT_WORK.md`.
+4. Create the next bounded M2-M0.5 no-app packet from the merged head.
+5. Current dependency/value default: implement the smallest `SERVICE-STATE-001` / service-composition foundation necessary to let onboarding preferences become explicit readiness/activation state, then drive directly toward the first stock-ChatGPT user-visible vertical. Do not resume Android merely because its provider proof is pending.
 
 ## Recovery protocol
 
-Read this file first. Confirm the branch/head state. Do not resume Android merely because its live provider proof is unfinished; the customer explicitly reprioritized no-app usability. If `M2-M0-007` is unfinished, continue at the first incomplete acceptance criterion above. Keep all personal/provider identifiers and live production state out of public Git.
+Read this file first. If PR #58 is still open, check the latest branch head and CI before merge. If merged, verify `main` and start the next M2-M0.5 no-app packet. Android remains paused at the exact live Apps Script proof step recorded above. Keep personal/provider identifiers and live production state out of public Git.
