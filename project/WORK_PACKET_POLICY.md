@@ -20,6 +20,21 @@ A newly discussed idea joins active work only when:
 
 Otherwise capture it in FEATURES/BACKLOG and continue the active packet.
 
+## Work-session direction gate
+
+Every development work session must begin by reading and reconciling these four Git authorities before implementation continues:
+
+1. `CURRENT_WORK.md` — one active packet and exact resume point;
+2. `FEATURES.md` — accepted semantic feature set and dependencies;
+3. `BACKLOG.md` — dependency-ranked implementation work, including displaced work;
+4. `ROADMAP.md` — milestone and product-ordering intent.
+
+The session-start result must be recorded in `CURRENT_WORK.md` under a heading beginning `## Session-start alignment verification`. It must explicitly cover FEATURES, BACKLOG and ROADMAP and record a direction result of `ALIGNED` before implementation proceeds.
+
+The repository CI gate `python -m mira.work_session_alignment check` must verify that the active primary work exists in `BACKLOG.md`, all declared active feature/invariant IDs exist in `FEATURES.md`, and the required authority review is present. This mechanical check supplements product judgment; it does not replace it.
+
+Before a work session ends or the active branch is handed off, repeat the semantic direction check. Record any drift, newly discovered dependency, reprioritization, or exact resume point in `CURRENT_WORK.md`. A green test suite without this direction check is not a safe recovery checkpoint.
+
 ## Feature-set alignment gate
 
 MIRA development must not optimize a local subsystem while drifting away from the intended product. `FEATURES.md` is the canonical semantic contract, with `ROADMAP.md` and `BACKLOG.md` providing milestone and ranked-work context.
@@ -28,7 +43,7 @@ Before a packet begins implementation, the assistant/developer must:
 
 1. read the current related feature IDs in `FEATURES.md` and their dependencies;
 2. read relevant roadmap/backlog mappings, including adjacent user-visible features that the packet could accidentally break or make impossible;
-3. record in `CURRENT_WORK.md` a **Feature alignment** section containing:
+3. record in `CURRENT_WORK.md` a **Feature alignment** or session-alignment section containing:
    - primary feature/work IDs;
    - user-visible behavior this packet must enable;
    - existing product invariants/features it must preserve;
@@ -38,7 +53,7 @@ Before a packet begins implementation, the assistant/developer must:
 
 Before merge/closeout, repeat the feature-alignment check. A packet may not be called complete merely because its code/tests pass if the implementation contradicts the canonical feature set, drops a required user-visible behavior, or makes an accepted downstream feature structurally impossible.
 
-`DEV-005` provides the machine-readable feature registry. Automated packet/feature alignment enforcement may strengthen this process, but the Git-recorded alignment review is mandatory immediately.
+`DEV-005` provides the machine-readable feature registry. `DEV-007` and `mira.work_session_alignment` provide the mechanical packet/session grounding checks. Semantic product judgment remains mandatory because a parser cannot tell whether a locally clever design has made the actual product stupid.
 
 ## Explicit reprioritization
 
@@ -46,9 +61,11 @@ Before switching:
 
 1. checkpoint current work durably;
 2. write the exact resume point to CURRENT_WORK;
-3. record displaced/new work in BACKLOG;
+3. confirm displaced and new work already exist in BACKLOG or add them there;
 4. commit/push and remotely read back when Git access permits;
 5. then switch scope.
+
+Existing backlog items do not need duplicate rows merely because their priority changes; CURRENT_WORK records the active priority and exact resume point while BACKLOG remains non-FIFO.
 
 ## Packet record
 
@@ -76,6 +93,8 @@ BACKLOG is not FIFO. Priority order:
 6. enhancements;
 7. later ideas.
 
+When the customer explicitly changes priority, that direction overrides an older milestone ordering after the displaced packet is safely checkpointed. The roadmap/backlog must not be treated as an excuse to continue lower-value work the customer has just rejected.
+
 ## Completion evidence
 
 Track separately:
@@ -95,6 +114,7 @@ Assume any session can terminate unexpectedly.
 - Commit/checkpoint frequently at meaningful boundaries.
 - Never leave the only unfinished-work description in chat.
 - On recovery, read `CURRENT_WORK.md` before relying on conversational reconstruction.
+- Run the work-session direction check before continuing implementation.
 - Record the first incomplete item, not merely a percentage.
 
 ## Legacy data
