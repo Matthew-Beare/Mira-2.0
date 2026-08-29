@@ -167,9 +167,60 @@ After all four answers:
 - set `status=complete`
 - set `minimum_useful_setup_complete=true`
 
-Then tell the user:
+Then ask:
 
-“Minimum Useful Setup is complete. You can ask MIRA at any time to continue the interview with additional questions that improve how MIRA functions for you. MIRA Studio is the guided place for adding or refining bounded preferences and workflows, and sharing is optional. Nothing is silently enabled or shared merely because setup is complete.”
+“Minimum Useful Setup is complete. Do you want to continue setup now, or start using MIRA?”
+
+Also explain briefly that if they start using MIRA, MIRA may offer at most one short discovery topic per local day in an eligible brief for up to seven topic-days; they can stop that at any time, request more interview questions at any time, and use MIRA Studio later for guided refinement. Nothing is silently enabled or shared merely because setup is complete.
+
+## Progressive discovery after Minimum Useful Setup
+
+Progressive discovery is optional and uses a second durable Interview Ledger:
+
+- resource type: `onboarding_ledger`
+- resource id: `progressive-discovery`
+- schema version: `1`
+
+The discovery ledger records the selected mode, each topic state, explicit answers, any current follow-up, brief-drip state, number of topic-days used, and last local brief date. It must survive restart/resume. Silence is never an answer.
+
+### If the user chooses continue setup now
+
+Set discovery mode to `continue_now` and ask one topic at a time. The user may stop at any point. Continue with the first topic whose state is still `unanswered`; never restart the list merely because the chat changed.
+
+### If the user chooses start using MIRA
+
+Set discovery mode to `brief_drip`. An eligible Ops Brief may claim at most one new unanswered discovery topic for a supplied local calendar date. Do not emit a second discovery topic on the same local date. If the previously emitted topic remains unanswered, do not advance on a later day merely because the user was silent.
+
+After seven distinct topic-days, stop automatic discovery prompts even if some topics remain unanswered. The user can still continue manually later. If the user disables progressive prompts, stop them immediately without deleting prior answers.
+
+### Canonical progressive topic order
+
+1. `fitness_wellness`
+   - Ask: “Would you like MIRA to help with fitness, activity, nutrition, or weight-management goals?”
+   - If yes, immediately ask: “What are your goals, and what kind of help do you want from MIRA? For example: cardio, strength, both, meal or nutrition support, activity accountability, or weight goals.”
+   - Store the explicit goals/help preference. Do not create a separate fitness authority, diagnose medical conditions, or imply wearable integration exists.
+
+2. `meals_groceries`
+   - Ask whether the user wants recipes, meal planning, pantry/freezer tracking, or grocery help.
+
+3. `household_routines`
+   - Ask whether the user wants household tasks, errands, maintenance, or recurring-routine help.
+
+4. `education_study`
+   - Ask whether the user wants school, certification, study-plan, deadline, or offline-preparation help.
+
+5. `receipts_assets_inventory`
+   - Ask whether the user wants purchases/receipts, warranties/manuals, vehicles/equipment, or household/shop inventory organized.
+
+6. `travel_work_tracking`
+   - Ask whether the user wants travel, work-trip, route, mileage, or context-aware planning help.
+
+7. `connected_integrations`
+   - Ask whether the user wants optional connected sources such as smartwatch/activity data, smart-home/local services, or additional provider accounts when supported.
+
+For every topic, persist explicit `accepted`, `declined`, or `skipped` state. A positive answer records intent/preferences only. It never proves a service, provider, smartwatch, smart-home bridge, Calendar, email integration, or any other capability is active. Follow the existing service/capability/readback rules before activation claims.
+
+MIRA Studio remains the ongoing improvement surface after this bounded discovery pass.
 
 ## Appointment service intent after question four
 
@@ -199,7 +250,7 @@ After Minimum Useful Setup is complete:
 5. `requested` means the user wants the service but it is not yet active.
 6. `suspended` means the service must not be represented as operational even if it was active previously.
 7. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
-8. Preserve accepted future feature families such as appointments, Ops Briefs, receipts/purchases, assets/fitment, inventory/location/movement, recipes/meals, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+8. Preserve accepted future feature families such as appointments, Ops Briefs, receipts/purchases, assets/fitment, inventory/location/movement, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 
