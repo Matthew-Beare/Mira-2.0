@@ -4,15 +4,19 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Android, Microsoft, Apple/iCloud, Cloud Run, Linux and SQL remain supported later lanes. The immediate product objective is to keep turning the audited feature corpus into functioning user-visible MIRA behavior without losing or rediscovering accepted scope.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Android, Microsoft, Apple/iCloud, Cloud Run, Linux and SQL remain supported later lanes. The immediate product objective is repeated user-visible no-app progress while the complete audited product corpus remains durable and queryable.
 
-Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`. Completed work remains in the corpus with evidence; it is never deleted merely to shorten an active list.
+Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`. Completed work remains in the corpus with evidence and is filtered from next-work selection rather than deleted.
 
-## Preserved checkpoint — `M2-M0-010`
+## Preserved displaced checkpoints
 
-The Personal starter/distribution branch `integration/m0-010-personal-starter-distribution` was created from `main` at `71ab2278a6a45925f6bb74f9d3628f859d25ab71` but contains no unique commits. It is displaced by the customer's explicit request to reconcile the complete product/feature corpus before further distribution implementation. Resume point: start deterministic Personal starter/distribution work from the then-current merged `main`; no M2-M0-010 implementation needs recovery.
+### `M2-M0-010` — Personal starter/distribution
 
-Android remains paused at the exact live queued-writer Apps Script proof checkpoint already recorded in Git history.
+Branch `integration/m0-010-personal-starter-distribution` was created from `main` at `71ab2278a6a45925f6bb74f9d3628f859d25ab71` but contains no unique commits. It was displaced by explicit customer reprioritization. Resume distribution from the then-current merged `main`; no implementation recovery is required.
+
+### Android / `M2-M1-001`
+
+Android remains paused at the previously recorded live isolated Google queued-writer proof checkpoint. Synthetic command-boundary implementation is preserved; do not redesign it when Android resumes.
 
 ## Active packet
 
@@ -24,7 +28,8 @@ Android remains paused at the exact live queued-writer Apps Script proof checkpo
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/g0-011-product-corpus-reconciliation`
 - **Base SHA:** `71ab2278a6a45925f6bb74f9d3628f859d25ab71`
-- **Objective:** make the complete audited MIRA product corpus queryable as a durable lifecycle ledger, reconcile stale implementation status, and extend onboarding so Minimum Useful Setup naturally continues into optional progressive discovery without turning setup into a forty-question hostage situation.
+- **PR:** #61
+- **Objective:** make the complete audited MIRA product corpus queryable as a durable lifecycle ledger, reconcile stale implementation state, and extend onboarding so Minimum Useful Setup can continue into optional bounded progressive discovery without blocking ordinary MIRA use.
 
 ## Session-start alignment verification — 2026-08-29
 
@@ -32,114 +37,179 @@ Android remains paused at the exact live queued-writer Apps Script proof checkpo
 
 Verified before implementation:
 
-- the canonical feature index already contains 118 stable semantic features covering briefs/tasks, appointments/mail, orders/receipts/finance, assets/fitment/knowledge, inventory/location/movement, groceries/recipes/meals, profiles/permissions, service composition, routines/fitness/accountability, education, travel/mileage, wearables, weather, Android, local/Home Assistant/Plex bridges, voice, backup/recovery, provider portability and enterprise deployment;
-- `ONBOARD-003` already owns the four-question Minimum Useful Setup and currently only offers later continuation in prose;
-- `ONBOARD-004` owns deeper capability/friction/context discovery but does not yet define the requested post-four choice or bounded one-question-per-day brief drip;
-- F13 maps fitness/accountability to `ROUTINE-001` + task/service semantics rather than creating a second fitness authority;
-- F22 / `WEARABLE-001` already preserves optional smartwatch/activity ingestion;
-- `MEAL-001`, `GROCERY-001`, `RECEIPT-*`, `ASSET-*`, `INV-*`, `EDU-001`, `LOCAL-001`, and the other major life domains are already in the canonical corpus and must not be rediscovered as new features merely because implementation is pending.
+- 118 stable semantic features already cover briefs/tasks, appointments/mail, orders/receipts/finance, assets/fitment/knowledge, inventory/location/movement, groceries/recipes/meals, profiles/permissions, routines/fitness/accountability, education, travel/mileage, wearables, weather, Android, local/Home Assistant/Plex bridges, voice, backup/recovery, provider portability and enterprise deployment;
+- `ONBOARD-003` owns the exact four-question Minimum Useful Setup;
+- `ONBOARD-004` is the correct home for deeper progressive discovery;
+- fitness/accountability remains composed from `ROUTINE-001` + task/service semantics rather than a duplicate fitness authority;
+- optional smartwatch/activity ingestion remains `WEARABLE-001`;
+- receipts, meals/groceries, assets, inventory, education, local integrations and other whole-life domains are already canonical and must not be repeatedly rediscovered as new features.
 
 ### `BACKLOG.md`
 
 Verified before implementation:
 
-- completed forensic audits A-G remain durable, including bounded audits for receipts, assets, inventory, meals, roles, fitness/routines, education, travel, backup, knowledge, Android and provider foundations;
-- implementation work is retained rather than removed after completion, but stale status metadata exists: `FIRSTBOOT-CORE-001`, `SERVICE-STATE-001`, and `ONBOARD-INSTRUCTIONS` have already merged evidence yet still require canonical backlog status reconciliation;
-- `FEATURE-ALIGN-001` is the existing governance work for packet/feature drift automation;
-- `DISCOVERY-CORE-001` is the existing deeper onboarding/discovery work and is the correct implementation home for progressive post-setup discovery rather than inventing a parallel onboarding subsystem.
+- completed forensic audits A-G already preserve the broad historical feature corpus;
+- stale completion text existed for first boot/service state/no-app instructions;
+- `FEATURE-ALIGN-001` and `DISCOVERY-CORE-001` were existing work IDs and therefore no parallel governance/onboarding subsystem was needed.
 
 ### `ROADMAP.md`
 
 Verified before implementation:
 
 - useful no-app Personal MIRA remains ahead of Android expansion;
-- feature-corpus reconciliation is a foundational multiplier because it prevents completed work being reselected and prevents accepted features disappearing while implementation proceeds;
-- progressive onboarding should feed later verticals without blocking immediate use of MIRA.
+- lifecycle reconciliation is foundational because it prevents completed work being accidentally reselected;
+- deeper onboarding must remain optional and must feed user-visible verticals rather than delay them.
 
 ### Direction result
 
-**ALIGNED.** Reconciliation and progressive onboarding directly address the customer's stated failure mode: too much rediscovery, stale work status and no durable mechanism for continuously selecting the next unimplemented accepted feature.
+**ALIGNED.** Reconciliation and progressive onboarding directly address the customer's stated failure mode: stale status, repeated rediscovery, and no durable way to select unfinished accepted scope.
 
-## Historical corpus finding
+## Implemented evidence
 
-A new history pass across available MIRA/LyfeOS conversations and the existing audit PRs confirms that much of the requested whole-life scope has already been normalized into Git. The work is not to create another feature list; it is to make the existing list operationally trustworthy and add newly clarified behavior.
+### Product lifecycle ledger
 
-Preserved major domains include:
+`mira/product_ledger.py` now derives one machine-readable product view from `FEATURES.md` + `BACKLOG.md`; it does not create a second editable authority.
 
-- Ops Briefs, contexts, tasks, routines, reminders and accountability;
-- appointments, Calendar projection, email triage and communication safety;
-- orders, shipments, receipts, returns/refunds, spending, reimbursement and optional finance/subscriptions;
-- assets, vehicles/equipment, identifiers, fitment, maintenance/warranties, manuals, technical specs and knowledge;
-- inventory, intended/observed location, QR/barcode movement, par levels and optional passive sensing;
-- groceries, pantry/freezer, recipes, meal planning and shopping intent;
-- work/self-employment, retired/nonworking, student, caregiver, household, parent/dependent and permission scopes;
-- travel/work trips/routes/mileage, education/study and offline preparation;
-- optional health administration, fitness/routine accountability, wearable/activity ingestion and weather preferences;
-- Android/mobile, voice, Home Assistant/Plex/local bridges, Google/Microsoft/Apple provider lanes, enterprise/managed deployment, backup/recovery and future SQL/private backends;
-- MIRA Studio, bounded custom features and controlled sharing.
+Verified behavior:
 
-## Newly clarified onboarding behavior
+- parses ranked and unranked canonical work tables;
+- fails duplicate work IDs;
+- retains raw feature evidence and work status;
+- conservatively normalizes work to completed/active/queued/deferred/partial/paused/provisional/split/etc.;
+- ambiguous prose is never promoted to completed;
+- CLI supports validation, JSON projection, and unfinished-work selection;
+- completed/deferred/paused/split/rejected work is excluded from selectable next-work without being deleted;
+- CI runs product lifecycle validation before session alignment;
+- session alignment now uses the same canonical backlog parser, fixing the old ranked-table blind spot.
 
-The product contract for the next implementation must be:
+Latest verified projection on PR #61 head before closeout:
 
-1. The first four Minimum Useful Setup questions remain exactly the current canonical four.
-2. Immediately after question four, MIRA asks a simple choice: **continue setup now** or **start using MIRA**.
-3. Choosing continue enters progressive discovery immediately, one topic at a time, with the user able to stop at any point.
-4. Choosing start using MIRA must not abandon discovery. For up to seven local calendar days, an eligible Ops Brief may include at most one short discovery prompt. No more than one discovery topic is emitted per local day, and the user can dismiss/disable the drip at any time.
-5. The first progressive topic should explicitly offer fitness/activity/nutrition/weight-goal help. If accepted, the immediate branch asks what the user's goals are and what kind of help they want. This is preference/service discovery, not a new canonical `FITNESS-*` authority and not medical diagnosis.
-6. Subsequent discovery topics cover high-value existing domains such as meal/grocery planning, household/routines, education/study, receipts/assets/inventory, travel/work tracking, and optional connected integrations such as wearables/local smart-home services.
-7. Positive answers create explicit intent/preferences and follow existing service/capability gates. They never silently activate providers or claim integrations work.
-8. Discovery remembers answered/declined/skipped topics so it does not repeatedly ask the same question. Silence never counts as an answer.
-9. MIRA Studio remains available later for continued refinement beyond the initial seven-day drip.
+- 118 features;
+- 143 work items;
+- 49 completed;
+- 76 queued;
+- 2 active;
+- 1 partial;
+- 1 paused;
+- 2 provisional;
+- 10 deferred;
+- 2 split;
+- zero unknown lifecycle states.
 
-## Lifecycle-ledger behavior required
+### Backlog reconciliation
 
-The repository must expose one deterministic machine-readable product ledger derived from Git authorities, not a second editable database.
+Canonical backlog state now records rather than deletes completed work:
 
-For every feature, expose at minimum:
+- `FIRSTBOOT-CORE-001` — complete, PR #58 + tests + isolated Google persistence/readback;
+- `APPOINTMENT-ONBOARD-001` — complete, fourth-question preference behavior verified without fake provider activation;
+- `SERVICE-STATE-001` — complete, PR #59 + tests + isolated Google persistence/readback;
+- `ONBOARD-INSTRUCTIONS` — complete, PR #60 + bundled protocol + fresh-copy first-boot provider proof;
+- `API-DEPLOYMENT-001B` — paused rather than unknown;
+- `ANDROID-COMMAND-BOUNDARY-001` — partial rather than unknown because live Google worker proof is still pending;
+- `DISCOVERY-CORE-001` — active/partial: the new progressive slice is implemented/tested while broader evidence-aware history/friction discovery remains unfinished.
 
-- stable feature ID;
-- title;
-- requirement state;
-- raw evidence state;
-- dependencies.
+### Progressive onboarding
 
-For every backlog work item, expose at minimum:
+Minimum Useful Setup remains exactly four questions. After question four MIRA now offers:
 
-- stable work ID;
-- class;
-- work description;
-- dependencies;
-- raw status;
-- normalized lifecycle state such as `completed`, `active`, `queued`, `deferred`, `paused`, `provisional`, `split`, or `unknown`.
+- **continue setup now**; or
+- **start using MIRA**.
 
-Completed work remains visible forever unless explicitly superseded/rejected. The ledger must make completed work easy to exclude from next-work selection without deleting its history.
+Provider-neutral `progressive-discovery` state then supports:
 
-## Acceptance criteria
+- one topic at a time;
+- persistent accepted/declined/skipped/needs-details state;
+- restart/resume without repeating completed topics;
+- brief-drip mode with at most one new topic per supplied local date;
+- silence never counts as an answer and never advances the queue;
+- automatic brief discovery stops after seven topic-days or explicit disablement;
+- first topic is optional fitness/activity/nutrition/weight-management help;
+- a positive fitness answer immediately asks goals/help type;
+- later topics cover meals/groceries, household/routines, education/study, receipts/assets/inventory, travel/work tracking and optional connected integrations such as wearables/local smart-home services;
+- positive answers remain intent/preferences only and never silently activate providers/services.
 
-1. Deterministic product-ledger generator combines `FEATURES.md` and `BACKLOG.md` without creating a second editable authority.
-2. Duplicate work IDs fail validation.
-3. Work-status normalization is deterministic and conservative; ambiguous status never becomes completed by inference.
-4. CLI can validate the corpus and emit JSON suitable for later dashboard/database projection.
-5. CI runs the corpus/lifecycle validation every PR.
-6. Known stale completed backlog rows are reconciled against merged PR evidence rather than deleted.
-7. `ONBOARD-003` completion orientation exposes the continue-now vs start-using-MIRA choice.
-8. Provider-neutral progressive discovery persists answered/skipped topic state and resumes deterministically.
-9. Brief-drip selection emits no more than one topic per supplied local date and stops after seven topic-days or explicit disablement.
-10. Fitness/wellness discovery branches to goals when accepted while preserving explicit service/capability boundaries.
-11. Tests cover continue-now, start-using-MIRA, daily dedupe, seven-day exhaustion, opt-out, fitness accept/decline/goal branch and restart/resume.
-12. Code ownership/evidence remains valid.
-13. End-of-session recheck confirms accepted receipts, meals, inventory, wearables, local integrations and other major domains remain present and ranked.
+The stock-ChatGPT no-app operating instructions and Workspace bundle validation were updated so the actual no-app product contract matches the tested Python behavior.
+
+## Latest test evidence
+
+PR #61 CI run `33281117715` on head `f34275137f5fbd6223127a0e4f26bfeac2bb6f55` passed before this closeout-only CURRENT_WORK commit:
+
+- compile — green;
+- feature registry — green;
+- product lifecycle ledger — green;
+- work-session alignment — green;
+- code ownership — green;
+- Python unit tests — **167/167 passed**;
+- Workspace Apps Script tests — **15/15 passed**.
+
+This closeout commit changes governance text only. It must receive its own latest-head CI before merge.
+
+## End-of-session alignment verification — 2026-08-29
+
+### `FEATURES.md`
+
+Rechecked after implementation:
+
+- all 118 feature IDs remain present;
+- receipts/purchases/spending remain preserved;
+- groceries/recipes/meal planning remain preserved;
+- assets/fitment/knowledge remain preserved;
+- inventory/location/movement/par remain preserved;
+- routines/fitness/accountability remain preserved;
+- education/study remain preserved;
+- travel/work-trip/mileage remain preserved;
+- `WEARABLE-001` remains preserved;
+- `LOCAL-001` Home Assistant/Plex/private-service direction remains preserved;
+- Android, Microsoft, Apple/iCloud, backup/recovery, voice, enterprise and MIRA Studio remain preserved;
+- no new parallel fitness, meal, inventory, or onboarding authority was invented.
+
+### `BACKLOG.md`
+
+Rechecked after implementation:
+
+- total work-item count remains 143, so reconciliation did not silently delete work;
+- known stale completed work was corrected to completed with evidence;
+- partial/paused work is now explicit rather than ambiguous;
+- unfinished whole-life verticals remain queued/deferred and selectable by lifecycle/dependency/value ranking;
+- `DISCOVERY-CORE-001` correctly remains partial because broader evidence-aware history/capability discovery is not finished.
+
+### `ROADMAP.md`
+
+Rechecked after implementation:
+
+- no-app Personal usefulness remains ahead of Android;
+- post-four progressive discovery is explicitly optional and bounded;
+- deterministic starter/distribution and a meaningful user-visible no-app vertical remain the next milestone concerns;
+- completed work remains durable and excluded from reselection by lifecycle state rather than deletion.
+
+### Direction result
+
+**ALIGNED.** The packet improved both product behavior and the mechanism used to keep future implementation pointed at unfinished accepted scope.
+
+## Acceptance result
+
+1. Product ledger over canonical FEATURES/BACKLOG — PASS.
+2. Duplicate work-ID validation — PASS.
+3. Conservative lifecycle normalization — PASS.
+4. JSON/validation/next-work CLI — PASS.
+5. CI lifecycle gate — PASS.
+6. Stale completed backlog reconciliation — PASS.
+7. Post-four continue/use-MIRA choice — PASS.
+8. Durable progressive discovery — PASS.
+9. One-topic-per-local-date / seven-topic-day limit — PASS.
+10. Fitness goals branch with service/capability separation — PASS.
+11. Direct progressive-discovery test matrix — PASS.
+12. Code ownership/evidence — PASS.
+13. End-of-session whole-life feature preservation check — PASS.
 
 ## Exact next action
 
-1. Implement the deterministic product lifecycle ledger and CI check.
-2. Reconcile the known stale completed backlog statuses from PRs #58-#60.
-3. Extend provider-neutral onboarding with the post-four choice and progressive discovery ledger/drip behavior.
-4. Update direct tests and ownership evidence.
-5. Re-run FEATURES/BACKLOG/ROADMAP alignment and CI on the exact PR head.
-6. Merge only when green, then resume the highest-value uncompleted no-app work from the lifecycle ledger rather than conversational memory.
+1. Run CI on this exact closeout head.
+2. If green, merge PR #61.
+3. Remotely verify `main` contains the merge.
+4. Mark `FEATURE-ALIGN-001` completed and the progressive portion of `DISCOVERY-CORE-001` test-verified while preserving its broader unfinished scope in the next checkpoint.
+5. Select the next highest-value unfinished no-app work using the lifecycle ledger, with deterministic Personal starter/distribution and the first meaningful user-visible vertical as the current leading candidates.
 
 ## Recovery protocol
 
-Read this file first. Continue on `integration/g0-011-product-corpus-reconciliation`. Do not resume the empty M2-M0-010 distribution branch or Android until this reconciliation packet closes. Git feature/work authorities remain canonical; conversation history is discovery evidence used to reconcile them, not a replacement authority.
+Read this file first. If PR #61 is still open, verify the exact head and CI before merge. If #61 is merged, verify `main`, then create the next bounded packet from current `main`. Do not resume the empty old M2-M0-010 branch or Android by habit; use the lifecycle/dependency/value result. Conversation history remains discovery evidence, not the mutable development authority.
