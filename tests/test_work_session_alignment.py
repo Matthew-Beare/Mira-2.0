@@ -6,6 +6,7 @@ from mira.work_session_alignment import (
     WorkSessionAlignmentError,
     check_alignment_texts,
     check_paths,
+    parse_backlog_work_ids,
 )
 
 
@@ -35,6 +36,10 @@ BACKLOG = """# BACKLOG
 | Work ID | Class | Work | Dependencies | Status |
 |---|---|---|---|---|
 | `FIRSTBOOT-CORE-001` | PREREQUISITE | First boot | ONBOARD-003 | queued |
+
+| Rank | Work ID | Class | Work | Dependencies | Status |
+|---:|---|---|---|---|---|
+| 6a | `FEATURE-ALIGN-001` | HARDENING | Alignment | DEV-007 | active |
 """
 
 ROADMAP = """# ROADMAP
@@ -80,6 +85,11 @@ class WorkSessionAlignmentTests(unittest.TestCase):
         self.assertEqual(report.packet_id, "M2-M0-007")
         self.assertEqual(report.primary_work_ids, ("FIRSTBOOT-CORE-001",))
         self.assertIn("ONBOARD-003", report.feature_ids)
+
+    def test_ranked_and_unranked_backlog_rows_share_one_parser(self) -> None:
+        ids = parse_backlog_work_ids(BACKLOG)
+        self.assertIn("FIRSTBOOT-CORE-001", ids)
+        self.assertIn("FEATURE-ALIGN-001", ids)
 
     def test_unknown_work_fails(self) -> None:
         broken = CURRENT.replace("FIRSTBOOT-CORE-001", "MISSING-WORK-001")
