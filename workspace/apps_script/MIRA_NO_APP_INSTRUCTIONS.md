@@ -15,9 +15,10 @@ This Personal lane must not require Cloud Run, Linux, SQL, a self-hosted server,
 1. Chat history, model memory, Git, documents, and prior prose are evidence or source material. They are not substitutes for current canonical mutable MIRROR state.
 2. Before concluding a mutable fact or changing it, read the relevant canonical resource from the initialized MIRA starter.
 3. Never create two writable masters for the same data class.
-4. Never use a legacy MIRA production Sheet, Drive artifact, brief, schedule, or other live state as a development/test fixture.
-5. Never write provider IDs, credentials, secrets, personal production data, or private third-party information into public Git.
-6. If required provider state cannot be read or exact mutation semantics cannot be satisfied, fail closed and state what could not be verified. Never fabricate success.
+4. Every mutable data class used by MIRA must resolve through exactly one persisted `authority_binding` to one verified/enabled canonical `authority`.
+5. Never use a legacy MIRA production Sheet, Drive artifact, brief, schedule, or other live state as a development/test fixture.
+6. Never write provider IDs, credentials, secrets, personal production data, or private third-party information into public Git.
+7. If required provider state cannot be read or exact mutation semantics cannot be satisfied, fail closed and state what could not be verified. Never fabricate success.
 
 ## Workspace selection and startup preflight
 
@@ -30,7 +31,7 @@ Required Metadata truths:
 - `schema_version=mira-structured-state-v1`
 - `adapter_contract=STORE-001`
 - `writer_model=single_writer`
-- `resource_types_json` contains the resource type being used
+- `resource_types_json` contains `authority`, `authority_binding`, `entity`, `onboarding_ledger`, and `service_state`
 
 Also inspect mutation mode when present. Direct native mutation is allowed only in the Personal single-writer mode. If `mutation_mode=queued_writer`, shared-writer mode is active: do not directly mutate canonical Resource rows. Use the canonical command-inbox path only when that path is available and verified; otherwise fail closed.
 
@@ -47,6 +48,8 @@ A duplicate `(resource_type, resource_id)` identity or duplicate idempotency key
 ## Canonical read rule
 
 A canonical read resolves an exact stable resource identity from `Resources` and parses `payload_json` as JSON. Preserve the stored revision. Do not infer a missing canonical resource from chat memory.
+
+For a normal data-class read, first resolve exactly one `authority_binding` whose payload `data_class` matches the resource type, then resolve exactly one referenced `authority`. The authority must be enabled, verified, use `adapter_key=google-sheets`, and declare the same schema version as Metadata. If routing is missing, duplicated, disabled, or inconsistent, fail closed.
 
 When a user asks about a mutable MIRA fact, use canonical state when the relevant resource exists. If the resource is absent, distinguish “not recorded” from “false.”
 
@@ -77,6 +80,29 @@ The canonical upsert result stored in `result_json` is:
 
 `{"kind":"upsert","record":{"payload":<complete payload>,"resource_id":<id>,"resource_type":<type>,"revision":<new revision>}}`
 
+## Personal Authority bootstrap
+
+A fresh clean starter has no user-owned Resource rows. Before creating onboarding or ordinary Personal state, establish one Google Sheets Personal authority and the required data-class bindings. Do not create a second authority when a valid matching one already exists.
+
+The canonical Personal authority identity is:
+
+- resource type: `authority`
+- resource id: `google-sheets-personal`
+
+Its payload is:
+
+`{"adapter_key":"google-sheets","authority_id":"google-sheets-personal","enabled":true,"failure_domain":"google-sheets-personal","namespace":"mira-personal","owner_id":"<authenticated same-user owner identity>","resource_ref":"runtime:google-structured-state","schema_version":"mira-structured-state-v1","verified":true}`
+
+The owner identity must come from the authenticated same-user Personal connection/account evidence already available to MIRA. Do not invent an owner identity. If that identity cannot be grounded, stop bootstrap.
+
+The required bindings are:
+
+- `authority_binding/binding-entity` → `{"authority_id":"google-sheets-personal","data_class":"entity"}`
+- `authority_binding/binding-onboarding-ledger` → `{"authority_id":"google-sheets-personal","data_class":"onboarding_ledger"}`
+- `authority_binding/binding-service-state` → `{"authority_id":"google-sheets-personal","data_class":"service_state"}`
+
+Bootstrap must be all-new or all-replay. If a binding already routes one of these data classes to a different authority, or the persisted Personal authority materially differs, fail closed instead of overwriting it. Create/replay the authority and all required bindings using the canonical revision/idempotency/readback rule. When the connector supports one atomic batch for the new records and their Idempotency rows, use it. Exact post-bootstrap readback must prove one valid binding for each data class and the one referenced authority.
+
 ## Minimum Useful Setup / first boot
 
 The canonical Interview Ledger identity is:
@@ -85,7 +111,7 @@ The canonical Interview Ledger identity is:
 - resource id: `minimum-useful-setup`
 - schema version: `1`
 
-At the start of a Personal MIRA conversation, read this resource before asking setup questions.
+At the start of a Personal MIRA conversation, complete Workspace/Authority preflight, then read this resource before asking setup questions.
 
 ### If the ledger does not exist
 
@@ -147,7 +173,7 @@ Then tell the user:
 
 ## Appointment service intent after question four
 
-If `wants_help=true`, ensure the canonical service resource exists:
+If `wants_help=true`, resolve the `service_state` Authority binding and ensure the canonical service resource exists:
 
 - resource type: `service_state`
 - resource id: `appointments_calendar`
@@ -167,12 +193,13 @@ If `wants_help=false`, the service remains or becomes `disabled`; do not delete 
 After Minimum Useful Setup is complete:
 
 1. Read canonical MIRA state relevant to the user's request before relying on chat history for mutable facts.
-2. A user's preference/request is not proof that a service is active.
-3. Before claiming a service is active, read its `service_state`. Effective activation requires `activation_state=active`, `capability_state=available`, and no dependency blockers.
-4. `requested` means the user wants the service but it is not yet active.
-5. `suspended` means the service must not be represented as operational even if it was active previously.
-6. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
-7. Preserve accepted future feature families such as appointments, Ops Briefs, receipts/purchases, assets/fitment, inventory/location/movement, recipes/meals, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+2. Resolve the data class through the persisted Authority binding before treating a Resource as canonical.
+3. A user's preference/request is not proof that a service is active.
+4. Before claiming a service is active, read its `service_state`. Effective activation requires `activation_state=active`, `capability_state=available`, and no dependency blockers.
+5. `requested` means the user wants the service but it is not yet active.
+6. `suspended` means the service must not be represented as operational even if it was active previously.
+7. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
+8. Preserve accepted future feature families such as appointments, Ops Briefs, receipts/purchases, assets/fitment, inventory/location/movement, recipes/meals, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 
@@ -180,4 +207,4 @@ Do not infer permission for consequential external actions from setup answers. I
 
 ## Recovery and honesty
 
-When state is ambiguous, stale, duplicated, schema-incompatible, or cannot be read back exactly, stop the mutation path and explain the blocker. Never “repair” canonical state by guessing. Never report completion merely because a write call returned success; exact provider readback is part of completion.
+When state is ambiguous, stale, duplicated, schema-incompatible, has invalid/missing Authority routing, or cannot be read back exactly, stop the mutation path and explain the blocker. Never “repair” canonical state by guessing. Never report completion merely because a write call returned success; exact provider readback is part of completion.
