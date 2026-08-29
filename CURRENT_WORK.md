@@ -4,7 +4,7 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work stays in the product corpus with evidence and is filtered from future selection rather than deleted. Android and advanced infrastructure remain preserved later lanes until the no-app Personal product is meaningfully usable.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work stays in the product corpus with evidence and is filtered from future selection rather than deleted. Android and advanced infrastructure remain preserved later lanes until the no-app Personal product is meaningfully useful.
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`.
 
@@ -12,9 +12,7 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ### `M2-G0-011` — Product corpus reconciliation and progressive onboarding
 
-Merged in PR #61 to `main` at `c776db72d4f3a0e37b0be5004ac1a15141df14e8` after latest-head CI `33281161401` passed. The merged product lifecycle ledger tracks 118 canonical features and 143 backlog work items without deleting completed history. Progressive onboarding now offers continue-setup-now versus start-using-MIRA, with a bounded one-topic-per-local-day discovery drip and fitness-goals branch.
-
-`FEATURE-ALIGN-001` is complete by this merge. `DISCOVERY-CORE-001` remains partial because the progressive slice is test-verified but broader evidence-aware history/friction discovery remains unfinished.
+Merged in PR #61 to `main` at `c776db72d4f3a0e37b0be5004ac1a15141df14e8` after latest-head CI `33281161401` passed. The merged lifecycle ledger tracks 118 canonical features and 143 backlog work items without deleting completed history. Progressive onboarding now offers continue-setup-now versus start-using-MIRA, with a bounded one-topic-per-local-day discovery drip and fitness-goals branch.
 
 ## Preserved Android checkpoint
 
@@ -30,6 +28,7 @@ Android / `M2-M1-001` remains paused at the previously recorded live isolated Go
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-010-personal-starter-distribution`
 - **Base SHA:** `c776db72d4f3a0e37b0be5004ac1a15141df14e8`
+- **PR:** #62
 - **Objective:** replace the hand-maintained clean Google starter as the practical release authority with a deterministic, sanitized Git-backed Personal starter definition that can produce and verify the exact no-app Workspace substrate from one source revision.
 
 ## Session-start alignment verification — 2026-08-29
@@ -41,76 +40,179 @@ Verified before implementation:
 - `DIST-002` requires deterministic sanitized starter/distribution from one canonical source revision;
 - `ONBOARD-002` requires a generic starter with no inherited personal production state;
 - `ONBOARD-006` requires an ordinary-user browser-only path with no terminal fallback;
-- `SOURCE-001` requires source read/write/readback gates but must not make Git knowledge an ordinary user's installation burden;
-- `DATA-001` protects legacy MIRA production artifacts from use as release-generation fixtures;
-- existing `AUTH-001`, `STORE-001`, first-boot, service-state and no-app protocol semantics must be carried into the generated starter rather than redefined by distribution code.
+- `SOURCE-001` must not turn Git knowledge into an ordinary user's installation burden;
+- `DATA-001` protects legacy MIRA production artifacts from development/release-fixture use;
+- existing Authority, STORE-001, first-boot, progressive-onboarding and no-app protocol semantics must be carried into release artifacts rather than redefined.
 
 ### `BACKLOG.md`
 
 Verified before implementation:
 
-- `DIST-STARTER-001` is queued specifically because the clean live Workspace template is evidence but not yet a deterministic source-derived release;
-- `STARTER-SANITIZE-001` is queued because the existing clean-copy privacy proof still needs a deterministic source/distribution gate;
-- `NONTECH-INSTALL-001` remains broader follow-on work and must not expand this packet into every browser/provider onboarding path;
-- completed first boot/service-state/no-app instructions remain completed and must not be reimplemented here;
-- Android and advanced Cloud Run work remain paused/partial and are not dependencies of this no-app distribution packet.
+- `DIST-STARTER-001` and `STARTER-SANITIZE-001` were the bounded release-integrity gaps;
+- `NONTECH-INSTALL-001` remains broader follow-on work and is not pulled into this packet;
+- completed first boot/service state/no-app instructions remain completed;
+- Android and advanced Cloud Run work remain paused/partial and are not dependencies of this packet.
 
 ### `ROADMAP.md`
 
 Verified before implementation:
 
-- deterministic sanitized Workspace starter/distribution is the next listed no-app release concern after first boot/progressive onboarding;
-- at least one meaningful user-visible no-app vertical still follows and must not be delayed by turning distribution into a giant installer platform;
-- ordinary Personal use must remain stock ChatGPT + Google Workspace with no terminal, Linux, SQL, Cloud Run, Android, or separately billed API prerequisite.
+- deterministic sanitized Workspace starter/distribution is the next listed no-app release concern;
+- at least one meaningful user-visible no-app vertical must follow immediately;
+- ordinary Personal use remains stock ChatGPT + Google Workspace with no terminal, Linux, SQL, Cloud Run, Android, or separately billed API prerequisite.
 
 ### Direction result
 
-**ALIGNED.** The shortest release-integrity gap is making the already-proven starter reproducible from Git rather than relying on a mutable hand-maintained Google Sheet.
+**ALIGNED.** The shortest release-integrity gap was making the proven starter reproducible from Git rather than relying on a mutable hand-maintained Google Sheet.
 
-## Required user-visible/release behavior
+## Implemented evidence
 
-1. One Git-backed source definition describes the Personal starter tabs, exact headers, required Metadata values and clean-state invariants.
-2. A release manifest is deterministically generated for a supplied canonical source SHA and records hashes of every public Workspace artifact plus the starter definition.
-3. The starter definition contains no provider IDs, credentials, user identity, personal state, or legacy production references.
-4. A verifier can inspect an independently created/copied spreadsheet snapshot and prove that schema/headers/clean-state match the source definition.
-5. The generated release definition includes the current no-app instruction artifact, including progressive discovery, and therefore cannot silently ship older onboarding behavior.
-6. The clean starter contains zero Resource/Event/Idempotency user data rows before Personal bootstrap.
-7. Apps Script remains an embedded Workspace adapter; stock ChatGPT's authenticated Google connection remains the ordinary Personal client boundary.
-8. The packet does not require an ordinary user to run Python or use Git. Python tooling is release/build verification only.
+### Git-backed starter blueprint
 
-## Explicitly deferred
+`distribution/personal_google_starter.json` now defines the clean Personal Google spreadsheet substrate:
 
-- full one-click browser installer/provider authorization UX (`NONTECH-INSTALL-001`);
-- full Google Calendar/Gmail provider bootstrap;
-- source-lane/runtime-router implementation;
-- Ops Brief/tasks vertical implementation;
-- Android/shared-writer live proof;
-- Microsoft/Apple distribution adapters;
-- legacy production migration.
+- distribution ID `mira-personal-google-workspace-v1`;
+- neutral release timezone `Etc/UTC`;
+- exactly four tabs: `Metadata`, `Resources`, `Events`, `Idempotency`;
+- exact STORE-001 headers;
+- exact clean Metadata values;
+- zero mutable Resource/Event/Idempotency seed rows;
+- explicit privacy invariants;
+- exact Workspace artifact set including the current no-app instructions with progressive discovery.
 
-## Acceptance criteria
+### Deterministic release tooling
 
-1. Git contains a canonical sanitized Personal Google starter blueprint.
-2. Blueprint validation rejects secrets/provider IDs/private state and structural drift.
-3. Deterministic release manifest binds one source SHA to exact Workspace artifacts and blueprint hashes.
-4. Manifest generation is reproducible byte-for-byte for identical inputs.
-5. Snapshot verifier checks Metadata, Resources, Events and Idempotency headers plus clean-state invariants.
-6. Snapshot verifier rejects inherited Resource/Event/Idempotency data.
-7. Direct tests cover valid blueprint/manifest, tamper/hash drift, secret/provider-ID rejection, malformed tabs/headers, and dirty starter rejection.
-8. CI validates distribution integrity on every PR.
-9. Code ownership/evidence covers new production tooling.
-10. Independent Google provider proof creates or copies a fresh starter from the source definition where connector capability permits and reads it back; if provider creation capability cannot reproduce a bound Apps Script project, evidence must state that exact boundary rather than overclaiming.
-11. End-of-session FEATURES/BACKLOG/ROADMAP recheck confirms whole-life feature scope remains intact and first meaningful no-app vertical remains next.
+`mira/personal_distribution.py` now:
+
+- validates the blueprint and Workspace bundle;
+- rejects provider IDs, secret-like material, inherited mutable state and structural drift;
+- binds a supplied canonical 40-character source SHA to the blueprint hash and sorted hashes of all Workspace artifacts;
+- emits byte-deterministic JSON release manifests;
+- verifies manifests against current source;
+- verifies independently observed spreadsheet snapshots against exact title/timezone/tab/header/Metadata/clean-state rules.
+
+CI now generates the source-SHA manifest twice, diffs the bytes, and verifies the result.
+
+### Direct tests and ownership
+
+`tests/test_personal_distribution.py` covers:
+
+- valid sanitized blueprint;
+- byte-identical manifest generation;
+- manifest tamper detection;
+- malformed source SHA rejection;
+- provider/secret-like material rejection;
+- dirty mutable seed rejection;
+- exact clean snapshot acceptance;
+- header drift/inherited-state rejection;
+- Metadata drift rejection.
+
+`project/code_ownership.json` now owns the distribution component under `DIST-002`, `ONBOARD-002`, `ONBOARD-006`, and `DATA-001` with `DIST-STARTER-001` / `STARTER-SANITIZE-001` work evidence.
+
+## Independent Google provider proof — 2026-08-29
+
+A newly created synthetic native Google spreadsheet was built from the Git blueprint rather than by copying the prior clean template or any legacy production artifact.
+
+Provider readback verified:
+
+- timezone `Etc/UTC`;
+- exact four-tab set/order;
+- exact Metadata seed values;
+- exact Resources/Events/Idempotency STORE-001 headers;
+- zero non-header mutable-state rows.
+
+The synthetic proof spreadsheet was renamed after verification so it cannot be mistaken for an installable clean starter. The provider resource identifier is intentionally not committed to public Git.
+
+Durable evidence: `docs/PERSONAL_STARTER_DISTRIBUTION_PROOF.md`.
+
+### Bound Apps Script evidence boundary
+
+The connected Google Drive/Sheets capability used here can create a native spreadsheet and issue Sheets batch updates, but it does not expose creation of a bound Apps Script project from source files. Therefore this packet does **not** claim source-to-provider installation of the bound Apps Script bundle.
+
+The Apps Script source remains CI-validated. Browser/provider installation of the bound script belongs to `NONTECH-INSTALL-001` / provider-onboarding capability. This does not invalidate the independently live-verified spreadsheet substrate.
+
+## Lifecycle reconciliation during packet
+
+The generated product ledger remains the selector rather than deleting history. Current backlog semantics before merge:
+
+- `FEATURE-ALIGN-001` — completed by PR #61;
+- `DISCOVERY-CORE-001` — partial; progressive slice merged/test-verified, broader evidence-aware discovery remains unfinished;
+- `DIST-STARTER-001` — active; implementation/CI/provider proof complete, merge pending;
+- `STARTER-SANITIZE-001` — active; implementation/CI/provider proof complete, merge pending;
+- Android command boundary remains partial;
+- Cloud Run advanced proof remains paused.
+
+Latest lifecycle validation on packet head before this closeout-only commit: 118 features / 143 work items; 50 completed, 74 queued, 2 active, 2 partial, 1 paused, 2 provisional, 10 deferred, 2 split, zero unknown.
+
+## Latest test evidence
+
+PR #62 CI run `33281516248` on head `f568f32b0008c475a9b53041cdb8bd35266c8ed0` passed before this closeout-only CURRENT_WORK commit:
+
+- feature registry — green;
+- product lifecycle ledger — green;
+- Personal starter distribution validation + deterministic manifest diff + manifest verification — green;
+- work-session alignment — green;
+- code ownership — green;
+- Python unit tests — **176/176 passed**;
+- Workspace Apps Script tests — **15/15 passed**.
+
+This closeout changes governance text only and must receive its own latest-head CI before merge.
+
+## End-of-session alignment verification — 2026-08-29
+
+### `FEATURES.md`
+
+Rechecked after implementation:
+
+- all 118 canonical feature IDs remain present;
+- receipts/purchases/spending, meals/groceries, assets/fitment/knowledge, inventory/location/movement, routines/fitness, education, travel/mileage, wearables, local integrations, appointments/calendar, Android, Microsoft, Apple/iCloud, backup/recovery, voice, enterprise and MIRA Studio remain preserved;
+- distribution code does not redefine canonical state, provider selection, onboarding, service activation, or domain semantics.
+
+### `BACKLOG.md`
+
+Rechecked after implementation:
+
+- all 143 work items remain represented;
+- no completed work was deleted;
+- current distribution work is explicitly active rather than stale queued text;
+- first meaningful no-app vertical `OPS-BRIEF-VSLICE` remains provisional and must be dependency-refined before implementation rather than blindly inheriting generic runtime-router dependencies;
+- appointments, receipts/assets/inventory, meals/groceries and other user-visible verticals remain queued behind their actual prerequisites.
+
+### `ROADMAP.md`
+
+Rechecked after implementation:
+
+- deterministic starter/distribution requirement is satisfied at the source + spreadsheet-substrate level pending merge;
+- broader one-click/bound-script/provider installation remains correctly deferred;
+- the next milestone concern is a meaningful user-visible no-app vertical, not more release/governance architecture;
+- Android remains later until no-app MIRA provides real value.
+
+### Direction result
+
+**ALIGNED.** This packet closes the mutable-template release gap without expanding into the entire installer stack, and the next packet must be user-visible product behavior.
+
+## Acceptance result
+
+1. Canonical sanitized Personal Google starter blueprint — PASS.
+2. Blueprint privacy/structural validation — PASS.
+3. Source-SHA release manifest over exact artifacts — PASS.
+4. Byte-for-byte reproducible manifest — PASS.
+5. Exact spreadsheet snapshot verifier — PASS.
+6. Dirty mutable-state rejection — PASS.
+7. Direct distribution tests — PASS.
+8. CI distribution integrity gate — PASS.
+9. Code ownership/evidence — PASS.
+10. Independent Google spreadsheet-substrate live proof — PASS; bound Apps Script source-to-provider installation explicitly NOT CLAIMED.
+11. End-of-session whole-life feature preservation / next-vertical check — PASS.
 
 ## Exact next action
 
-1. Add canonical Personal starter blueprint and deterministic release-manifest/verifier tooling.
-2. Add tests, CI gate and ownership evidence.
-3. Produce an independent Google spreadsheet from the blueprint where supported and perform exact readback against the verifier contract.
-4. Reconcile `FEATURE-ALIGN-001` to completed and `DISCOVERY-CORE-001` to partial/test-verified in backlog status while preserving broader discovery work.
-5. Run latest-head CI and end-of-session alignment.
-6. Merge if green, then select/implement the first meaningful no-app vertical from unfinished lifecycle state.
+1. Run CI on this exact closeout head.
+2. If green, merge PR #62 and remotely verify `main`.
+3. In the next packet, mark `DIST-STARTER-001` and `STARTER-SANITIZE-001` completed with PR #62 evidence.
+4. Dependency-audit `OPS-BRIEF-VSLICE` for the narrow stock-ChatGPT Personal lane. Do not require generic runtime/source routing unless it is genuinely needed for the first vertical.
+5. Create a bounded no-app Ops Brief/task vertical child if needed, then implement the first real brief from canonical MIRA 2.0 state, including optional progressive-discovery prompt insertion rules.
 
 ## Recovery protocol
 
-Read this file first. Continue on `integration/m0-010-personal-starter-distribution`. Do not resume Android or the broader installer stack while this bounded deterministic-starter packet is unfinished. Use synthetic/new release proof artifacts only; never legacy production Google state.
+Read this file first. If PR #62 is still open, verify the exact head and CI before merge. If #62 is merged, verify `main`, then begin the bounded first no-app user-visible vertical from current `main`. Do not resume Android or broaden into the full installer stack by habit.
