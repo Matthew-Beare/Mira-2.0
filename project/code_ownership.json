@@ -90,6 +90,15 @@
       "verification": ["tests/test_workspace_bundle.py"]
     },
     {
+      "id": "workspace-native-client",
+      "responsibility": "Deterministic single-writer preflight, replay, revision, atomic batch mutation and exact-readback protocol for stock ChatGPT using authenticated native Google Sheets actions.",
+      "why_separate": "The Personal native-connector lane needs a durable integrity contract that matches STORE-001 without turning the model, Apps Script, or Google transport into a second canonical data model.",
+      "owned_paths": ["mira/workspace_native.py"],
+      "feature_ids": ["API-001", "AUTH-001", "STORE-001"],
+      "work_ids": ["CHATGPT-API-CLIENT-001"],
+      "verification": ["tests/test_workspace_native.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation of canonical feature dependencies and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
