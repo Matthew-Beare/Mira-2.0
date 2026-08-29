@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "distribution_id": "mira-personal-google-workspace-v1",
+  "spreadsheet": {
+    "title": "MIRA Personal Starter",
+    "time_zone": "Etc/UTC"
+  },
+  "tabs": [
+    {
+      "title": "Metadata",
+      "headers": ["Key", "Value"],
+      "rows": [
+        ["schema_version", "mira-structured-state-v1"],
+        ["store_role", "personal_google_starter"],
+        ["environment", "mira_2_personal_clean"],
+        ["data_policy", "clean_starter_only"],
+        ["adapter_contract", "STORE-001"],
+        ["resource_types_json", "[\"authority\",\"authority_binding\",\"entity\",\"onboarding_ledger\",\"service_state\"]"],
+        ["event_types_json", "[\"created\",\"updated\"]"],
+        ["writer_model", "single_writer"]
+      ],
+      "must_be_empty_after_seed_rows": false
+    },
+    {
+      "title": "Resources",
+      "headers": [
+        "resource_type",
+        "resource_id",
+        "revision",
+        "payload_json",
+        "updated_at",
+        "last_idempotency_key",
+        "request_hash"
+      ],
+      "rows": [],
+      "must_be_empty_after_seed_rows": true
+    },
+    {
+      "title": "Events",
+      "headers": [
+        "event_type",
+        "event_id",
+        "stream_type",
+        "stream_id",
+        "stream_revision",
+        "payload_json",
+        "occurred_at",
+        "idempotency_key"
+      ],
+      "rows": [],
+      "must_be_empty_after_seed_rows": true
+    },
+    {
+      "title": "Idempotency",
+      "headers": [
+        "idempotency_key",
+        "operation",
+        "request_hash",
+        "result_json",
+        "created_at",
+        "resource_ref"
+      ],
+      "rows": [],
+      "must_be_empty_after_seed_rows": true
+    }
+  ],
+  "workspace_artifacts": [
+    "workspace/apps_script/Code.gs",
+    "workspace/apps_script/CommandWorker.gs",
+    "workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md",
+    "workspace/apps_script/README.md",
+    "workspace/apps_script/appsscript.json"
+  ],
+  "privacy_invariants": [
+    "no_provider_identifiers",
+    "no_credentials_or_secrets",
+    "no_personal_state",
+    "no_legacy_production_references",
+    "empty_mutable_state_before_bootstrap"
+  ]
+}

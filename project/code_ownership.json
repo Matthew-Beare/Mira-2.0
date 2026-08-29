@@ -90,6 +90,15 @@
       "verification": ["tests/test_workspace_bundle.py"]
     },
     {
+      "id": "personal-distribution",
+      "responsibility": "Deterministic source-SHA-bound Personal Google starter blueprint, release manifest and clean spreadsheet snapshot verification.",
+      "why_separate": "Release reproducibility and starter privacy are distribution integrity concerns above the Workspace runtime bundle; they must not make a mutable live Google Sheet or provider identifier into source authority.",
+      "owned_paths": ["mira/personal_distribution.py"],
+      "feature_ids": ["DIST-002", "ONBOARD-002", "ONBOARD-006", "DATA-001"],
+      "work_ids": ["DIST-STARTER-001", "STARTER-SANITIZE-001"],
+      "verification": ["tests/test_personal_distribution.py"]
+    },
+    {
       "id": "workspace-native-client",
       "responsibility": "Deterministic single-writer preflight, replay, revision, atomic batch mutation and exact-readback protocol for stock ChatGPT using authenticated native Google Sheets actions.",
       "why_separate": "The Personal native-connector lane needs a durable integrity contract that matches STORE-001 without turning the model, Apps Script, or Google transport into a second canonical data model.",

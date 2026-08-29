@@ -71,7 +71,7 @@ These waves preserve the shared-state Android path, but ordinary no-app Personal
 |---:|---|---|---|---|---|
 | 5 | `FEATURE-REGISTRY-001` | PREREQUISITE | Implement `DEV-005` parser/generator/drift gate from canonical `FEATURES.md`; authored semantic IDs only. | DEV-005,DEV-001,DEV-003 | complete; CI-enforced |
 | 6 | `CODE-OWNERSHIP-001` | PREREQUISITE | Implement `DEV-006` component ownership/direct-evidence manifest and central unowned/overlap gate; language-specific static rules remain profiles. | DEV-006,DEV-001 | complete; CI-enforced |
-| 6a | `FEATURE-ALIGN-001` | HARDENING | Implement `DEV-007` packet-to-feature alignment and product-lifecycle verification, including generated feature/work projection, completed-work filtering and session-start/session-end authority checks. | DEV-007,DEV-005,DEV-002,DEV-003 | active in `M2-G0-011`; product lifecycle projection and CI gate implemented, closeout evidence pending |
+| 6a | `FEATURE-ALIGN-001` | HARDENING | Implement `DEV-007` packet-to-feature alignment and product-lifecycle verification, including generated feature/work projection, completed-work filtering and session-start/session-end authority checks. | DEV-007,DEV-005,DEV-002,DEV-003 | complete in PR #61 at `c776db72d4f3a0e37b0be5004ac1a15141df14e8`; lifecycle projection, stale-status reconciliation and CI/session alignment verified |
 
 ### Wave 2 — Google Workspace-first stock ChatGPT proof (M2-M0)
 
@@ -116,7 +116,7 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 | `SERVICE-DEPS-007` | PREREQUISITE | F7 travel/work-trip bundles and paid-mileage separation. | SERVICE-001,SERVICE-002,TRIP-001,ROUTE-001,MILE-001,MILE-002 | queued |
 | `SERVICE-DEPS-008` | PREREQUISITE | F8 assets selected-path readiness. | SERVICE-001,SERVICE-002,ASSET-001,ASSET-003 | queued |
 | `SERVICE-DEPS-009` | PREREQUISITE | F20 recovery readiness around verified backup/restore state. | SERVICE-001,SERVICE-002,BACKUP-001 | queued |
-| `SERVICE-DEPS-010` | PREREQUISITE | F19 knowledge readiness around canonical knowledge + optional provider projection. | SERVICE-001,SERVICE-002,KNOW-001,KNOW-002 | queued |
+| `SERVICE-DEPS-010` | PREREQUISITE | F19 knowledge readiness around canonical knowledge + optional provider projection. | SERVICE-002,KNOW-001,KNOW-002 | queued |
 | `AUTHORITY-MIGRATION-001` | PREREQUISITE | Staged provider/backend cutover without dual writable masters; parity/readback/recovery/rollback. This is the protected upgrade path from the default Google Workspace backend to Linux/SQL/managed backends. | AUTH-001,STORE-001,BACKUP-001,AUTHORITY-REGISTRY-001,STORE-ADAPTER-001A | queued; portability invariant applies from Personal baseline onward |
 | `BACKUP-CORE-001` | PREREQUISITE | Implement `BACKUP-001` backup/restore lifecycle and independent restore verification. | BACKUP-001,RECOVERY-002,STORE-ADAPTER-001A | queued; PR31 partial candidate only |
 | `KNOWLEDGE-CORE-001` | PREREQUISITE | Provider-neutral general Knowledge source identity and typed relationships. | KNOW-001,RECOVERY-002,canonical identity/relationship model | queued |
@@ -142,13 +142,13 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 | `PERSON-GRAPH-001` | PREREQUISITE | Canonical Person UUIDs and relationship graph. | PROFILE-012,canonical MIRROR identity authority | queued |
 | `PERMISSION-SCOPE-001` | BLOCKER | Exact cross-person actor/resource/action grants with revoke/narrow/provider/API readback. | PROFILE-012,PROFILE-013,AUTHORITY-REGISTRY-001 | queued; blocks shared/family/minor/caregiver paths, **not same-user M2-M0** |
 | `FEATURE-SHARE-001` | HARDENING | Private feature ownership/reconciliation and optional sanitized publication/import path used by MIRA Studio; shared improvements carry provenance/dependencies/compatibility and never silently activate on another user's MIRA. | DIST-001,ONBOARD-002,SOURCE-GATES-001,DEV-005 | queued |
-| `DIST-STARTER-001` | PREREQUISITE | Deterministic MIRA 2.0 starter/distributions from one source SHA. | DIST-002,ONBOARD-002,clean source lineage | queued; clean live Workspace template is evidence, not yet deterministic public distribution promotion |
+| `DIST-STARTER-001` | PREREQUISITE | Deterministic MIRA 2.0 starter/distributions from one source SHA. | DIST-002,ONBOARD-002,clean source lineage | active in `M2-M0-010`; Git-backed blueprint, deterministic source-SHA manifest, CI validation and independent clean Google substrate readback are complete; latest-head closeout/merge pending |
 | `SKILL-BUILDER-001` | ENHANCEMENT | Bounded private custom skill/feature creation with declared contracts, preview/test evidence and rollback; this is the engine beneath the user-facing MIRA Studio rather than the final Studio UX itself. | DEV-004,DEV-001,DEV-002,FEATURE-REGISTRY-001,SOURCE-GATES-001 | queued |
 | `MIRA-STUDIO-001` | VERTICAL | Implement `STUDIO-001` as an integrated user-facing Studio for continuously improving MIRA: guided creation/refinement of preferences, workflows and bounded features; preview/test/rollback; source/feature dependency awareness; and optional sanitized sharing/import through `FEATURE-SHARE-001`. Onboarding introduces Studio but does not force use. | STUDIO-001,SKILL-BUILDER-001,FEATURE-SHARE-001 | queued after core first-boot/source gates; accepted product feature |
 | `PROFILE-CARE-001` | HARDENING | Caregiver composition without inferred authority. | PROFILE-006,SERVICE-001,PROFILE-012,PROFILE-013,PERMISSION-SCOPE-001 | queued |
 | `PROFILE-HOUSEHOLD-001` | HARDENING | Household-manager routing/anti-fan-out. | PROFILE-007,SERVICE-001,task/routine authority | queued |
-| `PROFILE-STUDENT-001` | HARDENING | Student role/HOME-CAMPUS option. | PROFILE-008,CTX-001,CTX-002,SERVICE-001 | queued |
-| `PROFILE-MIXED-001` | HARDENING | Mixed/custom composition and primary-role routing. | PROFILE-009,canonical profile authority | queued |
+| `PROFILE-STUDENT-001` | HARDENING | Student role/HOME-CAMPUS context option. | PROFILE-008,CTX-001,CTX-002,SERVICE-001 | queued |
+| `PROFILE-MIXED-001` | HARDENING | Mixed/custom role composition and primary-role routing. | PROFILE-009,canonical profile authority | queued |
 | `PROFILE-USABILITY-001` | ENHANCEMENT | Explicit usability/accessibility preferences. | PROFILE-010,onboarding preference state,client capability discovery | queued |
 | `PROFILE-LABEL-001` | HARDENING | Public-label rejection/private-alias boundary. | PROFILE-011,ONBOARD-002 | queued |
 | `PROFILE-MINOR-001` | PREREQUISITE | Dependent-minor routing plus exact relationship/permission scopes. | PROFILE-005,PROFILE-012,PROFILE-013,PERSON-GRAPH-001,PERMISSION-SCOPE-001 | queued |
@@ -156,9 +156,9 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 | `PROFILE-WORK-001` | HARDENING | Working/self-employed role semantics. | PROFILE-001,ONBOARD-004,SERVICE-001,CTX-002 | queued |
 | `PROFILE-RETIRED-001` | HARDENING | Retired role/opt-in support. | PROFILE-002,SERVICE-001 | queued |
 | `PROFILE-NONWORKING-001` | HARDENING | Nonworking/between-jobs semantics/transitions. | PROFILE-003,SERVICE-001 | queued |
-| `STARTER-SANITIZE-001` | PREREQUISITE | Starter privacy/history audit gates. | ONBOARD-002,DIST-002 | queued; live clean-copy proof passed, deterministic source/distribution gate still required |
+| `STARTER-SANITIZE-001` | PREREQUISITE | Starter privacy/history audit gates. | ONBOARD-002,DIST-002 | active in `M2-M0-010`; deterministic clean-state/privacy verifier and independently created Google substrate proof passed; latest-head closeout/merge pending |
 | `FIRSTBOOT-CORE-001` | PREREQUISITE | Port/test `ONBOARD-003`: exactly four kickoff questions with fixed MIRA name omitted: (1) authoritative IANA timezone, (2) broad life/work/study/caregiving pattern, (3) biggest remembering/organizing/deciding/planning/follow-through goals, (4) appointment-reminder interest + preferred Calendar auto-sync intent. Persist durable resumable Interview Ledger; after four, offer continue setup now versus start using MIRA and introduce integrated MIRA Studio + optional sharing. Evidence-first reuse remains mandatory; preferences/permissions are never inferred. | ONBOARD-002,ONBOARD-003,canonical onboarding state | complete in PR #58 at `a60e8879e71b8f464eb1de1ea8cc15cbd309eccb`; direct tests + isolated Google persistence/readback verified |
-| `DISCOVERY-CORE-001` | HARDENING | Structured discovery without recommendation-driven activation, including progressive post-setup domain discovery plus later current AI-use/friction discovery and inspection of accessible conversation/files/connected evidence before asking the user to rebuild history. MIRA supports user-invoked continuation while preserving the Interview Ledger. | ONBOARD-003,ONBOARD-004,SERVICE-001,RUNTIME-ROUTER-001 | active/partial in `M2-G0-011`; progressive continue-now/brief-drip engine implemented and under CI, broader evidence-aware history/capability discovery remains pending |
+| `DISCOVERY-CORE-001` | HARDENING | Structured discovery without recommendation-driven activation, including progressive post-setup domain discovery plus later current AI-use/friction discovery and inspection of accessible conversation/files/connected evidence before asking the user to rebuild history. MIRA supports user-invoked continuation while preserving the Interview Ledger. | ONBOARD-003,ONBOARD-004,SERVICE-001,RUNTIME-ROUTER-001 | partial; progressive continue-now/brief-drip slice merged/test-verified in PR #61 at `c776db72d4f3a0e37b0be5004ac1a15141df14e8`, broader evidence-aware history/capability discovery remains queued within this work item |
 | `ONBOARD-SCHEDULE-001` | PREREQUISITE | Cadence/slot/IANA-timezone onboarding. | ONBOARD-003,SERVICE-001,OPS-003 | queued |
 | `SERVICE-STATE-001` | PREREQUISITE | Finite service activation-state machine. | canonical service catalog/config authority | complete in PR #59 at `2fd34e1bd66bcb3a73c632e60457564f9e4a859c`; direct tests + isolated Google persistence/readback verified |
 | `RECIPE-CORE-001` | LATER | Stable recipe identity/provenance/structured ingredients. | RECIPE-001 | queued |
@@ -194,10 +194,11 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 
 - Completed work remains present with merge/test/provider evidence; it is filtered from next-work selection by the generated product lifecycle ledger rather than deleted.
 - `FIRSTBOOT-CORE-001`, `SERVICE-STATE-001`, `APPOINTMENT-ONBOARD-001`, and `ONBOARD-INSTRUCTIONS` were reconciled from stale queued text to completed evidence from PRs #58-#60.
+- `FEATURE-ALIGN-001` is completed by PR #61; the product lifecycle projection and work-session alignment gates now share one canonical backlog parser.
+- `DISCOVERY-CORE-001` remains partial: the progressive discovery slice is merged/test-verified in PR #61 while broader evidence-aware history/friction discovery remains unfinished.
 - `API-DEPLOYMENT-001B` is explicitly paused, not unknown; its live Cloud Run proof checkpoint remains preserved.
 - `ANDROID-COMMAND-BOUNDARY-001` is explicitly partial, not unknown; synthetic proof is complete but live Google worker proof is still pending.
-- `DISCOVERY-CORE-001` is partial while M2-G0-011 implements progressive discovery; broader evidence-aware AI-use/friction/history discovery remains separate unfinished scope.
-- `FEATURE-ALIGN-001` now owns product lifecycle projection/completed-work filtering in addition to the existing packet alignment rule.
+- `DIST-STARTER-001` and `STARTER-SANITIZE-001` are active in M2-M0-010 with Git-derived starter/clean-state implementation, CI and Google substrate readback completed; merge is the remaining completion gate.
 
 ## G0-010 dependency / dedupe findings
 
