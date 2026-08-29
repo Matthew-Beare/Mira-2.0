@@ -32,6 +32,9 @@ jobs:
       - name: Feature registry
         run: python -m mira.feature_registry check FEATURES.md
 
+      - name: Product lifecycle ledger
+        run: python -m mira.product_ledger check
+
       - name: Work-session alignment
         run: python -m mira.work_session_alignment check
 
