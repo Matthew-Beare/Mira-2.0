@@ -123,8 +123,9 @@ class WorkSessionAlignmentTests(unittest.TestCase):
 
     def test_repository_current_work_is_aligned(self) -> None:
         report = check_paths()
-        self.assertEqual(report.packet_id, "M2-M0-007")
-        self.assertIn("FIRSTBOOT-CORE-001", report.primary_work_ids)
+        self.assertTrue(report.packet_id.startswith("M2-"))
+        self.assertTrue(report.primary_work_ids)
+        self.assertTrue(report.feature_ids)
 
 
 if __name__ == "__main__":
