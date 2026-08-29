@@ -19,7 +19,7 @@ class WorkspaceBundleError(Exception):
     """Raised when the browser-first Workspace starter bundle is invalid."""
 
 
-_REQUIRED_FILES = ("Code.gs", "appsscript.json", "README.md")
+_REQUIRED_FILES = ("Code.gs", "CommandWorker.gs", "appsscript.json", "README.md")
 _PROVIDER_ID_PATTERNS = (
     re.compile(r"AKfycb[A-Za-z0-9_-]{8,}"),
     re.compile(r"\b\d{10,}-[A-Za-z0-9_-]+\.apps\.googleusercontent\.com\b"),
@@ -95,6 +95,27 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
         raise WorkspaceBundleError(
             "Workspace Code.gs is missing required symbols: " + ", ".join(missing_symbols)
         )
+
+    worker = files["CommandWorker.gs"]
+    worker_symbols = (
+        "function miraEnableQueuedWriter()",
+        "function miraProcessCommandQueue()",
+        "LockService.getScriptLock()",
+        "everyMinutes(1)",
+        "MIRA_COMMAND_HEADERS_",
+    )
+    missing_worker = [symbol for symbol in worker_symbols if symbol not in worker]
+    if missing_worker:
+        raise WorkspaceBundleError(
+            "Workspace CommandWorker.gs is missing required symbols: "
+            + ", ".join(missing_worker)
+        )
+
+    manifest = files["appsscript.json"]
+    if "https://www.googleapis.com/auth/spreadsheets.currentonly" not in manifest:
+        raise WorkspaceBundleError("Workspace manifest must remain current-Sheet scoped")
+    if "https://www.googleapis.com/auth/script.scriptapp" not in manifest:
+        raise WorkspaceBundleError("Workspace queued worker requires bounded trigger-management scope")
 
     if "MIRA_SPREADSHEET_ID" not in code or "PropertiesService" not in code:
         raise WorkspaceBundleError(
