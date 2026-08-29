@@ -15,9 +15,12 @@ from mira.structured_state import (
     RevisionConflictError,
 )
 from mira.workspace_native import (
+    WorkspaceBootstrapError,
     WorkspaceIdempotencyRecord,
     WorkspaceReadbackError,
+    plan_workspace_bootstrap,
     plan_workspace_upsert,
+    verify_workspace_bootstrap_readback,
     verify_workspace_upsert_readback,
     workspace_upsert_fingerprint,
 )
@@ -96,6 +99,17 @@ def _idempotency_rows(gateway: _Gateway):
     return rows
 
 
+def _idem_for_plan(plan, row_number):
+    return WorkspaceIdempotencyRecord(
+        row_number=row_number,
+        idempotency_key=plan.idempotency_key,
+        operation="upsert",
+        request_hash=plan.request_hash,
+        result=plan.result,
+        resource_ref=f"{plan.record.resource_type}/{plan.record.resource_id}",
+    )
+
+
 class WorkspaceNativeProtocolTests(unittest.TestCase):
     def setUp(self) -> None:
         self.gateway = _Gateway()
@@ -103,6 +117,109 @@ class WorkspaceNativeProtocolTests(unittest.TestCase):
             self.gateway,
             clock=lambda: datetime(2026, 8, 29, 8, 34, tzinfo=timezone.utc),
         )
+
+    def test_clean_copy_bootstrap_matches_live_proof_and_is_one_atomic_batch(self) -> None:
+        plan = plan_workspace_bootstrap(
+            owner_id="starter-proof-user",
+            resource_rows=[],
+            idempotency_rows=[],
+        )
+        self.assertFalse(plan.idempotent_replay)
+        self.assertEqual(
+            plan.authority.request_hash,
+            "cbcec7923ab47f9a0449c4647165cc80bf3ecec7fbbf8d2ed0f162b918195223",
+        )
+        self.assertEqual(
+            plan.binding.request_hash,
+            "395a63d38530e8441ff4aabcd8db84a5d5842aa19df3e315dc5229eff2a3e4f8",
+        )
+        requests = plan.batch_update_requests(
+            resources_sheet_id=101,
+            idempotency_sheet_id=202,
+            timestamp="2026-08-29T08:41:00Z",
+        )
+        self.assertEqual(len(requests), 4)
+        self.assertEqual(
+            [request["appendCells"]["sheetId"] for request in requests],
+            [101, 202, 101, 202],
+        )
+
+    def test_bootstrap_replay_is_zero_write_and_exact_readback(self) -> None:
+        first = plan_workspace_bootstrap(
+            owner_id="starter-proof-user",
+            resource_rows=[],
+            idempotency_rows=[],
+        )
+        resources = [(2, first.authority.record), (3, first.binding.record)]
+        idempotency = [
+            _idem_for_plan(first.authority, 2),
+            _idem_for_plan(first.binding, 3),
+        ]
+        verify_workspace_bootstrap_readback(
+            first,
+            resource_rows=resources,
+            idempotency_rows=idempotency,
+        )
+        replay = plan_workspace_bootstrap(
+            owner_id="starter-proof-user",
+            resource_rows=resources,
+            idempotency_rows=idempotency,
+        )
+        self.assertTrue(replay.idempotent_replay)
+        self.assertEqual(
+            replay.batch_update_requests(
+                resources_sheet_id=101,
+                idempotency_sheet_id=202,
+                timestamp="2026-08-29T08:45:00Z",
+            ),
+            (),
+        )
+
+    def test_bootstrap_fails_on_conflicting_entity_binding(self) -> None:
+        conflicting = ResourceRecord(
+            "authority_binding",
+            "some-other-binding",
+            {"authority_id": "other-authority", "data_class": "entity"},
+            1,
+        )
+        with self.assertRaisesRegex(WorkspaceBootstrapError, "different persisted authority"):
+            plan_workspace_bootstrap(
+                owner_id="starter-proof-user",
+                resource_rows=[(2, conflicting)],
+                idempotency_rows=[],
+            )
+
+    def test_bootstrap_fails_on_partial_persisted_pair(self) -> None:
+        first = plan_workspace_bootstrap(
+            owner_id="starter-proof-user",
+            resource_rows=[],
+            idempotency_rows=[],
+        )
+        authority_idem = _idem_for_plan(first.authority, 2)
+        with self.assertRaises(WorkspaceBootstrapError):
+            plan_workspace_bootstrap(
+                owner_id="starter-proof-user",
+                resource_rows=[(2, first.authority.record)],
+                idempotency_rows=[authority_idem],
+            )
+
+    def test_bootstrap_replay_rejects_different_owner(self) -> None:
+        first = plan_workspace_bootstrap(
+            owner_id="starter-proof-user",
+            resource_rows=[],
+            idempotency_rows=[],
+        )
+        resources = [(2, first.authority.record), (3, first.binding.record)]
+        idempotency = [
+            _idem_for_plan(first.authority, 2),
+            _idem_for_plan(first.binding, 3),
+        ]
+        with self.assertRaises(IdempotencyConflictError):
+            plan_workspace_bootstrap(
+                owner_id="different-owner",
+                resource_rows=resources,
+                idempotency_rows=idempotency,
+            )
 
     def test_fingerprint_matches_live_native_proof_and_google_adapter(self) -> None:
         payload = {"proof": "native-google-action", "state": "created"}
