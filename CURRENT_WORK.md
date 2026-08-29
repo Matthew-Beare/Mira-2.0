@@ -35,9 +35,13 @@ All Cloud Run code, tests, IAM/scaling invariants, and operator work remain usef
 - **Related work ID:** `API-DEPLOYMENT-001A`
 - **Class:** hard M2-M0 prerequisite / ordinary-user vertical deployment slice
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Base checkpoint:** `313fdb3c14ef6dfd714e2587130b94838581e41d` or descendant carrying the same roadmap/backlog correction
-- **Planned branch:** `integration/m0-006-google-workspace-first-run`
-- **Status:** active/selected; implementation branch not yet checkpointed.
+- **Branch:** `integration/m0-006-google-workspace-first-run`
+- **Branch start SHA:** `fa0ff6741cc0294dd82d128428ea9a03c2a86a2e`
+- **Current branch head SHA:** `fa0ff6741cc0294dd82d128428ea9a03c2a86a2e` (no implementation commit yet)
+- **Roadmap correction commit:** `c317f59b3c6546bdd92c23a9eaed32474e82574b`
+- **Backlog re-rank commit:** `313fdb3c14ef6dfd714e2587130b94838581e41d`
+- **Packet activation commit:** `fa0ff6741cc0294dd82d128428ea9a03c2a86a2e`
+- **Status:** active; branch created from the remotely verified corrected checkpoint; implementation has not started yet.
 
 ## Objective
 
@@ -75,12 +79,11 @@ Do not make the customer design Apps Script internals, auth format, schema mappi
 
 ## Exact next action
 
-1. Create `integration/m0-006-google-workspace-first-run` from the verified main checkpoint carrying the roadmap/backlog correction.
-2. Inspect the current `API-001` transport/core and Google structured-state adapter contracts and define the smallest Apps Script surface that preserves those semantics.
-3. Implement the first bounded slice: copyable bound-script package structure plus health/schema/read path against synthetic Workspace state, with direct tests and no provider/private IDs.
-4. Add write/idempotency/conflict/auth behavior only in subsequent bounded slices if the first slice is green.
-5. Keep `CURRENT_WORK.md` updated with exact branch/head/resume evidence after each slice.
+1. On `integration/m0-006-google-workspace-first-run`, inspect the current `API-001` transport/core and Google structured-state adapter contracts and define the smallest Apps Script surface that preserves those semantics.
+2. Implement the first bounded slice: copyable bound-script package structure plus health/schema/read path against synthetic Workspace state, with direct tests and no provider/private IDs.
+3. Add write/idempotency/conflict/auth behavior only in subsequent bounded slices if the first slice is green.
+4. Keep `CURRENT_WORK.md` updated with exact branch/head/resume evidence after each slice.
 
 ## Recovery protocol
 
-Read this file first. Confirm `main` contains the Google Workspace first-run roadmap/backlog correction and that `M2-M0-005` remains preserved at checkpoint `c392b9b829fab989be8856c9272294c9907e409e`. Continue only `M2-M0-006` unless the customer explicitly reprioritizes or a hard integrity/security dependency blocks it. Do not resume Cloud Run merely because its code already exists.
+Read this file first. Confirm `main` records branch `integration/m0-006-google-workspace-first-run` starting at `fa0ff6741cc0294dd82d128428ea9a03c2a86a2e`, and that `M2-M0-005` remains preserved at checkpoint `c392b9b829fab989be8856c9272294c9907e409e`. Continue only `M2-M0-006` unless the customer explicitly reprioritizes or a hard integrity/security dependency blocks it. Do not resume Cloud Run merely because its code already exists.
