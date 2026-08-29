@@ -56,9 +56,9 @@ The previous `CURRENT_WORK.md` checkpoint was stale because it still told the ne
 - **Main baseline before this checkpoint branch:** `618fefa1f15ddfd91a96d7197e3186e19b988457`
 - **Current checkpoint branch:** `integration/m1-001-checkpoint-priority-clarify`
 - **Checkpoint branch base:** `618fefa1f15ddfd91a96d7197e3186e19b988457`
-- **Current head:** update after provider readback of this checkpoint commit
+- **Current head:** `5a567c665583aaa25530111fc771728988f90ea8` before this metadata-fix commit; verify the final branch head after write/readback.
 - **Provider-neutral sequencer:** PR #54 merge `d21869d091cbcfce609d47665ef8872123f2be43`; CI `33274374052` green.
-- **Workspace queued-writer worker:** PR #55 merge `1908629fc887b025a8ac821d7a99481e4a6eb4b`; CI `33274804921` green.
+- **Workspace queued-writer worker:** PR #55 merge `1908629fc887b025a8acb2d6fd5321ca191ad0e7`; CI `33274804921` green.
 - **Architecture:** `docs/M1_CONCURRENT_COMMAND_BOUNDARY.md`
 - **Status:** synthetic concurrency and Workspace worker behavior are implemented/test-verified and merged. Live isolated Google Apps Script worker proof remains pending.
 
@@ -148,7 +148,7 @@ PR #54 passed full CI and merged at `d21869d091cbcfce609d47665ef8872123f2be43`.
 
 `mira/workspace_native.py` fails closed on direct native mutation when `mutation_mode=queued_writer`, closing the second-writer side door.
 
-Executable fake-Apps-Script tests cover trigger activation, ScriptLock behavior, canonical create/readback, stale conflict, crash/retry recovery, mode failure and Authority-owner enforcement. PR #55 CI `33274804921` passed and merged at `1908629fc887b025a8ac821d7a99481e4a6eb4b`.
+Executable fake-Apps-Script tests cover trigger activation, ScriptLock behavior, canonical create/readback, stale conflict, crash/retry recovery, mode failure and Authority-owner enforcement. PR #55 CI `33274804921` passed and merged at `1908629fc887b025a8acb2d6fd5321ca191ad0e7`.
 
 ## Live proof blocker
 
