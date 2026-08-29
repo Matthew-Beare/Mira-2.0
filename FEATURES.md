@@ -4,7 +4,7 @@ Canonical feature index. Detailed rationale and evidence remain durable in Git h
 
 ## Rules
 
-Stable semantic IDs do not change with priority, provider, backend, or display order. Requirement and evidence are separate; code existence is not completion. `deps` contains universal semantic prerequisites only. Conditional provider, sharing, deployment, or selected-service requirements belong in mappings/backlog work rather than being promoted to universal dependencies.
+Stable semantic IDs do not change with priority, provider, backend, or display order. Requirement and evidence are separate; code existence is not completion. `deps` contains universal semantic prerequisites only. Conditional provider, sharing, deployment, or selected-service requirements belong in mappings/backlog work rather than being promoted to universal dependencies. Completed features/work remain represented with evidence; completion removes them from active selection, not from history.
 
 ## Feature index
 
@@ -13,9 +13,9 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `DEV-001` | Git-authoritative development control plane | governance | implemented/specified | -
 - `DEV-002` | Resumable bounded work packets | governance | implemented/specified | -
 - `DEV-003` | Dependency-ranked backlog | governance | implemented/specified | -
-- `DEV-005` | Machine-readable projection of canonical feature/dependency/evidence state with reproducible generation and CI drift enforcement | required/governance | specified+legacy-test-verified | DEV-001,DEV-003
+- `DEV-005` | Machine-readable projection of canonical feature/dependency/evidence state plus backlog work lifecycle state, with reproducible generation and CI drift enforcement; generated/query views never become a second editable product authority | required/governance | specified+legacy-test-verified | DEV-001,DEV-003
 - `DEV-006` | Production component ownership and direct-verification inventory with anti-bloat/unowned-code release gate | required/governance | specified+legacy-test-verified | DEV-001
-- `DEV-007` | Packet-to-feature-set alignment gate requiring every implementation packet to map itself to canonical user-visible features/invariants before implementation and again before merge so local architecture cannot silently drift away from accepted product behavior | required/governance | specified | DEV-001,DEV-002,DEV-003,DEV-005
+- `DEV-007` | Packet-to-feature-set alignment gate requiring every implementation packet to map itself to canonical user-visible features/invariants before implementation and again before merge, reconcile completion evidence/status, and select next work from unfinished accepted scope so local architecture or stale backlog text cannot silently drift away from product direction | required/governance | specified | DEV-001,DEV-002,DEV-003,DEV-005
 - `CORE-001` | MIRA product identity; the assistant/product name is fixed as MIRA and onboarding must not ask the user to rename it | governance | history+specified | -
 - `MIRROR-001` | Companion reality database | governance | history | -
 - `DATA-001` | Legacy production preservation | governance | history | -
@@ -89,8 +89,8 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `RECIPE-001` | Durable recipe library with structured ingredients and provenance | required | specified | KNOW-001
 - `MEAL-001` | Dated meal planning with pantry-aware ingredient-gap and shopping reconciliation | required | specified | RECIPE-001,GROCERY-001,SHOP-001
 - `ONBOARD-002` | Sanitized generic starter with no inherited personal production state | required/privacy | test_verified | DATA-001
-- `ONBOARD-003` | Four-question Minimum Useful Setup with resumable bounded interview: (1) authoritative IANA timezone, (2) broad life/work/study/caregiving pattern, (3) biggest remembering/organizing/deciding/planning/follow-through goals, and (4) whether appointment help is wanted plus preferred Calendar provider/auto-sync intent; the fixed MIRA product name is never asked. After the four questions, onboarding must state that the user can ask MIRA at any time to continue the interview with additional questions that improve how MIRA functions for them and must introduce integrated MIRA Studio for ongoing guided improvements and optional sharing | required | implemented/specified+requirement-refined | ONBOARD-002
-- `ONBOARD-004` | Capability, friction, AI-use and work-context discovery without silent activation | required | partial-test/specified | ONBOARD-003,SERVICE-001,CTX-002
+- `ONBOARD-003` | Four-question Minimum Useful Setup with resumable bounded interview: (1) authoritative IANA timezone, (2) broad life/work/study/caregiving pattern, (3) biggest remembering/organizing/deciding/planning/follow-through goals, and (4) whether appointment help is wanted plus preferred Calendar provider/auto-sync intent; the fixed MIRA product name is never asked. Immediately after question four, MIRA offers a simple choice to continue setup now or start using MIRA; either path preserves the completed Minimum Useful Setup and never forces deeper discovery before use | required | implemented/specified+requirement-refined | ONBOARD-002
+- `ONBOARD-004` | Progressive capability, friction, AI-use, work-context and optional life-domain discovery without silent activation: after Minimum Useful Setup the user may continue immediately or use a bounded brief drip of at most one unanswered discovery topic per local day for up to seven topic-days, with explicit opt-out and no inference from silence. Early discovery includes optional fitness/activity/nutrition/weight-goal help with a goals follow-up when accepted, then other already-canonical domains such as meals/groceries, household/routines, education/study, receipts/assets/inventory, travel/work tracking and optional wearables/local integrations | required | partial-test/specified | ONBOARD-003,SERVICE-001,CTX-002
 - `ONBOARD-005` | Explicit new-user brief cadence and canonical IANA timezone configuration | required | partial-test/specified | ONBOARD-003,SERVICE-001,OPS-001,OPS-003
 - `SERVICE-001` | Explicit finite service activation state separate from capability and recommendation | required | test_verified | -
 - `PROFILE-001` | Composable working and self-employed roles with evidence-gated work-context routing | accepted | implemented/partial-test | ONBOARD-004,SERVICE-001,CTX-002
@@ -175,7 +175,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - G16 Backup/restore foundation | BACKUP-001,RECOVERY-002,g-16 | provider adapters conditional
 - G17 Knowledge ingestion/provenance | KNOW-001,KNOW-002,RECOVERY-002,g-17 | canonical-knowledge-core
 - G18 Provider organization/search metadata projection | KNOW-001,KNOW-002,STORE-001,g-18 | noncanonical-provider-projection
-- G19 Machine-readable feature catalog, packet alignment and CI drift enforcement | DEV-005,DEV-007,DEV-001,DEV-003,g-19 | stable-id/generated-projection+packet-alignment
+- G19 Machine-readable feature catalog, work lifecycle, packet alignment and CI drift enforcement | DEV-005,DEV-007,DEV-001,DEV-003,g-19 | stable-id/generated-projection+packet-alignment+lifecycle-reconciliation
 - G20 Production-code ownership inventory and anti-bloat gate | DEV-006,DEV-001,g-20 | component-ownership/language-neutral-repair
 
 ## Dependency closeout findings
@@ -188,8 +188,9 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `AUTH-001` owns exactly one canonical authority per mutable data class; `STORE-001` owns provider-neutral structured/evidence adapter contracts. Git/source, runtime mutable state, evidence, capabilities, backups, and projections remain separate roles.
 - `API-001` is the authenticated client/service boundary in front of `AUTH-001`/`STORE-001`. Mutations require actor/client authentication, least-privilege authorization, compatibility/dependency preflight, stable IDs, mandatory idempotency, conflict handling, canonical write, exact readback, and audit.
 - `CLIENT-ANDROID-001` is a client adapter over `API-001`, never a provider/data/source authority. Offline state is a replay queue/cache, not a second writable master.
-- `DEV-005` keeps `FEATURES.md` canonical and machine-readable views derived; `DEV-006` uses bounded component ownership rather than one-file/one-feature fragmentation; `DEV-007` requires packet-level feature alignment before implementation and merge so passing local tests cannot substitute for preserving accepted product behavior.
-- `ONBOARD-003` no longer asks the assistant/product name because it is fixed as MIRA. Its fourth kickoff question explicitly offers appointment-reminder help and preferred Calendar auto-sync selection, and its closing orientation tells users they can request more interview questions at any time and introduces MIRA Studio.
+- `DEV-005` keeps `FEATURES.md` and `BACKLOG.md` canonical and machine-readable views derived; `DEV-006` uses bounded component ownership rather than one-file/one-feature fragmentation; `DEV-007` requires packet-level feature/lifecycle alignment before implementation and merge so passing local tests cannot substitute for preserving accepted product behavior or reconciling completed work.
+- `ONBOARD-003` no longer asks the assistant/product name because it is fixed as MIRA. Its fourth kickoff question explicitly offers appointment-reminder help and preferred Calendar auto-sync selection, then immediately offers continue-setup-now versus start-using-MIRA without blocking ordinary use.
+- `ONBOARD-004` owns optional progressive post-setup discovery. Silence never counts as an answer; brief delivery is bounded to one discovery topic per local day for up to seven topic-days, and accepted topics feed existing domain/service authorities rather than creating parallel databases.
 - `CAL-008` makes email/photo/text appointment intake explicit rather than assuming `CAL-005` identity reconciliation magically includes evidence ingestion. Extracted provider specialty/type is durable canonical provider metadata so reminders can say useful things such as “cardiologist appointment” without repeatedly re-parsing source evidence.
 - `STUDIO-001` is the user-facing continuous-improvement layer over bounded custom feature creation and controlled sharing. Studio may generate/reconcile private changes, but imported/shared behavior never silently activates.
 - PR #31 and independent legacy productization code remain selective salvage only. Direct client-to-provider mutation, coarse authorization, dual writable masters, silent schedulers, path identity, collapsed intended/observed location, and CI-implied live/signing/device/provider claims remain rejected.
@@ -198,4 +199,5 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 
 - Categories A-G recovered feature coverage is complete.
 - G0-009 legacy reconciliation is complete.
-- G0-010 final dependency graph/ranking closeout owns the remaining pre-implementation work; after it merges, implementation begins.
+- G0-010 final dependency graph/ranking closeout is complete.
+- M2-G0-011 adds deterministic lifecycle reconciliation over the existing corpus and refines progressive onboarding; it does not restart the historical audit from zero.
