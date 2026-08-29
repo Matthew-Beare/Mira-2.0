@@ -4,32 +4,35 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work stays in the product corpus with evidence and is filtered from future selection rather than deleted. Android and advanced infrastructure remain preserved later lanes until the no-app Personal product is meaningfully useful.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work stays in the product corpus with evidence and is filtered from future selection rather than deleted. The current priority is now user-visible no-app usefulness, not more generic infrastructure.
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`.
 
 ## Completed predecessor
 
-### `M2-G0-011` — Product corpus reconciliation and progressive onboarding
+### `M2-M0-010` — Deterministic Personal Google starter distribution
 
-Merged in PR #61 to `main` at `c776db72d4f3a0e37b0be5004ac1a15141df14e8` after latest-head CI `33281161401` passed. The merged lifecycle ledger tracks 118 canonical features and 143 backlog work items without deleting completed history. Progressive onboarding now offers continue-setup-now versus start-using-MIRA, with a bounded one-topic-per-local-day discovery drip and fitness-goals branch.
+Merged in PR #62 to `main` at `9bf241f694e9bd52c846416336e0704a31fe7d8c` after exact-head CI `33281585486` passed. The Personal Google spreadsheet substrate is now reproducible from Git via a sanitized blueprint and source-SHA-bound release manifest. An independently created blank Google Sheet was built from the blueprint and read back with exact clean Metadata/headers and zero mutable state rows. Bound Apps Script source-to-provider installation remains a separate installer/provider-capability gap and was not overclaimed.
 
-## Preserved Android checkpoint
+`DIST-STARTER-001` and `STARTER-SANITIZE-001` are completed by PR #62 and must be reconciled to completed in `BACKLOG.md` in this packet.
 
-Android / `M2-M1-001` remains paused at the previously recorded live isolated Google queued-writer proof point. Synthetic command-boundary work is preserved and must not be redesigned when resumed.
+## Preserved checkpoints
+
+- Android / `M2-M1-001` remains paused at the live isolated Google queued-writer proof point. Synthetic command-boundary work remains intact.
+- `DISCOVERY-CORE-001` remains partial: progressive discovery is merged/test-verified; broader evidence-aware history/friction discovery remains unfinished.
+- `NONTECH-INSTALL-001` remains queued: full browser installation of bound Apps Script/provider authorization is not silently pulled into this vertical.
 
 ## Active packet
 
-### `M2-M0-010` — Deterministic Personal Google starter distribution
+### `M2-M0-011` — First useful no-app Ops Brief + canonical tasks
 
-- **Primary work:** `DIST-STARTER-001`, `STARTER-SANITIZE-001`
-- **Primary features:** `DIST-002`, `ONBOARD-002`, `ONBOARD-006`
-- **Related invariants/features:** `DATA-001`, `SOURCE-001`, `ONBOARD-007`, `AUTH-001`, `STORE-001`, `RECOVERY-002`
+- **Primary work:** `OPS-BRIEF-VSLICE`
+- **Primary features:** `OPS-001`, `OPS-003`, `OPS-004`, `TASK-001`, `TASK-002`
+- **Related invariants/features:** `RECOVERY-001`, `RECOVERY-002`, `ONBOARD-004`, `OPS-005`, `STORE-001`, `AUTH-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-010-personal-starter-distribution`
-- **Base SHA:** `c776db72d4f3a0e37b0be5004ac1a15141df14e8`
-- **PR:** #62
-- **Objective:** replace the hand-maintained clean Google starter as the practical release authority with a deterministic, sanitized Git-backed Personal starter definition that can produce and verify the exact no-app Workspace substrate from one source revision.
+- **Branch:** `integration/m0-011-no-app-ops-brief`
+- **Base SHA:** `9bf241f694e9bd52c846416336e0704a31fe7d8c`
+- **Objective:** make stock-ChatGPT Personal MIRA produce one genuinely useful deterministic Ops Brief from canonical Google-backed task state, while preserving the existing twice-daily slot/run semantics and optionally inserting the already-implemented progressive-discovery prompt without making Android, Cloud Run, generic runtime routing, orders, weather, email, or Calendar prerequisites for the first brief.
 
 ## Session-start alignment verification — 2026-08-29
 
@@ -37,182 +40,95 @@ Android / `M2-M1-001` remains paused at the previously recorded live isolated Go
 
 Verified before implementation:
 
-- `DIST-002` requires deterministic sanitized starter/distribution from one canonical source revision;
-- `ONBOARD-002` requires a generic starter with no inherited personal production state;
-- `ONBOARD-006` requires an ordinary-user browser-only path with no terminal fallback;
-- `SOURCE-001` must not turn Git knowledge into an ordinary user's installation burden;
-- `DATA-001` protects legacy MIRA production artifacts from development/release-fixture use;
-- existing Authority, STORE-001, first-boot, progressive-onboarding and no-app protocol semantics must be carried into release artifacts rather than redefined.
+- `TASK-001` requires structured task hierarchy and one-action-per-item rendering;
+- `TASK-002` requires evidence-grounded next actions and honest completion state;
+- `OPS-003` already owns canonical DST-safe slot matching semantics;
+- `OPS-004` requires fresh standalone run delivery with deterministic Run ID;
+- `OPS-001` owns the canonical twice-daily brief schedule and depends on OPS-003/OPS-004;
+- `RECOVERY-001` requires durable run identity/checkpoint behavior;
+- `ONBOARD-004` progressive discovery may contribute at most one bounded discovery prompt per local day and must never advance on silence;
+- `OPS-005`, weather, appointments, orders, mail, mileage and other sections remain accepted future brief inputs but are not required to prove the first task-centered no-app vertical.
 
 ### `BACKLOG.md`
 
 Verified before implementation:
 
-- `DIST-STARTER-001` and `STARTER-SANITIZE-001` were the bounded release-integrity gaps;
-- `NONTECH-INSTALL-001` remains broader follow-on work and is not pulled into this packet;
-- completed first boot/service state/no-app instructions remain completed;
-- Android and advanced Cloud Run work remain paused/partial and are not dependencies of this packet.
+- `OPS-BRIEF-VSLICE` is still provisional and currently points at broad `SERVICE-COMPOSE-001` / `SERVICE-DEPS-001` prerequisites;
+- those broad service/runtime dependencies are excessive for a first same-user stock-ChatGPT task brief because a deterministic renderer can read canonical task/onboarding state directly through the existing `STORE-001`/Authority substrate;
+- `SERVICE-COMPOSE-001` remains necessary for broader multi-service readiness/activation later, but must not delay the minimal task/brief vertical;
+- no dedicated task-core work ID currently exists; this packet will keep `OPS-BRIEF-VSLICE` as the bounded work item rather than creating a parallel task project unless implementation proves a reusable prerequisite must be split.
 
 ### `ROADMAP.md`
 
 Verified before implementation:
 
-- deterministic sanitized Workspace starter/distribution is the next listed no-app release concern;
-- at least one meaningful user-visible no-app vertical must follow immediately;
-- ordinary Personal use remains stock ChatGPT + Google Workspace with no terminal, Linux, SQL, Cloud Run, Android, or separately billed API prerequisite.
+- the roadmap explicitly requires at least one meaningful user-visible no-app vertical before Android resumes;
+- M2-M2 Ops Brief is the default candidate and may move into the no-app milestone when it is the shortest high-value slice;
+- progressive discovery may use an eligible brief slot but must not displace operational content;
+- broad installer/runtime work must not expand this packet.
 
 ### Direction result
 
-**ALIGNED.** The shortest release-integrity gap was making the proven starter reproducible from Git rather than relying on a mutable hand-maintained Google Sheet.
+**ALIGNED.** A canonical task-centered Ops Brief is the shortest currently identified route from proven substrate/onboarding to visible Personal MIRA value. Generic service composition is intentionally deferred from this first vertical unless a concrete acceptance dependency emerges.
 
-## Implemented evidence
+## Dependency refinement decision
 
-### Git-backed starter blueprint
+For this bounded vertical, the actual hard prerequisites are:
 
-`distribution/personal_google_starter.json` now defines the clean Personal Google spreadsheet substrate:
+- canonical structured-state semantics (`STORE-001`);
+- a valid Personal Authority binding for the new `task` and `ops_brief_run` data classes;
+- deterministic task identity/state and one-action rendering (`TASK-001`, `TASK-002`);
+- deterministic brief slot/run identity (`OPS-003`, `OPS-004`, `RECOVERY-001`);
+- existing progressive discovery state only when a discovery prompt is eligible.
 
-- distribution ID `mira-personal-google-workspace-v1`;
-- neutral release timezone `Etc/UTC`;
-- exactly four tabs: `Metadata`, `Resources`, `Events`, `Idempotency`;
-- exact STORE-001 headers;
-- exact clean Metadata values;
-- zero mutable Resource/Event/Idempotency seed rows;
-- explicit privacy invariants;
-- exact Workspace artifact set including the current no-app instructions with progressive discovery.
+The following remain explicitly **not required** for the first task brief:
 
-### Deterministic release tooling
+- generic AI runtime router/source lanes;
+- Cloud Run;
+- Android;
+- full `SERVICE-COMPOSE-001` / `SERVICE-DEPS-001` fan-out;
+- Gmail/Calendar provider bootstrap;
+- weather, orders, shipments, mileage or finance sections;
+- live scheduler firing. The packet proves deterministic slot/run composition and stock-ChatGPT rendering; actual scheduled automation delivery can layer on that contract without redefining brief content/state.
 
-`mira/personal_distribution.py` now:
+## Required user-visible behavior
 
-- validates the blueprint and Workspace bundle;
-- rejects provider IDs, secret-like material, inherited mutable state and structural drift;
-- binds a supplied canonical 40-character source SHA to the blueprint hash and sorted hashes of all Workspace artifacts;
-- emits byte-deterministic JSON release manifests;
-- verifies manifests against current source;
-- verifies independently observed spreadsheet snapshots against exact title/timezone/tab/header/Metadata/clean-state rules.
+1. MIRA can create/update/complete canonical tasks without deleting completed task history.
+2. Each task has a stable ID, title, explicit next action, priority, state, optional due date, optional context and optional parent task.
+3. Completion is explicit; omitted/silent evidence never marks a task complete.
+4. A brief for a supplied authoritative IANA timezone/local datetime resolves a canonical AM/PM slot and deterministic Run ID.
+5. Active tasks render in deterministic priority/due ordering with exactly one action per line.
+6. Completed/cancelled tasks do not appear as active brief actions but remain queryable canonical state.
+7. A brief can optionally include one progressive-discovery prompt when eligible; it never emits a second discovery topic for the same local date and silence never advances discovery.
+8. Re-rendering the same run from unchanged canonical state is deterministic.
+9. The first vertical is useful even if weather/orders/calendar/mail/mileage are unavailable; unavailable sections are omitted rather than fabricated.
+10. No user must run Python, Git, Linux, SQL, Cloud Run or Android to use the no-app task/brief behavior.
 
-CI now generates the source-SHA manifest twice, diffs the bytes, and verifies the result.
+## Acceptance criteria
 
-### Direct tests and ownership
-
-`tests/test_personal_distribution.py` covers:
-
-- valid sanitized blueprint;
-- byte-identical manifest generation;
-- manifest tamper detection;
-- malformed source SHA rejection;
-- provider/secret-like material rejection;
-- dirty mutable seed rejection;
-- exact clean snapshot acceptance;
-- header drift/inherited-state rejection;
-- Metadata drift rejection.
-
-`project/code_ownership.json` now owns the distribution component under `DIST-002`, `ONBOARD-002`, `ONBOARD-006`, and `DATA-001` with `DIST-STARTER-001` / `STARTER-SANITIZE-001` work evidence.
-
-## Independent Google provider proof — 2026-08-29
-
-A newly created synthetic native Google spreadsheet was built from the Git blueprint rather than by copying the prior clean template or any legacy production artifact.
-
-Provider readback verified:
-
-- timezone `Etc/UTC`;
-- exact four-tab set/order;
-- exact Metadata seed values;
-- exact Resources/Events/Idempotency STORE-001 headers;
-- zero non-header mutable-state rows.
-
-The synthetic proof spreadsheet was renamed after verification so it cannot be mistaken for an installable clean starter. The provider resource identifier is intentionally not committed to public Git.
-
-Durable evidence: `docs/PERSONAL_STARTER_DISTRIBUTION_PROOF.md`.
-
-### Bound Apps Script evidence boundary
-
-The connected Google Drive/Sheets capability used here can create a native spreadsheet and issue Sheets batch updates, but it does not expose creation of a bound Apps Script project from source files. Therefore this packet does **not** claim source-to-provider installation of the bound Apps Script bundle.
-
-The Apps Script source remains CI-validated. Browser/provider installation of the bound script belongs to `NONTECH-INSTALL-001` / provider-onboarding capability. This does not invalidate the independently live-verified spreadsheet substrate.
-
-## Lifecycle reconciliation during packet
-
-The generated product ledger remains the selector rather than deleting history. Current backlog semantics before merge:
-
-- `FEATURE-ALIGN-001` — completed by PR #61;
-- `DISCOVERY-CORE-001` — partial; progressive slice merged/test-verified, broader evidence-aware discovery remains unfinished;
-- `DIST-STARTER-001` — active; implementation/CI/provider proof complete, merge pending;
-- `STARTER-SANITIZE-001` — active; implementation/CI/provider proof complete, merge pending;
-- Android command boundary remains partial;
-- Cloud Run advanced proof remains paused.
-
-Latest lifecycle validation on packet head before this closeout-only commit: 118 features / 143 work items; 50 completed, 74 queued, 2 active, 2 partial, 1 paused, 2 provisional, 10 deferred, 2 split, zero unknown.
-
-## Latest test evidence
-
-PR #62 CI run `33281516248` on head `f568f32b0008c475a9b53041cdb8bd35266c8ed0` passed before this closeout-only CURRENT_WORK commit:
-
-- feature registry — green;
-- product lifecycle ledger — green;
-- Personal starter distribution validation + deterministic manifest diff + manifest verification — green;
-- work-session alignment — green;
-- code ownership — green;
-- Python unit tests — **176/176 passed**;
-- Workspace Apps Script tests — **15/15 passed**.
-
-This closeout changes governance text only and must receive its own latest-head CI before merge.
-
-## End-of-session alignment verification — 2026-08-29
-
-### `FEATURES.md`
-
-Rechecked after implementation:
-
-- all 118 canonical feature IDs remain present;
-- receipts/purchases/spending, meals/groceries, assets/fitment/knowledge, inventory/location/movement, routines/fitness, education, travel/mileage, wearables, local integrations, appointments/calendar, Android, Microsoft, Apple/iCloud, backup/recovery, voice, enterprise and MIRA Studio remain preserved;
-- distribution code does not redefine canonical state, provider selection, onboarding, service activation, or domain semantics.
-
-### `BACKLOG.md`
-
-Rechecked after implementation:
-
-- all 143 work items remain represented;
-- no completed work was deleted;
-- current distribution work is explicitly active rather than stale queued text;
-- first meaningful no-app vertical `OPS-BRIEF-VSLICE` remains provisional and must be dependency-refined before implementation rather than blindly inheriting generic runtime-router dependencies;
-- appointments, receipts/assets/inventory, meals/groceries and other user-visible verticals remain queued behind their actual prerequisites.
-
-### `ROADMAP.md`
-
-Rechecked after implementation:
-
-- deterministic starter/distribution requirement is satisfied at the source + spreadsheet-substrate level pending merge;
-- broader one-click/bound-script/provider installation remains correctly deferred;
-- the next milestone concern is a meaningful user-visible no-app vertical, not more release/governance architecture;
-- Android remains later until no-app MIRA provides real value.
-
-### Direction result
-
-**ALIGNED.** This packet closes the mutable-template release gap without expanding into the entire installer stack, and the next packet must be user-visible product behavior.
-
-## Acceptance result
-
-1. Canonical sanitized Personal Google starter blueprint — PASS.
-2. Blueprint privacy/structural validation — PASS.
-3. Source-SHA release manifest over exact artifacts — PASS.
-4. Byte-for-byte reproducible manifest — PASS.
-5. Exact spreadsheet snapshot verifier — PASS.
-6. Dirty mutable-state rejection — PASS.
-7. Direct distribution tests — PASS.
-8. CI distribution integrity gate — PASS.
-9. Code ownership/evidence — PASS.
-10. Independent Google spreadsheet-substrate live proof — PASS; bound Apps Script source-to-provider installation explicitly NOT CLAIMED.
-11. End-of-session whole-life feature preservation / next-vertical check — PASS.
+1. Provider-neutral canonical Task service over `STORE-001` with validation, create/update/complete/reopen/read/query semantics and stable revisions/idempotency.
+2. New `task` data class is added to the Personal Google starter schema and Authority bootstrap/readback path without creating a second authority.
+3. Provider-neutral Ops Brief composer produces deterministic slot/run identity and deterministic task ordering/rendering.
+4. `ops_brief_run` canonical resource records the rendered run/checkpoint without pretending delivery occurred.
+5. Progressive-discovery integration obeys one-topic-per-local-day and silence rules.
+6. Direct tests cover task creation, update, completion preservation, invalid transitions, due/priority ordering, deterministic rerender, AM/PM slot IDs, discovery insertion/dedupe and omission of unavailable sections.
+7. Stock-ChatGPT no-app instructions are updated to use the task/brief contract and distinguish composition from actual scheduled delivery.
+8. Personal starter blueprint/manifest remains deterministic after adding required resource types.
+9. Code ownership covers new domain components.
+10. CI is green on exact PR head.
+11. Where connector capability permits, create canonical synthetic task/run state in an isolated Google starter and read it back exactly; never touch legacy production.
+12. End-of-session feature/lifecycle reconciliation marks PR #62 distribution work completed and preserves all broader brief/domain features for future vertical expansion.
 
 ## Exact next action
 
-1. Run CI on this exact closeout head.
-2. If green, merge PR #62 and remotely verify `main`.
-3. In the next packet, mark `DIST-STARTER-001` and `STARTER-SANITIZE-001` completed with PR #62 evidence.
-4. Dependency-audit `OPS-BRIEF-VSLICE` for the narrow stock-ChatGPT Personal lane. Do not require generic runtime/source routing unless it is genuinely needed for the first vertical.
-5. Create a bounded no-app Ops Brief/task vertical child if needed, then implement the first real brief from canonical MIRA 2.0 state, including optional progressive-discovery prompt insertion rules.
+1. Implement canonical task state and task service.
+2. Implement deterministic Ops Brief composer/run checkpoint with progressive-discovery integration.
+3. Extend Personal starter schema/Authority bootstrap/no-app instructions for `task` and `ops_brief_run`.
+4. Add direct tests and ownership evidence.
+5. Reconcile `BACKLOG.md` distribution completion and narrow `OPS-BRIEF-VSLICE` dependencies/status to this active packet.
+6. Run CI and isolated Google provider proof.
+7. Recheck FEATURES/BACKLOG/ROADMAP, merge when exact-head green, then select the next user-visible vertical.
 
 ## Recovery protocol
 
-Read this file first. If PR #62 is still open, verify the exact head and CI before merge. If #62 is merged, verify `main`, then begin the bounded first no-app user-visible vertical from current `main`. Do not resume Android or broaden into the full installer stack by habit.
+Read this file first. Continue on `integration/m0-011-no-app-ops-brief`. Do not broaden this packet into the full service router, scheduler platform, Android, or every historical Ops Brief section. The acceptance target is one real canonical task brief in stock ChatGPT.
