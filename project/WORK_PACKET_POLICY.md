@@ -20,6 +20,26 @@ A newly discussed idea joins active work only when:
 
 Otherwise capture it in FEATURES/BACKLOG and continue the active packet.
 
+## Feature-set alignment gate
+
+MIRA development must not optimize a local subsystem while drifting away from the intended product. `FEATURES.md` is the canonical semantic contract, with `ROADMAP.md` and `BACKLOG.md` providing milestone and ranked-work context.
+
+Before a packet begins implementation, the assistant/developer must:
+
+1. read the current related feature IDs in `FEATURES.md` and their dependencies;
+2. read relevant roadmap/backlog mappings, including adjacent user-visible features that the packet could accidentally break or make impossible;
+3. record in `CURRENT_WORK.md` a **Feature alignment** section containing:
+   - primary feature/work IDs;
+   - user-visible behavior this packet must enable;
+   - existing product invariants/features it must preserve;
+   - intentionally deferred related features;
+4. compare proposed architecture against those requirements and reject designs that solve the packet by silently weakening or deleting accepted product behavior;
+5. capture newly discovered customer requirements in `FEATURES.md`/`BACKLOG.md` without silently expanding the active packet.
+
+Before merge/closeout, repeat the feature-alignment check. A packet may not be called complete merely because its code/tests pass if the implementation contradicts the canonical feature set, drops a required user-visible behavior, or makes an accepted downstream feature structurally impossible.
+
+`DEV-005` provides the machine-readable feature registry. Automated packet/feature alignment enforcement may strengthen this process, but the Git-recorded alignment review is mandatory immediately.
+
 ## Explicit reprioritization
 
 Before switching:
@@ -39,6 +59,7 @@ Every packet records:
 - objective;
 - branch/base/head where applicable;
 - dependencies/blockers;
+- **feature alignment:** user-visible behavior, preserved feature invariants, and explicitly deferred related features;
 - explicit acceptance criteria;
 - completed evidence;
 - exact next action/resume point.
