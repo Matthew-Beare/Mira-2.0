@@ -34,6 +34,8 @@ _PERSONAL_AUTHORITY_ID = "google-sheets-personal"
 _PERSONAL_BINDING_ID = "binding-entity"
 _PERSONAL_DATA_CLASS = "entity"
 _PERSONAL_SCHEMA_VERSION = "mira-structured-state-v1"
+_DIRECT_MUTATION_MODE = "direct_single_writer"
+_QUEUED_MUTATION_MODE = "queued_writer"
 
 
 class WorkspaceReadbackError(StructuredStateError):
@@ -42,6 +44,10 @@ class WorkspaceReadbackError(StructuredStateError):
 
 class WorkspaceBootstrapError(StructuredStateError):
     """Raised when a copied Workspace starter cannot be safely initialized."""
+
+
+class WorkspaceQueuedWriterRequiredError(StructuredStateError):
+    """Raised when direct native mutation is attempted after queue activation."""
 
 
 @dataclass(frozen=True)
@@ -287,9 +293,11 @@ def plan_workspace_upsert(
     expected_revision: int,
     resource_rows: Sequence[tuple[int, ResourceRecord]],
     idempotency_rows: Sequence[WorkspaceIdempotencyRecord],
+    mutation_mode: str = _DIRECT_MUTATION_MODE,
 ) -> WorkspaceUpsertPlan:
-    """Plan a replay-safe single-writer upsert from freshly read Google state."""
+    """Plan a replay-safe direct upsert only in Personal single-writer mode."""
 
+    _require_direct_mutation_mode(mutation_mode)
     resource_type = _token(resource_type, "resource_type")
     resource_id = _identifier(resource_id, "resource_id")
     key = _token(idempotency_key, "idempotency_key")
@@ -422,6 +430,19 @@ def verify_workspace_upsert_readback(
         raise WorkspaceReadbackError("Google Workspace idempotency material mismatch")
 
 
+def _require_direct_mutation_mode(value: object) -> None:
+    if value == _DIRECT_MUTATION_MODE:
+        return
+    if value == _QUEUED_MUTATION_MODE:
+        raise WorkspaceQueuedWriterRequiredError(
+            "direct Workspace mutation is disabled in queued_writer mode; "
+            "submit the API-001 command to the canonical command inbox"
+        )
+    raise ValidationError(
+        "mutation_mode must be direct_single_writer or queued_writer"
+    )
+
+
 def _record_from_result(result: Mapping[str, Any]) -> ResourceRecord:
     raw = result.get("record")
     if not isinstance(raw, Mapping):
@@ -498,6 +519,7 @@ __all__ = [
     "WorkspaceBootstrapError",
     "WorkspaceBootstrapPlan",
     "WorkspaceIdempotencyRecord",
+    "WorkspaceQueuedWriterRequiredError",
     "WorkspaceReadbackError",
     "WorkspaceUpsertPlan",
     "plan_workspace_bootstrap",
