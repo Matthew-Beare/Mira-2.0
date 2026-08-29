@@ -4,31 +4,32 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace, with no external infrastructure prerequisite. Android, Microsoft, Apple/iCloud, Cloud Run, Linux and SQL remain supported later lanes but do not block the first useful Google-only Personal product.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Android, Microsoft, Apple/iCloud, Cloud Run, Linux and SQL remain supported later lanes. The immediate product objective is repeated user-visible no-app progress while the complete audited product corpus remains durable and queryable.
 
-Every work session begins and ends by checking `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`. CI runs `python -m mira.work_session_alignment check` so active work and feature references cannot drift silently.
+Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`. Completed work remains in the corpus with evidence and is filtered from next-work selection rather than deleted.
 
-## Completed no-app foundation this session
+## Preserved displaced checkpoints
 
-- `M2-M0-007` / `FIRSTBOOT-CORE-001` merged in PR #58 at `a60e8879e71b8f464eb1de1ea8cc15cbd309eccb`: four-question resumable Interview Ledger + CI work-session direction gate + isolated Google persistence/readback proof.
-- `M2-M0-008` / `SERVICE-STATE-001` merged in PR #59 at `2fd34e1bd66bcb3a73c632e60457564f9e4a859c`: explicit intent/recommendation/readiness/activation state + isolated Google persistence/readback proof.
+### `M2-M0-010` — Personal starter/distribution
 
-The Android packet remains paused at its exact live Apps Script queued-writer proof checkpoint in Git history.
+Branch `integration/m0-010-personal-starter-distribution` was created from `main` at `71ab2278a6a45925f6bb74f9d3628f859d25ab71` but contains no unique commits. It was displaced by explicit customer reprioritization. Resume distribution from the then-current merged `main`; no implementation recovery is required.
+
+### Android / `M2-M1-001`
+
+Android remains paused at the previously recorded live isolated Google queued-writer proof checkpoint. Synthetic command-boundary implementation is preserved; do not redesign it when Android resumes.
 
 ## Active packet
 
-### `M2-M0-009` — Stock-ChatGPT no-app operating protocol
+### `M2-G0-011` — Product corpus reconciliation and progressive onboarding
 
-- **Primary work:** `ONBOARD-INSTRUCTIONS`
-- **Primary features:** `ONBOARD-001`, `ONBOARD-003`, `ONBOARD-006`
-- **Related invariants/features:** `CORE-001`, `STORE-001`, `API-001`, `AUTH-001`, `SERVICE-001`, `CAL-006`, `RECOVERY-002`, `DATA-001`
+- **Primary work:** `FEATURE-ALIGN-001`, `DISCOVERY-CORE-001`
+- **Primary features:** `DEV-005`, `DEV-007`, `ONBOARD-003`, `ONBOARD-004`
+- **Related invariants/features:** `ONBOARD-005`, `OPS-001`, `SERVICE-001`, `ROUTINE-001`, `WEARABLE-001`, `MEAL-001`, `GROCERY-001`, `RECEIPT-001`, `ASSET-001`, `INV-001`, `EDU-001`, `LOCAL-001`, `STUDIO-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-009-no-app-protocol`
-- **Base SHA:** `2fd34e1bd66bcb3a73c632e60457564f9e4a859c`
-- **Pull request:** #60
-- **Head before closeout checkpoint:** `cf14933629e40e2cdf502f110096bf56424d7ad0`
-- **Status:** implementation complete; source-bundle tests/CI green at pre-closeout head; updated clean release template and fresh-copy first-boot provider proof passed; latest closeout-head CI still required before merge.
-- **Objective:** ship a complete sanitized source-backed operating instruction/protocol with the Google Workspace starter so stock ChatGPT can execute first boot against canonical MIRROR state instead of requiring a Python process or Android app.
+- **Branch:** `integration/g0-011-product-corpus-reconciliation`
+- **Base SHA:** `71ab2278a6a45925f6bb74f9d3628f859d25ab71`
+- **PR:** #61
+- **Objective:** make the complete audited MIRA product corpus queryable as a durable lifecycle ledger, reconcile stale implementation state, and extend onboarding so Minimum Useful Setup can continue into optional bounded progressive discovery without blocking ordinary MIRA use.
 
 ## Session-start alignment verification — 2026-08-29
 
@@ -36,148 +37,179 @@ The Android packet remains paused at its exact live Apps Script queued-writer pr
 
 Verified before implementation:
 
-- `ONBOARD-001` requires complete replacement instruction delivery rather than fragmentary patches.
-- `ONBOARD-003` defines the exact four-question Minimum Useful Setup and completion orientation.
-- `ONBOARD-006` requires ordinary browser-only Personal setup with no terminal fallback.
-- `CORE-001` fixes the assistant/product name as MIRA.
-- `STORE-001`, `AUTH-001`, and `API-001` require canonical identity, revision/idempotency, exact readback, and one-authority semantics.
-- `SERVICE-001` requires appointment-help intent to remain separate from actual service activation.
-- `CAL-006` prohibits pretending preferred Calendar sync is active before verified provider capability/readback.
-- `DATA-001` prohibits using legacy production state as a test fixture.
+- 118 stable semantic features already cover briefs/tasks, appointments/mail, orders/receipts/finance, assets/fitment/knowledge, inventory/location/movement, groceries/recipes/meals, profiles/permissions, routines/fitness/accountability, education, travel/mileage, wearables, weather, Android, local/Home Assistant/Plex bridges, voice, backup/recovery, provider portability and enterprise deployment;
+- `ONBOARD-003` owns the exact four-question Minimum Useful Setup;
+- `ONBOARD-004` is the correct home for deeper progressive discovery;
+- fitness/accountability remains composed from `ROUTINE-001` + task/service semantics rather than a duplicate fitness authority;
+- optional smartwatch/activity ingestion remains `WEARABLE-001`;
+- receipts, meals/groceries, assets, inventory, education, local integrations and other whole-life domains are already canonical and must not be repeatedly rediscovered as new features.
 
 ### `BACKLOG.md`
 
 Verified before implementation:
 
-- `ONBOARD-INSTRUCTIONS` already exists as source-backed full instruction replacement work.
-- full `SERVICE-COMPOSE-001` depends on broader runtime/source routing and is not the shortest path to a usable stock-ChatGPT first boot;
-- `NONTECH-INSTALL-001` remains later installation/upgrade hardening;
-- `OPS-BRIEF-VSLICE`, appointments, receipts/assets/inventory, and Android remain preserved work.
+- completed forensic audits A-G already preserve the broad historical feature corpus;
+- stale completion text existed for first boot/service state/no-app instructions;
+- `FEATURE-ALIGN-001` and `DISCOVERY-CORE-001` were existing work IDs and therefore no parallel governance/onboarding subsystem was needed.
 
 ### `ROADMAP.md`
 
 Verified before implementation:
 
-- M2-M0.5 requires a useful no-app Personal product before Android resumes;
-- the next work should promote the proven Google substrate into actual stock-ChatGPT behavior rather than adding unnecessary infrastructure;
-- provider-specific details must remain adapter/protocol concerns rather than changing canonical product semantics.
+- useful no-app Personal MIRA remains ahead of Android expansion;
+- lifecycle reconciliation is foundational because it prevents completed work being accidentally reselected;
+- deeper onboarding must remain optional and must feed user-visible verticals rather than delay them.
 
 ### Direction result
 
-**ALIGNED.** A complete stock-ChatGPT Workspace operating protocol is a shorter path to an actually usable no-app MIRA than entering the broader service-composition dependency tree now.
+**ALIGNED.** Reconciliation and progressive onboarding directly address the customer's stated failure mode: stale status, repeated rediscovery, and no durable way to select unfinished accepted scope.
 
-## Implemented behavior
+## Implemented evidence
 
-`workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md` is now the complete source-backed Personal no-app operating-instruction block and is part of the validated Workspace release bundle.
+### Product lifecycle ledger
 
-The protocol defines:
+`mira/product_ledger.py` now derives one machine-readable product view from `FEATURES.md` + `BACKLOG.md`; it does not create a second editable authority.
 
-1. fixed MIRA identity and zero-external-infrastructure Personal deployment;
-2. chat/model memory as evidence, never canonical mutable-state authority;
-3. exact Workspace Metadata/Resources/Idempotency preflight;
-4. fail-closed direct-single-writer vs queued-writer behavior;
-5. stable Resource identity, expected revision, deterministic SHA-256 request fingerprint, idempotency replay/conflict handling, atomic write intent, and exact provider readback;
-6. one verified Personal Google authority plus explicit persisted Authority bindings for `entity`, `onboarding_ledger`, and `service_state`;
-7. exact four-question Minimum Useful Setup/resume behavior;
-8. Calendar preference separated from provider capability/projection truth;
-9. appointment-help intent mapped to `service_state/appointments_calendar=requested`, never silently active;
-10. fail-closed normal operation when provider state, routing, schema, or readback cannot be verified;
-11. preservation of accepted later feature families without pretending they are already live.
+Verified behavior:
 
-`mira/workspace_bundle.py` now requires `MIRA_NO_APP_INSTRUCTIONS.md` as part of the release bundle and rejects a bundle if critical identity, Authority routing, onboarding, service-intent, idempotency/readback, zero-infrastructure, Microsoft, or Apple/iCloud clauses disappear.
+- parses ranked and unranked canonical work tables;
+- fails duplicate work IDs;
+- retains raw feature evidence and work status;
+- conservatively normalizes work to completed/active/queued/deferred/partial/paused/provisional/split/etc.;
+- ambiguous prose is never promoted to completed;
+- CLI supports validation, JSON projection, and unfinished-work selection;
+- completed/deferred/paused/split/rejected work is excluded from selectable next-work without being deleted;
+- CI runs product lifecycle validation before session alignment;
+- session alignment now uses the same canonical backlog parser, fixing the old ranked-table blind spot.
 
-`tests/test_workspace_bundle.py` directly verifies the complete protocol and verifies missing critical clauses fail validation.
+Latest verified projection on PR #61 head before closeout:
 
-`workspace/apps_script/README.md` now identifies the protocol as a complete replacement artifact rather than an example/patch and describes its place in the browser-only Personal path.
+- 118 features;
+- 143 work items;
+- 49 completed;
+- 76 queued;
+- 2 active;
+- 1 partial;
+- 1 paused;
+- 2 provisional;
+- 10 deferred;
+- 2 split;
+- zero unknown lifecycle states.
 
-## Release-starter correction and provider evidence
+### Backlog reconciliation
 
-During packet verification, the clean MIRA 2.0 release starter was found to advertise only `authority`, `authority_binding`, and `entity`. That would have made a fresh no-app first boot fail its own schema preflight.
+Canonical backlog state now records rather than deletes completed work:
 
-The protected legacy-production rule was preserved: the corrected file is the MIRA 2.0 clean synthetic/release template, not legacy MIRA production state.
+- `FIRSTBOOT-CORE-001` — complete, PR #58 + tests + isolated Google persistence/readback;
+- `APPOINTMENT-ONBOARD-001` — complete, fourth-question preference behavior verified without fake provider activation;
+- `SERVICE-STATE-001` — complete, PR #59 + tests + isolated Google persistence/readback;
+- `ONBOARD-INSTRUCTIONS` — complete, PR #60 + bundled protocol + fresh-copy first-boot provider proof;
+- `API-DEPLOYMENT-001B` — paused rather than unknown;
+- `ANDROID-COMMAND-BOUNDARY-001` — partial rather than unknown because live Google worker proof is still pending;
+- `DISCOVERY-CORE-001` — active/partial: the new progressive slice is implemented/tested while broader evidence-aware history/friction discovery remains unfinished.
 
-The clean template was updated and read back so `resource_types_json` is now exactly:
+### Progressive onboarding
 
-`["authority","authority_binding","entity","onboarding_ledger","service_state"]`
+Minimum Useful Setup remains exactly four questions. After question four MIRA now offers:
 
-Its Resources table remained empty after the schema promotion.
+- **continue setup now**; or
+- **start using MIRA**.
 
-### Fresh-copy proof
+Provider-neutral `progressive-discovery` state then supports:
 
-A brand-new copy was then created from the corrected clean template: `MIRA Personal Starter - Fresh No-App Protocol Proof`.
+- one topic at a time;
+- persistent accepted/declined/skipped/needs-details state;
+- restart/resume without repeating completed topics;
+- brief-drip mode with at most one new topic per supplied local date;
+- silence never counts as an answer and never advances the queue;
+- automatic brief discovery stops after seven topic-days or explicit disablement;
+- first topic is optional fitness/activity/nutrition/weight-management help;
+- a positive fitness answer immediately asks goals/help type;
+- later topics cover meals/groceries, household/routines, education/study, receipts/assets/inventory, travel/work tracking and optional connected integrations such as wearables/local smart-home services;
+- positive answers remain intent/preferences only and never silently activate providers/services.
 
-Before mutation, provider readback verified:
+The stock-ChatGPT no-app operating instructions and Workspace bundle validation were updated so the actual no-app product contract matches the tested Python behavior.
 
-- `schema_version=mira-structured-state-v1`;
-- `adapter_contract=STORE-001`;
-- `writer_model=single_writer`;
-- the five required resource types were present;
-- Resources and Idempotency contained headers only.
+## Latest test evidence
 
-Using only synthetic data, one Google Sheets batch then materialized the protocol's first-boot state:
+PR #61 CI run `33281117715` on head `f34275137f5fbd6223127a0e4f26bfeac2bb6f55` passed before this closeout-only CURRENT_WORK commit:
 
-- `authority/google-sheets-personal`, revision 1, verified/enabled, synthetic owner identity;
-- `authority_binding/binding-entity`, revision 1;
-- `authority_binding/binding-onboarding-ledger`, revision 1;
-- `authority_binding/binding-service-state`, revision 1;
-- `onboarding_ledger/minimum-useful-setup`, revision 1.
+- compile — green;
+- feature registry — green;
+- product lifecycle ledger — green;
+- work-session alignment — green;
+- code ownership — green;
+- Python unit tests — **167/167 passed**;
+- Workspace Apps Script tests — **15/15 passed**.
 
-All five matching Idempotency results were written in the same provider batch using the exact request-fingerprint material defined by the native Workspace contract.
+This closeout commit changes governance text only. It must receive its own latest-head CI before merge.
 
-Exact provider readback then verified:
-
-- one Personal authority;
-- exactly one binding for each required data class;
-- all bindings point to `google-sheets-personal`;
-- the Interview Ledger payload is `status=in_progress`, empty answers, and `next_question_id=timezone`;
-- every Resource row's revision/payload/idempotency key/request hash matches its Idempotency result;
-- written backend cells retain readable wrapped/top-aligned formatting.
-
-This is a **fresh-copy protocol-shaped provider proof** of the first-boot substrate. It proves that the corrected release starter plus the source-backed operating protocol can produce the exact canonical state needed to ask question one. It does not claim the current ChatGPT product automatically installs the instruction file into Project Instructions; browser-only installation UX remains `NONTECH-INSTALL-001`/distribution hardening.
-
-## Acceptance status
-
-1. Complete sanitized no-app protocol ships in Workspace starter source — **passed**.
-2. MIRA fixed/no rename — **passed**.
-3. Canonical Workspace preflight/readback and no chat-memory authority — **passed**.
-4. Exact four-question first-boot/resume contract — **passed**.
-5. Calendar preference without fake sync — **passed**.
-6. Appointment intent maps to requested service state, not active — **passed**.
-7. Stable IDs/revision/fingerprint/idempotency/write/readback contract — **passed**.
-8. Direct single-writer vs queued-writer fail-closed rule — **passed**.
-9. Public source contains no runtime provider IDs/secrets/personal production data — **passed by bundle validation/current packet review**.
-10. Bundle validation/direct protocol tests — **passed at PR head `cf14933629e40e2cdf502f110096bf56424d7ad0`**.
-11. Existing Apps Script/runtime tests — **passed in CI run `33279835768` at that head**.
-12. Session-end alignment — **passed below**.
-13. Latest closeout-head CI — **pending after this checkpoint write**.
-
-## Session-end alignment verification — 2026-08-29
+## End-of-session alignment verification — 2026-08-29
 
 ### `FEATURES.md`
 
-Re-read after implementation. `ONBOARD-001`, `ONBOARD-003`, `ONBOARD-006`, `CORE-001`, `AUTH-001`, `STORE-001`, `API-001`, `SERVICE-001`, `CAL-006`, `DATA-001`, and `RECOVERY-002` remain compatible with the shipped protocol. The Authority-binding gap discovered during provider verification was corrected rather than bypassed. No Android, receipt, asset, inventory, appointment-provider, Microsoft, or Apple feature was removed or weakened.
+Rechecked after implementation:
+
+- all 118 feature IDs remain present;
+- receipts/purchases/spending remain preserved;
+- groceries/recipes/meal planning remain preserved;
+- assets/fitment/knowledge remain preserved;
+- inventory/location/movement/par remain preserved;
+- routines/fitness/accountability remain preserved;
+- education/study remain preserved;
+- travel/work-trip/mileage remain preserved;
+- `WEARABLE-001` remains preserved;
+- `LOCAL-001` Home Assistant/Plex/private-service direction remains preserved;
+- Android, Microsoft, Apple/iCloud, backup/recovery, voice, enterprise and MIRA Studio remain preserved;
+- no new parallel fitness, meal, inventory, or onboarding authority was invented.
 
 ### `BACKLOG.md`
 
-Re-read after implementation. The accepted work remains intact. A bookkeeping defect was also found: `FIRSTBOOT-CORE-001` and `SERVICE-STATE-001` still display `queued` even though PRs #58/#59 are merged, and `ONBOARD-INSTRUCTIONS` will remain `queued` until this PR merges. This is stale work-status metadata, not missing feature scope. It must be corrected immediately after/with closeout rather than treated as actual implementation state. The next product work remains browser-only install/distribution hardening and the shortest real user-visible no-app vertical, not Android.
+Rechecked after implementation:
+
+- total work-item count remains 143, so reconciliation did not silently delete work;
+- known stale completed work was corrected to completed with evidence;
+- partial/paused work is now explicit rather than ambiguous;
+- unfinished whole-life verticals remain queued/deferred and selectable by lifecycle/dependency/value ranking;
+- `DISCOVERY-CORE-001` correctly remains partial because broader evidence-aware history/capability discovery is not finished.
 
 ### `ROADMAP.md`
 
-Re-read after implementation. M2-M0.5 still correctly requires useful stock-ChatGPT + Google Workspace MIRA before Android resumes. This packet advanced the user-facing execution path rather than adding external infrastructure.
+Rechecked after implementation:
+
+- no-app Personal usefulness remains ahead of Android;
+- post-four progressive discovery is explicitly optional and bounded;
+- deterministic starter/distribution and a meaningful user-visible no-app vertical remain the next milestone concerns;
+- completed work remains durable and excluded from reselection by lifecycle state rather than deletion.
 
 ### Direction result
 
-**ALIGNED.** The packet converted first-boot/state code into a complete source-backed stock-ChatGPT operating contract, corrected the release starter schema, and proved a fresh-copy canonical first-boot state with Authority routing and exact provider readback.
+**ALIGNED.** The packet improved both product behavior and the mechanism used to keep future implementation pointed at unfinished accepted scope.
+
+## Acceptance result
+
+1. Product ledger over canonical FEATURES/BACKLOG — PASS.
+2. Duplicate work-ID validation — PASS.
+3. Conservative lifecycle normalization — PASS.
+4. JSON/validation/next-work CLI — PASS.
+5. CI lifecycle gate — PASS.
+6. Stale completed backlog reconciliation — PASS.
+7. Post-four continue/use-MIRA choice — PASS.
+8. Durable progressive discovery — PASS.
+9. One-topic-per-local-date / seven-topic-day limit — PASS.
+10. Fitness goals branch with service/capability separation — PASS.
+11. Direct progressive-discovery test matrix — PASS.
+12. Code ownership/evidence — PASS.
+13. End-of-session whole-life feature preservation check — PASS.
 
 ## Exact next action
 
-1. Verify latest-head CI for PR #60 after this closeout commit; repair if red.
-2. Merge PR #60 only after latest-head CI is green and remotely verify `main`.
-3. Correct stale `BACKLOG.md` implementation statuses for `FIRSTBOOT-CORE-001`, `SERVICE-STATE-001`, and `ONBOARD-INSTRUCTIONS` against the merged evidence; do not alter feature scope or ordering while doing that bookkeeping.
-4. Start the next bounded M2-M0.5 packet from the merged head.
-5. Highest-value direction: make installation/application of the complete no-app instructions and clean starter genuinely browser-only for a normal user, then drive directly into the first visible no-app service/vertical. Avoid the larger service/runtime dependency tree unless it becomes a hard blocker.
-6. Android remains paused at its exact Git-backed live queued-writer proof checkpoint.
+1. Run CI on this exact closeout head.
+2. If green, merge PR #61.
+3. Remotely verify `main` contains the merge.
+4. Mark `FEATURE-ALIGN-001` completed and the progressive portion of `DISCOVERY-CORE-001` test-verified while preserving its broader unfinished scope in the next checkpoint.
+5. Select the next highest-value unfinished no-app work using the lifecycle ledger, with deterministic Personal starter/distribution and the first meaningful user-visible vertical as the current leading candidates.
 
 ## Recovery protocol
 
-Read this file first. If PR #60 is still open, inspect latest head and CI before merge. If merged, verify main, correct the three stale backlog statuses, then create the next M2-M0.5 packet. Keep legacy production state untouched and keep private/provider data out of public Git.
+Read this file first. If PR #61 is still open, verify the exact head and CI before merge. If #61 is merged, verify `main`, then create the next bounded packet from current `main`. Do not resume the empty old M2-M0-010 branch or Android by habit; use the lifecycle/dependency/value result. Conversation history remains discovery evidence, not the mutable development authority.
