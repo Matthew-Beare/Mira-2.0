@@ -32,6 +32,9 @@ jobs:
       - name: Feature registry
         run: python -m mira.feature_registry check FEATURES.md
 
+      - name: Work-session alignment
+        run: python -m mira.work_session_alignment check
+
       - name: Code ownership
         run: python -m mira.code_ownership check
 
