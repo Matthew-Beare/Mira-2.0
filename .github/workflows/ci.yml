@@ -21,6 +21,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Compile
         run: python -m compileall -q mira tests
 
@@ -30,5 +35,8 @@ jobs:
       - name: Code ownership
         run: python -m mira.code_ownership check
 
-      - name: Unit tests
+      - name: Python unit tests
         run: python -m unittest discover -s tests -v
+
+      - name: Workspace Apps Script tests
+        run: node --test tests/apps_script/*.test.js
