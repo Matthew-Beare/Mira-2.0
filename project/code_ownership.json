@@ -81,6 +81,15 @@
       ]
     },
     {
+      "id": "workspace-first-run",
+      "responsibility": "Public Google Workspace starter bundle integrity for the zero-infrastructure Personal MIRA path, including runtime-only copy binding and direct validation of the bound Apps Script artifact.",
+      "why_separate": "Workspace packaging and browser-first deployment constraints are adapter/distribution concerns and must not leak provider IDs or Google execution behavior into the provider-neutral API and storage core.",
+      "owned_paths": ["mira/workspace_bundle.py"],
+      "feature_ids": ["API-001", "STORE-001", "ONBOARD-006"],
+      "work_ids": ["API-DEPLOYMENT-001A"],
+      "verification": ["tests/test_workspace_bundle.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation of canonical feature dependencies and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
