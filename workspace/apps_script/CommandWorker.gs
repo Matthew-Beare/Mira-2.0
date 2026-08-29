@@ -3,12 +3,12 @@
  *
  * API-originated Google Sheets writes do not fire Apps Script edit triggers, so
  * clients append durable API-001 commands to a Commands tab and a time-driven
- * worker polls them.  Every worker execution holds one ScriptLock while it
+ * worker polls them. Every worker execution holds one ScriptLock while it
  * performs revision/idempotency preflight, canonical mutation, recovery and
  * exact readback.
  *
- * This is same-user Personal infrastructure.  The command inbox is transport,
- * never canonical state.  Cross-person permission semantics remain blocked.
+ * This is same-user Personal infrastructure. The command inbox is transport,
+ * never canonical state. Cross-person permission semantics remain blocked.
  */
 
 const MIRA_COMMAND_MODE_KEY_ = 'mutation_mode';
@@ -56,8 +56,10 @@ function miraEnableQueuedWriter() {
   miraWorkspaceSchema_();
   const spreadsheet = miraSpreadsheet_();
   miraEnsureCommandsSheet_(spreadsheet);
-  miraSetMetadataValue_(spreadsheet, MIRA_COMMAND_MODE_KEY_, MIRA_QUEUED_MODE_);
+  // Trigger validation/creation happens before changing the mutation mode. If
+  // trigger setup fails, direct single-writer behavior remains authoritative.
   miraEnsureCommandTrigger_();
+  miraSetMetadataValue_(spreadsheet, MIRA_COMMAND_MODE_KEY_, MIRA_QUEUED_MODE_);
   SpreadsheetApp.flush();
   return {
     mutation_mode: MIRA_QUEUED_MODE_,
