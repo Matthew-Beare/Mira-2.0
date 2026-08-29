@@ -15,7 +15,8 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `DEV-003` | Dependency-ranked backlog | governance | implemented/specified | -
 - `DEV-005` | Machine-readable projection of canonical feature/dependency/evidence state with reproducible generation and CI drift enforcement | required/governance | specified+legacy-test-verified | DEV-001,DEV-003
 - `DEV-006` | Production component ownership and direct-verification inventory with anti-bloat/unowned-code release gate | required/governance | specified+legacy-test-verified | DEV-001
-- `CORE-001` | MIRA product identity | governance | history | -
+- `DEV-007` | Packet-to-feature-set alignment gate requiring every implementation packet to map itself to canonical user-visible features/invariants before implementation and again before merge so local architecture cannot silently drift away from accepted product behavior | required/governance | specified | DEV-001,DEV-002,DEV-003,DEV-005
+- `CORE-001` | MIRA product identity; the assistant/product name is fixed as MIRA and onboarding must not ask the user to rename it | governance | history+specified | -
 - `MIRROR-001` | Companion reality database | governance | history | -
 - `DATA-001` | Legacy production preservation | governance | history | -
 - `AUTH-001` | Canonical Authority Registry and one-authority-per-data-class routing | required/foundational | specified+tested-boundary | RECOVERY-002
@@ -88,7 +89,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `RECIPE-001` | Durable recipe library with structured ingredients and provenance | required | specified | KNOW-001
 - `MEAL-001` | Dated meal planning with pantry-aware ingredient-gap and shopping reconciliation | required | specified | RECIPE-001,GROCERY-001,SHOP-001
 - `ONBOARD-002` | Sanitized generic starter with no inherited personal production state | required/privacy | test_verified | DATA-001
-- `ONBOARD-003` | Four-question Minimum Useful Setup with resumable bounded interview | required | implemented/specified | ONBOARD-002
+- `ONBOARD-003` | Four-question Minimum Useful Setup with resumable bounded interview: (1) authoritative IANA timezone, (2) broad life/work/study/caregiving pattern, (3) biggest remembering/organizing/deciding/planning/follow-through goals, and (4) whether appointment help is wanted plus preferred Calendar provider/auto-sync intent; the fixed MIRA product name is never asked. After the four questions, onboarding must state that the user can ask MIRA at any time to continue the interview with additional questions that improve how MIRA functions for them and must introduce integrated MIRA Studio for ongoing guided improvements and optional sharing | required | implemented/specified+requirement-refined | ONBOARD-002
 - `ONBOARD-004` | Capability, friction, AI-use and work-context discovery without silent activation | required | partial-test/specified | ONBOARD-003,SERVICE-001,CTX-002
 - `ONBOARD-005` | Explicit new-user brief cadence and canonical IANA timezone configuration | required | partial-test/specified | ONBOARD-003,SERVICE-001,OPS-001,OPS-003
 - `SERVICE-001` | Explicit finite service activation state separate from capability and recommendation | required | test_verified | -
@@ -108,6 +109,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `DIST-001` | Private deployment lineage and controlled upstream feature sharing | required | partial-test/specified | ONBOARD-002
 - `DIST-002` | Deterministic sanitized starter/distribution from one canonical source revision | required/release | test_verified | ONBOARD-002
 - `DEV-004` | Bounded private custom skill/feature creation with declared contracts | accepted-direction | partial-test/specified | DEV-001,DEV-002,DIST-001
+- `STUDIO-001` | Integrated MIRA Studio: a guided user-facing surface for continuously improving MIRA through bounded custom features/workflows/preferences with declared contracts, preview/test/rollback, source provenance and optional sanitized sharing of improvements with other users without silently activating imported behavior | required-direction | specified | DEV-004,DIST-001,DEV-005
 - `ONBOARD-006` | Browser-only nontechnical installation with no terminal fallback | required | test_verified | DIST-002,ONBOARD-002,SOURCE-001
 - `SOURCE-001` | Independent source read, source write and remote-readback capability gates | required | test_verified | DIST-001,DEV-004
 - `PROVIDER-001` | Provider-neutral AI runtime capability routing from observed evidence | required | test_verified | SOURCE-001
@@ -117,8 +119,9 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `PROVIDER-003` | Deterministic Personal Google bootstrap adapter with strict drift/readback verification | required | test_verified | ONBOARD-007,PROVIDER-002,SOURCE-001,ONBOARD-005,OPS-003
 - `ENTERPRISE-001` | Policy-compliant managed and regulated deployment lane with synthetic-first evaluation, exact organization approval/data-classification gates, managed source/provider resources and no personal-account workarounds | required-direction | specified+legacy-test-supported-boundary | ONBOARD-006,PROVIDER-001,PROVIDER-002,SOURCE-002,DIST-002,PROFILE-013
 - `SERVICE-002` | Activatable service bundles over canonical behaviors with dependency-derived readiness | required | test_verified | SERVICE-001,RECOVERY-002,PROVIDER-001
-- `CAL-005` | Evidence-safe appointment and provider identity reconciliation | required | partial-test | -
-- `CAL-006` | Idempotent linked Calendar projection, update and exact provider readback | required | specified | CAL-005,RECOVERY-002
+- `CAL-005` | Evidence-safe appointment and provider identity reconciliation, including durable provider identity plus normalized organization/contact and specialty/type attributes such as cardiologist for human-friendly reminders | required | partial-test+requirement-refined | -
+- `CAL-008` | Multi-source appointment evidence intake from inbound email, user-supplied image/photo or user text with provenance-bound extraction of date/time/timezone/location/provider/provider specialty-or-type/contact details, confidence/ambiguity handling, dedupe and canonical appointment/provider reconciliation | required | specified | CAL-005,RECOVERY-002
+- `CAL-006` | Idempotent preferred-Calendar projection/sync/update with exact provider readback; the product must support the user's selected Google, Microsoft/Outlook/M365 or Apple/iCloud Calendar lane through verified provider capability rather than silently substituting another Calendar | required | specified+requirement-refined | CAL-005,RECOVERY-002
 - `HEALTH-001` | Non-clinical administrative health organization | accepted-direction | specified | PROFILE-013,CAL-005,REMIND-001,REMIND-002
 - `ROUTINE-001` | Recurring and staged routine definition plus occurrence lifecycle | required | specified+tested-boundary | TASK-001,TASK-002
 - `REMIND-003` | Consolidated routine and stage reminder planning/projection | required | specified+tested-boundary | ROUTINE-001,RECOVERY-002
@@ -134,7 +137,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - F4 Orders/shipments | orders_shipments,ORDER-001,ORDER-002,ORDER-003,ORDER-005,SERVICE-001,SERVICE-002,f-04 | repair
 - F5 Receipt archive | receipt_archive,RECEIPT-001,RECEIPT-002,RECEIPT-003,SERVICE-001,SERVICE-002,f-05 | -
 - F6 Personal finance organization | finance,SERVICE-001,SERVICE-002,SPEND-001,PAYMENT-001,REIMB-001,SUB-001,FIN-001 | repair
-- F7 Appointments/calendar/reminders | appointments_calendar,CAL-005,CAL-006,CAL-004,appointment_reminders,CAL-002,CAL-003,CAL-001 | repair
+- F7 Appointments/calendar/reminders | appointments_calendar,CAL-008,CAL-005,CAL-006,CAL-007,CAL-004,appointment_reminders,CAL-002,CAL-003,CAL-001 | repair+multisource-intake
 - F8 Administrative health organization | health_organization,HEALTH-001,SERVICE-001,SERVICE-002,medication_reminders,REMIND-001,REMIND-002 | repair
 - F9 Shopping/procurement | shopping,SHOP-001,SERVICE-001,SERVICE-002,f-09 | confirmed
 - F10 Recipes/meals/groceries | recipes_meals,SERVICE-001,SERVICE-002,RECIPE-001,MEAL-001,GROCERY-001,SHOP-001 | selected-submodule-repair
@@ -148,7 +151,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - F18 Assets/maintenance/warranties/manuals | assets,SERVICE-001,SERVICE-002,ASSET-001,ASSET-003,FITMENT-001,IDENT-001,EVID-001,ASSET-002,KNOW-001,SPEC-001 | selected-path-repair
 - F19 Personal knowledge/reference library | knowledge,SERVICE-001,SERVICE-002,KNOW-001,KNOW-002,f-19,g-17,g-18 | provider-projection-repair
 - F20 Backup/disaster recovery | recovery,SERVICE-001,SERVICE-002,BACKUP-001,f-20,g-16 | new-canonical-backup-core
-- F21 Custom skill/automation builder | DEV-004,SKILL-BUILDER-001,f-21 | existing-feature/work
+- F21 Custom skill/automation builder | STUDIO-001,DEV-004,SKILL-BUILDER-001,FEATURE-SHARE-001,DIST-001,f-21 | integrated-studio-direction
 - F22 Activity trackers/wearable data | WEARABLE-001,f-22 | optional-later
 - F23 Weather-in-briefs onboarding/preferences | WEATHER-001,WEATHER-002,ONBOARD-004,ONBOARD-005,SERVICE-001,f-23 | generic-onboarding-hardening
 
@@ -172,7 +175,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - G16 Backup/restore foundation | BACKUP-001,RECOVERY-002,g-16 | provider adapters conditional
 - G17 Knowledge ingestion/provenance | KNOW-001,KNOW-002,RECOVERY-002,g-17 | canonical-knowledge-core
 - G18 Provider organization/search metadata projection | KNOW-001,KNOW-002,STORE-001,g-18 | noncanonical-provider-projection
-- G19 Machine-readable feature catalog and CI drift enforcement | DEV-005,DEV-001,DEV-003,g-19 | stable-id/generated-projection-repair
+- G19 Machine-readable feature catalog, packet alignment and CI drift enforcement | DEV-005,DEV-007,DEV-001,DEV-003,g-19 | stable-id/generated-projection+packet-alignment
 - G20 Production-code ownership inventory and anti-bloat gate | DEV-006,DEV-001,g-20 | component-ownership/language-neutral-repair
 
 ## Dependency closeout findings
@@ -185,7 +188,10 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `AUTH-001` owns exactly one canonical authority per mutable data class; `STORE-001` owns provider-neutral structured/evidence adapter contracts. Git/source, runtime mutable state, evidence, capabilities, backups, and projections remain separate roles.
 - `API-001` is the authenticated client/service boundary in front of `AUTH-001`/`STORE-001`. Mutations require actor/client authentication, least-privilege authorization, compatibility/dependency preflight, stable IDs, mandatory idempotency, conflict handling, canonical write, exact readback, and audit.
 - `CLIENT-ANDROID-001` is a client adapter over `API-001`, never a provider/data/source authority. Offline state is a replay queue/cache, not a second writable master.
-- `DEV-005` keeps `FEATURES.md` canonical and machine-readable views derived; `DEV-006` uses bounded component ownership rather than one-file/one-feature fragmentation.
+- `DEV-005` keeps `FEATURES.md` canonical and machine-readable views derived; `DEV-006` uses bounded component ownership rather than one-file/one-feature fragmentation; `DEV-007` requires packet-level feature alignment before implementation and merge so passing local tests cannot substitute for preserving accepted product behavior.
+- `ONBOARD-003` no longer asks the assistant/product name because it is fixed as MIRA. Its fourth kickoff question explicitly offers appointment-reminder help and preferred Calendar auto-sync selection, and its closing orientation tells users they can request more interview questions at any time and introduces MIRA Studio.
+- `CAL-008` makes email/photo/text appointment intake explicit rather than assuming `CAL-005` identity reconciliation magically includes evidence ingestion. Extracted provider specialty/type is durable canonical provider metadata so reminders can say useful things such as “cardiologist appointment” without repeatedly re-parsing source evidence.
+- `STUDIO-001` is the user-facing continuous-improvement layer over bounded custom feature creation and controlled sharing. Studio may generate/reconcile private changes, but imported/shared behavior never silently activates.
 - PR #31 and independent legacy productization code remain selective salvage only. Direct client-to-provider mutation, coarse authorization, dual writable masters, silent schedulers, path identity, collapsed intended/observed location, and CI-implied live/signing/device/provider claims remain rejected.
 
 ## Audit status
