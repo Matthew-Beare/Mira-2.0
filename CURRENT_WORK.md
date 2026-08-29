@@ -4,9 +4,23 @@ Git is authoritative. This file identifies exactly one active packet and the exa
 
 ## Product deployment invariant
 
-Default Personal MIRA remains **Google Workspace first, zero infrastructure**. Stock ChatGPT may use the official same-user Google Drive/Sheets connection for the single-writer Personal lane. Android/shared mutation must not turn that path into unsafe independent multi-writer read-then-write access.
+Default Personal MIRA remains **Google Workspace first and zero external infrastructure**.
+
+The ordinary no-app Personal lane must be usable with **stock ChatGPT plus the user's Google Drive, Google Sheets and Google Docs**. It must not require Cloud Run, Linux, SQL, a self-hosted server, a tunnel, a separately billed OpenAI API runtime, or another external service merely to begin using MIRA.
+
+A bound Google Apps Script is **not required for the stock-ChatGPT-only Personal lane**. It is an optional Google-native implementation tool for initialization/automation, and the queued-writer script becomes relevant only when a second concurrent writer such as Android is enabled. Even then it remains inside the user's Google Workspace rather than creating a Cloud Run/Linux/SQL prerequisite.
 
 Provider-neutral `API-001`, `AUTH-001` and `STORE-001` remain canonical. No client becomes an independent authority and no dual writable masters are permitted.
+
+## Customer priority clarifications — 2026-08-29
+
+These are accepted product constraints and must be preserved by every later packet:
+
+1. **Google Workspace is the first usable Personal product lane.** The product must not postpone meaningful no-app usefulness until Android exists.
+2. **Android is an extension, not a prerequisite for ordinary no-app MIRA.** Android may add camera, notifications, offline behavior and shared-state mutation without retroactively making the Google-only lane depend on Android infrastructure.
+3. **Apple/iCloud must be supported, but it is not a current implementation focus and must not block the Google-first Personal baseline or the current Android proof.** Microsoft/Outlook/M365 is likewise a provider lane rather than a reason to delay the first Google vertical. Provider-neutral contracts are designed once; provider adapters are proved independently when selected.
+4. **Feature inventory is not conversational memory.** `FEATURES.md` is the canonical semantic inventory and `BACKLOG.md` is the dependency-ranked work inventory. Every packet must read both before implementation and before merge under `DEV-007`.
+5. **Receipts, assets and inventory remain accepted product scope.** They are not to be dropped merely because the current packet is Android/concurrency work.
 
 ## Completed predecessor
 
@@ -19,6 +33,18 @@ Provider-neutral `API-001`, `AUTH-001` and `STORE-001` remain canonical. No clie
 - Closeout PR #53 merge `983444bf697a58a42c4482859d4fe7f0c17fb454`; CI `33274016785` green.
 - Proven Personal path: clean Workspace copy → Authority/binding bootstrap → stock ChatGPT native Google create/read/replay/mutate/readback with exact provider verification.
 - Native read-then-write Sheets mutation is single-writer only; it is not distributed compare-and-swap.
+- This proves the no-external-infrastructure substrate. It does **not** mean the complete user-facing MIRA feature set is already implemented.
+
+## Feature/governance refinement merge
+
+The requirement/governance capture that this file previously listed as pending has already merged.
+
+- Main merge: `618fefa1f15ddfd91a96d7197e3186e19b988457`
+- Merge title: `Merge M2-M1-001 feature contract refinements`
+- Captured fixed-name onboarding, appointment photo/email intake, preferred Calendar onboarding, MIRA Studio and packet-to-feature-set alignment requirements.
+- CI `33275466247` green according to the merge commit.
+
+The previous `CURRENT_WORK.md` checkpoint was stale because it still told the next session to merge work that was already merged. This checkpoint corrects that recovery defect.
 
 ## Active packet
 
@@ -27,11 +53,12 @@ Provider-neutral `API-001`, `AUTH-001` and `STORE-001` remain canonical. No clie
 - **Primary work:** `ANDROID-COMMAND-BOUNDARY-001`, first prerequisite slice of `ANDROID-CLIENT-CORE-001`
 - **Related features:** `CLIENT-ANDROID-001`, `API-001`, `AUTH-001`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Main implementation baseline:** PR #55 merge `1908629fc887b025a8acb2d6fd5321ca191ad0e7`
+- **Main baseline before this checkpoint branch:** `618fefa1f15ddfd91a96d7197e3186e19b988457`
+- **Current checkpoint branch:** `integration/m1-001-checkpoint-priority-clarify`
+- **Checkpoint branch base:** `618fefa1f15ddfd91a96d7197e3186e19b988457`
+- **Current head:** `5a567c665583aaa25530111fc771728988f90ea8` before this metadata-fix commit; verify the final branch head after write/readback.
 - **Provider-neutral sequencer:** PR #54 merge `d21869d091cbcfce609d47665ef8872123f2be43`; CI `33274374052` green.
 - **Workspace queued-writer worker:** PR #55 merge `1908629fc887b025a8acb2d6fd5321ca191ad0e7`; CI `33274804921` green.
-- **Current requirement/governance capture branch:** `integration/m1-001-feature-contract-capture`
-- **Capture branch base:** `1a36010c2941a66a44c420fab441888cd76ac67c` (same product tree as PR #55 merge; intervening commits only removed accidental placeholder files)
 - **Architecture:** `docs/M1_CONCURRENT_COMMAND_BOUNDARY.md`
 - **Status:** synthetic concurrency and Workspace worker behavior are implemented/test-verified and merged. Live isolated Google Apps Script worker proof remains pending.
 
@@ -46,15 +73,48 @@ Android and stock ChatGPT must be able to participate in one canonical MIRROR re
 - `CORE-001`: product/assistant identity remains MIRA.
 - `API-001` / `AUTH-001` / `STORE-001`: Android is a client, not a second authority or alternate product model.
 - `DATA-001`: no legacy production artifact is a test fixture.
-- `ONBOARD-006`: ordinary Personal use remains browser-first/zero-infrastructure; Android must not retroactively force every user into Cloud Run/Linux/SQL.
-- `CAL-008` / `CAL-006`: the Android design must leave a clean path for appointment evidence capture from photos and preferred-Calendar projection rather than hard-coding entity-only UI or Google row coordinates.
+- `ONBOARD-006` and `API-DEPLOYMENT-001A`: ordinary Personal use remains browser-first/zero-external-infrastructure; Android must not retroactively force every user into Cloud Run/Linux/SQL or paid API operation.
+- The stock-ChatGPT-only Personal lane remains valid without the queued-writer script being active.
+- `CAL-008` / `CAL-006`: the Android design must leave a clean path for appointment evidence capture and preferred-Calendar projection.
+- Apple/iCloud remains a required supported Calendar/provider lane, but Apple adapter implementation is later work and is **not** an acceptance blocker for the Google-first Personal lane or `M2-M1-001`.
 - `STUDIO-001`: Android/shared architecture must remain compatible with later user-generated bounded features/workflows and their declared dependencies.
 - `ONBOARD-003`: Android work must not replace or invalidate the four-question first-boot Interview Ledger contract.
 - `DEV-007`: passing concurrency tests does not permit a design that makes accepted downstream features impossible.
 
 ### Explicitly deferred related features
 
-This packet does **not** implement Android UI, appointment photo/email parsing, preferred Calendar sync, reminder delivery, onboarding runtime, MIRA Studio, family sharing, Gmail/Calendar service fan-out, or Cloud Run live deployment. Those requirements are preserved in `FEATURES.md`/`BACKLOG.md` and must be re-read by the packet that implements them.
+This packet does **not** implement Android UI, appointment photo/email parsing, Calendar provider adapters, reminder delivery, onboarding runtime, MIRA Studio, family sharing, Gmail/Calendar service fan-out, receipt intake, inventory UX, asset lifecycle UI, or Cloud Run live deployment. Those requirements are preserved in `FEATURES.md`/`BACKLOG.md` and must be re-read by the packet that implements them.
+
+## Preserved feature inventory checkpoint
+
+The following accepted areas are present in canonical `FEATURES.md` and must not be lost during architecture work:
+
+### Receipts / purchases
+
+- `RECEIPT-001` — multi-source canonical receipt intake and evidence dedupe.
+- `RECEIPT-002` — searchable expandable purchase history and connected receipt graph.
+- `RECEIPT-003` — configurable receipt taxonomy and line classification.
+- `ORDER-001` through `ORDER-005` — order/carrier/lifecycle/cancellation/replacement/stale-shipment behavior.
+- `PAYMENT-001`, `SPEND-001`, `REIMB-001` — settlement, spending and reimbursement relationships.
+
+### Assets / fitment / evidence
+
+- `ASSET-001` — immutable physical asset identity and idempotent acquisition.
+- `ASSET-002` — provenance-linked acquisition/reference/lifecycle evidence.
+- `ASSET-003` — bidirectional receipt/asset/identifier graph queries.
+- `FITMENT-001` — assignment/installation/fitment relationships.
+- `IDENT-001`, `EVID-001`, `SPEC-001`, `KNOW-001`, `KNOW-002` — identifiers, evidence, specifications and retained knowledge.
+
+### Inventory / location / movement
+
+- `INV-001` — inventory participation reuses canonical Entity UUID identity.
+- `LOC-001` — hierarchical locations with intended placement separate from observed/last-moved state.
+- `MOVE-001` — QR/barcode-driven replay-safe inventory movement semantics.
+- `INV-002` — queryable household/loft/shop inventory projection.
+- `PAR-001` / `PAR-002` — target quantity and optional passive sensing.
+- `GROCERY-001`, `RECIPE-001`, `MEAL-001` — pantry/freezer, recipes and meal planning integrated with the same canonical inventory/purchase graph.
+
+`BACKLOG.md` already contains corresponding implementation work including inventory movement/query/location, receipt taxonomy/spend/reimbursement, asset service/fitment, shopping, grocery and related service dependency work. These features remain queued/preserved even though they are not inside the current concurrency packet.
 
 ## Selected command architecture
 
@@ -64,7 +124,9 @@ Command flow:
 
 `ChatGPT/Android command → Commands inbox → one ScriptLock worker → API-001 semantics → Authority → STORE-001 → exact readback → durable command result`
 
-The worker is asynchronous. Google documents that API writes do not fire installable edit triggers, so the inbox is polled by a time-driven trigger. The implementation uses a one-minute trigger cadence. Cloud Run remains the synchronous advanced profile if later accepted behavior requires consistently lower latency.
+This queue is a requirement of the **multi-writer Android extension**, not the stock-ChatGPT-only baseline.
+
+The worker is asynchronous. Google documents that API writes do not fire installable edit triggers, so the inbox is polled by a time-driven trigger. The current implementation uses a one-minute trigger cadence. Cloud Run remains an advanced synchronous profile if later accepted behavior requires consistently lower latency.
 
 ## Completed M2-M1 synthetic evidence
 
@@ -82,79 +144,32 @@ PR #54 passed full CI and merged at `d21869d091cbcfce609d47665ef8872123f2be43`.
 
 ### Google Workspace queued-writer worker — merged
 
-`workspace/apps_script/CommandWorker.gs` implements:
-
-- dedicated `Commands` inbox carrying API-001 upsert material and durable result/error fields;
-- explicit `mutation_mode=queued_writer` activation;
-- exactly one one-minute Apps Script time-driven worker trigger;
-- activation validates/creates the trigger before queued mode becomes authoritative;
-- `LockService.getScriptLock()` critical section with bounded wait;
-- bounded command processing;
-- API/schema compatibility validation;
-- persisted Authority/binding resolution and same-user subject == Authority owner check;
-- STORE-001-compatible request fingerprint;
-- idempotency replay and same-key/different-material failure;
-- stale-revision conflict handling;
-- canonical Resource write + Idempotency append + exact readback;
-- success acknowledgement only after exact readback;
-- retryable authority/readback/internal failures remain pending;
-- recovery when Resource write landed but Idempotency acknowledgement did not, reconstructing the missing acknowledgement without incrementing revision again.
+`workspace/apps_script/CommandWorker.gs` implements a dedicated `Commands` inbox, `mutation_mode=queued_writer`, one time-driven trigger, ScriptLock serialization, bounded processing, Authority-owner checks, idempotency, stale-revision conflicts, canonical Resource write/readback and crash/retry recovery.
 
 `mira/workspace_native.py` fails closed on direct native mutation when `mutation_mode=queued_writer`, closing the second-writer side door.
 
-Executable fake-Apps-Script tests cover trigger activation, ScriptLock behavior, canonical create/readback, stale command conflict, crash/retry recovery, mode failure, and Authority-owner enforcement. PR #55 CI `33274804921` passed and merged at `1908629fc887b025a8acb2d6fd5321ca191ad0e7`.
+Executable fake-Apps-Script tests cover trigger activation, ScriptLock behavior, canonical create/readback, stale conflict, crash/retry recovery, mode failure and Authority-owner enforcement. PR #55 CI `33274804921` passed and merged at `1908629fc887b025a8acb2d6fd5321ca191ad0e7`.
 
 ## Live proof blocker
 
 The connected Google Drive/Sheets tooling available in this development environment can manipulate spreadsheet content but cannot create/update a bound Google Apps Script project. No installable Apps Script plugin/action is currently available.
 
-Google's documented distribution behavior still supports the intended product: a whole spreadsheet copy carries its bound script, while installable triggers are per-user and can be created by `miraEnableQueuedWriter()` on that user's copy. Therefore the remaining provider step is to **seed one isolated MIRA 2.0 release/synthetic workbook with the Git-backed bound Apps Script**, then execute the live queued-writer proof on that isolated copy.
+The remaining provider step for the Android multi-writer boundary is to seed one isolated MIRA 2.0 synthetic/release spreadsheet with the Git-backed bound Apps Script, run `miraEnableQueuedWriter()`, then verify the live Commands tab/trigger/mutation/readback/retry behavior.
 
-Do not claim live worker evidence until that script is actually installed and provider behavior is read back.
+This blocker does **not** invalidate the already-proven stock-ChatGPT Google Workspace lane and must not be described as a dependency for ordinary no-app Personal MIRA.
 
-## Newly refined product requirements captured during this packet
+## No-app usability status
 
-These are durable requirements but **do not expand M2-M1-001 implementation scope**:
+There are two different meanings of “usable,” and they must not be conflated:
 
-### Onboarding
+1. **Canonical no-app substrate:** already live-verified. Stock ChatGPT can use a clean copied Google Workspace starter and create/read/replay/mutate/read back canonical Google-backed state without external infrastructure.
+2. **Meaningfully useful no-app MIRA product:** not complete. First-boot Interview Ledger, full service composition, deterministic public distribution/upgrade hardening, and user-visible verticals such as Ops Brief, appointments, receipts/assets/inventory still need implementation/integration packets.
 
-`ONBOARD-003` is now explicitly:
-
-1. authoritative IANA timezone;
-2. broad life/work/study/caregiving pattern;
-3. biggest remembering/organizing/deciding/planning/follow-through goals;
-4. whether appointment/reminder help is wanted and, if so, preferred Calendar auto-sync lane.
-
-MIRA's name is fixed and must not be asked. After the four kickoff questions, onboarding tells the user they can ask MIRA at any time to continue the interview with additional questions that improve MIRA's function for them and introduces integrated MIRA Studio plus optional sharing.
-
-### Appointments
-
-`CAL-008` / `APPOINTMENT-INTAKE-001` explicitly require appointment evidence intake from inbound email, user-supplied image/photo, or user text. MIRA detects appointment intent, extracts date/time/timezone/location/provider/contact and provider specialty/type such as cardiologist, reconciles durable provider/appointment identity, preserves provenance/confidence, and only asks when material ambiguity remains.
-
-`CAL-006` / `CALENDAR-PROJECTION-001` require preferred-Calendar projection/sync with exact provider readback for the selected Google, Microsoft/Outlook/M365, or Apple/iCloud lane. Intake and Calendar-write success remain separate truths.
-
-Existing `MAIL-002` still means this requirement does **not** silently authorize MIRA to send outbound emails negotiating appointments with providers. The current interpretation is automatic appointment **capture/scheduling into the user's Calendar from received evidence**. Outbound provider contact remains a separate explicitly approved capability.
-
-### MIRA Studio
-
-`STUDIO-001` / `MIRA-STUDIO-001` define an integrated user-facing Studio for continuously improving MIRA through guided bounded features/workflows/preferences, preview/test/rollback, dependency/provenance awareness, and optional sanitized sharing. Shared/imported behavior never silently activates.
-
-### Development alignment
-
-`DEV-007` and the updated `project/WORK_PACKET_POLICY.md` require every implementation packet to read and record its alignment with the canonical feature set before implementation and before merge.
+The project therefore should not claim that MIRA is ready for ordinary users merely because `CORE-ROUNDTRIP` passed. The foundation is real; the user-facing product is still being assembled on top of it.
 
 ## Android distance to first functional app
 
-The project is **past the architecture-foundation stage but not yet at an Android APK/UI stage**.
-
-Completed prerequisites:
-
-1. provider-neutral structured state;
-2. persistent Authority routing;
-3. shared API command/query semantics;
-4. stock ChatGPT Google-backed canonical roundtrip;
-5. provider-neutral concurrent command sequencer;
-6. synthetic Google Workspace queued-writer worker with conflict/replay/crash tests.
+The project is past the architecture-foundation stage but not yet at an Android APK/UI stage.
 
 Remaining critical slices before the first genuinely functional Android shared-state proof:
 
@@ -165,7 +180,7 @@ Remaining critical slices before the first genuinely functional Android shared-s
 5. Android mutates the exact canonical M2-M0 entity and stock ChatGPT reads it back;
 6. representative-device proof.
 
-So Android is no longer “we need to invent the backend.” It is roughly **one live provider gate plus four to five bounded client/integration slices away from the first ugly but real shared-state Android app**. Notifications/TTS, camera appointment capture, polished UI, signing/release, and broader services come after that first shared-state proof unless dependency evidence changes the order.
+Notifications/TTS, camera appointment capture, polished UI, signing/release and broader services come after that first shared-state proof unless dependency/value evidence changes the ranking.
 
 ## Acceptance status
 
@@ -181,16 +196,22 @@ So Android is no longer “we need to invent the backend.” It is roughly **one
 10. Synthetic first — passed.
 11. Legacy preservation — passed so far.
 12. Bounded scope — maintained.
-13. **Live isolated Google worker/trigger evidence — pending.**
+13. Stock-ChatGPT zero-external-infrastructure lane remains valid — live-verified in M2-M0.
+14. Apple/iCloud support preserved without becoming a current blocker — requirement clarified; adapter implementation later.
+15. Receipts/assets/inventory scope preserved — canonical feature/backlog inventory verified.
+16. **Live isolated Google worker/trigger evidence for concurrent Android mutation — pending.**
 
 ## Exact next action
 
-1. Finish and merge the requirement/governance capture PR from `integration/m1-001-feature-contract-capture`; this PR changes authoritative feature/backlog/policy/checkpoint state only and does not implement appointment/Studio/onboarding features.
+1. Commit and merge this checkpoint correction so `CURRENT_WORK.md` no longer points at the already-merged feature-contract PR and explicitly preserves the Google-first/no-external-infrastructure and Apple-not-current-focus constraints.
 2. Resume `M2-M1-001` live proof from the merged head.
-3. Seed one isolated synthetic/release MIRA 2.0 workbook with the Git-backed bound Apps Script through an approved provider/operator path; never use a legacy production workbook.
-4. Enable queued-writer mode and independently verify the Commands tab, exactly one worker trigger, mutation mode, synthetic command result, canonical Resource/Idempotency readback, and at least one stale/retry behavior.
-5. If live proof passes, close `ANDROID-COMMAND-BOUNDARY-001` and create the next bounded `ANDROID-CLIENT-CORE-001` implementation packet.
+3. Seed one isolated synthetic/release MIRA 2.0 spreadsheet with the Git-backed bound Apps Script through an approved provider/operator path; never use a legacy production spreadsheet.
+4. Enable queued-writer mode and independently verify the Commands tab, exactly one worker trigger, mutation mode, synthetic command result, canonical Resource/Idempotency readback and at least one stale/retry behavior.
+5. If live proof passes, close `ANDROID-COMMAND-BOUNDARY-001` and create the next bounded `ANDROID-CLIENT-CORE-001` packet.
+6. If the provider proof remains tool-blocked, retain this exact checkpoint and dependency-rank the next **no-app Google user-visible vertical** rather than inventing external infrastructure solely to unblock Android.
 
 ## Recovery protocol
 
-Read this file first. Verify main contains PR #55 merge `1908629fc887b025a8acb2d6fd5321ca191ad0e7` or a descendant. If `integration/m1-001-feature-contract-capture` is still open, merge only the feature/governance capture after CI. Then continue live provider proof under `M2-M1-001`; do not jump to Android UI until the queued-writer boundary is live-verified or explicitly rejected. Preserve appointment intake, Calendar preference onboarding, MIRA Studio, and feature-alignment requirements in Git without pulling their implementation into this packet. Keep provider IDs, secrets, personal data and live row contents out of public Git.
+Read this file first. Verify `main` contains `618fefa1f15ddfd91a96d7197e3186e19b988457` or a descendant and then verify the checkpoint correction PR from `integration/m1-001-checkpoint-priority-clarify` is merged or still open. Do not re-open the already merged feature-contract capture work. Continue `M2-M1-001` live provider proof if the Workspace script operator path is available; otherwise preserve the exact blocked step and select the highest-value Google-only user-visible vertical from canonical `FEATURES.md`/`BACKLOG.md` without making Android or external infrastructure a prerequisite for ordinary Personal MIRA.
+
+Keep provider IDs, secrets, personal data and live row contents out of public Git.
