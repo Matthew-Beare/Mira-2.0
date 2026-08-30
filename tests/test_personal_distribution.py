@@ -42,6 +42,10 @@ class PersonalDistributionTests(unittest.TestCase):
                 "task",
             ],
         )
+        self.assertEqual(
+            json.loads(metadata["event_types_json"]),
+            ["created", "inventory_movement", "updated"],
+        )
         for tab in blueprint.tabs:
             if tab.title != "Metadata":
                 self.assertEqual(tab.rows, ())
