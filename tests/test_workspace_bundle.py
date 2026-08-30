@@ -70,6 +70,14 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("`observed_location_id` answers “where was this item last supported as being?”", protocol)
         self.assertIn("offset-aware ISO-8601 `observed_at`", protocol)
         self.assertIn("This base location state is not movement-event history.", protocol)
+        self.assertIn("## Canonical append-event rule", protocol)
+        self.assertIn("expected_stream_revision", protocol)
+        self.assertIn("## Canonical inventory movement / observation history", protocol)
+        self.assertIn("Recognition alone is not movement", protocol)
+        self.assertIn("event_kind=inventory_observation", protocol)
+        self.assertIn("event-first/projection-second", protocol)
+        self.assertIn("movement-state-", protocol)
+        self.assertIn("Container-following propagation is **not** implemented.", protocol)
         self.assertIn("`calendar_capability_verified`: false", protocol)
         self.assertIn("service_state/appointments_calendar", protocol)
         self.assertIn("`activation_state` to `requested`", protocol)
@@ -195,6 +203,24 @@ class WorkspaceBundleTests(unittest.TestCase):
             "This base location state is not movement-event history.",
             "Location state is movement-event history.",
         )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_explicit_movement_boundary(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("Recognition alone is not movement", "Recognition updates location")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_movement_recovery_contract(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("event-first/projection-second", "best effort")
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)
 
