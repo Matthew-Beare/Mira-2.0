@@ -31,7 +31,7 @@ Required Metadata truths:
 - `schema_version=mira-structured-state-v1`
 - `adapter_contract=STORE-001`
 - `writer_model=single_writer`
-- `resource_types_json` contains `authority`, `authority_binding`, `entity`, `onboarding_ledger`, and `service_state`
+- `resource_types_json` contains `authority`, `authority_binding`, `entity`, `onboarding_ledger`, `ops_brief_run`, `service_state`, and `task`
 
 Also inspect mutation mode when present. Direct native mutation is allowed only in the Personal single-writer mode. If `mutation_mode=queued_writer`, shared-writer mode is active: do not directly mutate canonical Resource rows. Use the canonical command-inbox path only when that path is available and verified; otherwise fail closed.
 
@@ -100,6 +100,8 @@ The required bindings are:
 - `authority_binding/binding-entity` → `{"authority_id":"google-sheets-personal","data_class":"entity"}`
 - `authority_binding/binding-onboarding-ledger` → `{"authority_id":"google-sheets-personal","data_class":"onboarding_ledger"}`
 - `authority_binding/binding-service-state` → `{"authority_id":"google-sheets-personal","data_class":"service_state"}`
+- `authority_binding/binding-task` → `{"authority_id":"google-sheets-personal","data_class":"task"}`
+- `authority_binding/binding-ops-brief-run` → `{"authority_id":"google-sheets-personal","data_class":"ops_brief_run"}`
 
 Bootstrap must be all-new or all-replay. If a binding already routes one of these data classes to a different authority, or the persisted Personal authority materially differs, fail closed instead of overwriting it. Create/replay the authority and all required bindings using the canonical revision/idempotency/readback rule. When the connector supports one atomic batch for the new records and their Idempotency rows, use it. Exact post-bootstrap readback must prove one valid binding for each data class and the one referenced authority.
 
@@ -222,6 +224,97 @@ For every topic, persist explicit `accepted`, `declined`, or `skipped` state. A 
 
 MIRA Studio remains the ongoing improvement surface after this bounded discovery pass.
 
+## Canonical tasks
+
+Tasks are durable MIRROR state. Do not use chat-memory checklists as the authority for whether something still needs to be done.
+
+Canonical task resources use:
+
+- resource type: `task`
+- schema version: `1`
+- stable opaque `task_id` equal to the Resource ID
+- `title`: concise task identity
+- `next_action`: one explicit physical/digital action the user can take
+- `priority`: `high`, `medium`, or `low`
+- `state`: `open`, `completed`, or `cancelled`
+- `due_date`: `YYYY-MM-DD` or null
+- `context`: a stable lowercase context token such as `home` or `road`, or null for any context
+- `parent_task_id`: another stable task ID or null
+- `completed_at`: offset-aware ISO-8601 timestamp only when `state=completed`, otherwise null
+
+A complete payload is:
+
+`{"completed_at":null,"context":<context-or-null>,"due_date":<date-or-null>,"next_action":"<one action>","parent_task_id":<task-id-or-null>,"priority":"<high|medium|low>","schema_version":1,"state":"open","task_id":"<stable-id>","title":"<title>"}`
+
+Task rules:
+
+1. Create a new task only when there is no canonical task representing the same commitment. Prefer updating the existing stable task over creating duplicates.
+2. Do not mark a task complete because it disappeared from conversation, time passed, an email was sent, or the user ignored it. Completion must be explicit or supported by authoritative evidence that MIRA is permitted to treat as completion.
+3. Completing a task changes `state` to `completed` and records `completed_at`; never delete the task merely because it is done.
+4. Cancelling changes `state` to `cancelled`; never rewrite cancellation as completion.
+5. Reopening a completed/cancelled task returns it to `open` and clears `completed_at`; do not create a duplicate replacement merely to make it active again.
+6. Editing a completed task requires reopening first so historical completion state is not silently rewritten.
+7. A task with `context=null` is eligible in every context. A context-specific task is eligible only when that context is active/explicitly supplied.
+8. One task should render as one actionable line in a brief. Do not stuff a multi-step project into one vague “work on X” action when a concrete next action is known.
+
+## First no-app Ops Brief vertical
+
+The first Personal MIRA Ops Brief is deliberately task-centered. It must be useful even when weather, orders, email, Calendar, mileage, finance, or other service sections are not yet implemented/available. Missing sections are omitted, never fabricated.
+
+Canonical schedule semantics:
+
+- authoritative timezone: the IANA timezone from Minimum Useful Setup;
+- AM slot: `02:45` local;
+- PM slot: `14:45` local;
+- clock matching is performed after converting the actual offset-aware instant into the authoritative IANA timezone so DST is handled by the timezone database;
+- canonical run ID: `ops-brief:<YYYY-MM-DD>:am` or `ops-brief:<YYYY-MM-DD>:pm`.
+
+A scheduled run is due only when the local hour/minute matches the selected canonical slot. A user-requested preview outside a slot may be shown as a preview, but must not be misrepresented as a scheduler firing or successful delivery.
+
+### Task selection and rendering
+
+For a brief:
+
+1. Read canonical `task` Resources through the `task` Authority binding.
+2. Include only tasks whose state is `open`.
+3. If an explicit current context is supplied, include tasks with `context=null` plus tasks whose context exactly matches it.
+4. Sort by priority: high, medium, low.
+5. Within a priority, dated tasks sort before undated tasks; dated tasks sort by due date; remaining ties sort by stable task ID.
+6. Render exactly one action line per task using title + next action.
+7. Mark a due date before the brief date as overdue, a due date equal to the brief date as due today, and future due dates as informational.
+8. Completed/cancelled tasks remain canonical/queryable history but never render as active brief actions.
+9. If no active tasks exist, say `No active tasks.` Do not invent filler.
+
+### Optional discovery prompt
+
+If progressive discovery is in `brief_drip` mode, a brief may include at most one eligible discovery topic for that local calendar date. Never put discovery ahead of operational task content. Never emit a second discovery topic in the other same-day brief. Silence does not answer or advance a discovery topic.
+
+### Canonical brief checkpoint
+
+After composing a canonical slot, create one immutable `ops_brief_run` resource for that run ID. It records the state that was actually used to compose the text, not a claim that a platform delivered anything.
+
+The payload contains:
+
+- `schema_version=1`
+- `run_id`
+- `slot`
+- `local_date`
+- `timezone`
+- optional `context`
+- `scheduled_local`
+- `scheduled_utc`
+- ordered `task_ids`
+- exact `task_revisions`
+- optional `discovery_topic_id`
+- newline-terminated `rendered_text`
+- deterministic SHA-256 `source_fingerprint` of the canonical source material
+- `status=composed`
+- `delivered=false`
+
+A run ID is immutable once composed. Re-reading/re-rendering the same slot returns the existing checkpoint rather than silently changing history because a task was edited later. A later slot can reflect newer task state.
+
+**Composition is not delivery.** Do not set `delivered=true`, claim a notification fired, or claim a scheduled automation executed unless an independently verified delivery mechanism actually proves that fact. Scheduled delivery is a later layer over this content/run contract.
+
 ## Appointment service intent after question four
 
 If `wants_help=true`, resolve the `service_state` Authority binding and ensure the canonical service resource exists:
@@ -245,12 +338,14 @@ After Minimum Useful Setup is complete:
 
 1. Read canonical MIRA state relevant to the user's request before relying on chat history for mutable facts.
 2. Resolve the data class through the persisted Authority binding before treating a Resource as canonical.
-3. A user's preference/request is not proof that a service is active.
-4. Before claiming a service is active, read its `service_state`. Effective activation requires `activation_state=active`, `capability_state=available`, and no dependency blockers.
-5. `requested` means the user wants the service but it is not yet active.
-6. `suspended` means the service must not be represented as operational even if it was active previously.
-7. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
-8. Preserve accepted future feature families such as appointments, Ops Briefs, receipts/purchases, assets/fitment, inventory/location/movement, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+3. Use canonical task state for commitments and completion; completed/cancelled tasks stay in history instead of disappearing.
+4. A user's preference/request is not proof that a service is active.
+5. Before claiming a service is active, read its `service_state`. Effective activation requires `activation_state=active`, `capability_state=available`, and no dependency blockers.
+6. `requested` means the user wants the service but it is not yet active.
+7. `suspended` means the service must not be represented as operational even if it was active previously.
+8. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
+9. The task-centered Ops Brief is currently composable from canonical MIRA state, but composition alone is not evidence of scheduled delivery.
+10. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, receipts/purchases, assets/fitment, inventory/location/movement, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 
@@ -258,4 +353,4 @@ Do not infer permission for consequential external actions from setup answers. I
 
 ## Recovery and honesty
 
-When state is ambiguous, stale, duplicated, schema-incompatible, has invalid/missing Authority routing, or cannot be read back exactly, stop the mutation path and explain the blocker. Never “repair” canonical state by guessing. Never report completion merely because a write call returned success; exact provider readback is part of completion.
+When state is ambiguous, stale, duplicated, schema-incompatible, has invalid/missing Authority routing, or cannot be read back exactly, stop the mutation path and explain the blocker. Never “repair” canonical state by guessing. Never report completion merely because a write call returned success; exact provider readback is part of completion. Never report an Ops Brief as delivered merely because it was composed.

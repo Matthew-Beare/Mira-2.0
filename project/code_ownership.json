@@ -126,6 +126,24 @@
       "verification": ["tests/test_onboarding.py", "tests/test_progressive_onboarding.py"]
     },
     {
+      "id": "canonical-tasks",
+      "responsibility": "Provider-neutral durable task identity, actionable next-action state, explicit completion/cancellation/reopen transitions and deterministic active-task ordering.",
+      "why_separate": "Task truth must remain canonical and reusable independently of any one brief renderer, scheduler, provider, or chat session.",
+      "owned_paths": ["mira/tasks.py"],
+      "feature_ids": ["TASK-001", "TASK-002", "STORE-001"],
+      "work_ids": ["OPS-BRIEF-VSLICE"],
+      "verification": ["tests/test_tasks.py"]
+    },
+    {
+      "id": "personal-ops-brief",
+      "responsibility": "Deterministic twice-daily task-centered Personal Ops Brief slot/run composition, immutable run checkpointing and optional bounded progressive-discovery prompt insertion.",
+      "why_separate": "Brief composition is a user-visible projection over canonical task/onboarding state and must stay distinct from task authority, scheduler delivery, weather/order/calendar integrations and platform notification claims.",
+      "owned_paths": ["mira/ops_brief.py"],
+      "feature_ids": ["OPS-001", "OPS-003", "OPS-004", "TASK-001", "TASK-002", "RECOVERY-001", "RECOVERY-002", "ONBOARD-004"],
+      "work_ids": ["OPS-BRIEF-VSLICE"],
+      "verification": ["tests/test_ops_brief.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",

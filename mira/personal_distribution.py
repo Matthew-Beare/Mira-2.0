@@ -85,7 +85,7 @@ _REQUIRED_METADATA = {
     "environment": "mira_2_personal_clean",
     "data_policy": "clean_starter_only",
     "adapter_contract": "STORE-001",
-    "resource_types_json": '["authority","authority_binding","entity","onboarding_ledger","service_state"]',
+    "resource_types_json": '["authority","authority_binding","entity","onboarding_ledger","ops_brief_run","service_state","task"]',
     "event_types_json": '["created","updated"]',
     "writer_model": "single_writer",
 }
