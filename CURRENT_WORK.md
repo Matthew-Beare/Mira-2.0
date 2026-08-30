@@ -21,7 +21,7 @@ PR #70 merged to `main` as `95728763816b2ab26e29973dd2e204d7c4bdbe9c` from verif
 ### `M2-M0-017` — Replay-safe inventory movement / observation history
 
 - **Primary work:** `MOVEMENT-CORE-001`
-- **Primary feature:** `MOVE-001`
+- **Primary features:** `MOVE-001`
 - **Related invariants/features:** `INV-001`, `LOC-001`, `INV-002`, `IDENT-001`, `ASSET-001`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-017-movement-core`
