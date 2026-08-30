@@ -176,7 +176,7 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 | `ASSET-SERVICE-001` | HARDENING | Structured warranty/maintenance lifecycle. | ASSET-001,EVID-001 | queued |
 | `ORDER-STALE-001` | PREREQUISITE | Five-business-day stale-shipment escalation. | ORDER-002,business-day semantics | queued |
 | `SPEND-ROLLUP-001` | HARDENING | Monthly evidence-bounded spending rollup. | RECEIPT-001,RECEIPT-003 | queued |
-| `RECEIPT-INTAKE-001` | VERTICAL | Canonical no-app receipt capture from normalized email/photo/text evidence with provenance fingerprints, transaction-level dedupe, exact money semantics and queryable purchase-history readback. Raw source content stays in its provider/evidence location; this slice does not silently create assets, inventory, orders, spend allocations or provider-side archives. | RECEIPT-001,RECEIPT-002,STORE-001,RECOVERY-002 | active in `M2-M0-012`; implementation pending |
+| `RECEIPT-INTAKE-001` | VERTICAL | Canonical no-app receipt capture from normalized email/photo/text evidence with provenance fingerprints, transaction-level dedupe, exact money semantics and queryable purchase-history readback. Raw source content stays in its provider/evidence location; this slice does not silently create assets, inventory, orders, spend allocations or provider-side archives. | RECEIPT-001,RECEIPT-002,STORE-001,RECOVERY-002 | active in `M2-M0-012`; implementation/tests + isolated Google receipt revision-1/revision-2 exact readback complete in PR #64; exact-head closeout/merge pending |
 | `RECEIPT-TAXONOMY-001` | PREREQUISITE | Generic receipt taxonomy/classifier. | RECEIPT-001 | queued |
 | `REIMB-CORE-001` | HARDENING | Deterministic reimbursement lifecycle. | RECEIPT-001,PROFILE-012 | queued |
 | `SUBSCRIPTION-TRACK-001` | LATER | Optional subscription/free-trial tracking. | stable receipt/finance evidence + explicit activation | deferred optional |
@@ -200,7 +200,7 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 - `OPS-BRIEF-VSLICE` is completed by PR #63 at `f96b227e009eb144235dccfef2ca0b8570e0801b`; this is the first real canonical no-app task/brief vertical.
 - `DISCOVERY-CORE-001` remains partial: progressive discovery is test-verified and PR #63 adds repeated same-unanswered-topic daily prompting plus pending-goals follow-up behavior; broader evidence-aware AI-use/friction/history discovery remains unfinished.
 - Stock ChatGPT Automations has been read-only verified as a technically viable exact-schedule no-server delivery provider; existing user MIRA brief automations are protected production and were not modified. A future schedule/onboarding adapter packet can use this without making receipt work depend on it.
-- `RECEIPT-INTAKE-001` is the active user-visible packet. It intentionally establishes receipt/purchase truth before automatic asset/inventory side effects so downstream identity cannot be built on ambiguous transactions.
+- `RECEIPT-INTAKE-001` remains the one active packet until PR #64 merges. Canonical receipt capture/history code, release wiring, direct tests, and isolated Google multi-source revision-1/revision-2 readback are complete; Gmail extraction, Drive archival, downstream asset/inventory/order/spend side effects, and background processing remain explicitly separate work.
 - `API-DEPLOYMENT-001B` remains explicitly paused; its Cloud Run live proof checkpoint is preserved.
 - `ANDROID-COMMAND-BOUNDARY-001` remains explicitly partial; synthetic proof is complete but live Google worker proof is still pending.
 
