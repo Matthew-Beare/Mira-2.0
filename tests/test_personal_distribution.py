@@ -32,6 +32,7 @@ class PersonalDistributionTests(unittest.TestCase):
                 "authority_binding",
                 "asset",
                 "entity",
+                "identifier",
                 "onboarding_ledger",
                 "ops_brief_run",
                 "receipt",
