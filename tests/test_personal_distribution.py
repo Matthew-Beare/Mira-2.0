@@ -24,6 +24,20 @@ class PersonalDistributionTests(unittest.TestCase):
             [tab.title for tab in blueprint.tabs],
             ["Metadata", "Resources", "Events", "Idempotency"],
         )
+        metadata = dict(next(tab for tab in blueprint.tabs if tab.title == "Metadata").rows)
+        self.assertEqual(
+            json.loads(metadata["resource_types_json"]),
+            [
+                "authority",
+                "authority_binding",
+                "entity",
+                "onboarding_ledger",
+                "ops_brief_run",
+                "receipt",
+                "service_state",
+                "task",
+            ],
+        )
         for tab in blueprint.tabs:
             if tab.title != "Metadata":
                 self.assertEqual(tab.rows, ())

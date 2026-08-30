@@ -4,34 +4,38 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work stays in the product corpus with evidence and is filtered from future selection rather than deleted. The current priority is repeated user-visible no-app verticals, not generic infrastructure growth.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work remains in the durable product corpus with evidence and is filtered from future selection rather than deleted. The current priority is repeated user-visible no-app verticals that build trustworthy canonical reality before Android resumes.
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`.
 
 ## Completed predecessor
 
-### `M2-M0-010` — Deterministic Personal Google starter distribution
+### `M2-M0-011` — First useful no-app Ops Brief + canonical tasks
 
-Merged in PR #62 to `main` at `9bf241f694e9bd52c846416336e0704a31fe7d8c` after exact-head CI `33281585486` passed. `DIST-STARTER-001` and `STARTER-SANITIZE-001` are reconciled completed in `BACKLOG.md` with Git-source, CI and independent Google substrate evidence.
+Merged in PR #63 to `main` at `f96b227e009eb144235dccfef2ca0b8570e0801b` after exact-head CI `33282946569` passed. `OPS-BRIEF-VSLICE` is reconciled completed in `BACKLOG.md`.
+
+A read-only capability check also confirmed that stock ChatGPT Automations can provide exact recurring timezone-aware scheduling without Cloud Run, Apps Script, Linux, SQL, or another server. Existing live MIRA brief automations remain protected production and were not modified.
 
 ## Preserved checkpoints
 
 - Android / `M2-M1-001` remains paused at the live isolated Google queued-writer proof point; synthetic command-boundary work remains intact.
-- `DISCOVERY-CORE-001` remains partial: progressive discovery is test-verified, including repeat-without-silent-advance; broader evidence-aware history/friction discovery remains unfinished.
-- `NONTECH-INSTALL-001` remains queued: full browser installation of bound Apps Script/provider authorization is not part of this vertical.
+- `DISCOVERY-CORE-001` remains partial; broader evidence-aware history/friction discovery is unfinished.
+- `NONTECH-INSTALL-001` remains queued; bound Apps Script/provider setup is not part of this receipt packet.
+- Receipt taxonomy, order/shipment lifecycle, spending/payment/reimbursement, assets/fitment, inventory/location/movement, groceries/meals, appointments, Microsoft/Apple lanes and provider-side raw-evidence archival remain separate accepted work. This packet does not silently complete them.
 
 ## Active packet
 
-### `M2-M0-011` — First useful no-app Ops Brief + canonical tasks
+### `M2-M0-012` — Canonical no-app receipt intake + purchase history
 
-- **Primary work:** `OPS-BRIEF-VSLICE`
-- **Primary features:** `OPS-001`, `OPS-003`, `OPS-004`, `TASK-001`, `TASK-002`
-- **Related invariants/features:** `RECOVERY-001`, `RECOVERY-002`, `ONBOARD-004`, `OPS-005`, `STORE-001`, `AUTH-001`
+- **Primary work:** `RECEIPT-INTAKE-001`
+- **Primary features:** `RECEIPT-001`, `RECEIPT-002`
+- **Related invariants/features:** `RECEIPT-003`, `ORDER-001`, `ORDER-002`, `ASSET-001`, `ASSET-003`, `SPEND-001`, `SHOP-001`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-011-no-app-ops-brief`
-- **Base SHA:** `9bf241f694e9bd52c846416336e0704a31fe7d8c`
-- **PR:** #63
-- **Objective:** make stock-ChatGPT Personal MIRA produce one genuinely useful deterministic Ops Brief from canonical Google-backed task state without making Android, Cloud Run, generic runtime routing, orders, weather, email, Calendar or the full service-composition stack prerequisites.
+- **Branch:** `integration/m0-012-receipt-intake`
+- **Base SHA:** `f96b227e009eb144235dccfef2ca0b8570e0801b`
+- **PR:** #64
+- **Last pre-closeout checkpoint SHA:** `cfd7ad2928614af29bdfcfadf3ec6e82d8195117`
+- **Objective:** let stock-ChatGPT Personal MIRA persist normalized receipt/purchase evidence from authorized email-derived facts, user-supplied image/photo-derived facts, or user text as one canonical purchase record with exact money, stable identity, provenance fingerprints, conservative dedupe and queryable purchase history. This packet establishes purchase truth only; downstream side effects remain separate.
 
 ## Session-start alignment verification — 2026-08-29
 
@@ -39,206 +43,250 @@ Merged in PR #62 to `main` at `9bf241f694e9bd52c846416336e0704a31fe7d8c` after e
 
 Verified before implementation:
 
-- `TASK-001` requires structured task hierarchy and one-action-per-item rendering;
-- `TASK-002` requires evidence-grounded next actions and honest completion state;
-- `OPS-003` owns canonical DST-safe slot matching;
-- `OPS-004` owns deterministic Run ID/fresh-run semantics;
-- `OPS-001` owns the twice-daily brief schedule;
-- `RECOVERY-001` requires durable run identity/checkpoint behavior;
-- `ONBOARD-004` permits at most one bounded discovery prompt per local day with no inference from silence;
-- weather, appointments, orders, mail, mileage and other accepted brief inputs are not prerequisites for the first task-centered vertical.
+- `RECEIPT-001` requires multi-source canonical receipt intake and evidence dedupe;
+- `RECEIPT-002` requires searchable purchase history and connected receipt semantics;
+- `RECEIPT-003` owns later taxonomy/classification rather than basic transaction truth;
+- `ASSET-001` explicitly depends on `RECEIPT-001`, so receipt truth is a prerequisite for safe asset acquisition;
+- `SPEND-001`, `ASSET-003`, `SHOP-001`, `GROCERY-001` and inventory work consume receipt truth without redefining it;
+- `STORE-001` and `RECOVERY-002` remain the persistence/failure-isolation substrate.
 
 ### `BACKLOG.md`
 
-Verified before implementation and refined during the packet:
+Verified before implementation:
 
-- the original `OPS-BRIEF-VSLICE` row over-required broad `SERVICE-COMPOSE-001` / `SERVICE-DEPS-001` work;
-- the bounded same-user task brief instead depends on `STORE-001`, `TASK-001`, `TASK-002`, `OPS-003`, `OPS-004`, and `RECOVERY-001`;
-- generic service composition remains valid for richer later briefs but no longer blocks the first useful no-app vertical;
-- PR #62 distribution work is now reconciled completed rather than left active/queued.
+- `OPS-BRIEF-VSLICE` was completed by PR #63;
+- `RECEIPT-INTAKE-001` was activated as one bounded vertical;
+- receipt taxonomy, spending, assets, fitment, inventory/location/movement and provider-side archival remained separate unfinished work;
+- Android remained paused.
 
 ### `ROADMAP.md`
 
 Verified before implementation:
 
-- useful no-app Personal MIRA must precede Android focus;
-- Ops Brief/tasks is explicitly allowed to become the first user-visible no-app vertical;
-- progressive discovery may use an eligible brief slot but must not displace operational content;
-- broad installer/runtime work must not expand this packet.
+- M2-M0.5 requires continued no-app vertical progress after tasks/briefs;
+- receipts/assets/inventory is explicitly part of that direction;
+- packets must stay bounded instead of attempting the whole chain at once.
 
 ### Direction result
 
-**ALIGNED.** The task-centered Ops Brief is the shortest high-value route from proven substrate/onboarding to visible Personal MIRA behavior.
+**ALIGNED.** Canonical receipt truth is a high-leverage no-app slice because assets, inventory and several later reconciliation features depend on trustworthy purchase identity.
 
 ## Implemented evidence
 
-### Canonical task state
+### Canonical receipt service
 
-`mira/tasks.py` implements durable provider-neutral `task` resources over STORE-001 semantics:
+`mira/receipts.py` implements provider-neutral receipt/purchase state over `STORE-001`:
 
-- stable task ID and revision;
-- explicit title and exactly one actionable `next_action`;
-- `high` / `medium` / `low` priority;
-- `open` / `completed` / `cancelled` state;
-- optional due date, context and parent task;
-- offset-aware `completed_at` only for completed tasks;
-- create/read/update/complete/cancel/reopen/query behavior;
-- completed/cancelled history is retained rather than deleted;
-- editing completed/cancelled history requires explicit reopen;
-- active ordering is deterministic by priority, dated-before-undated, due date and stable ID;
-- null context is eligible everywhere; context-specific tasks only appear in the matching brief context.
+- resource type `receipt`, schema version 1;
+- stable receipt ID and revision;
+- integer minor-unit money only; floats are rejected;
+- uppercase three-letter currency;
+- decimal-string quantities with non-finite/negative values rejected;
+- deterministic stable line IDs;
+- source types `email`, `image`, `text`;
+- SHA-256 evidence fingerprints plus optional source reference and offset-aware observation time;
+- exact source replay is read-only when facts agree;
+- same-source factual conflict fails closed;
+- unique merchant/order or merchant/date/currency/total correlation may merge compatible new evidence;
+- multiple plausible matches fail as ambiguous rather than choosing a row;
+- explicit `distinct_transaction` permits two legitimate otherwise matching purchases while never bypassing exact source identity;
+- new compatible evidence fills unknown optional facts without overwriting contradictions;
+- explicit correction preserves the stable receipt ID;
+- exact repeated correction whose desired state is already canonical is a zero-write semantic replay;
+- purchase history filters by receipt ID, merchant, order number and date range and sorts newest-first deterministically;
+- raw source content is not stored in structured receipt payloads.
 
-### Deterministic Ops Brief composition
+### Side-effect boundary
 
-`mira/ops_brief.py` implements the first no-app brief vertical:
+Receipt capture does **not** automatically mutate:
 
-- canonical local AM slot `02:45` and PM slot `14:45`;
-- IANA/ZoneInfo conversion for DST-safe clock matching;
-- deterministic run IDs `ops-brief:<YYYY-MM-DD>:am|pm`;
-- active canonical task selection and context filtering;
-- priority/due ordering and one-action-per-line rendering;
-- overdue/due-today/future-due markers;
-- unavailable weather/orders/email/calendar/mileage sections are omitted, not fabricated;
-- one immutable `ops_brief_run` checkpoint per slot;
-- exact task IDs/revisions and SHA-256 source fingerprint stored with the rendered text;
-- `status=composed`, `delivered=false` so composition is never misrepresented as scheduled delivery;
-- same run ID replays the original checkpoint even if task state later changes; a later slot may reflect new canonical state.
+- assets or fitment;
+- inventory/location/movement;
+- orders/shipments;
+- spending/payment/reimbursement;
+- groceries/pantry;
+- Gmail labels/archive state;
+- Drive receipt archives.
 
-### Progressive discovery integration
+Those remain separate authorities/work packets with their own exact-readback requirements.
 
-The first brief vertical now integrates the already-accepted optional discovery flow:
+### Personal Google/no-app release wiring
 
-- no more than one discovery prompt appears on one local date across AM/PM runs;
-- unanswered topic may repeat on a later local day;
-- silence never counts as decline and never advances to another topic;
-- seven automatic prompt-days maximum, after which drip pauses with unanswered state intact;
-- if fitness is accepted but goals/details are still pending, the next eligible brief renders the goals follow-up rather than repeating the initial yes/no fitness question;
-- operational task content always precedes optional setup content.
+The clean Personal starter now advertises:
 
-### Personal Google/no-app contract
+`["authority","authority_binding","entity","onboarding_ledger","ops_brief_run","receipt","service_state","task"]`
 
-The Personal starter/resource contract now includes `task` and `ops_brief_run` alongside existing authority/onboarding/service resources.
+The complete no-app operating instructions now require:
 
-`workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md` now defines:
+- `authority_binding/binding-receipt` -> `receipt`;
+- canonical receipt money/evidence/identity rules;
+- ambiguous/conflicting evidence fail-closed behavior;
+- purchase-history query semantics;
+- explicit correction on stable identity;
+- the no-side-effect boundary above.
 
-- task authority binding and task state semantics;
-- explicit completion/cancel/reopen rules;
-- canonical brief slot/run rules;
-- deterministic task rendering;
-- immutable brief checkpoint semantics;
-- progressive-discovery insertion rules;
-- explicit distinction between composition and actual delivery.
+`mira.personal_distribution` validates the receipt-inclusive starter Metadata, while `mira.workspace_bundle` fails if required receipt safety clauses disappear.
 
-`mira.personal_distribution` and `mira.workspace_bundle` validate these expanded release requirements.
+### Direct tests and ownership
 
-### Ownership
+`tests/test_receipts.py` covers:
 
-`project/code_ownership.json` now includes:
+- email capture, exact money and stable line identity;
+- exact source replay;
+- exact source conflict;
+- image evidence merge into the same canonical order;
+- conflicting new evidence;
+- explicit distinct same-core transactions plus later ambiguity detection;
+- explicit correction and repeated correction replay;
+- purchase-history filters/order;
+- float money and invalid quantities;
+- first-class text evidence and absence of raw source payloads.
 
-- `canonical-tasks` for `mira/tasks.py` with `tests/test_tasks.py`;
-- `personal-ops-brief` for `mira/ops_brief.py` with `tests/test_ops_brief.py`.
+`tests/test_workspace_bundle.py` and `tests/test_personal_distribution.py` directly verify receipt release clauses/schema.
 
-## Independent Google provider proof — 2026-08-29
+`project/code_ownership.json` adds `canonical-receipts`, owning `mira/receipts.py` with direct `tests/test_receipts.py` evidence.
 
-A newly created isolated synthetic Google spreadsheet, never a legacy production artifact, was built with the expanded Personal starter metadata and exact STORE-001 tables.
+## CI evidence
 
-Provider readback verified:
+Initial PR #64 CI run `33283965544` passed all repository/release/alignment/ownership gates but found one legitimate receipt-domain failure: repeating an already-successful explicit correction with the same logical idempotency key rebuilt the store fingerprint against the newer current revision and conflicted.
 
-- one synthetic Personal Google authority;
-- `authority_binding/binding-task` -> `task`;
-- `authority_binding/binding-ops-brief-run` -> `ops_brief_run`;
-- one canonical open high-priority home task with stable ID/revision/payload/request hash;
-- one canonical AM brief run with deterministic run ID, exact task revision input, exact rendered text, source fingerprint, request hash and matching Idempotency result;
-- brief persisted as `status=composed` and `delivered=false`;
-- Metadata exactly advertises the expanded resource type set.
+The fix recognizes an already-satisfied desired correction as a read-only semantic replay before asking the store to create another revision, while still validating the idempotency key.
 
-The synthetic spreadsheet was renamed after proof so it cannot be mistaken for an installable starter. Its provider resource identifier is not committed to public Git.
+CI run `33284061382` on fix head `eeefc1d5e84a8a3cecb58069e179fb39b8f426d9` passed:
 
-Durable evidence: `docs/NO_APP_OPS_BRIEF_PROVIDER_PROOF.md`.
+- compile;
+- feature registry;
+- product lifecycle ledger;
+- Personal starter distribution;
+- work-session alignment;
+- code ownership;
+- all Python unit tests;
+- all Workspace Apps Script tests.
 
-This proof **does not** claim a scheduler or notification fired. It proves Google-backed canonical task state plus exact brief composition/checkpoint persistence.
+Later commits add provider-proof documentation/lifecycle text only; the final closeout head still requires its own exact-head CI before merge.
 
-## Test evidence
+## Independent Google provider proof — 2026-08-29/30
 
-PR #63 CI run `33282906421` on implementation head `b6718261c2a1eecd6a8875b4630f6d993fa047c4` passed before this closeout-only CURRENT_WORK commit:
+A brand-new native Google Sheet was created only for M2-M0-012 synthetic proof. It was not a copy of or write into legacy MIRA production receipt/order/inventory state.
 
-- compile — green;
-- feature registry — green, 118 features;
-- product lifecycle ledger — green, 143 work items with zero unknown states;
-- lifecycle states at that head: 52 completed, 74 queued, 1 active, 2 partial, 1 paused, 1 provisional, 10 deferred, 2 split;
-- Personal starter distribution/manifest — green;
-- work-session alignment — green;
-- code ownership — green, 16 components / 24 production artifacts;
-- Python unit tests — **189/189 passed**;
-- Workspace Apps Script tests — **15/15 passed**.
+### Clean substrate proof
 
-The direct test set includes the pending-fitness-goals follow-up behavior on a later brief day.
+Before inserting mutable proof state, exact readback confirmed:
 
-This closeout commit changes governance text only and must receive its own exact-head CI before merge.
+- spreadsheet timezone `Etc/UTC`;
+- tabs `Metadata`, `Resources`, `Events`, `Idempotency`;
+- schema `mira-structured-state-v1`;
+- `STORE-001`;
+- `writer_model=single_writer`;
+- receipt-inclusive resource type list exactly matching the Git-backed Personal starter;
+- exact STORE-001 headers;
+- zero mutable Resource/Event/Idempotency data rows.
 
-## End-of-session alignment verification — 2026-08-29
+### Authority/binding proof
+
+Synthetic provider state then read back exactly:
+
+- `authority/google-sheets-personal`, revision 1;
+- `authority_binding/binding-receipt`, revision 1;
+- binding `data_class=receipt` pointing to `google-sheets-personal`;
+- matching idempotency operation, request hashes, result JSON and resource references.
+
+No real account identity was committed; a synthetic owner token was used in proof state.
+
+### Receipt revision 1
+
+One fully synthetic tool-store purchase read back with:
+
+- one stable `receipt` Resource ID;
+- revision 1;
+- exact integer total/subtotal/tax values;
+- deterministic line ID and decimal-string quantity;
+- one synthetic `email` evidence fingerprint/source reference;
+- exact request hash and matching revision-1 idempotency result.
+
+### Multi-source revision 2
+
+The same Resource row was revision-checked to revision 2 with one additional synthetic `image` evidence observation.
+
+Exact readback confirmed:
+
+- same receipt ID, not a duplicate purchase;
+- revision exactly 2;
+- both email and image evidence observations retained;
+- unchanged transaction facts and line identity;
+- revision-2 request hash on the Resource row;
+- both revision-1 and revision-2 receipt Idempotency rows retained with exact result JSON/resource references.
+
+After proof, the spreadsheet was renamed to include `NOT A STARTER`. Its provider file ID and authenticated-account details are intentionally excluded from public Git.
+
+Durable non-sensitive evidence: `docs/NO_APP_RECEIPT_PROVIDER_PROOF.md`.
+
+This proof does **not** claim Gmail extraction, OCR/photo extraction quality, Drive archival, order/shipment state, assets, inventory, spending, reimbursement, groceries or background receipt processing are live.
+
+## End-of-session alignment verification — 2026-08-29/30
 
 ### `FEATURES.md`
 
 Rechecked after implementation:
 
-- all 118 stable semantic features remain represented;
-- task/brief implementation preserves `TASK-001`, `TASK-002`, `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, and `ONBOARD-004` semantics;
-- receipts/purchases/spending remain preserved;
-- assets/fitment/knowledge remain preserved;
-- inventory/location/movement remain preserved;
-- meals/groceries/recipes remain preserved;
-- routines/fitness/accountability and wearables remain preserved;
-- appointments/calendar/mail remain preserved;
-- education, travel/mileage, local integrations, Android, Microsoft, Apple/iCloud, backup/recovery, voice, enterprise and MIRA Studio remain preserved;
-- no parallel task, brief, fitness or provider authority was invented.
+- `RECEIPT-001` multi-source evidence/dedupe semantics are directly implemented/tested and provider-persistence proved for the bounded no-app receipt slice;
+- `RECEIPT-002` purchase-history query semantics are directly implemented/tested;
+- `RECEIPT-003` taxonomy remains unfinished;
+- `ASSET-001` still depends on receipt truth and remains separate;
+- `ASSET-002`, `ASSET-003`, `FITMENT-001`, `INV-001`, `LOC-001`, `MOVE-001`, `INV-002`, `SPEND-001`, `PAYMENT-001`, `REIMB-001`, `GROCERY-001`, `RECIPE-001`, `MEAL-001`, appointment/calendar, Android, Microsoft and Apple/iCloud scope remain preserved rather than falsely completed;
+- no second receipt authority/data model was created.
 
 ### `BACKLOG.md`
 
-Rechecked after implementation:
+Rechecked after implementation/provider proof:
 
-- all 143 work items remain represented;
-- PR #62 distribution items are completed with evidence, not deleted;
-- `DISCOVERY-CORE-001` remains partial because broader history/friction discovery is unfinished;
-- `OPS-BRIEF-VSLICE` is the only active item in this packet and has narrow real dependencies rather than generic runtime/service fan-out;
-- Android command boundary remains partial and Cloud Run advanced proof remains paused;
-- appointments, receipts/assets/inventory, meals/groceries and other user-visible domains remain unfinished/selectable for subsequent packets.
+- `RECEIPT-INTAKE-001` remains the only active work item until PR #64 merges;
+- its code/tests/release wiring/provider proof are recorded complete, with exact-head closeout/merge still pending;
+- downstream receipt taxonomy, spending, assets/fitment, inventory/location/movement and provider automation remain queued;
+- Android remains partial/paused at its preserved checkpoint;
+- the completed Ops Brief vertical remains completed rather than being reopened.
 
 ### `ROADMAP.md`
 
 Rechecked after implementation:
 
-- the useful no-app milestone requirement is now materially satisfied by a real canonical task/brief vertical, pending merge;
-- broader scheduled delivery, installer hardening and richer brief sections remain separate work;
-- the roadmap still requires continued user-visible vertical progress rather than immediately returning to Android or generic infrastructure.
+- the packet advances M2-M0.5's explicit receipts/assets/inventory direction;
+- it does not pull Android forward or make external infrastructure a prerequisite;
+- it remains one bounded vertical instead of collapsing receipt, asset and inventory truth into a single untestable packet.
 
 ### Direction result
 
-**ALIGNED.** MIRA now has an end-to-end task-centered no-app product slice rather than another substrate-only proof.
+**ALIGNED.** MIRA now has canonical purchase truth ready to become the safe prerequisite for the next asset/inventory vertical, pending #64 exact-head CI and merge.
 
 ## Acceptance result
 
-1. Canonical Task service with explicit state/history/idempotency — PASS.
-2. `task` and `ops_brief_run` Personal Google resource/authority contract — PASS.
-3. Deterministic slot/run identity and task ordering/rendering — PASS.
-4. Immutable composed/not-delivered canonical run checkpoint — PASS.
-5. Progressive discovery one-day/repeat-without-advance/follow-up behavior — PASS.
-6. Direct task/brief/discovery tests — PASS.
-7. Stock-ChatGPT no-app operating contract — PASS.
-8. Deterministic Personal starter/manifest after schema expansion — PASS.
-9. Code ownership — PASS.
-10. Implementation-head CI — PASS.
-11. Isolated Google canonical task/run exact readback — PASS.
-12. Whole-life feature/lifecycle preservation and PR #62 reconciliation — PASS.
+1. Provider-neutral Receipt service over STORE-001 — PASS.
+2. Integer minor money / three-letter currency / float rejection — PASS.
+3. Normalized decimal quantity validation — PASS.
+4. Deterministic line/receipt identity — PASS.
+5. Same-source read-only replay — PASS.
+6. Same-source conflict fail closed — PASS.
+7. Unique correlation merge and ambiguous-match failure — PASS.
+8. Stable-ID explicit correction and repeated correction replay — PASS.
+9. Deterministic purchase-history query — PASS.
+10. Personal starter `receipt` + `binding-receipt` contract — PASS.
+11. Complete no-app receipt/no-side-effect operating contract — PASS.
+12. Direct receipt/release tests — PASS.
+13. Deterministic Personal starter/Workspace validation — PASS.
+14. Code ownership — PASS.
+15. Exact final PR-head CI — PENDING this closeout commit.
+16. Isolated Google receipt/binding/idempotency revision-1/revision-2 exact readback — PASS.
+17. End-of-session whole-product preservation/alignment — PASS.
 
 ## Exact next action
 
-1. Run CI on this exact closeout head.
-2. If green, merge PR #63 with exact expected head SHA and remotely verify `main`.
-3. In the next packet, reconcile `OPS-BRIEF-VSLICE` to completed with PR #63 evidence.
-4. Dependency-rank the next user-visible no-app vertical. Current candidates are appointment intake/calendar projection, receipts/purchases/assets, inventory/location/movement, meal/grocery planning, or verified scheduled brief delivery; select based on hard prerequisites, vertical value and how much already-tested semantic work can be reused.
-5. Keep Android paused unless/until the no-app milestone has enough useful vertical coverage or the customer explicitly reprioritizes it.
+1. Run CI on the exact PR #64 closeout head containing this checkpoint.
+2. If every gate is green, merge PR #64 using exact expected head SHA.
+3. Remotely verify `main` at the returned merge SHA.
+4. In the next bounded packet, reconcile `RECEIPT-INTAKE-001` from active to completed with PR #64 merge evidence before selecting implementation work.
+5. Dependency-rank the next no-app vertical. Default direction is the receipt -> asset -> inventory chain, beginning with the smallest canonical asset/acquisition slice that consumes receipt truth without yet swallowing location/movement/inventory; override only if FEATURES/BACKLOG/ROADMAP show a harder integrity prerequisite or the customer explicitly reprioritizes.
+6. Keep Android paused unless explicitly reprioritized or no-app milestone evidence justifies resumption.
 
 ## Recovery protocol
 
-Read this file first. If PR #63 is still open, verify the exact head and exact-head CI before merge. If #63 is merged, verify `main`, then create the next bounded user-visible packet from current `main`. Do not broaden unfinished work from conversational memory; use the lifecycle/dependency/value result.
+Read this file first. If PR #64 is still open, verify its exact current head and exact-head CI before merge. If merged, verify `main`, reconcile the receipt backlog row to completed, then create exactly one next bounded packet from current `main`. Do not broaden from conversational memory and do not touch legacy receipt/order production state.
