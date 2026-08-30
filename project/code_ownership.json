@@ -180,6 +180,15 @@
       "verification": ["tests/test_inventory_location.py"]
     },
     {
+      "id": "canonical-inventory-movement",
+      "responsibility": "Provider-neutral immutable movement/observation event history plus crash-recoverable reconciliation of latest observed inventory location.",
+      "why_separate": "Movement history is an ordered evidence stream with replay and recovery semantics distinct from current intended/observed location state; scanner clients may feed it later without becoming a new identity or history authority.",
+      "owned_paths": ["mira/inventory_movement.py"],
+      "feature_ids": ["MOVE-001", "LOC-001", "INV-001", "IDENT-001", "ASSET-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["MOVEMENT-CORE-001"],
+      "verification": ["tests/test_inventory_movement.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
