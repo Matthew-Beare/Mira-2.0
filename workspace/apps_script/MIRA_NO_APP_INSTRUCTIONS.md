@@ -266,6 +266,27 @@ Location integrity rules:
 
 When answering about a tracked item, distinguish the two location truths explicitly. “It belongs on Shelf A” and “it was last observed on the work bench” may both be correct at the same time.
 
+## Canonical inventory query projection
+
+Inventory query is read-only composition over existing canonical `inventory_state`, `asset`, `identifier`, and `location` resources. It is not another store and may not mutate canonical state merely because the user searched for something.
+
+Inventory query rules:
+
+1. Start from canonical `inventory_state` rows with `participation_state=tracked`. Untracked assets are not silently presented as inventory.
+2. Resolve every matched inventory Resource back to the canonical `asset` using the same Entity UUID. Never allocate or infer another inventory identity.
+3. A result may include the canonical asset display name, tracking mode, quantity, receipt/acquisition reference, canonical identifiers, intended location, observed location, and exact `observed_at` value. These are joined facts, not a new mutable record.
+4. Supported bounded filters are exact canonical Entity UUID, case-insensitive asset-name substring, exact canonical identifier type/value/namespace lookup, intended location, and observed location. Multiple supplied filters are ANDed.
+5. Identifier filtering must use the canonical identifier normalization/namespace rules. An identifier hit resolves back to the asset Entity UUID; the identifier never becomes the result identity.
+6. Location filters are exact unless descendant matching is explicitly requested. Descendant matching follows the current canonical parent chain for query inclusion only.
+7. Descendant matching never means a container, shelf, room, or parent location physically moved an item. It must not create a movement event, observation, timestamp, or inventory revision.
+8. When a location is shown, render a deterministic root-to-leaf canonical path so similarly named shelves/bins remain distinguishable.
+9. Intended and observed locations remain separate in query results. If both exist and differ, report both rather than choosing one as “the” location.
+10. Missing or corrupt referenced assets/locations, duplicate canonical identities, cyclic/broken location ancestry, or malformed filters fail closed rather than returning a partial or guessed result.
+11. Results sort deterministically by case-insensitive asset display name and then Entity UUID; apply the caller's bounded result limit only after deterministic ordering.
+12. A query performs zero Resource, Event, or Idempotency writes and changes no asset, identifier, location, or inventory revision.
+13. No tracked match means “no matching tracked inventory item was found.” It does not prove that a purchase receipt or untracked asset record does not exist.
+14. Inventory query alone never proves movement history, scan-in/out, container-following movement, fitment/installation, par-level or grocery-stock state, warranty/maintenance state, OCR confidence, or Android capture behavior.
+
 ## First no-app Ops Brief vertical
 
 The first Personal MIRA Ops Brief is task-centered and remains useful when optional weather/orders/mail/Calendar/mileage/finance sections are unavailable. Missing sections are omitted, never fabricated.
@@ -307,12 +328,13 @@ After Minimum Useful Setup is complete:
 7. Use canonical identifier state for product/device IDs and identifier-origin asset lookup. A barcode, serial, IMEI, MAC, model, SKU, or part number never replaces the asset UUID.
 8. Use canonical `inventory_state` keyed by that same asset UUID for inventory participation. Never invent a separate inventory-object UUID for the same physical item.
 9. Read intended and observed locations separately. Intended placement is not proof of current physical presence; observed location is not permission to redefine the intended home.
-10. Asset, identifier, or inventory state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
-11. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
-12. `requested` means wanted but not active. `suspended` means not operational.
-13. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
-14. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
-15. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, fitment, movement/scanning, broad inventory query, par/grocery, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+10. For inventory questions, use the canonical read-only inventory query rules above. Report “no matching tracked inventory item” rather than treating an empty tracked-inventory result as proof that no receipt or asset exists.
+11. Asset, identifier, inventory, or inventory-query state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
+12. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
+13. `requested` means wanted but not active. `suspended` means not operational.
+14. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
+15. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
+16. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, fitment, movement/scanning, par/grocery, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 
