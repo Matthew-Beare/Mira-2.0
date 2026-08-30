@@ -26,7 +26,7 @@ PR #67 merged to `main` as `7c2675836d2958d23ac37ad471cae8e14017b894`. Exact PR-
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-016-inventory-query`
 - **Base SHA:** `2da3128cdecad86b45c776f31ccb63e5be5aadc0`
-- **PR:** `#69` (draft until final exact-head CI passes)
+- **PR:** `#70` (non-draft replacement merge PR; #69 closed unmerged after connector ready-for-review failure)
 - **Objective:** provide a deterministic read-only no-app projection over canonical tracked inventory so MIRA can answer what is owned, identify an item by canonical asset identity/name/identifier, and report intended versus latest observed location without creating a second inventory authority or fabricating movement evidence.
 
 ## Session-start alignment verification — 2026-08-30
@@ -99,6 +99,13 @@ Verified before implementation:
 - Registered the dedicated `canonical-inventory-query` production component in `project/code_ownership.json` with direct verification ownership.
 - Early PR-head CI run `33340369948` passed on `a2ef63109b943464ce82239224253b6955012e4f` after the core implementation/tests/ownership checkpoint.
 - CI run `33340451667` passed on `0c180fc49064f93979299c707181eaa64bfeda06` after complete no-app instructions and workspace release guards were added.
+- Exact-head CI run `33340849539` passed on `66eb512afd7824d872c48c220c9289aac3132559` after lifecycle reconciliation; this SHA was the final #69 draft head before the connector's ready-for-review operation failed.
+
+### Pull-request control-plane evidence
+
+- PR #69 was intentionally opened as draft during implementation and remained green on exact head `66eb512afd7824d872c48c220c9289aac3132559`.
+- The GitHub connector's ready-for-review mutation failed before changing PR state because its GraphQL response requested the nonexistent `Repository.fullDatabaseId` field. A direct merge attempt then correctly returned HTTP 405 because #69 was still draft.
+- PR #69 was closed **without merge** and with the failure reason recorded. PR #70 was opened non-draft from the same branch and same verified code history. This is a control-plane workaround only; no product implementation was discarded or silently replaced.
 
 ### No-app/release evidence
 
@@ -135,12 +142,12 @@ This is provider proof of read-only queryability over synthetic canonical rows, 
 ### `FEATURES.md`
 
 - `LOC-001` requirement/evidence is reconciled to `required | test_verified` from merged PR #67 without implying `MOVE-001` is complete.
-- `INV-002` correctly remains `candidate_unmerged` until PR #69 actually merges; tests/provider proof do not substitute for merge evidence.
+- `INV-002` correctly remains `candidate_unmerged` until PR #70 actually merges; tests/provider proof do not substitute for merge evidence.
 
 ### `BACKLOG.md`
 
 - `LOCATION-STATE-001` is reconciled to completed with PR #67 merge SHA, exact-head CI and provider evidence.
-- `INVENTORY-QUERY-001` is the one active work row and records direct-test, no-app/release and isolated Google provider evidence; exact-head CI/merge remains the only completion gate.
+- `INVENTORY-QUERY-001` is the one active work row and records direct-test, no-app/release and isolated Google provider evidence; PR #70 exact-head CI/merge remains the only completion gate.
 - `MOVEMENT-CORE-001`, `PAR-CORE-001`, `GROCERY-CORE-001`, fitment, OCR/evidence and Android remain unfinished and outside this packet.
 
 ### `ROADMAP.md`
@@ -149,15 +156,16 @@ This is provider proof of read-only queryability over synthetic canonical rows, 
 
 ### Direction result
 
-**ALIGNED FOR MERGE CANDIDATE.** No adjacent feature was silently absorbed. The only remaining packet work is exact-head CI, PR readiness/merge, and remote `main` verification.
+**ALIGNED FOR MERGE CANDIDATE.** No adjacent feature was silently absorbed. The only remaining packet work is exact-head CI on the replacement PR, merge, and remote `main` verification.
 
 ## Exact next action
 
-1. Verify CI is green on the exact current PR #69 head after this lifecycle checkpoint.
-2. If exact-head CI is green, mark PR #69 ready, re-read the head SHA, and merge only with expected-head protection.
-3. Remotely verify `main` contains the merge and its CI/readback is green.
-4. Create the durable post-merge closeout/next-packet checkpoint; only then may another vertical become active.
+1. Reconcile `BACKLOG.md` references from the closed-unmerged #69 control PR to active non-draft PR #70.
+2. Verify CI is green on the exact current PR #70 head after these control-plane checkpoint edits.
+3. Re-read PR #70 head/mergeability and merge only with expected-head protection.
+4. Remotely verify `main` contains the merge and its CI/readback is green.
+5. Create the durable post-merge closeout/next-packet checkpoint; only then may another vertical become active.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-016-inventory-query` still descends from verified base `2da3128cdecad86b45c776f31ccb63e5be5aadc0`. PR #69 is the packet PR. Do not touch protected legacy MIRA production data. Do not implement movement events, scanning, container-following movement, par/grocery, fitment, OCR/evidence capture or Android as part of this packet.
+Read this file first. Confirm branch `integration/m0-016-inventory-query` still descends from verified base `2da3128cdecad86b45c776f31ccb63e5be5aadc0`. PR #70 is the active non-draft packet PR; PR #69 is closed unmerged as control-plane failure evidence. Do not touch protected legacy MIRA production data. Do not implement movement events, scanning, container-following movement, par/grocery, fitment, OCR/evidence capture or Android as part of this packet.
