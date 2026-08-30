@@ -20,7 +20,7 @@ PR #66 merged to `main` at `6833d27e20d746d37e389b1756a6f6147225d043` after exac
 
 - **Primary work:** `LOCATION-STATE-001`
 - **Primary features:** `INV-001`, base slice of `LOC-001`
-- **Related preserved features:** `MOVE-001`, `INV-002`, `PAR-001`, `GROCERY-001`, `ASSET-001`, `IDENT-001`, `ASSET-003`, `STORE-001`, `RECOVERY-002`
+- **Related invariants/features:** `MOVE-001`, `INV-002`, `PAR-001`, `GROCERY-001`, `ASSET-001`, `IDENT-001`, `ASSET-003`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-015-inventory-location`
 - **Base SHA:** `6833d27e20d746d37e389b1756a6f6147225d043`
