@@ -176,7 +176,7 @@ class OpsBriefService:
                 and discovery.brief_drip_enabled
             ):
                 discovery_topic_id = discovery.next_topic.topic_id
-                discovery_prompt = discovery.next_topic.prompt
+                discovery_prompt = discovery.followup_prompt or discovery.next_topic.prompt
 
         fingerprint = _source_fingerprint(
             slot=slot,
