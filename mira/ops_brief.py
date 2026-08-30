@@ -165,7 +165,7 @@ class OpsBriefService:
         tasks = self._tasks.active_tasks(context=context)
         discovery_topic_id: str | None = None
         discovery_prompt: str | None = None
-        if self._discovery is not None:
+        if self._discovery is not None and not self._date_already_has_discovery(slot.local_date):
             discovery = self._discovery.claim_brief_question(
                 slot.local_date,
                 idempotency_key=f"ops-brief-discovery:{slot.run_id}",
@@ -219,6 +219,17 @@ class OpsBriefService:
         except StoreValidationError as exc:
             raise OpsBriefValidationError(str(exc)) from exc
         return _run_view(result.record, idempotent_replay=result.idempotent_replay)
+
+    def _date_already_has_discovery(self, local_date: str) -> bool:
+        try:
+            runs = self._adapter.query(self._resource_type, limit=1000)
+        except StoreValidationError as exc:
+            raise OpsBriefValidationError(str(exc)) from exc
+        return any(
+            run.payload.get("local_date") == local_date
+            and run.payload.get("discovery_topic_id") is not None
+            for run in runs
+        )
 
 
 def _render(
