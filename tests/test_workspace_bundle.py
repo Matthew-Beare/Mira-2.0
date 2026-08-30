@@ -35,6 +35,7 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("Every mutable data class used by MIRA must resolve", protocol)
         self.assertIn("authority_binding/binding-onboarding-ledger", protocol)
         self.assertIn("authority_binding/binding-service-state", protocol)
+        self.assertIn("authority_binding/binding-receipt", protocol)
         self.assertIn("resource id: `google-sheets-personal`", protocol)
         self.assertIn("resource type: `onboarding_ledger`", protocol)
         self.assertIn("resource id: `minimum-useful-setup`", protocol)
@@ -42,6 +43,11 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("`life_pattern`", protocol)
         self.assertIn("`goals`", protocol)
         self.assertIn("`appointment_help`", protocol)
+        self.assertIn("## Canonical receipts and purchase history", protocol)
+        self.assertIn("resource type is `receipt`", protocol)
+        self.assertIn("integer minor units", protocol)
+        self.assertIn("Exact source-fingerprint replay", protocol)
+        self.assertIn("Receipt capture does **not** automatically create or mutate an asset", protocol)
         self.assertIn("`calendar_capability_verified`: false", protocol)
         self.assertIn("resource type: `service_state`", protocol)
         self.assertIn("resource id: `appointments_calendar`", protocol)
@@ -69,6 +75,18 @@ class WorkspaceBundleTests(unittest.TestCase):
         files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
             "MIRA_NO_APP_INSTRUCTIONS.md"
         ].replace("authority_binding/binding-service-state", "authority_binding/missing")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_receipt_safety_clause(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "Receipt capture does **not** automatically create or mutate an asset",
+            "Receipt capture may create an asset",
+        )
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)
 
