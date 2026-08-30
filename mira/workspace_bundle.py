@@ -71,7 +71,7 @@ _PROTOCOL_MARKERS = (
     "`state`: `open`, `completed`, or `cancelled`",
     "## First no-app Ops Brief vertical",
     "ops-brief:<YYYY-MM-DD>:am",
-    "resource type: `ops_brief_run`",
+    "immutable `ops_brief_run` resource",
     "**Composition is not delivery.**",
     "`calendar_capability_verified`: false",
     "`calendar_projection_active`: false",
