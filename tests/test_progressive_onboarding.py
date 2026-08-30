@@ -76,7 +76,7 @@ class ProgressiveDiscoveryTests(unittest.TestCase):
         self.assertIsNone(declined.followup_prompt)
         self.assertEqual(declined.next_topic.topic_id, "meals_groceries")
 
-    def test_start_using_mira_emits_at_most_one_topic_per_local_day(self) -> None:
+    def test_start_using_mira_emits_at_most_one_prompt_per_local_day_and_repeats_silence(self) -> None:
         self._complete_minimum()
         chosen = self.discovery.choose_mode(
             "start using MIRA", idempotency_key="choose-use"
@@ -96,22 +96,55 @@ class ProgressiveDiscoveryTests(unittest.TestCase):
         self.assertFalse(duplicate.brief_topic_emitted)
         self.assertEqual(duplicate.brief_topic_days_used, 1)
 
-        # Silence is not an answer and does not advance to a second topic.
-        next_day_silence = self.discovery.claim_brief_question(
-            "2026-08-31", idempotency_key="brief-day-2-silence"
+        # Silence is not an answer. A later day may repeat the same topic, but
+        # it must never advance to a second topic merely because the user was quiet.
+        next_day_repeat = self.discovery.claim_brief_question(
+            "2026-08-31", idempotency_key="brief-day-2-repeat"
         )
-        self.assertFalse(next_day_silence.brief_topic_emitted)
-        self.assertEqual(next_day_silence.next_topic.topic_id, "fitness_wellness")
+        self.assertTrue(next_day_repeat.brief_topic_emitted)
+        self.assertEqual(next_day_repeat.next_topic.topic_id, "fitness_wellness")
+        self.assertEqual(next_day_repeat.brief_topic_days_used, 2)
+        self.assertEqual(
+            next_day_repeat.topic_states["fitness_wellness"], "unanswered"
+        )
 
         self.discovery.skip_topic(
             "fitness_wellness", idempotency_key="skip-fitness"
         )
-        second = self.discovery.claim_brief_question(
-            "2026-08-31", idempotency_key="brief-day-2"
+        same_day_after_answer = self.discovery.claim_brief_question(
+            "2026-08-31", idempotency_key="same-day-after-skip"
         )
-        self.assertTrue(second.brief_topic_emitted)
-        self.assertEqual(second.next_topic.topic_id, "meals_groceries")
-        self.assertEqual(second.brief_topic_days_used, 2)
+        self.assertFalse(same_day_after_answer.brief_topic_emitted)
+        self.assertEqual(same_day_after_answer.next_topic.topic_id, "meals_groceries")
+        self.assertEqual(same_day_after_answer.brief_topic_days_used, 2)
+
+        third = self.discovery.claim_brief_question(
+            "2026-09-01", idempotency_key="brief-day-3"
+        )
+        self.assertTrue(third.brief_topic_emitted)
+        self.assertEqual(third.next_topic.topic_id, "meals_groceries")
+        self.assertEqual(third.brief_topic_days_used, 3)
+
+    def test_unanswered_topic_uses_all_seven_prompt_days_without_becoming_declined(self) -> None:
+        self._complete_minimum()
+        self.discovery.choose_mode("start using MIRA", idempotency_key="choose-use")
+        for index in range(1, 8):
+            emitted = self.discovery.claim_brief_question(
+                f"2026-09-{index:02d}", idempotency_key=f"repeat-{index}"
+            )
+            self.assertTrue(emitted.brief_topic_emitted)
+            self.assertEqual(emitted.next_topic.topic_id, "fitness_wellness")
+            self.assertEqual(emitted.topic_states["fitness_wellness"], "unanswered")
+            self.assertEqual(emitted.brief_topic_days_used, index)
+
+        stopped = self.discovery.claim_brief_question(
+            "2026-09-08", idempotency_key="repeat-stop"
+        )
+        self.assertFalse(stopped.brief_topic_emitted)
+        self.assertEqual(stopped.status, "paused")
+        self.assertFalse(stopped.brief_drip_enabled)
+        self.assertEqual(stopped.topic_states["fitness_wellness"], "unanswered")
+        self.assertNotIn("fitness_wellness", stopped.answers)
 
     def test_seven_topic_days_complete_without_deleting_history(self) -> None:
         self._complete_minimum()
@@ -123,18 +156,11 @@ class ProgressiveDiscoveryTests(unittest.TestCase):
             )
             self.assertTrue(emitted.brief_topic_emitted)
             self.assertEqual(emitted.next_topic.topic_id, topic_id)
-            if topic_id == "fitness_wellness":
-                self.discovery.answer_topic(
-                    topic_id,
-                    False,
-                    idempotency_key=f"answer-{index}",
-                )
-            else:
-                self.discovery.answer_topic(
-                    topic_id,
-                    False,
-                    idempotency_key=f"answer-{index}",
-                )
+            self.discovery.answer_topic(
+                topic_id,
+                False,
+                idempotency_key=f"answer-{index}",
+            )
         finished = self.discovery.start_or_resume()
         self.assertTrue(finished.complete)
         self.assertFalse(finished.brief_drip_enabled)
