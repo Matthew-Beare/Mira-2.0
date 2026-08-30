@@ -180,6 +180,15 @@
       "verification": ["tests/test_inventory_location.py"]
     },
     {
+      "id": "canonical-inventory-query",
+      "responsibility": "Read-only canonical inventory projection joining tracked asset, identifier, acquisition and intended-versus-observed location truth for bounded no-app queries.",
+      "why_separate": "Inventory query composes existing canonical state and must remain a read-only projection so search, filtering and reporting cannot become a second mutable authority or smuggle in movement/scanning semantics.",
+      "owned_paths": ["mira/inventory_query.py"],
+      "feature_ids": ["INV-002", "INV-001", "LOC-001", "ASSET-003", "IDENT-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["INVENTORY-QUERY-001"],
+      "verification": ["tests/test_inventory_query.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
