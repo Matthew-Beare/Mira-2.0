@@ -198,6 +198,15 @@
       "verification": ["tests/test_movement.py"]
     },
     {
+      "id": "canonical-shopping-intent",
+      "responsibility": "Provider-neutral active shopping/procurement intent, explicit terminal lifecycle and conservative receipt reconciliation without turning purchase evidence into current-intent authority or triggering downstream side effects.",
+      "why_separate": "Shopping intent answers what remains to obtain, while receipts answer what was purchased; keeping them separate lets later grocery, procurement and recommendation features reconcile evidence explicitly without mutating assets, inventory, fitment, orders or finance state.",
+      "owned_paths": ["mira/shopping.py"],
+      "feature_ids": ["SHOP-001", "RECEIPT-001", "RECEIPT-002", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["SHOP-CORE-001"],
+      "verification": ["tests/test_shopping.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
