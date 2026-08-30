@@ -31,7 +31,7 @@ Required Metadata truths:
 - `schema_version=mira-structured-state-v1`
 - `adapter_contract=STORE-001`
 - `writer_model=single_writer`
-- `resource_types_json` contains `authority`, `authority_binding`, `asset`, `entity`, `identifier`, `onboarding_ledger`, `ops_brief_run`, `receipt`, `service_state`, and `task`
+- `resource_types_json` contains `authority`, `authority_binding`, `asset`, `entity`, `identifier`, `inventory_state`, `location`, `onboarding_ledger`, `ops_brief_run`, `receipt`, `service_state`, and `task`
 
 Also inspect mutation mode when present. Direct native mutation is allowed only in the Personal single-writer mode. If `mutation_mode=queued_writer`, shared-writer mode is active: do not directly mutate canonical Resource rows. Use the canonical command-inbox path only when that path is available and verified; otherwise fail closed.
 
@@ -105,6 +105,8 @@ The required bindings are:
 - `authority_binding/binding-receipt` → `{"authority_id":"google-sheets-personal","data_class":"receipt"}`
 - `authority_binding/binding-asset` → `{"authority_id":"google-sheets-personal","data_class":"asset"}`
 - `authority_binding/binding-identifier` → `{"authority_id":"google-sheets-personal","data_class":"identifier"}`
+- `authority_binding/binding-location` → `{"authority_id":"google-sheets-personal","data_class":"location"}`
+- `authority_binding/binding-inventory-state` → `{"authority_id":"google-sheets-personal","data_class":"inventory_state"}`
 
 Bootstrap must be all-new or all-replay. If a binding already routes one of these data classes to a different authority, or the persisted Personal authority materially differs, fail closed instead of overwriting it. Create/replay the authority and all required bindings using the canonical revision/idempotency/readback rule. Exact post-bootstrap readback must prove one valid binding for each data class and the one referenced authority.
 
@@ -212,45 +214,57 @@ A canonical asset payload contains schema version, Entity UUID, display name, tr
 
 Identifiers are separate durable MIRROR resources linked to existing physical asset UUIDs. The canonical resource type is `identifier`, schema version `1`. An identifier never replaces or mutates the asset's immutable RFC 4122 Entity UUID.
 
-Supported identifier types are:
+Supported identifier types are `gtin8`, `upc_a`, `ean13`, `gtin14`, `merchant_sku`, `manufacturer_part_number`, `model_number`, `serial_number`, `imei`, and `mac`.
 
-- `gtin8`
-- `upc_a`
-- `ean13`
-- `gtin14`
-- `merchant_sku`
-- `manufacturer_part_number`
-- `model_number`
-- `serial_number`
-- `imei`
-- `mac`
-
-Each canonical identifier stores:
-
-- stable deterministic `identifier_id` equal to Resource ID;
-- exact linked `entity_uuid`;
-- `identifier_type`;
-- optional display `namespace` plus deterministic normalized `namespace_key`;
-- retained exact trimmed `source_value` as observed/printed;
-- deterministic `normalized_value` used for search/collision checks;
-- `verification_state` of `observed` or `verified`;
-- optional note.
+Each canonical identifier stores stable deterministic `identifier_id`, exact linked `entity_uuid`, type, optional display namespace plus normalized namespace key, retained exact source value, deterministic normalized search value, verification state `observed|verified`, and optional note.
 
 Identifier integrity rules:
 
-1. The exact printed/source value and the normalized search value are separate facts. Never discard leading zeroes from GTIN/UPC/EAN or silently rewrite an established source value merely because another presentation normalizes the same way.
-2. `gtin8`, `upc_a`, `ean13`, and `gtin14` require exactly 8, 12, 13, or 14 digits respectively and must pass the standard GTIN modulo-10 check digit. Leading zeroes are preserved.
-3. `imei` requires exactly 15 digits and must pass Luhn validation.
-4. `mac` accepts ordinary compact, colon, hyphen, or Cisco-dot hexadecimal presentation only when it resolves to exactly 12 hexadecimal digits. Its normalized value is 12 uppercase hexadecimal digits.
-5. `merchant_sku`, `manufacturer_part_number`, `model_number`, and `serial_number` require an explicit nonblank namespace describing the merchant/manufacturer/issuer context. Their value and namespace search keys use Unicode compatibility normalization, trimmed/collapsed whitespace, and case-folding while retaining the exact source/display text separately.
-6. Global types (`gtin8`, `upc_a`, `ean13`, `gtin14`, `imei`, `mac`) do not accept an invented local namespace.
-7. Identifier Resource ID is deterministic from identifier type + normalized namespace + normalized value + Entity UUID. Product/model identifiers may therefore legitimately attach to multiple physical assets without becoming a false global asset identity.
-8. `serial_number`, `imei`, and `mac` are serial-level collision-protected identifiers. The same type + normalized namespace/value cannot attach to two different Entity UUIDs. Fail closed rather than reassigning it.
-9. Exact same-asset identifier replay with identical source semantics is zero-write. `observed` may be explicitly upgraded to `verified` on the same identifier; verified state is never silently downgraded.
-10. A formatting/source variant that normalizes to an existing same-asset identifier but conflicts with the retained exact source value or namespace requires explicit reconciliation rather than silent replacement.
-11. Query by type/value/namespace returns deterministic canonical identifier records. Identifier-origin asset lookup must read the canonical `asset` Resources linked by Entity UUID, not a shadow asset database.
-12. A missing asset blocks identifier attachment; identifiers cannot manufacture physical assets.
-13. Identifier attachment alone never infers fitment, `assigned_to`, `installed_on`, inventory location, movement, warranty/maintenance, technical specifications, OCR confidence, or Android scanning behavior.
+1. Exact printed/source value and normalized search value are separate facts. Never discard leading zeroes from GTIN/UPC/EAN or silently rewrite an established source value.
+2. GTIN/UPC/EAN types require exact digit length and valid standard modulo-10 check digit. Leading zeroes are preserved.
+3. IMEI requires exactly 15 digits and valid Luhn checksum.
+4. MAC accepts compact, colon, hyphen, or Cisco-dot hexadecimal forms only when they resolve to 12 hexadecimal digits and normalizes to 12 uppercase hex digits.
+5. Merchant SKU, manufacturer part/model, and serial types require explicit namespace. Their namespace/value search keys use compatibility normalization, collapsed whitespace, and case-folding while retaining exact display/source text.
+6. Global types do not accept an invented local namespace.
+7. Identifier Resource ID is deterministic from type + normalized namespace + normalized value + Entity UUID. Product/model identifiers may attach to multiple physical assets.
+8. `serial_number`, `imei`, and `mac` are serial-level collision-protected identifiers. The same canonical type/namespace/value cannot attach to two different Entity UUIDs.
+9. Same-asset exact replay is zero-write; observed may upgrade to verified without changing identifier identity; verified is never silently downgraded.
+10. A source variant that normalizes to an existing same-asset identifier but conflicts with retained exact source/namespace/note requires explicit reconciliation.
+11. Identifier-origin lookup must resolve canonical `asset` Resources by Entity UUID, not a shadow asset table.
+12. Missing asset blocks attachment; identifiers cannot manufacture physical assets.
+13. Identifier attachment alone never infers fitment, location/movement, inventory placement, warranty, technical specifications, OCR confidence, or Android scanning behavior.
+
+## Canonical inventory participation and location state
+
+Inventory is a state/projection over canonical physical assets, not a second physical-identity system. The canonical inventory participation resource type is `inventory_state`, schema version `1`. Its Resource ID and payload `entity_uuid` must both be exactly the existing canonical asset Entity UUID. Tracking an unknown asset fails closed and inventory participation never allocates another physical UUID.
+
+A canonical `inventory_state` payload contains:
+
+- `schema_version=1`;
+- `entity_uuid` equal to Resource ID and canonical asset UUID;
+- `participation_state=tracked`;
+- `intended_location_id` or null;
+- `observed_location_id` or null;
+- `observed_at` or null;
+- optional note.
+
+Physical locations are separate canonical `location` resources, schema version `1`, with stable `location_id` equal to Resource ID, display name, kind, optional `parent_location_id`, and optional note. Supported base kinds are `site`, `building`, `room`, `zone`, `aisle`, `shelf`, `bin`, `container`, and `other`.
+
+Location integrity rules:
+
+1. A location ID is stable. Renaming or reparenting a location creates a new revision of the same location rather than a replacement identity.
+2. A non-null parent must resolve to a canonical location. A location cannot parent itself, and reparenting may not create an ancestor cycle.
+3. `intended_location_id` answers “where does this belong?” It is explicit placement intent, not evidence that the item is physically there now.
+4. `observed_location_id` answers “where was this item last supported as being?” It is observation/current-location state, not a new intended home.
+5. Setting or changing intended location never changes `observed_location_id` or `observed_at` and never fabricates a physical observation.
+6. Setting or changing observed location never changes intended placement and requires an explicit offset-aware ISO-8601 `observed_at` timestamp.
+7. Clearing observed state clears that current observation/timestamp but does not clear intended placement. Clearing intended placement does not alter an existing observation.
+8. Both intended and observed location references must resolve to canonical locations. Missing/corrupt references fail closed.
+9. Inventory/location mutations never change the underlying asset UUID, acquisition provenance, tracking mode, quantity, or identifiers.
+10. This base location state is not movement-event history. A location change here does not claim QR/barcode scan-in/out, a replay-safe movement event, container-following movement, fitment, par-level change, grocery stock change, warranty/maintenance action, or Android capture. Those remain separate features.
+11. Friendly stock labels, QR labels, shelf labels, serials and vendor codes are identifiers/aliases. They never become a second inventory primary identity.
+
+When answering about a tracked item, distinguish the two location truths explicitly. “It belongs on Shelf A” and “it was last observed on the work bench” may both be correct at the same time.
 
 ## First no-app Ops Brief vertical
 
@@ -291,12 +305,14 @@ After Minimum Useful Setup is complete:
 5. Receipt capture alone never proves asset acquisition, identifiers, inventory placement, fulfillment, spending allocation, reimbursement, grocery stock, settlement, Gmail archival, or Drive archival.
 6. Use canonical asset state for physical identity. Never replace an Entity UUID because receipt text, labels, identifiers, fitment, location, or later evidence changes.
 7. Use canonical identifier state for product/device IDs and identifier-origin asset lookup. A barcode, serial, IMEI, MAC, model, SKU, or part number never replaces the asset UUID.
-8. Asset or identifier state alone never proves fitment, installation, location/movement, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
-9. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
-10. `requested` means wanted but not active. `suspended` means not operational.
-11. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
-12. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
-13. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, fitment, inventory/location/movement, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+8. Use canonical `inventory_state` keyed by that same asset UUID for inventory participation. Never invent a separate inventory-object UUID for the same physical item.
+9. Read intended and observed locations separately. Intended placement is not proof of current physical presence; observed location is not permission to redefine the intended home.
+10. Asset, identifier, or inventory state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
+11. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
+12. `requested` means wanted but not active. `suspended` means not operational.
+13. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
+14. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
+15. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, fitment, movement/scanning, broad inventory query, par/grocery, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 
