@@ -86,7 +86,7 @@ _REQUIRED_METADATA = {
     "data_policy": "clean_starter_only",
     "adapter_contract": "STORE-001",
     "resource_types_json": '["authority","authority_binding","asset","entity","identifier","inventory_state","location","onboarding_ledger","ops_brief_run","receipt","service_state","task"]',
-    "event_types_json": '["created","updated"]',
+    "event_types_json": '["created","inventory_movement","updated"]',
     "writer_model": "single_writer",
 }
 _MUTABLE_EMPTY_TABS = frozenset({"Resources", "Events", "Idempotency"})
