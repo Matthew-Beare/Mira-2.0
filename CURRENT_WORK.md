@@ -14,7 +14,7 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 PR #67 merged to `main` as `7c2675836d2958d23ac37ad471cae8e14017b894`. Exact PR-head CI run `33329282677` passed on `1296e6bacdcbeab9a905893dbc49742039782de1`. Fresh isolated Google provider proof verified canonical asset-UUID inventory participation, hierarchical locations, and independent intended-versus-observed location state. Current `main` was subsequently verified at `2da3128cdecad86b45c776f31ccb63e5be5aadc0` with CI run `33329434913` green; the intervening placeholder add/remove changed no product state.
 
-`LOCATION-STATE-001` must be reconciled to completed in `BACKLOG.md` in this packet with PR #67 evidence.
+`LOCATION-STATE-001` is now reconciled as completed in `BACKLOG.md`, and `LOC-001` carries direct merged/test evidence independently from still-unfinished movement/scanning behavior.
 
 ## Active packet
 
@@ -26,7 +26,7 @@ PR #67 merged to `main` as `7c2675836d2958d23ac37ad471cae8e14017b894`. Exact PR-
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-016-inventory-query`
 - **Base SHA:** `2da3128cdecad86b45c776f31ccb63e5be5aadc0`
-- **PR:** not yet opened
+- **PR:** `#69` (draft until final exact-head CI passes)
 - **Objective:** provide a deterministic read-only no-app projection over canonical tracked inventory so MIRA can answer what is owned, identify an item by canonical asset identity/name/identifier, and report intended versus latest observed location without creating a second inventory authority or fabricating movement evidence.
 
 ## Session-start alignment verification — 2026-08-30
@@ -45,10 +45,10 @@ Verified before implementation:
 
 Verified before implementation:
 
-- `LOCATION-STATE-001` is still textually marked active but PR #67 is now merged and must be reconciled to completed in this packet;
-- `INVENTORY-QUERY-001` is queued and its prerequisites are now satisfied by merged receipt/asset/identifier/location work;
-- `MOVEMENT-CORE-001` is also newly unblocked, but inventory query provides the shorter immediate no-app user-visible value because it makes the existing canonical inventory state answerable before scanner/event history exists;
-- par/grocery, fitment, movement events, OCR/evidence enrichment and Android remain separate unfinished work.
+- `LOCATION-STATE-001` was stale-text active even though PR #67 had merged, and required reconciliation to completed;
+- `INVENTORY-QUERY-001` was queued and its prerequisites were satisfied by merged receipt/asset/identifier/location work;
+- `MOVEMENT-CORE-001` was also unblocked, but inventory query provided the shorter immediate no-app user-visible value because it made existing canonical inventory state answerable before scanner/event history exists;
+- par/grocery, fitment, movement events, OCR/evidence enrichment and Android remained separate unfinished work.
 
 ### `ROADMAP.md`
 
@@ -83,16 +83,81 @@ Verified before implementation:
 17. A fresh isolated Google provider proof demonstrates read-only queryability over synthetic canonical receipt/asset/identifier/location/inventory rows without touching protected legacy production state.
 18. End-of-session whole-product reconciliation confirms unfinished movement/scanning/container-following/par/grocery/fitment/OCR/Android work remains unfinished.
 
+## Completed evidence in this packet
+
+### Implementation
+
+- Added provider-neutral `mira/inventory_query.py` as a read-only projection over the existing canonical asset, identifier, inventory-state and location services.
+- Query supports canonical Entity UUID, case-insensitive display-name substring, exact canonical identifier lookup, independent intended/observed location filters, explicit descendant inclusion, deterministic root-to-leaf location paths and deterministic sort/limit behavior.
+- Projection begins from tracked canonical `inventory_state` only and never allocates a second physical/inventory identity.
+- Corrupt/orphan asset or location references and cyclic/broken location ancestry fail closed.
+- Query path contains no mutation operation and never infers movement/scanning/container-following behavior.
+
+### Direct/test evidence
+
+- Added `tests/test_inventory_query.py` with ten direct tests covering joined identity/provenance/identifier/location output, all bounded filters, descendant semantics, untracked exclusion, deterministic order/limit, malformed filters, no-match behavior, cyclic hierarchy, orphan inventory state and exact zero mutation of Resource/Event/Idempotency in-memory state.
+- Registered the dedicated `canonical-inventory-query` production component in `project/code_ownership.json` with direct verification ownership.
+- Early PR-head CI run `33340369948` passed on `a2ef63109b943464ce82239224253b6955012e4f` after the core implementation/tests/ownership checkpoint.
+- CI run `33340451667` passed on `0c180fc49064f93979299c707181eaa64bfeda06` after complete no-app instructions and workspace release guards were added.
+
+### No-app/release evidence
+
+- `workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md` now defines canonical read-only inventory query behavior, supported filters, intended-versus-observed honesty, descendant semantics, deterministic location paths, zero-write rules and explicit limits on what an empty result or inventory query proves.
+- `mira/workspace_bundle.py` now directly guards those inventory-query clauses so future starter/release drift fails CI.
+
+### Fresh isolated Google provider proof
+
+A new synthetic Google Sheet was created specifically for `M2-M0-016` and clearly marked `NOT A STARTER`; its provider ID/URL is intentionally excluded from public Git. No protected legacy MIRA production artifact was read as a fixture or modified.
+
+Synthetic provider state contained:
+
+- one synthetic receipt with three receipt-linked canonical assets;
+- three canonical asset UUIDs, with only two participating in `inventory_state` so the third acted as an untracked control;
+- canonical model identifiers for all three assets;
+- hierarchical synthetic `site → shop → shelf/workbench` locations;
+- two tracked inventory-state rows, one with intended Shelf A plus an independent observed Workbench timestamp and one with intended Shelf B plus no observation;
+- exact STORE-001-shaped `Resources`, `Events` and `Idempotency` tabs for bounded provider readback.
+
+Verified read-only query results:
+
+- bounded `inventory_state` query returned exactly the two tracked UUIDs;
+- `WRENCH-42` resolved the canonical identifier linked to the tracked wrench UUID;
+- querying that UUID joined its canonical asset, identifier and inventory-state rows;
+- the untracked drill UUID returned only asset + identifier rows and no inventory-state row;
+- canonical location rows proved both shelves and the workbench descend from the same shop without treating ancestry as movement evidence;
+- `loc-bench` matched only the wrench's observed-location state;
+- provider pre-query and post-query `Resources`, `Events` and `Idempotency` readbacks were logically identical: all Resource revisions remained `1`, `Events` remained header-only and `Idempotency` remained header-only. Drive `modifiedTime` was not used as evidence because it lagged the earlier seed write asynchronously.
+
+This is provider proof of read-only queryability over synthetic canonical rows, not a claim that the fixture seed itself exercised the runtime mutation/idempotency path.
+
+## Session-end authority reconciliation — 2026-08-30
+
+### `FEATURES.md`
+
+- `LOC-001` requirement/evidence is reconciled to `required | test_verified` from merged PR #67 without implying `MOVE-001` is complete.
+- `INV-002` correctly remains `candidate_unmerged` until PR #69 actually merges; tests/provider proof do not substitute for merge evidence.
+
+### `BACKLOG.md`
+
+- `LOCATION-STATE-001` is reconciled to completed with PR #67 merge SHA, exact-head CI and provider evidence.
+- `INVENTORY-QUERY-001` is the one active work row and records direct-test, no-app/release and isolated Google provider evidence; exact-head CI/merge remains the only completion gate.
+- `MOVEMENT-CORE-001`, `PAR-CORE-001`, `GROCERY-CORE-001`, fitment, OCR/evidence and Android remain unfinished and outside this packet.
+
+### `ROADMAP.md`
+
+- Rechecked with no semantic change required: M2-M0.5 still prioritizes useful stock-ChatGPT + Google Workspace verticals before Android and still requires bounded packets rather than subsystem fan-out.
+
+### Direction result
+
+**ALIGNED FOR MERGE CANDIDATE.** No adjacent feature was silently absorbed. The only remaining packet work is exact-head CI, PR readiness/merge, and remote `main` verification.
+
 ## Exact next action
 
-1. Implement the bounded provider-neutral read-only inventory query projection over the existing canonical services.
-2. Add direct tests for the acceptance criteria without broadening into movement/scanning.
-3. Wire the query contract into the complete no-app Personal instructions and release validation.
-4. Reconcile `LOCATION-STATE-001` as completed and mark only `INVENTORY-QUERY-001` active in the canonical backlog; update feature/evidence and ownership metadata as warranted by direct evidence.
-5. Run CI, fix only packet-relevant failures, and keep the branch green before any adjacent work.
-6. Perform a fresh isolated Google provider proof only after direct/CI evidence is green.
-7. Recheck all four authority files, record exact evidence, open/merge only with exact-head protection, and remotely verify `main`.
+1. Verify CI is green on the exact current PR #69 head after this lifecycle checkpoint.
+2. If exact-head CI is green, mark PR #69 ready, re-read the head SHA, and merge only with expected-head protection.
+3. Remotely verify `main` contains the merge and its CI/readback is green.
+4. Create the durable post-merge closeout/next-packet checkpoint; only then may another vertical become active.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-016-inventory-query` still descends from verified base `2da3128cdecad86b45c776f31ccb63e5be5aadc0`. Do not touch protected legacy MIRA production data. Do not implement movement events, scanning, container-following movement, par/grocery, fitment, OCR/evidence capture or Android as part of this packet.
+Read this file first. Confirm branch `integration/m0-016-inventory-query` still descends from verified base `2da3128cdecad86b45c776f31ccb63e5be5aadc0`. PR #69 is the packet PR. Do not touch protected legacy MIRA production data. Do not implement movement events, scanning, container-following movement, par/grocery, fitment, OCR/evidence capture or Android as part of this packet.
