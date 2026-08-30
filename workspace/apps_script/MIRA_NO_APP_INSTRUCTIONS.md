@@ -31,7 +31,7 @@ Required Metadata truths:
 - `schema_version=mira-structured-state-v1`
 - `adapter_contract=STORE-001`
 - `writer_model=single_writer`
-- `resource_types_json` contains `authority`, `authority_binding`, `entity`, `onboarding_ledger`, `ops_brief_run`, `service_state`, and `task`
+- `resource_types_json` contains `authority`, `authority_binding`, `entity`, `onboarding_ledger`, `ops_brief_run`, `receipt`, `service_state`, and `task`
 
 Also inspect mutation mode when present. Direct native mutation is allowed only in the Personal single-writer mode. If `mutation_mode=queued_writer`, shared-writer mode is active: do not directly mutate canonical Resource rows. Use the canonical command-inbox path only when that path is available and verified; otherwise fail closed.
 
@@ -102,6 +102,7 @@ The required bindings are:
 - `authority_binding/binding-service-state` → `{"authority_id":"google-sheets-personal","data_class":"service_state"}`
 - `authority_binding/binding-task` → `{"authority_id":"google-sheets-personal","data_class":"task"}`
 - `authority_binding/binding-ops-brief-run` → `{"authority_id":"google-sheets-personal","data_class":"ops_brief_run"}`
+- `authority_binding/binding-receipt` → `{"authority_id":"google-sheets-personal","data_class":"receipt"}`
 
 Bootstrap must be all-new or all-replay. If a binding already routes one of these data classes to a different authority, or the persisted Personal authority materially differs, fail closed instead of overwriting it. Create/replay the authority and all required bindings using the canonical revision/idempotency/readback rule. When the connector supports one atomic batch for the new records and their Idempotency rows, use it. Exact post-bootstrap readback must prove one valid binding for each data class and the one referenced authority.
 
@@ -257,6 +258,40 @@ Task rules:
 7. A task with `context=null` is eligible in every context. A context-specific task is eligible only when that context is active/explicitly supplied.
 8. One task should render as one actionable line in a brief. Do not stuff a multi-step project into one vague “work on X” action when a concrete next action is known.
 
+## Canonical receipts and purchase history
+
+Receipts are durable purchase truth derived from authorized evidence. The canonical resource type is `receipt`, schema version `1`. Raw email bodies, photos/images, PDFs, attachments, and user messages remain source evidence; do not copy raw source content into `payload_json` merely because it was used to extract purchase facts.
+
+A canonical receipt contains:
+
+- stable opaque `receipt_id` equal to the Resource ID;
+- merchant display name plus normalized merchant key;
+- optional order number;
+- `purchase_date` as `YYYY-MM-DD`;
+- three-letter uppercase currency;
+- required non-negative integer `total_minor` and optional subtotal/tax/shipping/discount values in the same integer minor-unit convention;
+- ordered line items with deterministic line IDs, description, normalized non-negative decimal-string quantity, optional unit price, and optional line total;
+- `state` of `captured` or `needs_review`;
+- one or more evidence observations;
+- optional user note.
+
+Each evidence observation contains only `source_type` (`email`, `image`, or `text`), lowercase SHA-256 `source_fingerprint`, optional `source_ref`, and offset-aware `observed_at`. Never invent a fingerprint or source identity.
+
+Receipt integrity rules:
+
+1. Money uses integer minor units. Reject floats rather than silently rounding them.
+2. Exact source-fingerprint replay with materially identical normalized facts is read-only and creates no duplicate purchase.
+3. If the same source fingerprint is presented with conflicting merchant, date, currency, total, order number, line facts, review state, or other established purchase facts, fail closed. Do not overwrite the canonical receipt.
+4. A new source may reconcile to an existing receipt when exactly one canonical receipt matches normalized merchant + order number, or when there is no order number and exactly one receipt matches merchant + purchase date + currency + total.
+5. If more than one plausible receipt matches, ask for explicit resolution. Do not select one because it appears first in the Sheet.
+6. A user/operator may explicitly state that an otherwise matching transaction is a distinct purchase. Exact source-fingerprint identity can never be bypassed.
+7. Additional compatible evidence may fill previously unknown optional money, order, line, or note facts, but may not silently change established contradictory facts.
+8. Explicit correction updates the same stable receipt ID at a new revision. Do not create a replacement receipt merely to correct merchant/date/amount/order/line facts.
+9. Missing subtotal, tax, shipping, discount, line prices, or line totals remain unknown. Do not reverse-engineer missing components from the total and do not claim line arithmetic reconciles unless evidence actually supports that conclusion.
+10. Receipt capture does **not** automatically create or mutate an asset, fitment, inventory item/location, order/shipment lifecycle, spending allocation/rollup, reimbursement, grocery stock, payment settlement, Gmail label/archive state, or Drive receipt archive. Those are separate canonical services/packets with their own authority and readback requirements.
+
+Purchase history is queried from canonical `receipt` resources. It may filter by stable receipt ID, normalized merchant text, normalized order number, and bounded purchase-date range. Results sort newest purchase date first with stable receipt ID as the deterministic tie-breaker. “Not recorded” is not the same as “not purchased.”
+
 ## First no-app Ops Brief vertical
 
 The first Personal MIRA Ops Brief is deliberately task-centered. It must be useful even when weather, orders, email, Calendar, mileage, finance, or other service sections are not yet implemented/available. Missing sections are omitted, never fabricated.
@@ -339,13 +374,15 @@ After Minimum Useful Setup is complete:
 1. Read canonical MIRA state relevant to the user's request before relying on chat history for mutable facts.
 2. Resolve the data class through the persisted Authority binding before treating a Resource as canonical.
 3. Use canonical task state for commitments and completion; completed/cancelled tasks stay in history instead of disappearing.
-4. A user's preference/request is not proof that a service is active.
-5. Before claiming a service is active, read its `service_state`. Effective activation requires `activation_state=active`, `capability_state=available`, and no dependency blockers.
-6. `requested` means the user wants the service but it is not yet active.
-7. `suspended` means the service must not be represented as operational even if it was active previously.
-8. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
-9. The task-centered Ops Brief is currently composable from canonical MIRA state, but composition alone is not evidence of scheduled delivery.
-10. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, receipts/purchases, assets/fitment, inventory/location/movement, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+4. Use canonical receipt state for captured purchases and purchase-history queries; new evidence must dedupe/reconcile conservatively and conflicting evidence must fail closed.
+5. Receipt capture alone never proves asset acquisition, inventory placement, order/shipment state, spending allocation, reimbursement, grocery stock, payment settlement, Gmail archival, or Drive archival.
+6. A user's preference/request is not proof that a service is active.
+7. Before claiming a service is active, read its `service_state`. Effective activation requires `activation_state=active`, `capability_state=available`, and no dependency blockers.
+8. `requested` means the user wants the service but it is not yet active.
+9. `suspended` means the service must not be represented as operational even if it was active previously.
+10. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
+11. The task-centered Ops Brief is currently composable from canonical MIRA state, but composition alone is not evidence of scheduled delivery.
+12. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, assets/fitment, inventory/location/movement, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 
