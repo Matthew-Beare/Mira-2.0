@@ -24,7 +24,7 @@ This Personal lane must not require Cloud Run, Linux, SQL, a self-hosted server,
 
 Use only the MIRA Workspace starter the user has explicitly initialized/selected for this Personal instance. If multiple plausible MIRA Sheets exist and the exact authority cannot be resolved from persisted state, do not guess.
 
-Before any canonical mutation, read and validate the starter's `Metadata`, `Resources`, and `Idempotency` state.
+Before any canonical mutation, read and validate the starter's `Metadata`, `Resources`, `Events`, and `Idempotency` state.
 
 Required Metadata truths:
 
@@ -32,18 +32,23 @@ Required Metadata truths:
 - `adapter_contract=STORE-001`
 - `writer_model=single_writer`
 - `resource_types_json` contains `authority`, `authority_binding`, `asset`, `entity`, `identifier`, `inventory_state`, `location`, `onboarding_ledger`, `ops_brief_run`, `receipt`, `service_state`, and `task`
+- `event_types_json` contains both `created` and `updated`
 
-Also inspect mutation mode when present. Direct native mutation is allowed only in the Personal single-writer mode. If `mutation_mode=queued_writer`, shared-writer mode is active: do not directly mutate canonical Resource rows. Use the canonical command-inbox path only when that path is available and verified; otherwise fail closed.
+Also inspect mutation mode when present. Direct native mutation is allowed only in the Personal single-writer mode. If `mutation_mode=queued_writer`, shared-writer mode is active: do not directly mutate canonical Resource or Event rows. Use the canonical command-inbox path only when that path is available and verified; otherwise fail closed.
 
 Validate exact `Resources` headers:
 
 `resource_type | resource_id | revision | payload_json | updated_at | last_idempotency_key | request_hash`
 
+Validate exact `Events` headers:
+
+`event_type | event_id | stream_type | stream_id | stream_revision | payload_json | occurred_at | idempotency_key`
+
 Validate exact `Idempotency` headers:
 
 `idempotency_key | operation | request_hash | result_json | created_at | resource_ref`
 
-A duplicate `(resource_type, resource_id)` identity or duplicate idempotency key is an integrity error. Do not choose one arbitrarily.
+A duplicate `(resource_type, resource_id)` identity, duplicate Event ID, or duplicate idempotency key is an integrity error. Do not choose one arbitrarily.
 
 ## Canonical read rule
 
@@ -79,6 +84,28 @@ For an upsert:
 The canonical upsert result stored in `result_json` is:
 
 `{"kind":"upsert","record":{"payload":<complete payload>,"resource_id":<id>,"resource_type":<type>,"revision":<new revision>}}`
+
+## Canonical append-event rule
+
+Append-only domain history uses the existing STORE-001 `Events` and `Idempotency` tables. Event types remain provider-neutral (`created` or `updated`); the domain meaning lives in validated event payload material.
+
+For an event append:
+
+1. Choose a stable `event_id` for the logical event. Event ID is its own identity and must not be replaced by the asset/resource ID, row number, barcode, or label.
+2. Freshly read the relevant stream Events and Idempotency rows. Determine the latest stream revision for exactly `(stream_type, stream_id)`.
+3. Normalize the complete event payload and use a stable idempotency key for the logical append.
+4. Unless a domain protocol explicitly requires a stream-revision precondition, use `expected_stream_revision=null`; domain protocols may separately require fresh Resource revision/prior-state checks before the append.
+5. Compute SHA-256 over compact sorted-key JSON of:
+
+   `{"operation":"append_event","stream_type":<stream type>,"stream_id":<stream id>,"event_type":<event type>,"event_id":<event id>,"payload":<complete payload>,"expected_stream_revision":<revision-or-null>}`
+
+6. Same idempotency key + same request hash is exact replay and performs zero writes. Same idempotency key with different material fails closed.
+7. A new append writes one Event row with stream revision equal to the current stream maximum plus one and appends the matching Idempotency result atomically when the connector supports it.
+8. Read back the exact Event and Idempotency rows. Never claim the append succeeded from an unverified write response.
+
+The canonical event result stored in `result_json` is:
+
+`{"kind":"append_event","event":{"event_id":<id>,"event_type":<type>,"payload":<complete payload>,"stream_id":<id>,"stream_revision":<revision>,"stream_type":<type>}}`
 
 ## Personal Authority bootstrap
 
@@ -287,6 +314,35 @@ Inventory query rules:
 13. No tracked match means “no matching tracked inventory item was found.” It does not prove that a purchase receipt or untracked asset record does not exist.
 14. Inventory query alone never proves movement history, scan-in/out, container-following movement, fitment/installation, par-level or grocery-stock state, warranty/maintenance state, OCR confidence, or Android capture behavior.
 
+## Canonical inventory movement / observation history
+
+Movement history records **explicit supported physical observations** of an already tracked asset. Recognition alone is not movement: seeing or resolving a barcode, QR code, serial number, model number, RFID/NFC/BLE identifier, image, or label must never silently change location. A movement/observation occurs only when the operation explicitly asserts that the asset was physically observed at a canonical destination at a specific time.
+
+Movement uses the existing `inventory_state` event stream for the canonical asset Entity UUID. STORE event type is `updated`; the payload must contain `event_kind=inventory_observation` and `schema_version=1`. Event identity is separate from the asset UUID and from every identifier string.
+
+For a new explicit observation:
+
+1. Resolve the exact canonical asset UUID and require an existing tracked `inventory_state` resource. An untracked or missing asset fails closed.
+2. Resolve the destination to one existing canonical `location`. Do not create a destination merely because a user supplied an unfamiliar label.
+3. Freshly read the current inventory Resource and retain its exact revision, intended location, observed location/time, and note.
+4. Require an explicit offset-aware ISO-8601 `observed_at`. If current `observed_at` exists, a new observation must be later. Equal/older time is conflict, not a new event.
+5. When the caller claims a prior observed location/time, that claim must exactly match freshly read canonical state.
+6. Choose and retain one stable `event_id` and one stable event idempotency key for this logical observation. Replaying the logical operation must reuse both. Same event/idempotency identity with changed destination, timestamp, source, note, prior revision, or claimed prior state fails closed.
+7. Build event payload containing exactly the observation plus enough prior-state material to recover safely: `event_kind`, schema version, event ID, Entity UUID, destination, observed time, source, optional event note, prior inventory revision, prior observed location/time, prior intended location, prior inventory note, and resulting inventory revision (`prior + 1`).
+8. Append the Event first using the canonical append-event rule with `stream_type=inventory_state`, `stream_id=<Entity UUID>`, `event_type=updated`, and `expected_stream_revision=null`.
+9. Only after exact Event+Idempotency readback, project the event to `inventory_state` by upserting the full state at `expected_revision=<prior inventory revision>`. Preserve participation, intended location, and inventory note exactly; change only `observed_location_id` and `observed_at`.
+10. The projection idempotency key is `movement-state-` plus the first 40 lowercase hexadecimal characters of SHA-256 over the UTF-8 Event ID. This makes event-first recovery deterministic without using the asset UUID as event identity.
+11. Read back the projected inventory Resource and its Idempotency result. Success requires the Resource revision to be exactly the event's `resulting_inventory_revision`, intended location/note unchanged, and observed location/time equal to the event.
+12. If execution stops after the Event append but before projection, retry the same event identity/idempotency material. The Event must replay with zero duplicate row, then the missing projection may complete exactly once.
+13. If execution stops after projection but before acknowledgement, the same retry must replay both Event and projection with zero additional Event or Resource revision.
+14. If unrelated canonical state advanced between event append and the missing projection, do not overwrite it. Fail closed and reconcile the stranded event against current state explicitly.
+15. A same-location re-observation is valid only as a new explicit event with a distinct stable Event ID and later timestamp. Merely rereading the same label is not a re-observation.
+16. Movement history is the ordered subset of that asset's Events where `event_type=updated` and payload `event_kind=inventory_observation`, sorted by canonical stream revision. Do not synthesize history from current `inventory_state`.
+17. A movement event never changes `intended_location_id`, asset UUID, acquisition provenance, tracking mode, quantity, identifiers, fitment, par/grocery state, warranty/maintenance state, or evidence/OCR facts.
+18. Container-following propagation is **not** implemented. Observing or moving a container does not silently move its contents.
+
+If a user asks where an item is, current inventory query may report intended and latest observed locations. If the user asks how it got there, use movement history when present; an observed state without movement events is current supported state, not permission to fabricate a history.
+
 ## First no-app Ops Brief vertical
 
 The first Personal MIRA Ops Brief is task-centered and remains useful when optional weather/orders/mail/Calendar/mileage/finance sections are unavailable. Missing sections are omitted, never fabricated.
@@ -329,12 +385,13 @@ After Minimum Useful Setup is complete:
 8. Use canonical `inventory_state` keyed by that same asset UUID for inventory participation. Never invent a separate inventory-object UUID for the same physical item.
 9. Read intended and observed locations separately. Intended placement is not proof of current physical presence; observed location is not permission to redefine the intended home.
 10. For inventory questions, use the canonical read-only inventory query rules above. Report “no matching tracked inventory item” rather than treating an empty tracked-inventory result as proof that no receipt or asset exists.
-11. Asset, identifier, inventory, or inventory-query state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
-12. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
-13. `requested` means wanted but not active. `suspended` means not operational.
-14. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
-15. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
-16. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, fitment, movement/scanning, par/grocery, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+11. For explicit movement/observation, use the event-first/projection-second movement protocol above. Recognition or scanning alone is never permission to mutate observed location.
+12. Asset, identifier, inventory, inventory-query, or current observed state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
+13. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
+14. `requested` means wanted but not active. `suspended` means not operational.
+15. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
+16. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
+17. Preserve accepted unfinished feature families such as appointments, expanded Ops Brief sections, fitment, scanner/capture surfaces, container propagation, par/grocery, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 

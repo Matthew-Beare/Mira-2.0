@@ -189,6 +189,15 @@
       "verification": ["tests/test_inventory_query.py"]
     },
     {
+      "id": "canonical-inventory-movement",
+      "responsibility": "Provider-neutral replay-safe explicit inventory observation/movement event history with recovery-safe observed-state projection onto canonical inventory state.",
+      "why_separate": "Movement history mutates only supported observed state through append-only canonical events and must stay separate from read-only inventory query, intended placement, scanner capture, passive reads, container propagation and client UI.",
+      "owned_paths": ["mira/movement.py"],
+      "feature_ids": ["MOVE-001", "INV-001", "LOC-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["MOVEMENT-CORE-001"],
+      "verification": ["tests/test_movement.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
