@@ -420,7 +420,12 @@ class ProgressiveDiscoveryService:
         idempotency_key: str,
         interview_id: str = DISCOVERY_ID,
     ) -> DiscoveryLedgerView:
-        """Claim at most one new discovery topic for one supplied local date."""
+        """Claim at most one discovery prompt for one supplied local date.
+
+        An unanswered current topic may repeat on a later local date, but silence
+        never advances to another topic. Each emitted day consumes one of the
+        bounded seven automatic discovery prompt-days.
+        """
 
         _idempotency_key(idempotency_key)
         normalized_date = _local_date(local_date)
@@ -429,8 +434,6 @@ class ProgressiveDiscoveryService:
         if view.mode != "brief_drip" or not view.brief_drip_enabled:
             return _discovery_view(record, idempotent_replay=True)
         if view.last_brief_local_date == normalized_date:
-            return _discovery_view(record, idempotent_replay=True)
-        if record.payload.get("current_topic_id") is not None:
             return _discovery_view(record, idempotent_replay=True)
         if view.brief_topic_days_used >= DISCOVERY_BRIEF_TOPIC_LIMIT:
             payload = deepcopy(record.payload)
@@ -441,18 +444,21 @@ class ProgressiveDiscoveryService:
                 payload,
                 idempotency_key=idempotency_key,
             )
-        next_topic_id = _first_pending_topic(record.payload)
-        if next_topic_id is None:
-            payload = deepcopy(record.payload)
-            payload["brief_drip_enabled"] = False
-            payload["status"] = "complete"
-            return self._persist_discovery(
-                record,
-                payload,
-                idempotency_key=idempotency_key,
-            )
+
         payload = deepcopy(record.payload)
-        payload["current_topic_id"] = next_topic_id
+        topic_id = payload.get("current_topic_id")
+        if topic_id is None:
+            topic_id = _first_pending_topic(payload)
+            if topic_id is None:
+                payload["brief_drip_enabled"] = False
+                payload["status"] = "complete"
+                return self._persist_discovery(
+                    record,
+                    payload,
+                    idempotency_key=idempotency_key,
+                )
+            payload["current_topic_id"] = topic_id
+
         payload["last_brief_local_date"] = normalized_date
         payload["brief_topic_days_used"] = int(payload["brief_topic_days_used"]) + 1
         result = self._persist_discovery(
