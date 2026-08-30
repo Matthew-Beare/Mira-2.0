@@ -171,6 +171,15 @@
       "verification": ["tests/test_identifiers.py"]
     },
     {
+      "id": "canonical-inventory-location",
+      "responsibility": "Provider-neutral inventory participation over immutable asset UUIDs plus stable hierarchical locations and independent intended-versus-observed physical location state.",
+      "why_separate": "Inventory/location state must reuse physical identity and answer where an item belongs separately from where it was last observed, while movement events, scanning, broad inventory projection and par/grocery behavior remain downstream services.",
+      "owned_paths": ["mira/inventory_location.py"],
+      "feature_ids": ["INV-001", "LOC-001", "ASSET-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["LOCATION-STATE-001"],
+      "verification": ["tests/test_inventory_location.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
