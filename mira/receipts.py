@@ -10,7 +10,7 @@ rewrites contradictory canonical purchase facts.
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 import hashlib
@@ -317,6 +317,7 @@ class ReceiptService:
     ) -> ReceiptView:
         """Explicitly correct facts while preserving the stable receipt identity."""
 
+        key = _idempotency_key(idempotency_key)
         current = self.get(receipt_id)
         normalized = _normalize_receipt(
             merchant=current.merchant if merchant is _UNSET else merchant,
@@ -336,13 +337,18 @@ class ReceiptService:
             state=current.state if state is _UNSET else state,
             user_note=current.user_note if user_note is _UNSET else user_note,
         )
+        if _view_matches_facts(current, normalized):
+            # The requested correction is already canonical. This is a read-only
+            # semantic replay, so a later current revision must not turn a
+            # previously successful logical correction into an idempotency conflict.
+            return replace(current, idempotent_replay=True)
         payload = _receipt_payload(current.receipt_id, normalized, current.evidence)
         try:
             result = self._adapter.upsert(
                 self._resource_type,
                 current.receipt_id,
                 payload,
-                idempotency_key=_idempotency_key(idempotency_key),
+                idempotency_key=key,
                 expected_revision=current.revision,
             )
         except StoreValidationError as exc:
@@ -420,6 +426,26 @@ class ReceiptService:
         except StoreValidationError as exc:
             raise ReceiptValidationError(str(exc)) from exc
         return tuple(_view(record) for record in records)
+
+
+def _view_matches_facts(current: ReceiptView, desired: _NormalizedReceipt) -> bool:
+    """Return whether an explicit desired correction is already canonical."""
+
+    return (
+        current.merchant == desired.merchant
+        and current.merchant_key == desired.merchant_key
+        and current.order_number == desired.order_number
+        and current.purchase_date == desired.purchase_date
+        and current.currency == desired.currency
+        and current.total_minor == desired.total_minor
+        and current.subtotal_minor == desired.subtotal_minor
+        and current.tax_minor == desired.tax_minor
+        and current.shipping_minor == desired.shipping_minor
+        and current.discount_minor == desired.discount_minor
+        and current.lines == desired.lines
+        and current.state == desired.state
+        and current.user_note == desired.user_note
+    )
 
 
 def _correlation_candidates(
