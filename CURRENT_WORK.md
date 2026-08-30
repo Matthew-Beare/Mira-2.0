@@ -20,7 +20,7 @@ Merged in PR #64 to `main` at `804a664f343934cc813d9cc45b471a6756a15697` after e
 
 - **Primary work:** `ASSET-ACQUISITION-001`
 - **Primary features:** `ASSET-001`, `ASSET-002`
-- **Related preserved features:** `FITMENT-001`, `IDENT-001`, `EVID-001`, `ASSET-003`, `INV-001`, `LOC-001`, `MOVE-001`, `INV-002`, `STORE-001`, `RECOVERY-002`
+- **Related invariants/features:** `FITMENT-001`, `IDENT-001`, `EVID-001`, `ASSET-003`, `INV-001`, `LOC-001`, `MOVE-001`, `INV-002`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-013-asset-acquisition`
 - **Base SHA:** `804a664f343934cc813d9cc45b471a6756a15697`
@@ -101,7 +101,7 @@ The complete no-app operating instructions now require:
 
 PR #65 CI run `33284755714` passed on implementation/release head `18c9a80a34c8fae87c15a13c5105c339814b95d9`, including repository integrity, product lifecycle, Personal starter distribution, work-session alignment, code ownership, Python unit tests, and Workspace Apps Script tests.
 
-The provider-proof documentation and this closeout checkpoint are later commits, so the exact final PR head still requires a fresh CI run before merge.
+Closeout run `33298296777` failed only the work-session-alignment gate because the checkpoint field was mislabeled `Related preserved features` instead of the required `Related invariants/features`; compile, feature registry, product lifecycle, and Personal distribution were green before that gate. This commit corrects only that governance label. The exact current head still requires a fresh CI run before merge.
 
 ## Independent Google provider proof — 2026-08-29/30
 
@@ -190,13 +190,13 @@ Rechecked after implementation/provider proof. This packet advances the explicit
 9. Personal starter `asset` + `binding-asset` contract — PASS.
 10. Complete no-app immutable asset/no-side-effect contract — PASS.
 11. Distribution/Workspace validation + code ownership — PASS.
-12. CI green on implementation head — PASS; exact closeout-head CI PENDING.
+12. CI green on implementation head — PASS; exact corrected-closeout-head CI PENDING.
 13. Fresh isolated Google receipt-to-asset revision-1/replay-boundary/revision-2 exact readback — PASS.
 14. End-of-session whole-product reconciliation — PASS.
 
 ## Exact next action
 
-1. Run CI on the exact current PR #65 closeout head containing this checkpoint.
+1. Run CI on the exact current PR #65 corrected-closeout head containing this checkpoint.
 2. If every gate is green, merge PR #65 using expected-head SHA protection.
 3. Remotely verify `main` at the returned merge SHA.
 4. Create exactly one next bounded packet from verified `main` and in that packet reconcile `ASSET-ACQUISITION-001` to completed with PR #65 evidence.
