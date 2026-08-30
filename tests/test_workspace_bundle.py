@@ -37,15 +37,15 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("authority_binding/binding-service-state", protocol)
         self.assertIn("authority_binding/binding-receipt", protocol)
         self.assertIn("authority_binding/binding-asset", protocol)
+        self.assertIn("authority_binding/binding-identifier", protocol)
         self.assertIn("resource id: `google-sheets-personal`", protocol)
-        self.assertIn("resource type: `onboarding_ledger`", protocol)
         self.assertIn("resource id: `minimum-useful-setup`", protocol)
         self.assertIn("`timezone`", protocol)
         self.assertIn("`life_pattern`", protocol)
         self.assertIn("`goals`", protocol)
         self.assertIn("`appointment_help`", protocol)
         self.assertIn("## Canonical receipts and purchase history", protocol)
-        self.assertIn("resource type is `receipt`", protocol)
+        self.assertIn("canonical resource type is `receipt`", protocol)
         self.assertIn("integer minor units", protocol)
         self.assertIn("Exact source-fingerprint replay", protocol)
         self.assertIn("Receipt capture does **not** automatically create or mutate an asset", protocol)
@@ -55,9 +55,14 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("Receipt capture never automatically creates assets.", protocol)
         self.assertIn("`tracking_mode=individual` requires asset quantity exactly `1`", protocol)
         self.assertIn("Asset acquisition alone therefore never claims an item is installed on a vehicle", protocol)
+        self.assertIn("## Canonical asset identifiers and lookup", protocol)
+        self.assertIn("canonical resource type is `identifier`", protocol)
+        self.assertIn("Leading zeroes are preserved.", protocol)
+        self.assertIn("serial-level collision-protected identifiers", protocol)
+        self.assertIn("identifiers cannot manufacture physical assets.", protocol)
+        self.assertIn("Identifier attachment alone never infers fitment", protocol)
         self.assertIn("`calendar_capability_verified`: false", protocol)
-        self.assertIn("resource type: `service_state`", protocol)
-        self.assertIn("resource id: `appointments_calendar`", protocol)
+        self.assertIn("service_state/appointments_calendar", protocol)
         self.assertIn("`activation_state` to `requested`", protocol)
         self.assertIn("Do **not** mark the service active.", protocol)
         self.assertIn("SHA-256", protocol)
@@ -114,6 +119,39 @@ class WorkspaceBundleTests(unittest.TestCase):
         ].replace(
             "Asset acquisition alone therefore never claims an item is installed on a vehicle",
             "Asset acquisition may imply installation",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_identifier_binding_clause(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("authority_binding/binding-identifier", "authority_binding/missing-identifier")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_identifier_collision_clause(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "`serial_number`, `imei`, and `mac` are serial-level collision-protected identifiers.",
+            "Serial identifiers may be reused.",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_identifier_side_effect_regression(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "Identifier attachment alone never infers fitment",
+            "Identifier attachment may infer fitment",
         )
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)

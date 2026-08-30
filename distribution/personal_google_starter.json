@@ -15,7 +15,7 @@
         ["environment", "mira_2_personal_clean"],
         ["data_policy", "clean_starter_only"],
         ["adapter_contract", "STORE-001"],
-        ["resource_types_json", "[\"authority\",\"authority_binding\",\"asset\",\"entity\",\"onboarding_ledger\",\"ops_brief_run\",\"receipt\",\"service_state\",\"task\"]"],
+        ["resource_types_json", "[\"authority\",\"authority_binding\",\"asset\",\"entity\",\"identifier\",\"onboarding_ledger\",\"ops_brief_run\",\"receipt\",\"service_state\",\"task\"]"],
         ["event_types_json", "[\"created\",\"updated\"]"],
         ["writer_model", "single_writer"]
       ],
