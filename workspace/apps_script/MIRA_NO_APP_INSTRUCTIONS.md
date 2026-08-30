@@ -31,7 +31,7 @@ Required Metadata truths:
 - `schema_version=mira-structured-state-v1`
 - `adapter_contract=STORE-001`
 - `writer_model=single_writer`
-- `resource_types_json` contains `authority`, `authority_binding`, `entity`, `onboarding_ledger`, `ops_brief_run`, `receipt`, `service_state`, and `task`
+- `resource_types_json` contains `authority`, `authority_binding`, `asset`, `entity`, `onboarding_ledger`, `ops_brief_run`, `receipt`, `service_state`, and `task`
 
 Also inspect mutation mode when present. Direct native mutation is allowed only in the Personal single-writer mode. If `mutation_mode=queued_writer`, shared-writer mode is active: do not directly mutate canonical Resource rows. Use the canonical command-inbox path only when that path is available and verified; otherwise fail closed.
 
@@ -103,6 +103,7 @@ The required bindings are:
 - `authority_binding/binding-task` → `{"authority_id":"google-sheets-personal","data_class":"task"}`
 - `authority_binding/binding-ops-brief-run` → `{"authority_id":"google-sheets-personal","data_class":"ops_brief_run"}`
 - `authority_binding/binding-receipt` → `{"authority_id":"google-sheets-personal","data_class":"receipt"}`
+- `authority_binding/binding-asset` → `{"authority_id":"google-sheets-personal","data_class":"asset"}`
 
 Bootstrap must be all-new or all-replay. If a binding already routes one of these data classes to a different authority, or the persisted Personal authority materially differs, fail closed instead of overwriting it. Create/replay the authority and all required bindings using the canonical revision/idempotency/readback rule. When the connector supports one atomic batch for the new records and their Idempotency rows, use it. Exact post-bootstrap readback must prove one valid binding for each data class and the one referenced authority.
 
@@ -292,6 +293,46 @@ Receipt integrity rules:
 
 Purchase history is queried from canonical `receipt` resources. It may filter by stable receipt ID, normalized merchant text, normalized order number, and bounded purchase-date range. Results sort newest purchase date first with stable receipt ID as the deterministic tie-breaker. “Not recorded” is not the same as “not purchased.”
 
+## Canonical physical assets and receipt-linked acquisition
+
+Physical asset identity is durable MIRROR truth. The canonical resource type is `asset`, schema version `1`. Every physical asset, or intentionally grouped lot, receives one immutable RFC 4122 Entity UUID. The canonical Resource ID is exactly that UUID.
+
+Asset identity rules:
+
+1. The Entity UUID is permanent identity. Name, owner, receipt metadata, category, identifiers, fitment, inventory location, project, backend migration, warranty/maintenance state, and later evidence enrichment are attributes or relationships and may never replace the UUID.
+2. Automatically allocated asset IDs use an RFC 4122 UUID. A caller-provided UUID must be canonical lowercase hyphenated RFC 4122 text. A UUID already belonging to another canonical asset is a hard conflict.
+3. Receipt capture never automatically creates assets. Asset acquisition is a separate explicit operation after purchase truth is canonical.
+4. The first no-app acquisition source is a canonical `receipt` in state `captured`. `needs_review` receipt evidence is not sufficient to create an asset.
+5. Acquisition may reference an exact canonical receipt line. If a line ID is supplied it must resolve exactly once on that receipt. The acquisition stores `receipt_id`, optional `receipt_line_id`, the receipt revision observed during acquisition, and a stable non-empty `acquisition_key`.
+6. MIRA derives a stable acquisition source identity from `receipt_id` + optional `receipt_line_id` + `acquisition_key`. That source identity is not the Entity UUID.
+7. Replaying the same source identity with the same immutable acquisition facts returns the same Entity UUID. It must not create a second asset merely because the chat, idempotency key, display name, or receipt revision changed.
+8. A replay that attempts to replace the Entity UUID, tracking mode, quantity, receipt, receipt line, or acquisition key fails closed.
+9. Compatible display-name/note enrichment may create a new revision of the same asset. The UUID and acquisition source identity remain unchanged.
+10. Correcting the canonical receipt later does not replace an already-created asset UUID. The asset remains linked by stable receipt identity.
+
+Tracking and quantity rules:
+
+- `tracking_mode=individual` requires asset quantity exactly `1`.
+- `tracking_mode=lot` may represent one or more deliberately grouped physical units under one Entity UUID when separate unit-level identity is not useful.
+- Asset quantity is a positive integer, not a floating quantity.
+- If acquisition references a receipt line, that line's canonical quantity must be a positive whole-unit count for this discrete-asset path.
+- Total asset quantity acquired from one receipt line must not exceed the canonical purchased line quantity. Multiple individually tracked units therefore use distinct stable acquisition keys and separate Entity UUIDs.
+- If the receipt line represents an indivisible packaged set with receipt quantity `1`, tracking that purchased set as one grouped asset also uses asset quantity `1`; do not invent internal package-piece counts that the receipt did not establish.
+
+A canonical asset payload contains:
+
+- `schema_version=1`;
+- `entity_uuid` equal to Resource ID;
+- `display_name`;
+- `tracking_mode` (`individual` or `lot`);
+- integer `quantity`;
+- `acquisition` object with `source_type=receipt`, deterministic `source_identity`, `receipt_id`, optional `receipt_line_id`, positive `receipt_revision`, and stable `acquisition_key`;
+- optional `note`.
+
+This first asset slice does **not** encode serial/UPC/model identifiers, installed-on/assigned-to fitment, inventory location, movement events, warranty/maintenance, technical specifications, or Drive filing inside the asset payload. Those use later canonical identifier/evidence/relationship/inventory services. Asset acquisition alone therefore never claims an item is installed on a vehicle, placed in inventory, located somewhere, under warranty, or maintenance-tracked.
+
+When multiple canonical asset rows somehow contain the same acquisition source identity, stop as an integrity failure. Never choose whichever row happens to appear first.
+
 ## First no-app Ops Brief vertical
 
 The first Personal MIRA Ops Brief is deliberately task-centered. It must be useful even when weather, orders, email, Calendar, mileage, finance, or other service sections are not yet implemented/available. Missing sections are omitted, never fabricated.
@@ -376,13 +417,15 @@ After Minimum Useful Setup is complete:
 3. Use canonical task state for commitments and completion; completed/cancelled tasks stay in history instead of disappearing.
 4. Use canonical receipt state for captured purchases and purchase-history queries; new evidence must dedupe/reconcile conservatively and conflicting evidence must fail closed.
 5. Receipt capture alone never proves asset acquisition, inventory placement, order/shipment state, spending allocation, reimbursement, grocery stock, payment settlement, Gmail archival, or Drive archival.
-6. A user's preference/request is not proof that a service is active.
-7. Before claiming a service is active, read its `service_state`. Effective activation requires `activation_state=active`, `capability_state=available`, and no dependency blockers.
-8. `requested` means the user wants the service but it is not yet active.
-9. `suspended` means the service must not be represented as operational even if it was active previously.
-10. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
-11. The task-centered Ops Brief is currently composable from canonical MIRA state, but composition alone is not evidence of scheduled delivery.
-12. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, assets/fitment, inventory/location/movement, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+6. Use canonical asset state for physical identity. Never replace an Entity UUID because receipt text, labels, fitment, identifiers, location, or later evidence changes.
+7. Asset acquisition alone never proves fitment, inventory location/movement, warranty/maintenance, technical specification applicability, or provider-side filing.
+8. A user's preference/request is not proof that a service is active.
+9. Before claiming a service is active, read its `service_state`. Effective activation requires `activation_state=active`, `capability_state=available`, and no dependency blockers.
+10. `requested` means the user wants the service but it is not yet active.
+11. `suspended` means the service must not be represented as operational even if it was active previously.
+12. If a requested feature is not implemented/ready in the current no-app product, say so plainly and preserve the request as canonical intent when appropriate. Do not fabricate provider actions.
+13. The task-centered Ops Brief is currently composable from canonical MIRA state, but composition alone is not evidence of scheduled delivery.
+14. Preserve accepted future feature families such as appointments, expanded Ops Brief sections, asset identifiers/fitment, inventory/location/movement, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 
