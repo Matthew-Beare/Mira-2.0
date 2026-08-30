@@ -21,8 +21,8 @@ PR #67 merged to `main` as `7c2675836d2958d23ac37ad471cae8e14017b894`. Exact PR-
 ### `M2-M0-016` — Canonical inventory query projection
 
 - **Primary work:** `INVENTORY-QUERY-001`
-- **Primary feature:** `INV-002`
-- **Supporting features/invariants:** `INV-001`, bounded implemented slice of `LOC-001`, `ASSET-001`, `ASSET-003`, `IDENT-001`, `STORE-001`, `RECOVERY-002`
+- **Primary features:** `INV-002`
+- **Related invariants/features:** `INV-001`, `LOC-001`, `ASSET-001`, `ASSET-003`, `IDENT-001`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-016-inventory-query`
 - **Base SHA:** `2da3128cdecad86b45c776f31ccb63e5be5aadc0`
