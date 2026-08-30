@@ -20,7 +20,7 @@ PR #67 merged to `main` at `7c2675836d2958d23ac37ad471cae8e14017b894` after exac
 
 - **Primary work:** `MOVEMENT-CORE-001`
 - **Primary features:** `MOVE-001`, movement slice of `LOC-001`
-- **Related invariants/features:** `INV-001`, `IDENT-001`, `ASSET-001`, `ASSET-003`, `INV-002`, `LOCATION-STATE-001`, `STORE-001`, `RECOVERY-002`, `CLIENT-ANDROID-001`
+- **Related invariants/features:** `INV-001`, `IDENT-001`, `ASSET-001`, `ASSET-003`, `INV-002`, `STORE-001`, `RECOVERY-002`, `CLIENT-ANDROID-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-016-inventory-movement`
 - **Base SHA:** `2da3128cdecad86b45c776f31ccb63e5be5aadc0`
