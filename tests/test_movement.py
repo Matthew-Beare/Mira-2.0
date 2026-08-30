@@ -322,6 +322,23 @@ class MovementServiceTests(unittest.TestCase):
             ["move-001", "move-002"],
         )
 
+    def test_history_ignores_unrelated_generic_updated_events(self) -> None:
+        self.adapter.append_event(
+            "inventory_state",
+            ASSET_UUID,
+            MOVEMENT_EVENT_TYPE,
+            "generic-update-001",
+            {"event_kind": "inventory_note_changed", "schema_version": 1},
+            idempotency_key="generic-update-idempotency",
+        )
+        self.assertEqual(self.movement.history(ASSET_UUID), ())
+
+        moved = self.observe()
+        self.assertEqual(moved.event.stream_revision, 2)
+        history = self.movement.history(ASSET_UUID)
+        self.assertEqual([row.event_id for row in history], ["move-001"])
+        self.assertEqual(history[0].stream_revision, 2)
+
     def test_crash_after_event_before_projection_recovers_without_duplicate(self) -> None:
         wrapper = ProjectionFailureAdapter(self.adapter, fail_after_write=False)
         service = MovementService(wrapper)
