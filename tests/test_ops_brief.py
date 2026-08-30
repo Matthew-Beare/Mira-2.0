@@ -160,26 +160,7 @@ class OpsBriefServiceTests(unittest.TestCase):
             self.assertNotIn(unavailable, brief.rendered_text)
 
     def test_progressive_discovery_can_appear_once_in_one_daily_brief(self) -> None:
-        interview = InterviewLedgerService(self.adapter)
-        interview.start_or_resume()
-        interview.answer("timezone", "America/New_York", idempotency_key="tz")
-        interview.answer(
-            "life_pattern",
-            "I work, study, travel, and manage a household.",
-            idempotency_key="life",
-        )
-        interview.answer(
-            "goals",
-            "Keep commitments and projects organized.",
-            idempotency_key="goals",
-        )
-        interview.answer(
-            "appointment_help",
-            {"wants_help": False, "calendar_lane": None},
-            idempotency_key="appointments",
-        )
-        discovery = ProgressiveDiscoveryService(self.adapter)
-        discovery.choose_mode("start using MIRA", idempotency_key="choose-drip")
+        discovery = self._configured_discovery()
         briefs = OpsBriefService(
             self.adapter,
             task_service=self.tasks,
@@ -201,6 +182,55 @@ class OpsBriefServiceTests(unittest.TestCase):
         state = discovery.start_or_resume()
         self.assertEqual(state.topic_states["fitness_wellness"], "unanswered")
         self.assertEqual(state.brief_topic_days_used, 1)
+
+    def test_pending_fitness_goals_followup_replaces_yes_no_prompt_on_later_day(self) -> None:
+        discovery = self._configured_discovery()
+        briefs = OpsBriefService(
+            self.adapter,
+            task_service=self.tasks,
+            discovery_service=discovery,
+        )
+        first = briefs.compose_slot(
+            "2026-08-30", "am", timezone_name="America/New_York"
+        )
+        self.assertIn("Would you like MIRA to help with fitness", first.rendered_text)
+
+        pending = discovery.answer_topic(
+            "fitness_wellness",
+            True,
+            idempotency_key="fitness-yes-from-brief",
+        )
+        self.assertEqual(pending.topic_states["fitness_wellness"], "needs_details")
+
+        later = briefs.compose_slot(
+            "2026-08-31", "am", timezone_name="America/New_York"
+        )
+        self.assertEqual(later.discovery_topic_id, "fitness_wellness")
+        self.assertIn("What are your goals", later.rendered_text)
+        self.assertNotIn("Would you like MIRA to help with fitness", later.rendered_text)
+
+    def _configured_discovery(self) -> ProgressiveDiscoveryService:
+        interview = InterviewLedgerService(self.adapter)
+        interview.start_or_resume()
+        interview.answer("timezone", "America/New_York", idempotency_key="tz")
+        interview.answer(
+            "life_pattern",
+            "I work, study, travel, and manage a household.",
+            idempotency_key="life",
+        )
+        interview.answer(
+            "goals",
+            "Keep commitments and projects organized.",
+            idempotency_key="goals",
+        )
+        interview.answer(
+            "appointment_help",
+            {"wants_help": False, "calendar_lane": None},
+            idempotency_key="appointments",
+        )
+        discovery = ProgressiveDiscoveryService(self.adapter)
+        discovery.choose_mode("start using MIRA", idempotency_key="choose-drip")
+        return discovery
 
 
 if __name__ == "__main__":
