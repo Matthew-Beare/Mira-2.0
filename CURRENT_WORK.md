@@ -4,7 +4,7 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work remains durable with evidence and is filtered from future selection rather than deleted. The current priority is repeated no-app verticals that build trustworthy canonical reality before Android resumes.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work remains durable with evidence and is filtered from future selection rather than deleted. The current priority is repeated useful no-app verticals before Android resumes.
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`.
 
@@ -12,14 +12,7 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ### `M2-M0-012` — Canonical no-app receipt intake + purchase history
 
-Merged in PR #64 to `main` at `804a664f343934cc813d9cc45b471a6756a15697` after exact-head CI `33284284178` passed. Canonical receipt capture/history, receipt release wiring and isolated Google multi-source revision-1/revision-2 readback are complete. `RECEIPT-INTAKE-001` is reconciled completed in `BACKLOG.md` on this branch.
-
-## Preserved checkpoints
-
-- Android / `M2-M1-001` remains paused at the isolated Google queued-writer live-proof point.
-- Existing live MIRA/legacy Google receipt, asset, inventory, Drive and automation state remains protected production and is not a development fixture.
-- Fitment, identifiers, evidence enrichment, warranty/maintenance, inventory/location/movement, shopping, grocery/meal and provider-side archival remain separate accepted work.
-- `ASSET-SERVICE-001` remains warranty/maintenance hardening and is not misused as the foundational asset-acquisition packet.
+Merged in PR #64 to `main` at `804a664f343934cc813d9cc45b471a6756a15697` after exact-head CI `33284284178` passed. `RECEIPT-INTAKE-001` is completed in `BACKLOG.md`.
 
 ## Active packet
 
@@ -27,90 +20,189 @@ Merged in PR #64 to `main` at `804a664f343934cc813d9cc45b471a6756a15697` after e
 
 - **Primary work:** `ASSET-ACQUISITION-001`
 - **Primary features:** `ASSET-001`, `ASSET-002`
-- **Related invariants/features:** `RECEIPT-001`, `RECEIPT-002`, `INV-001`, `FITMENT-001`, `IDENT-001`, `EVID-001`, `STORE-001`, `RECOVERY-002`
+- **Related preserved features:** `FITMENT-001`, `IDENT-001`, `EVID-001`, `ASSET-003`, `INV-001`, `LOC-001`, `MOVE-001`, `INV-002`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-013-asset-acquisition`
 - **Base SHA:** `804a664f343934cc813d9cc45b471a6756a15697`
-- **Objective:** create/read/replay/enrich one canonical physical asset from verified canonical receipt/line provenance while preserving an immutable RFC 4122 Entity UUID. The packet proves acquisition identity only; it does not implement fitment, identifiers, warranty/maintenance, location/movement or broad inventory projection.
+- **PR:** #65
+- **Last implementation/release head with green CI:** `18c9a80a34c8fae87c15a13c5105c339814b95d9`
+- **CI:** run `33284755714` green on that head
+- **Provider-proof documentation commit before this closeout:** `a9375df89714786c2c28f2bbbb893f6291df3ce3`
+- **Objective:** persist one canonical physical asset from canonical receipt/line provenance while preserving an immutable RFC 4122 Entity UUID. This packet proves acquisition identity only and does not absorb fitment, identifiers, warranty/maintenance, location/movement, broad inventory projection, or provider-side archival.
 
-## Session-start alignment verification — 2026-08-29/30
+## Session-start alignment result
+
+Before implementation, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md` were rechecked.
+
+The packet is aligned because:
+
+- `ASSET-001` requires immutable RFC 4122 physical identity, source-idempotent acquisition, enrichment without UUID replacement, individual quantity=1, optional lot quantity>1, and fail-closed excluded purchase evidence;
+- `ASSET-002` preserves receipt/evidence acquisition provenance without replacing physical identity;
+- `INV-001` later reuses this same Entity UUID rather than inventing inventory identity;
+- `FITMENT-001`, `IDENT-001`, `EVID-001`, `LOC-001`, `MOVE-001`, and `INV-002` remain distinct downstream semantics;
+- M2-M0.5 explicitly directs continued receipts/assets/inventory progress while keeping packets bounded;
+- Android remains paused at its existing live queued-writer proof checkpoint.
+
+## Implemented evidence
+
+### Canonical Asset service
+
+`mira/assets.py` now implements the bounded asset-acquisition domain over `STORE-001`:
+
+- resource type `asset`, schema version 1;
+- canonical Resource ID equals normalized RFC 4122 `entity_uuid`;
+- receipt and optional receipt-line provenance are resolved from canonical `receipt` state before creation;
+- acquisition source identity is deterministic from receipt ID + receipt-line ID + stable acquisition key;
+- exact source replay returns the same asset without allocating another UUID or revision;
+- source identity attached to multiple UUIDs fails closed;
+- a replay cannot substitute a different requested UUID;
+- `individual` tracking requires quantity exactly 1;
+- `lot` tracking supports intentional grouped quantity;
+- receipt-line acquisitions cannot exceed the canonical whole-unit line quantity;
+- multiple individually tracked units from one line require distinct acquisition keys/UUIDs;
+- display-name/note enrichment preserves UUID, quantity, tracking mode, and acquisition provenance;
+- receipt correction/enrichment cannot replace an already-created asset UUID;
+- query supports receipt, receipt-line, and display-name filters with deterministic UUID ordering.
+
+Asset payload intentionally contains no fitment, identifier, location, movement, warranty, maintenance, technical-specification, inventory-placement, or Drive-filing state.
+
+### Direct tests
+
+`tests/test_assets.py` covers:
+
+- explicit RFC 4122 UUID creation/validation;
+- source replay with zero-write identity reuse;
+- source-to-two-UUID collision failure;
+- missing receipt and missing receipt-line rejection;
+- individual quantity enforcement;
+- lot quantity behavior;
+- two separately tracked units from one receipt line;
+- over-acquisition rejection;
+- enrichment preserving UUID/provenance;
+- receipt correction preserving UUID;
+- downstream side-effect fields remaining absent.
+
+### Personal release wiring
+
+The Git-backed Personal starter now advertises `asset` in `resource_types_json` while preserving all existing data classes.
+
+The complete no-app operating instructions now require:
+
+- `authority_binding/binding-asset` routing `asset` to the same Personal Google authority;
+- immutable RFC 4122 Entity UUID identity;
+- explicit receipt/line acquisition provenance;
+- stable acquisition source identity/replay behavior;
+- individual-vs-lot quantity rules;
+- no automatic fitment, identifier, inventory-location, movement, warranty/maintenance, technical-specification, or Drive-filing side effects.
+
+`mira.personal_distribution`, `mira.workspace_bundle`, and their direct tests enforce the asset-inclusive release contract. `project/code_ownership.json` adds the `canonical-assets` component with `tests/test_assets.py` as direct evidence.
+
+## CI evidence
+
+PR #65 CI run `33284755714` passed on implementation/release head `18c9a80a34c8fae87c15a13c5105c339814b95d9`, including repository integrity, product lifecycle, Personal starter distribution, work-session alignment, code ownership, Python unit tests, and Workspace Apps Script tests.
+
+The provider-proof documentation and this closeout checkpoint are later commits, so the exact final PR head still requires a fresh CI run before merge.
+
+## Independent Google provider proof — 2026-08-29/30
+
+A brand-new native Google Sheet was created only for this packet. It was not copied from or written into legacy MIRA receipt/asset/inventory/Drive/automation production state. After proof it was renamed to include `NOT A STARTER`. Provider file ID and authenticated-account details are intentionally excluded from public Git.
+
+### Clean substrate
+
+Exact readback before mutable proof state confirmed:
+
+- timezone `Etc/UTC`;
+- tabs exactly `Metadata`, `Resources`, `Events`, `Idempotency`;
+- `mira-structured-state-v1` / `STORE-001` / `single_writer`;
+- asset-inclusive resource type list matching the branch starter;
+- exact STORE-001 headers;
+- zero mutable data rows.
+
+### Authority + receipt prerequisite
+
+Exact readback then confirmed:
+
+- one enabled/verified synthetic `authority/google-sheets-personal`;
+- `binding-receipt` -> `receipt`;
+- `binding-asset` -> `asset`;
+- one captured synthetic receipt at revision 1;
+- one synthetic receipt line with quantity `2`;
+- exact matching request hashes/idempotency results/resource references.
+
+### Asset revision 1 and replay boundary
+
+One synthetic explicitly requested acquisition read back as:
+
+- one `asset` Resource;
+- one RFC 4122 Entity UUID used as both Resource ID and payload UUID;
+- revision 1;
+- `individual`, quantity 1;
+- exact receipt + receipt-line + receipt-revision provenance;
+- one stable acquisition key and deterministic `receipt-acquisition:<sha256>` source identity;
+- exact create request hash/idempotency result;
+- no downstream fitment/location/etc. state.
+
+The implemented same-source replay path is zero-write, so no fake provider mutation was issued merely to demonstrate a no-write result. Provider state remained one asset Resource/one create Idempotency row for that source; direct unit tests independently prove replay returns the same UUID without a new revision.
+
+### Asset revision 2 enrichment
+
+A permitted nonidentity enrichment changed only the synthetic display name and note.
+
+Exact readback confirmed:
+
+- same Resource ID / Entity UUID;
+- revision exactly 2;
+- same acquisition source identity, acquisition key, receipt ID, receipt-line ID, receipt revision, tracking mode, and quantity;
+- exact revision-2 request hash/idempotency result;
+- both create and enrichment Idempotency records retained;
+- still exactly one asset Resource for the source.
+
+Durable non-sensitive proof: `docs/NO_APP_ASSET_PROVIDER_PROOF.md`.
+
+## End-of-session alignment verification
 
 ### `FEATURES.md`
 
-Rechecked before implementation:
-
-- `ASSET-001` requires every physical asset to keep one immutable canonical RFC 4122 Entity UUID; labels, owner, category, location, project, backend, receipt enrichment and lifecycle changes cannot replace that UUID;
-- acquisition deduplicates by source identity and supported evidence; replay of the same source preserves the same UUID and compatible enrichment updates the same asset;
-- `individual` tracking requires quantity exactly one;
-- set/lot tracking may represent quantity greater than one under one UUID when individual serial-level identity is not useful;
-- excluded/cancelled/removed-before-settlement purchase evidence must not manufacture assets;
-- `ASSET-002` requires provenance-linked acquisition/reference evidence while keeping receipt/evidence projection failure independent from verified physical identity;
-- `FITMENT-001` is a relationship feature and cannot be encoded by changing asset identity;
-- `INV-001` later reuses the canonical Entity UUID rather than inventing inventory identity;
-- `IDENT-001`/`EVID-001` enrich the same entity later and may not replace its UUID.
-
-Historical audit evidence in PR #10 was also re-read. It explicitly records deterministic UUID allocation/validation, source dedupe/replay, enrichment without UUID replacement, quantity/tracking rules, excluded receipt lines and UUID-collision handling as prior test-backed semantics, while MIRA 2.0 provider persistence remains the gap this packet addresses.
+Rechecked after implementation/provider proof. `ASSET-001` and the acquisition slice of `ASSET-002` are directly implemented/tested/provider-persisted. `FITMENT-001`, `IDENT-001`, `EVID-001`, `ASSET-003`, `INV-001`, `LOC-001`, `MOVE-001`, `INV-002`, warranty/maintenance, specifications, grocery/meal, appointments, Android, Microsoft, and Apple/iCloud scope remain preserved rather than falsely completed.
 
 ### `BACKLOG.md`
 
-Rechecked and reconciled before implementation:
-
-- `RECEIPT-INTAKE-001` is completed by PR #64;
-- no existing work item correctly represented foundational `ASSET-001` acquisition; `ASSET-SERVICE-001` is explicitly warranty/maintenance hardening;
-- new bounded work ID `ASSET-ACQUISITION-001` therefore owns this implementation slice;
-- `FITMENT-ENGINE-001`, `ASSET-SERVICE-001`, `LOCATION-STATE-001`, `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001` and receipt taxonomy remain queued rather than being dragged into this packet.
+Rechecked after implementation/provider proof. `ASSET-ACQUISITION-001` correctly remains `active` until PR #65 is merged. Downstream `FITMENT-ENGINE-001`, `ASSET-SERVICE-001`, `LOCATION-STATE-001`, `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001`, receipt taxonomy, and other accepted work remain unfinished. The next packet must change the asset row to completed only after merge evidence exists.
 
 ### `ROADMAP.md`
 
-Rechecked before implementation:
-
-- M2-M0.5 explicitly continues receipts/assets/inventory after the first no-app verticals;
-- packets remain bounded and must not collapse the entire asset/inventory stack into one implementation;
-- Android remains paused while meaningful no-app vertical coverage grows.
+Rechecked after implementation/provider proof. This packet advances the explicit M2-M0.5 receipts/assets/inventory direction, introduces no external-infrastructure prerequisite, and keeps Android paused rather than turning asset work into an Android dependency.
 
 ### Direction result
 
-**ALIGNED.** Receipt truth is now merged and the smallest high-value downstream slice is immutable physical asset acquisition. This unlocks later identifiers, fitment and inventory without coupling them into the same packet.
+**ALIGNED.** The bounded receipt-to-immutable-asset vertical is technically and provider verified. Merge is the only remaining lifecycle gate.
 
-## Required user-visible/canonical behavior
+## Acceptance result
 
-1. A new physical asset receives one RFC 4122 UUID that never changes.
-2. Receipt-linked acquisition requires an existing canonical receipt and, when specified, an existing canonical receipt line.
-3. Acquisition source identity is explicit and stable so exact replay returns the same asset without a second write/UUID.
-4. `individual` tracking always has quantity `1`.
-5. `lot` tracking may have positive quantity greater than or equal to one and remains one intentionally grouped asset identity.
-6. Multiple physical units that need individual identity require separate acquisitions/UUIDs rather than a quantity>1 individual asset.
-7. Compatible enrichment such as a better display name or note updates the same UUID through a new revision; it never reallocates identity.
-8. Conflicting replay/source identity or source-to-two-assets collision fails closed.
-9. Receipt correction never changes an already-created asset UUID.
-10. Asset identity remains independent of fitment, serial/UPC/model identifiers, location, project/backend and later inventory projection.
-11. Asset acquisition alone does not imply installed-on/assigned-to relationships, inventory location, warranty/maintenance state, or provider-side Drive filing.
-
-## Acceptance criteria
-
-1. Provider-neutral `AssetService` over STORE-001 with create/read/enrich/query semantics.
-2. Canonical asset resource ID is a normalized RFC 4122 UUID and equals payload Entity UUID.
-3. Source acquisition identity is persisted and globally unique within asset state; exact replay is zero-write.
-4. Receipt and optional receipt-line provenance are validated against canonical receipt state before creation.
-5. Tracking/quantity rules enforce individual=1 and bounded positive lot quantity.
-6. Source replay cannot replace UUID or silently change conflicting acquisition facts.
-7. Enrichment changes attributes only and preserves acquisition provenance/UUID.
-8. Direct tests cover UUID validation/allocation, replay, source collision, missing receipt/line, quantity modes, enrichment, receipt correction stability and no fitment/location side effects.
-9. Personal Google starter adds `asset` data class plus `binding-asset` without replacing the existing receipt authority.
-10. Complete no-app instructions define immutable asset identity/acquisition and the downstream no-side-effect boundary.
-11. Personal distribution/Workspace validation and code ownership cover the new contract.
-12. Exact PR-head CI green.
-13. Fresh isolated Google provider proof creates/read-backs receipt + asset authority/bindings + one synthetic acquisition and same-source replay/enrichment while retaining one UUID.
-14. End-of-session FEATURES/BACKLOG/ROADMAP reconciliation preserves the larger asset/inventory stack.
+1. Provider-neutral `AssetService` over STORE-001 — PASS.
+2. Canonical RFC 4122 UUID Resource identity — PASS.
+3. Stable globally unique acquisition source identity + read-only replay — PASS.
+4. Canonical receipt/line prerequisite validation — PASS.
+5. Individual/lot quantity rules and receipt-line capacity — PASS.
+6. Replay cannot replace UUID or conflicting acquisition facts — PASS.
+7. Nonidentity enrichment preserves UUID/provenance — PASS.
+8. Direct tests for UUID/replay/conflict/quantity/enrichment/receipt correction/side-effect isolation — PASS.
+9. Personal starter `asset` + `binding-asset` contract — PASS.
+10. Complete no-app immutable asset/no-side-effect contract — PASS.
+11. Distribution/Workspace validation + code ownership — PASS.
+12. CI green on implementation head — PASS; exact closeout-head CI PENDING.
+13. Fresh isolated Google receipt-to-asset revision-1/replay-boundary/revision-2 exact readback — PASS.
+14. End-of-session whole-product reconciliation — PASS.
 
 ## Exact next action
 
-1. Implement `mira/assets.py` and direct tests.
-2. Extend the Personal starter/no-app contract/ownership for `asset` and `binding-asset`.
-3. Run CI and fix only evidence-backed failures.
-4. Perform a fresh synthetic Google provider proof; do not reuse legacy production or the prior receipt-proof artifact.
-5. Freeze closeout, run exact-head CI, merge with expected-head protection, verify `main`, then rank the next bounded vertical.
+1. Run CI on the exact current PR #65 closeout head containing this checkpoint.
+2. If every gate is green, merge PR #65 using expected-head SHA protection.
+3. Remotely verify `main` at the returned merge SHA.
+4. Create exactly one next bounded packet from verified `main` and in that packet reconcile `ASSET-ACQUISITION-001` to completed with PR #65 evidence.
+5. Dependency-rank the next no-app vertical. The leading foundation is expected to be stable namespaced identifiers (`IDENT-001`) because it unlocks fitment, scanning/movement, and richer asset queries, but select from the canonical unfinished ledger rather than conversational preference.
+6. Keep Android paused unless explicitly reprioritized or no-app milestone evidence justifies resumption.
 
 ## Recovery protocol
 
-Read this file first. Continue only on `integration/m0-013-asset-acquisition` from the recorded base. Do not broaden into fitment, identifiers, warranty/maintenance, location, movement, inventory query or provider archival unless a concrete acceptance dependency proves unavoidable.
+Read this file first. If PR #65 is open, verify its exact current head and exact-head CI before merge. If merged, verify `main`, reconcile the asset backlog row to completed, then activate exactly one next bounded packet. Do not touch legacy production asset/inventory state and do not broaden completed asset acquisition into fitment/location/etc. by conversational inference.
