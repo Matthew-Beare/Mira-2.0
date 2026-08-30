@@ -166,17 +166,18 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 | `MOVEMENT-CORE-001` | PREREQUISITE | Replay-safe movement/observation events; never collapse intended/observed location. | INV-001,IDENT-001,LOCATION-STATE-001 | queued; PR31 selective salvage |
 | `INVENTORY-QUERY-001` | HARDENING | Canonical inventory query projection. | INV-001,LOC-001,ASSET-003,LOCATION-STATE-001 | queued |
 | `PAR-CORE-001` | ENHANCEMENT | Observed quantity/target/threshold state. | INV-001 | queued |
-| `PAR-SCALE-001` | LATER | Optional scale/load-cell adapter. | PAR-001 | deferred optional |
+| `PAR-SCALE-001` | LATER | Optional scale-based passive stock sensing. | PAR-001 | deferred optional |
 | `GROCERY-CORE-001` | PREREQUISITE | Grocery-list versus stock reconciliation. | SHOP-001,INV-001,LOC-001 | queued |
 | `LOCATION-STATE-001` | PREREQUISITE | Intended versus observed hierarchical location state. | INV-001 | queued; PR31 single-location overwrite rejected |
 | `SHOP-CORE-001` | PREREQUISITE | Deterministic shopping-intent reconciliation. | RECEIPT-001 | queued |
 | `KNOWLEDGE-INTEGRATION-001` | HARDENING | Retained-source/provider readback integration. | KNOW-001,selected provider adapter/sandbox | queued |
 | `SPEC-INTEGRATION-001` | HARDENING | Authoritative specification persistence/readback. | SPEC-001,KNOW-001,selected provider adapter/sandbox | queued |
+| `ASSET-ACQUISITION-001` | VERTICAL | Canonical receipt-linked physical asset acquisition with immutable RFC 4122 Entity UUID, source-identity dedupe/replay, explicit individual-vs-lot quantity semantics and provenance to the canonical receipt/line. Does not include fitment, identifier enrichment, warranty/maintenance, location or movement. | ASSET-001,ASSET-002,RECEIPT-001,RECEIPT-002,STORE-001,RECOVERY-002 | active in `M2-M0-013`; implementation pending |
 | `FITMENT-ENGINE-001` | HARDENING | Deterministic automatic fitment resolution. | ASSET-001,IDENT-001,fitment evidence | queued |
 | `ASSET-SERVICE-001` | HARDENING | Structured warranty/maintenance lifecycle. | ASSET-001,EVID-001 | queued |
 | `ORDER-STALE-001` | PREREQUISITE | Five-business-day stale-shipment escalation. | ORDER-002,business-day semantics | queued |
 | `SPEND-ROLLUP-001` | HARDENING | Monthly evidence-bounded spending rollup. | RECEIPT-001,RECEIPT-003 | queued |
-| `RECEIPT-INTAKE-001` | VERTICAL | Canonical no-app receipt capture from normalized email/photo/text evidence with provenance fingerprints, transaction-level dedupe, exact money semantics and queryable purchase-history readback. Raw source content stays in its provider/evidence location; this slice does not silently create assets, inventory, orders, spend allocations or provider-side archives. | RECEIPT-001,RECEIPT-002,STORE-001,RECOVERY-002 | active in `M2-M0-012`; implementation/tests + isolated Google receipt revision-1/revision-2 exact readback complete in PR #64; exact-head closeout/merge pending |
+| `RECEIPT-INTAKE-001` | VERTICAL | Canonical no-app receipt capture from normalized email/photo/text evidence with provenance fingerprints, transaction-level dedupe, exact money semantics and queryable purchase-history readback. Raw source content stays in its provider/evidence location; this slice does not silently create assets, inventory, orders, spend allocations or provider-side archives. | RECEIPT-001,RECEIPT-002,STORE-001,RECOVERY-002 | complete in PR #64 at `804a664f343934cc813d9cc45b471a6756a15697`; exact-head CI `33284284178` green and isolated Google receipt revision-1/revision-2 multi-source readback verified |
 | `RECEIPT-TAXONOMY-001` | PREREQUISITE | Generic receipt taxonomy/classifier. | RECEIPT-001 | queued |
 | `REIMB-CORE-001` | HARDENING | Deterministic reimbursement lifecycle. | RECEIPT-001,PROFILE-012 | queued |
 | `SUBSCRIPTION-TRACK-001` | LATER | Optional subscription/free-trial tracking. | stable receipt/finance evidence + explicit activation | deferred optional |
@@ -191,16 +192,17 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 | `LOCAL-INTEGRATIONS` | LATER | `LOCAL-001` bridge then Home Assistant/Plex/Paperless/Node-RED/MQTT/NAS adapters with scoped permissions/readback. | LOCAL-001,API-CORE-001 | deferred |
 | `ENTERPRISE` | LATER | `ENTERPRISE-001` managed/regulated deployment lane. | ENTERPRISE-001,stock core,provider abstraction | deferred |
 
-## Lifecycle reconciliation findings — 2026-08-29
+## Lifecycle reconciliation findings — 2026-08-29/30
 
 - Completed work remains present with merge/test/provider evidence; it is filtered from next-work selection by the generated product lifecycle ledger rather than deleted.
 - `FIRSTBOOT-CORE-001`, `SERVICE-STATE-001`, `APPOINTMENT-ONBOARD-001`, and `ONBOARD-INSTRUCTIONS` remain completed with evidence from PRs #58-#60.
 - `FEATURE-ALIGN-001` remains completed by PR #61; feature/work lifecycle and session alignment share one canonical backlog parser.
 - `DIST-STARTER-001` and `STARTER-SANITIZE-001` are completed by PR #62 at `9bf241f694e9bd52c846416336e0704a31fe7d8c`; source-derived distribution plus clean Google substrate provider proof are durable evidence.
 - `OPS-BRIEF-VSLICE` is completed by PR #63 at `f96b227e009eb144235dccfef2ca0b8570e0801b`; this is the first real canonical no-app task/brief vertical.
+- `RECEIPT-INTAKE-001` is completed by PR #64 at `804a664f343934cc813d9cc45b471a6756a15697`; canonical multi-source receipt/purchase truth is now available as the prerequisite for asset acquisition.
+- `ASSET-ACQUISITION-001` is the one active packet. The audited ASSET-001 contract requires one immutable RFC 4122 Entity UUID, source replay preserving UUID, compatible enrichment without replacement, individual quantity=1, optional set/lot quantity>1 and fail-closed creation from excluded/cancelled purchase evidence.
 - `DISCOVERY-CORE-001` remains partial: progressive discovery is test-verified and PR #63 adds repeated same-unanswered-topic daily prompting plus pending-goals follow-up behavior; broader evidence-aware AI-use/friction/history discovery remains unfinished.
-- Stock ChatGPT Automations has been read-only verified as a technically viable exact-schedule no-server delivery provider; existing user MIRA brief automations are protected production and were not modified. A future schedule/onboarding adapter packet can use this without making receipt work depend on it.
-- `RECEIPT-INTAKE-001` remains the one active packet until PR #64 merges. Canonical receipt capture/history code, release wiring, direct tests, and isolated Google multi-source revision-1/revision-2 readback are complete; Gmail extraction, Drive archival, downstream asset/inventory/order/spend side effects, and background processing remain explicitly separate work.
+- Stock ChatGPT Automations has been read-only verified as a technically viable exact-schedule no-server delivery provider; existing user MIRA brief automations are protected production and were not modified.
 - `API-DEPLOYMENT-001B` remains explicitly paused; its Cloud Run live proof checkpoint is preserved.
 - `ANDROID-COMMAND-BOUNDARY-001` remains explicitly partial; synthetic proof is complete but live Google worker proof is still pending.
 

@@ -36,6 +36,7 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("authority_binding/binding-onboarding-ledger", protocol)
         self.assertIn("authority_binding/binding-service-state", protocol)
         self.assertIn("authority_binding/binding-receipt", protocol)
+        self.assertIn("authority_binding/binding-asset", protocol)
         self.assertIn("resource id: `google-sheets-personal`", protocol)
         self.assertIn("resource type: `onboarding_ledger`", protocol)
         self.assertIn("resource id: `minimum-useful-setup`", protocol)
@@ -48,6 +49,12 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("integer minor units", protocol)
         self.assertIn("Exact source-fingerprint replay", protocol)
         self.assertIn("Receipt capture does **not** automatically create or mutate an asset", protocol)
+        self.assertIn("## Canonical physical assets and receipt-linked acquisition", protocol)
+        self.assertIn("canonical resource type is `asset`", protocol)
+        self.assertIn("immutable RFC 4122 Entity UUID", protocol)
+        self.assertIn("Receipt capture never automatically creates assets.", protocol)
+        self.assertIn("`tracking_mode=individual` requires asset quantity exactly `1`", protocol)
+        self.assertIn("Asset acquisition alone therefore never claims an item is installed on a vehicle", protocol)
         self.assertIn("`calendar_capability_verified`: false", protocol)
         self.assertIn("resource type: `service_state`", protocol)
         self.assertIn("resource id: `appointments_calendar`", protocol)
@@ -86,6 +93,27 @@ class WorkspaceBundleTests(unittest.TestCase):
         ].replace(
             "Receipt capture does **not** automatically create or mutate an asset",
             "Receipt capture may create an asset",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_asset_identity_clause(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("immutable RFC 4122 Entity UUID", "mutable asset identifier")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_asset_side_effect_clause(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "Asset acquisition alone therefore never claims an item is installed on a vehicle",
+            "Asset acquisition may imply installation",
         )
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)

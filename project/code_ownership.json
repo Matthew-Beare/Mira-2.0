@@ -153,6 +153,15 @@
       "verification": ["tests/test_receipts.py"]
     },
     {
+      "id": "canonical-assets",
+      "responsibility": "Provider-neutral immutable physical Entity UUID allocation, receipt-linked acquisition provenance, source replay/dedupe, bounded individual-vs-lot quantity semantics and nonidentity enrichment.",
+      "why_separate": "Physical identity must survive receipt corrections and later identifier, fitment, inventory, location, warranty and maintenance projections without those downstream systems becoming a second asset authority.",
+      "owned_paths": ["mira/assets.py"],
+      "feature_ids": ["ASSET-001", "ASSET-002", "RECEIPT-001", "RECEIPT-002", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["ASSET-ACQUISITION-001"],
+      "verification": ["tests/test_assets.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
