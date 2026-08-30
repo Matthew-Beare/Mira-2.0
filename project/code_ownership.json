@@ -144,6 +144,15 @@
       "verification": ["tests/test_ops_brief.py"]
     },
     {
+      "id": "canonical-receipts",
+      "responsibility": "Provider-neutral canonical receipt identity, exact money, conservative multi-source evidence reconciliation, explicit correction, and deterministic purchase-history queries.",
+      "why_separate": "Purchase truth must be stable before downstream asset, inventory, order, spending, reimbursement, grocery, or provider-archive side effects are allowed to consume it.",
+      "owned_paths": ["mira/receipts.py"],
+      "feature_ids": ["RECEIPT-001", "RECEIPT-002", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["RECEIPT-INTAKE-001"],
+      "verification": ["tests/test_receipts.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
