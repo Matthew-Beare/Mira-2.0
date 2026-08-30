@@ -162,6 +162,15 @@
       "verification": ["tests/test_assets.py"]
     },
     {
+      "id": "canonical-identifiers",
+      "responsibility": "Provider-neutral namespaced product/device identifier validation, exact-source retention, deterministic normalization, serial-level collision safety and identifier-origin canonical asset lookup.",
+      "why_separate": "Product, model, serial, IMEI, MAC and trade identifiers enrich immutable asset UUIDs but must remain independently queryable/collision-checked without turning barcode strings into physical identity or silently triggering fitment/inventory behavior.",
+      "owned_paths": ["mira/identifiers.py"],
+      "feature_ids": ["IDENT-001", "ASSET-003", "ASSET-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["ASSET-IDENTIFIER-001"],
+      "verification": ["tests/test_identifiers.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
