@@ -4,139 +4,179 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work remains durable with evidence and is filtered from future selection rather than deleted. Current priority is repeated useful no-app verticals before Android resumes.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Completed work stays durable with evidence and is filtered from future selection rather than deleted. Current priority is repeated useful no-app verticals before Android resumes.
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`.
 
 ## Completed predecessor
 
-`M2-M0-012` / `RECEIPT-INTAKE-001` merged in PR #64 to `main` at `804a664f343934cc813d9cc45b471a6756a15697` after exact-head CI `33284284178` passed.
+### `M2-M0-013` — Canonical receipt-linked asset acquisition
+
+PR #65 merged to `main` at `36645003e885b6562bb5c7ceeec4430838e148d8` after exact-head CI `33298434246` passed and isolated Google receipt-to-asset revision-1/replay-boundary/revision-2 readback was verified. `ASSET-ACQUISITION-001` is reconciled completed in `BACKLOG.md` on this branch.
+
+After the merge, an accidental one-word temporary placeholder was created and immediately deleted on `main`. Clean-up head `7d4fed8105982f2fe00f9d226da232c321705a7c` compares against the asset merge with zero file differences, so this packet starts from an identical product tree with that later Git history head.
 
 ## Active packet
 
-### `M2-M0-013` — Canonical receipt-linked asset acquisition
+### `M2-M0-014` — Namespaced asset identifiers + lookup
 
-- **Primary work:** `ASSET-ACQUISITION-001`
-- **Primary features:** `ASSET-001`, `ASSET-002`
-- **Related invariants/features:** `FITMENT-001`, `IDENT-001`, `EVID-001`, `ASSET-003`, `INV-001`, `LOC-001`, `MOVE-001`, `INV-002`, `STORE-001`, `RECOVERY-002`
+- **Primary work:** `ASSET-IDENTIFIER-001`
+- **Primary features:** `IDENT-001`, `ASSET-003`
+- **Related invariants/features:** `ASSET-001`, `EVID-001`, `FITMENT-001`, `INV-001`, `MOVE-001`, `INV-002`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-013-asset-acquisition`
-- **Base SHA:** `804a664f343934cc813d9cc45b471a6756a15697`
-- **PR:** #65
-- **Implementation/release head with full green CI:** `18c9a80a34c8fae87c15a13c5105c339814b95d9`, run `33284755714`
-- **Provider-proof documentation commit:** `a9375df89714786c2c28f2bbbb893f6291df3ce3`
-- **Objective:** create/read/replay/enrich canonical physical assets from canonical receipt/line provenance while preserving one immutable RFC 4122 Entity UUID. Fitment, identifiers, warranty/maintenance, locations/movement, broad inventory projection, and provider-side archival remain outside this packet.
+- **Branch:** `integration/m0-014-asset-identifiers`
+- **Base SHA:** `7d4fed8105982f2fe00f9d226da232c321705a7c`
+- **Objective:** attach validated namespaced product/device identifiers to already-existing immutable asset UUIDs and provide deterministic identifier-to-asset lookup without changing asset identity. This packet stops before OCR/photo acquisition, automatic fitment, location/movement, inventory scanning, and Android capture.
 
 ## Session-start alignment verification — 2026-08-29/30
 
 ### `FEATURES.md`
 
-Verified before implementation:
+Rechecked before implementation:
 
-- `ASSET-001` requires immutable RFC 4122 physical identity, idempotent source replay, compatible enrichment without UUID replacement, `individual` quantity=1, optional grouped-lot quantity, and fail-closed excluded purchase evidence.
-- `ASSET-002` preserves receipt/evidence acquisition provenance without replacing identity.
-- `FITMENT-001`, `IDENT-001`, `EVID-001`, `ASSET-003`, `INV-001`, `LOC-001`, `MOVE-001`, and `INV-002` are separate downstream semantics. `INV-001` later reuses the same Entity UUID.
-- Historical PR #10 asset audit was re-read and confirms the same identity/replay/quantity boundaries.
+- `IDENT-001` requires exact printed identifier values plus deterministic normalized search values for UPC-A/EAN/GTIN variants, merchant/vendor SKU, manufacturer part number, model number, serial number, IMEI, and MAC;
+- UPC/GTIN leading zeroes must be retained and check digits validated;
+- IMEI requires Luhn validation; MAC requires deterministic format normalization/validation;
+- merchant SKU, manufacturer part/model, and serial identifiers require an explicit namespace so local numeric-looking values are never mislabeled as global barcodes;
+- serial-level identifiers such as serial number, IMEI, and MAC cannot resolve to two different Entity UUIDs under the same canonical namespace/value;
+- `IDENT-001` depends on already-merged immutable `ASSET-001` identity;
+- `ASSET-003` requires identifier-origin queries to reach the same connected assets later, while `FITMENT-001`, `MOVE-001`, and `INV-002` consume identifier truth without redefining it.
+
+Historical PR #10 identifier audit was also re-read. The older deterministic core had evidence for GTIN/UPC check digits/leading zeroes, IMEI/MAC validation, explicit namespace requirements, serial-level collision rejection, and immutable identifier/source identity, but no current executable identifier module survived in the MIRA 2.0 tree. This packet implements those semantics cleanly over the current STORE-001 substrate rather than importing a legacy subsystem wholesale.
 
 ### `BACKLOG.md`
 
-Verified before implementation:
+Rechecked and reconciled before implementation:
 
-- `RECEIPT-INTAKE-001` is completed by PR #64.
-- `ASSET-ACQUISITION-001` is the bounded foundational asset-acquisition work item.
-- `FITMENT-ENGINE-001`, `ASSET-SERVICE-001`, `LOCATION-STATE-001`, `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001`, receipt taxonomy, and other downstream work remain separate/unfinished.
+- `ASSET-ACQUISITION-001` is completed by PR #65;
+- new stable work item `ASSET-IDENTIFIER-001` is the one active packet;
+- `FITMENT-ENGINE-001`, `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001`, `LOCATION-STATE-001`, `ASSET-SERVICE-001`, evidence/OCR work, and Android scanning remain separate unfinished work;
+- Android remains partial/paused at the isolated Google queued-writer proof checkpoint.
 
 ### `ROADMAP.md`
 
-Verified before implementation:
+Rechecked before implementation:
 
-- M2-M0.5 explicitly continues receipts/assets/inventory after the first no-app verticals.
-- Packets must remain bounded and must not collapse the whole asset/inventory stack into one change.
-- Android remains paused while useful no-app coverage grows.
+- M2-M0.5 explicitly continues receipts/assets/inventory and other useful no-app feature families before Android;
+- repeated bounded verticals are required rather than one giant asset/inventory implementation;
+- identifiers have architectural leverage because fitment, scanning/movement, and richer graph lookup depend on them, while still being implementable with stock ChatGPT + Google Workspace.
 
 ### Direction result
 
-**ALIGNED.** Receipt truth is merged, and immutable receipt-linked asset acquisition is the smallest high-leverage downstream slice before identifiers/fitment/inventory.
+**ALIGNED.** Stable identifiers are the smallest foundational slice after asset acquisition that unlocks several accepted downstream features without prematurely coupling fitment, movement, OCR, or Android.
 
-## Implemented evidence
+## Canonical identifier design decisions
 
-`mira/assets.py` now provides `asset` schema version 1 over `STORE-001` with:
+### Separate identifier records, same physical identity
 
-- Resource ID equal to canonical RFC 4122 `entity_uuid`;
-- canonical receipt and optional receipt-line prerequisite validation;
-- deterministic source identity from receipt ID + receipt-line ID + stable acquisition key;
-- zero-write exact source replay preserving UUID;
-- fail-closed source-to-two-UUID and requested-UUID replacement conflicts;
-- `individual` quantity exactly 1 and intentional `lot` grouping;
-- receipt-line whole-unit capacity enforcement;
-- separate acquisition keys/UUIDs for individually tracked units;
-- display-name/note enrichment preserving UUID, quantity, tracking mode, and provenance;
-- receipt correction unable to replace asset UUID;
-- deterministic query by receipt, receipt line, or display name.
+Identifiers are canonical `identifier` resources linked to an existing `asset` Entity UUID. They are not embedded as a new asset identity and cannot replace the RFC 4122 UUID.
 
-The asset payload contains no fitment, identifier, location, movement, warranty, maintenance, technical-specification, inventory-placement, or Drive-filing state.
+One physical asset may have many identifier records. Product-level identifiers such as GTIN, manufacturer part number, model number, or merchant SKU may legitimately attach to multiple physical asset UUIDs. Serial-level identifiers are collision-protected across assets.
 
-`tests/test_assets.py` directly covers UUID validation/allocation, replay, source collision, missing receipt/line, quantity modes, multiple units, over-acquisition, enrichment, receipt correction stability, and downstream side-effect isolation.
+### Identifier types
 
-The Personal starter now advertises `asset`; complete no-app instructions add `binding-asset`, immutable UUID/acquisition rules, and explicit no-side-effect boundaries. Distribution/Workspace validators and tests enforce the contract. `project/code_ownership.json` includes `canonical-assets` with direct asset tests.
+This packet supports:
 
-## CI evidence
+- `gtin8`
+- `upc_a` (12-digit GTIN/UPC-A)
+- `ean13`
+- `gtin14`
+- `merchant_sku`
+- `manufacturer_part_number`
+- `model_number`
+- `serial_number`
+- `imei`
+- `mac`
 
-- PR #65 implementation/release head `18c9a80a34c8fae87c15a13c5105c339814b95d9`: CI `33284755714` fully green.
-- Closeout run `33298296777` failed only because this checkpoint omitted the parser-required `Related invariants/features` label.
-- Corrected run `33298374616` then failed only because the session-start section heading/subheadings were compressed away from the exact alignment-checker contract.
-- Both failed closeout runs passed compile, feature registry, product lifecycle, and Personal distribution before the alignment gate. No product/provider defect was reported.
-- This commit restores the exact checker-required heading plus `FEATURES.md` / `BACKLOG.md` / `ROADMAP.md` / Direction result structure. A new exact-head CI run is required before merge.
+Global barcode/device types do not accept an invented local namespace. Local/issuer-scoped types (`merchant_sku`, `manufacturer_part_number`, `model_number`, `serial_number`) require an explicit nonblank namespace describing the merchant/manufacturer/issuer context.
 
-## Independent Google provider proof — 2026-08-29/30
+### Exact source value and normalized search value
 
-A brand-new native Google Sheet was created only for this packet, never copied from or written into protected legacy production, and renamed after proof to include `NOT A STARTER`. Provider file ID/account details are excluded from public Git.
+Each identifier retains the trimmed exact source/printed value supplied to MIRA and a deterministic normalized value used for identity/search.
 
-Clean readback proved `Etc/UTC`, exact four-tab STORE-001 substrate, asset-inclusive resource types, exact headers, and zero mutable rows.
+- GTIN/UPC/EAN normalized form is the exact digits, including leading zeroes.
+- IMEI normalized form is the 15 digits.
+- MAC normalized form is 12 uppercase hexadecimal digits independent of accepted colon/hyphen/dot presentation.
+- namespaced local identifiers normalize Unicode compatibility form, trim/collapse whitespace, and case-fold for deterministic lookup while retaining the exact source value separately.
+- namespace identity uses the same conservative compatibility/whitespace/case-fold normalization while retaining the display namespace.
 
-Synthetic proof then read back exactly:
+A later observation that normalizes to an existing identifier for the same asset is a replay only when it does not contradict the stored exact/source semantics. This packet does not silently rewrite an established printed value merely because another formatting variant appears.
 
-- one enabled/verified synthetic Personal Google authority;
-- `binding-receipt` and `binding-asset` to the same authority;
-- one captured synthetic receipt revision 1 with a quantity-2 line;
-- one `asset` revision 1 with a single RFC 4122 UUID, `individual` quantity 1, exact receipt/line/revision provenance, stable acquisition key/source identity, and matching request/idempotency evidence;
-- no fake provider write for zero-write same-source replay; direct tests prove replay returns the same UUID/revision;
-- one permitted enrichment to asset revision 2 changing only display name/note while Resource ID/UUID, source identity, acquisition key, receipt/line/revision provenance, tracking mode, and quantity remained identical;
-- both create/enrichment idempotency records retained and still exactly one asset Resource.
+### Stable identifier resource identity
 
-Durable non-sensitive proof: `docs/NO_APP_ASSET_PROVIDER_PROOF.md`.
+The identifier Resource ID is deterministic from:
 
-## End-of-session alignment verification — 2026-08-29/30
+`identifier_type + normalized namespace + normalized identifier value + Entity UUID`
 
-`FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md` were re-read after implementation/provider proof. `ASSET-001` plus the bounded acquisition slice of `ASSET-002` are implemented/tested/provider-persisted. Fitment, identifiers, evidence enrichment, graph queries, inventory/location/movement, warranty/maintenance, specifications, grocery/meal, appointments, Android, Microsoft, and Apple/iCloud scope remain explicitly unfinished/preserved.
+This permits non-unique product identifiers to link to multiple assets while making exact same-asset replay stable. The payload's `identifier_id` must equal the Resource ID.
 
-`ASSET-ACQUISITION-001` remains `active` until PR #65 actually merges. It must be changed to completed only in the next packet after merge evidence exists.
+### Collision policy
 
-## Acceptance result
+`serial_number`, `imei`, and `mac` are serial-level identifiers. Before mutation, MIRA searches canonical identifier state for the same type + normalized namespace + normalized value. If it is already attached to a different Entity UUID, fail closed rather than reassigning or duplicating it.
 
-1. Provider-neutral `AssetService` over STORE-001 — PASS.
-2. Canonical RFC 4122 UUID Resource identity — PASS.
-3. Stable acquisition source identity + read-only replay — PASS.
-4. Canonical receipt/line prerequisite validation — PASS.
-5. Individual/lot quantity rules + receipt-line capacity — PASS.
-6. Replay cannot replace UUID/conflicting acquisition facts — PASS.
-7. Nonidentity enrichment preserves UUID/provenance — PASS.
-8. Direct tests — PASS.
-9. Personal starter `asset` + `binding-asset` — PASS.
-10. Complete no-app immutable asset/no-side-effect contract — PASS.
-11. Distribution/Workspace validation + code ownership — PASS.
-12. Full CI on implementation head — PASS; exact current-head CI PENDING.
-13. Fresh isolated Google revision-1/replay-boundary/revision-2 proof — PASS.
-14. Whole-product alignment/preservation — PASS.
+Product/model identifiers may resolve to multiple assets and therefore are not globally unique asset identities.
+
+### Validation
+
+- GTIN-8, UPC-A/GTIN-12, EAN-13/GTIN-13, and GTIN-14 must contain only the exact required number of digits and pass the standard GTIN modulo-10 check digit.
+- IMEI must contain exactly 15 digits and pass Luhn validation.
+- MAC accepts ordinary colon, hyphen, compact, or Cisco-dot presentation only when it resolves to exactly 12 hexadecimal digits; normalized search form is uppercase compact hex.
+- namespaced local identifiers reject blank value or blank namespace.
+
+### Explicit side-effect boundary
+
+Adding an identifier does not:
+
+- create an asset;
+- change the asset UUID, quantity, receipt provenance, or acquisition state;
+- infer `assigned_to`, `installed_on`, or fitment;
+- move/place inventory;
+- create barcode/QR movement events;
+- claim OCR/photo extraction quality;
+- create warranty/maintenance/specification state;
+- activate Android scanning.
+
+## Required user-visible/canonical behavior
+
+1. MIRA can attach a validated identifier to an existing asset UUID.
+2. Exact same identifier/asset replay returns the same identifier record without duplicate canonical state.
+3. Invalid GTIN/UPC/EAN, IMEI, or MAC values fail closed.
+4. Leading zeroes in global trade identifiers are preserved.
+5. Namespaced local identifiers cannot be recorded without an explicit namespace.
+6. The same product/model identifier may legitimately return multiple assets.
+7. The same serial number (within namespace), IMEI, or MAC cannot attach to two different assets.
+8. Query by type/value/namespace returns deterministic identifier records and their exact Entity UUIDs.
+9. Identifier-origin asset lookup returns canonical asset Resources rather than a shadow asset database.
+10. Identifier attachment never silently causes fitment, installation, location, movement, inventory, warranty, or provider-side side effects.
+
+## Acceptance criteria
+
+1. Provider-neutral `IdentifierService` over STORE-001 with attach/read/query/asset-lookup semantics.
+2. `identifier` schema version 1 with deterministic stable Resource ID and exact `entity_uuid` linkage.
+3. Validation/normalization for GTIN-8, UPC-A, EAN-13, GTIN-14, IMEI, MAC, and namespaced local identifier types.
+4. Exact source value retained separately from normalized search value; GTIN leading zeroes preserved.
+5. Required namespace enforcement for merchant SKU/manufacturer part/model/serial types.
+6. Serial-level collision checks prevent serial/IMEI/MAC reuse across Entity UUIDs.
+7. Product-level identifiers may link to multiple assets without false collision.
+8. Same-asset replay is zero-write and stable; conflicting replay fails closed.
+9. Identifier-origin asset lookup reads canonical `asset` Resources.
+10. Direct tests cover valid/invalid check digits, leading zeroes, namespace requirements, replay, product multi-asset reuse, serial collision, MAC/IMEI normalization, missing asset, and side-effect isolation.
+11. Personal starter adds `identifier` plus `binding-identifier` without changing the existing asset authority.
+12. Complete no-app instructions define identifier validation/collision/lookup and no-side-effect boundaries.
+13. Distribution/Workspace validation and code ownership cover the identifier contract.
+14. Exact PR-head CI green.
+15. Fresh isolated Google proof persists one asset plus representative product and serial-level identifiers and exact identifier-to-asset readback without touching legacy production.
+16. End-of-session FEATURES/BACKLOG/ROADMAP reconciliation preserves fitment, inventory, movement, evidence/OCR, Android, and other accepted scope.
 
 ## Exact next action
 
-1. Run CI on this exact PR #65 head.
-2. If every gate is green, merge #65 with expected-head protection and remotely verify `main`.
-3. Create exactly one next bounded packet from verified `main`; first reconcile `ASSET-ACQUISITION-001` to completed with PR #65 evidence.
-4. Dependency-rank unfinished work. Stable namespaced identifiers (`IDENT-001`) are the leading expected foundation because they unlock fitment, scanning/movement, and richer asset graph behavior, but Git authorities decide selection.
-5. Keep Android paused unless explicitly reprioritized or no-app milestone evidence justifies resumption.
+1. Implement `mira/identifiers.py` and direct tests.
+2. Expand the Personal starter/no-app authority contract for `identifier` / `binding-identifier`.
+3. Add release validation and code ownership.
+4. Run CI and fix evidence-backed failures.
+5. Perform a fresh isolated Google identifier/provider readback proof.
+6. Freeze closeout, run exact-head CI, merge only when green, then select one next bounded packet from verified `main`.
 
 ## Recovery protocol
 
-Read this file first. If PR #65 is open, verify its exact head and exact-head CI before merge. If merged, verify `main`, reconcile asset acquisition to completed, then activate exactly one next bounded packet. Never touch protected legacy asset/inventory state or silently broaden this asset acquisition slice.
+Read this file first. Continue only on `integration/m0-014-asset-identifiers`. Do not broaden into fitment inference, location/movement, QR workflows, OCR/photo evidence acquisition, inventory projection, or Android while this bounded identifier packet is unfinished.
