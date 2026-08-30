@@ -10,223 +10,224 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ## Completed predecessor
 
-### `M2-M0-013` — Canonical receipt-linked asset acquisition
+### `M2-M0-014` — Namespaced asset identifiers + lookup
 
-PR #65 merged to `main` at `36645003e885b6562bb5c7ceeec4430838e148d8` after exact-head CI `33298434246` passed and isolated Google receipt-to-asset readback was verified. The later `main` head `7d4fed8105982f2fe00f9d226da232c321705a7c` contains only an accidental temporary-file add/delete pair and has zero file differences from that verified merge tree.
+PR #66 merged to `main` at `6833d27e20d746d37e389b1756a6f6147225d043` after exact-head CI `33300160170` passed and isolated Google identifier persistence, observed-to-verified revision, leading-zero UPC and identifier-to-canonical-asset readback were verified. `BACKLOG.md` in this packet reconciles `ASSET-IDENTIFIER-001` as completed with that evidence.
 
 ## Active packet
 
-### `M2-M0-014` — Namespaced asset identifiers + lookup
+### `M2-M0-015` — Canonical inventory participation + intended/observed location
 
-- **Primary work:** `ASSET-IDENTIFIER-001`
-- **Primary features:** `IDENT-001`, `ASSET-003`
-- **Related invariants/features:** `ASSET-001`, `EVID-001`, `FITMENT-001`, `INV-001`, `MOVE-001`, `INV-002`, `STORE-001`, `RECOVERY-002`
+- **Primary work:** `LOCATION-STATE-001`
+- **Primary features:** `INV-001`, base slice of `LOC-001`
+- **Related invariants/features:** `MOVE-001`, `INV-002`, `PAR-001`, `GROCERY-001`, `ASSET-001`, `IDENT-001`, `ASSET-003`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-014-asset-identifiers`
-- **Base SHA:** `7d4fed8105982f2fe00f9d226da232c321705a7c`
-- **PR:** #66
-- **Implementation/release head with green CI:** `ba05f25a4389a22c0035205a019b5677fd441b2a`
-- **CI:** run `33299034811` green on that head
-- **Provider-proof documentation commit:** `545bf8bdd7a08b2aded1eef392b98c86e5d49def`
-- **Objective:** attach validated namespaced product/device identifiers to already-existing immutable asset UUIDs and provide deterministic identifier-to-asset lookup without changing asset identity. OCR/photo acquisition, fitment inference, location/movement, inventory scanning and Android capture remain outside this packet.
+- **Branch:** `integration/m0-015-inventory-location`
+- **Base SHA:** `6833d27e20d746d37e389b1756a6f6147225d043`
+- **PR:** #67
+- **Implementation/release head with green CI:** `b15a7305863c91f8429b0b1bfcca87047be476a5`
+- **CI:** run `33300802923` green on that head
+- **Provider-proof documentation commit:** `08b6e41e1f5a55920536aa25272d683ea76ec628`
+- **Objective:** expose an existing immutable asset Entity UUID as tracked inventory, model stable hierarchical physical locations, and persist intended-home placement separately from latest supported observed location. Movement-event history, QR/barcode scan-in/out, movable-container-following movement, broad inventory search/projection, par/grocery, fitment, OCR and Android capture remain outside this packet.
 
-## Session-start alignment verification — 2026-08-29/30
+## Session-start alignment verification — 2026-08-30
 
 ### `FEATURES.md`
 
 Verified before implementation:
 
-- `IDENT-001` requires exact printed identifier values plus deterministic normalized search values for UPC/EAN/GTIN, merchant/vendor SKU, manufacturer part number, model number, serial number, IMEI and MAC;
-- UPC/GTIN leading zeroes and check digits are significant;
-- IMEI requires Luhn validation and MAC requires deterministic normalization/validation;
-- merchant SKU, manufacturer part/model and serial identifiers require an explicit namespace;
-- serial-level identifiers may not resolve to two different Entity UUIDs under the same canonical type/namespace/value;
-- `IDENT-001` depends on immutable `ASSET-001` identity, while fitment/movement/inventory consume identifiers without redefining asset identity.
+- `INV-001` requires inventory to reuse canonical physical Entity UUID identity rather than allocate a second physical/inventory identity;
+- `LOC-001` requires hierarchical locations, cycle protection and intended placement separate from current/last-observed state;
+- changing observed state must not silently rewrite intended placement;
+- changing intended placement must not fabricate a physical observation;
+- movable-container-following movement belongs to broader location/movement behavior and is not silently claimed by this bounded base-state packet.
 
 ### `BACKLOG.md`
 
 Verified before implementation:
 
-- `ASSET-ACQUISITION-001` is completed by PR #65;
-- `ASSET-IDENTIFIER-001` is the one bounded active work item;
-- `FITMENT-ENGINE-001`, `LOCATION-STATE-001`, `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001`, `ASSET-SERVICE-001`, evidence/OCR work and Android scanning remain separate unfinished work.
+- PR #66 was merged and `ASSET-IDENTIFIER-001` required completion reconciliation;
+- `LOCATION-STATE-001` was the existing prerequisite for intended-versus-observed hierarchical location state;
+- `MOVEMENT-CORE-001` and `INVENTORY-QUERY-001` remain downstream unfinished work;
+- `LOCATION-STATE-001` is the sole active work item in this packet.
 
 ### `ROADMAP.md`
 
 Verified before implementation:
 
-- M2-M0.5 explicitly continues useful receipts/assets/inventory and other no-app feature families before Android;
-- packets must remain bounded rather than collapsing the asset/inventory stack into one implementation;
-- identifiers are a high-leverage dependency for fitment, scanning/movement and richer graph lookup while remaining usable on the stock ChatGPT + Google Workspace substrate.
+- M2-M0.5 continues useful receipts/assets/inventory capability in stock ChatGPT before Android resumes;
+- packets remain bounded rather than collapsing the inventory stack into one subsystem;
+- Android remains paused at its stronger shared-writer checkpoint.
 
 ### Direction result
 
-**ALIGNED.** Stable namespaced identifiers are the smallest foundational slice after immutable asset acquisition that unlocks multiple accepted downstream capabilities without prematurely coupling fitment, movement, OCR or Android.
+**ALIGNED.** Minimal inventory participation plus independent intended/observed location state is the smallest useful prerequisite for later movement/scanning and queryable inventory.
 
 ## Implemented evidence
 
-### Canonical identifier service
+### Provider-neutral inventory/location core
 
-`mira/identifiers.py` implements provider-neutral `identifier` schema version 1 over `STORE-001`:
+`mira/inventory_location.py` implements:
 
-- identifiers attach only to an existing canonical asset Entity UUID;
-- supported types: `gtin8`, `upc_a`, `ean13`, `gtin14`, `merchant_sku`, `manufacturer_part_number`, `model_number`, `serial_number`, `imei`, `mac`;
-- exact source/printed value is retained separately from deterministic normalized search value;
-- GTIN-8 / UPC-A / EAN-13 / GTIN-14 enforce exact digit length and modulo-10 check digit while preserving leading zeroes;
-- IMEI requires 15 digits plus Luhn validation;
-- MAC accepts compact, colon, hyphen or Cisco-dot forms and normalizes to uppercase 12-hex search form;
-- merchant SKU, manufacturer part/model and serial types require explicit namespace with deterministic namespace-key normalization;
-- deterministic identifier Resource ID derives from identifier type + normalized namespace + normalized value + immutable Entity UUID;
-- product/model identifiers may attach to multiple assets;
-- `serial_number`, `imei` and `mac` fail closed when the same canonical identifier is already attached to another Entity UUID;
-- same-asset exact replay is zero-write;
-- `observed` may upgrade to `verified` on the same identifier identity/revision chain;
-- conflicting replay cannot silently replace exact source value, namespace or note;
-- `lookup_assets` resolves identifier matches back through canonical `asset` Resources, not a shadow asset database.
-
-Identifier attachment has no fitment, location, movement, inventory, warranty, specification, OCR or Android side effects.
+- canonical `location` resources, schema version 1;
+- canonical `inventory_state` resources, schema version 1;
+- inventory Resource ID equal exactly to the existing asset Entity UUID;
+- no allocation of a second physical/inventory UUID;
+- stable location IDs with display name, bounded kind, optional parent and optional note;
+- parent existence checks, self-parent rejection, ancestor-cycle rejection and bounded hierarchy traversal;
+- location update/reparent without changing location identity;
+- inventory tracking only for an existing canonical asset;
+- independent `intended_location_id` and `observed_location_id` fields;
+- offset-aware `observed_at` required whenever observed location is set;
+- intended-state mutation preserves observation state/time;
+- observed-state mutation preserves intended placement;
+- clearing one state does not erase the other;
+- persisted asset/location reference validation and fail-closed integrity errors;
+- no fitment, movement-event, scanner, par/grocery, warranty, OCR or Android side effects.
 
 ### Direct tests
 
-`tests/test_identifiers.py` covers:
+`tests/test_inventory_location.py` covers:
 
-- valid and invalid GTIN/UPC/EAN check digits;
-- leading-zero preservation;
-- required namespace behavior;
-- same-asset replay and verification upgrade;
-- product-level identifier reuse across assets;
-- serial-level collision rejection;
-- IMEI and MAC validation/normalization;
-- missing asset rejection;
-- deterministic lookup back to canonical assets;
-- downstream side-effect isolation.
+- same Entity UUID through asset and inventory state;
+- missing asset/location rejection;
+- stable hierarchy and nested parents;
+- self-parent and ancestor-cycle rejection;
+- intended-versus-observed independence;
+- offset-aware observation time validation;
+- independent clearing behavior;
+- persisted missing/corrupt reference failure;
+- asset side-effect isolation.
 
 ### Personal release wiring
 
-The Git-backed Personal starter now includes `identifier` in `resource_types_json`.
+The Personal starter and release verifier now include `inventory_state` and `location`.
 
-The complete no-app operating instructions now include:
+The complete no-app instructions now include:
 
-- `authority_binding/binding-identifier`;
-- exact identifier/source-value and normalized-value semantics;
-- GTIN/UPC/EAN, IMEI and MAC validation requirements;
-- required local identifier namespaces;
-- serial-level collision safety;
-- identifier-origin canonical asset lookup;
-- explicit no-side-effect boundaries for fitment, movement, inventory, OCR and Android.
+- `binding-location` and `binding-inventory-state`;
+- inventory identity reuse over canonical asset Entity UUID;
+- hierarchical location state;
+- explicit distinction between “where it belongs” and “where it was last observed”;
+- observation timestamp truth;
+- explicit prohibition on treating a location-state update as movement history or scanner evidence.
 
-`mira.personal_distribution`, `mira.workspace_bundle`, direct release tests and `project/code_ownership.json` enforce the identifier-inclusive contract. The `canonical-identifiers` component owns `mira/identifiers.py` with `tests/test_identifiers.py` as direct evidence.
+`mira.workspace_bundle`, `mira.personal_distribution`, direct release tests and `project/code_ownership.json` enforce the new contract. The `inventory-location` component owns `mira/inventory_location.py` with `tests/test_inventory_location.py` as direct evidence.
 
 ## CI evidence
 
-PR #66 CI run `33299034811` passed on implementation/release head `ba05f25a4389a22c0035205a019b5677fd441b2a`, including compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Python unit tests and Workspace Apps Script tests.
+PR #67 CI run `33300802923` passed on implementation/release head `b15a7305863c91f8429b0b1bfcca87047be476a5`, including compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Python unit tests and Workspace Apps Script tests.
 
-Provider-proof documentation and this closeout checkpoint are later commits, so exact current-head CI is still required before merge.
+Provider-proof documentation and this closeout checkpoint are later commits, so exact current-head CI remains required before merge.
 
 ## Independent Google provider proof — 2026-08-30
 
-A brand-new native Google Sheet was created only for this packet and placed in the ChatGPT Drive folder. It did not copy or touch protected legacy MIRA production state. Provider file ID and authenticated-account details are intentionally excluded from public Git. After verification the Sheet was renamed to include `NOT A STARTER`.
+A brand-new native Google Sheet was created only for this packet. It did not copy or touch protected legacy MIRA production state. Provider file ID and authenticated-account details are intentionally excluded from public Git. After verification, the Sheet was renamed to include `NOT A STARTER`.
 
 ### Clean substrate
 
-Exact Google readback before mutable proof state confirmed:
+Exact provider readback before mutable proof state confirmed:
 
 - timezone `Etc/UTC`;
 - tabs exactly `Metadata`, `Resources`, `Events`, `Idempotency`;
 - `mira-structured-state-v1` / `STORE-001` / `single_writer`;
-- identifier-inclusive resource-type list matching this branch;
+- resource types include `inventory_state` and `location`;
 - exact STORE-001 headers;
-- zero inherited mutable rows.
+- zero inherited mutable Resources.
 
 ### Authority and asset prerequisite
 
-Exact readback then confirmed:
+Exact readback confirmed:
 
 - one enabled/verified synthetic `authority/google-sheets-personal`;
 - `binding-asset` -> `asset`;
-- `binding-identifier` -> `identifier`;
-- one immutable canonical synthetic asset Resource at Entity UUID `44444444-4444-4444-8444-444444444444`;
-- exact matching request hashes, revisions, idempotency results and resource references.
+- `binding-location` -> `location`;
+- `binding-inventory-state` -> `inventory_state`;
+- one immutable synthetic asset Resource at Entity UUID `55555555-5555-4555-8555-555555555555`.
 
-Identifier writes did not mutate the asset UUID, quantity or acquisition provenance.
+The asset remained revision 1 throughout inventory/location mutations.
 
-### Product identifier
+### Hierarchy persistence
 
-A representative UPC-A was persisted/read back at revision 1:
+Four stable locations persisted/read back at revision 1:
 
-- exact source value `012345678905`;
-- normalized value `012345678905` with leading zero intact;
-- verification `verified`;
-- deterministic Resource ID `identifier-4a3fea47273b551395b9d7d69cd96069`;
-- linked to the same immutable asset UUID;
-- exact request/idempotency evidence retained.
+- synthetic shop root;
+- Shelf A under the shop;
+- Shelf B under the shop;
+- Workbench under the shop.
 
-### Serial identifier revision chain
+Negative hierarchy fixtures remain direct-test evidence rather than being fabricated as live-provider execution.
 
-A representative namespaced serial was first persisted/read back at revision 1:
+### Intended/observed revision chain
 
-- namespace `Synthetic Maker` / namespace key `synthetic maker`;
-- exact value `SN-0001` / normalized value `sn-0001`;
-- verification `observed`;
-- deterministic Resource ID `identifier-6572064aab78f06be89e1801827fca6a`;
-- same immutable asset UUID.
+Inventory revision 1:
 
-A second canonical mutation changed only verification state to `verified`.
+- Resource ID = same asset Entity UUID;
+- intended home = Shelf A;
+- observed location/time = null.
 
-Revision-2 readback confirmed the same Resource ID, Entity UUID, type, namespace, namespace key, exact source value, normalized value and note, with revision exactly `2` and both Idempotency rows retained.
+Inventory revision 2 recorded only a supported observation:
 
-### Identifier-origin asset lookup
+- observed location = Workbench;
+- observed timestamp = `2026-08-30T12:45:00-06:00`;
+- intended home remained Shelf A.
 
-A bounded provider search for `012345678905` returned exactly the canonical UPC identifier. Its persisted Entity UUID was then used for a bounded provider search that returned the canonical `asset` Resource and both linked identifier Resources. This demonstrates identifier-origin lookup over one canonical asset authority rather than a second asset database.
+Inventory revision 3 changed only intended placement:
 
-Durable non-sensitive proof: `docs/NO_APP_IDENTIFIER_PROVIDER_PROOF.md`.
+- intended home = Shelf B;
+- observed location remained Workbench;
+- the exact original observed timestamp remained unchanged.
+
+Provider readback retained all three inventory idempotency records and request hashes. A bounded search by Entity UUID returned exactly the canonical `asset` and `inventory_state` rows, both keyed by the same physical Entity UUID.
+
+Durable non-sensitive proof: `docs/NO_APP_INVENTORY_LOCATION_PROVIDER_PROOF.md`.
 
 ## End-of-session alignment verification — 2026-08-30
 
 ### `FEATURES.md`
 
-Rechecked after implementation/provider proof. `IDENT-001` and the identifier-origin lookup slice of `ASSET-003` are directly implemented/tested/provider-persisted. `FITMENT-001`, `EVID-001`, `INV-001`, `LOC-001`, `MOVE-001`, `INV-002`, OCR/photo capture, warranty/maintenance, specifications and Android capture remain explicitly unfinished/preserved.
+Rechecked after implementation/provider proof. `INV-001` identity reuse is directly implemented/tested/provider-persisted. The bounded base-state portion of `LOC-001` covering hierarchy plus intended/observed separation is directly implemented/tested/provider-persisted. Broader movable-container-following movement semantics are not claimed complete and remain with later movement work.
 
 ### `BACKLOG.md`
 
-Rechecked after implementation/provider proof. `ASSET-IDENTIFIER-001` correctly remains `active` until PR #66 actually merges. `FITMENT-ENGINE-001`, `LOCATION-STATE-001`, `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001`, `ASSET-SERVICE-001`, evidence/OCR work and Android work remain unfinished.
+Rechecked after implementation/provider proof. `LOCATION-STATE-001` correctly remains active until PR #67 actually merges. `MOVEMENT-CORE-001`, `INVENTORY-QUERY-001`, `PAR-CORE-001`, `GROCERY-CORE-001`, fitment, OCR/evidence and Android work remain unfinished.
 
 ### `ROADMAP.md`
 
-Rechecked after implementation/provider proof. This packet advances the M2-M0.5 receipts/assets/inventory direction without adding external infrastructure and keeps Android paused at its preserved shared-writer checkpoint.
+Rechecked after implementation/provider proof. This packet advances the no-app assets/inventory/location family without requiring external infrastructure and keeps Android paused.
 
 ### Direction result
 
-**ALIGNED.** Canonical identifier persistence, validation and identifier-origin asset lookup are technically and provider verified. Merge is the only remaining lifecycle gate.
+**ALIGNED.** The bounded prerequisite is implemented and provider-verified without overstating movement/scanning/container-following or broad inventory capability.
 
 ## Acceptance result
 
-1. Provider-neutral `IdentifierService` over STORE-001 — PASS.
-2. Schema-v1 deterministic identifier Resource identity + immutable Entity UUID linkage — PASS.
-3. GTIN/UPC/EAN, IMEI, MAC and local identifier validation/normalization — PASS.
-4. Exact source value separate from normalized value; leading zeroes preserved — PASS.
-5. Explicit namespace requirements — PASS.
-6. Serial-level collision safety — PASS.
-7. Product-level multi-asset reuse — PASS.
-8. Stable zero-write replay + fail-closed conflicting replay — PASS.
-9. Identifier-origin lookup returns canonical assets — PASS.
-10. Direct validation/replay/collision/lookup/side-effect tests — PASS.
-11. Personal starter `identifier` + `binding-identifier` contract — PASS.
-12. Complete no-app identifier contract — PASS.
-13. Distribution/Workspace validation + code ownership — PASS.
-14. CI green on implementation head — PASS; exact closeout-head CI PENDING.
-15. Fresh isolated Google asset + product identifier + serial revision/lookup proof — PASS.
-16. End-of-session whole-product reconciliation — PASS.
+1. Provider-neutral inventory/location service over STORE-001 — PASS.
+2. `inventory_state` Resource ID equals canonical asset Entity UUID — PASS.
+3. Unknown asset fails closed / no second physical identity — PASS.
+4. Stable hierarchical locations — PASS.
+5. Parent existence, self/cycle protection — PASS.
+6. Intended and observed state mutate independently — PASS.
+7. Offset-aware observed timestamp semantics — PASS.
+8. Canonical referenced-location validation — PASS.
+9. Direct identity/hierarchy/separation/clearing/side-effect tests — PASS.
+10. Personal starter `location` + `inventory_state` bindings — PASS.
+11. Complete no-app inventory/location base contract — PASS.
+12. Distribution/Workspace validation + code ownership — PASS.
+13. CI green on implementation/release head — PASS; exact closeout-head CI PENDING.
+14. Fresh isolated Google intended-versus-observed provider proof — PASS.
+15. End-of-session whole-product reconciliation — PASS.
 
 ## Exact next action
 
-1. Run CI on the exact current PR #66 closeout head containing this checkpoint.
-2. If every gate is green, merge PR #66 using expected-head SHA protection.
+1. Run CI on the exact current PR #67 closeout head containing this checkpoint.
+2. If every gate is green, merge PR #67 using expected-head SHA protection.
 3. Remotely verify `main` at the returned merge SHA.
-4. Create exactly one next bounded packet from verified `main`; in that packet reconcile `ASSET-IDENTIFIER-001` to completed with PR #66 evidence.
-5. Dependency-rank the next no-app vertical from the canonical unfinished ledger. Likely candidates now unlocked include fitment and inventory/location foundations, but select from Git based on leverage and bounded user-visible value rather than conversational momentum.
-6. Keep Android paused unless explicitly reprioritized or no-app milestone evidence justifies resumption.
+4. Create exactly one next bounded packet from verified `main`; in that packet reconcile `LOCATION-STATE-001` to completed with PR #67 evidence.
+5. Dependency-rank the next no-app vertical from the canonical unfinished ledger. `MOVEMENT-CORE-001` is newly unblocked by this packet, but it must compete on leverage/value with other queued work rather than being selected merely by conversational momentum.
+6. Keep broader `LOC-001` movable-container/movement semantics unfinished unless their own work earns direct/provider evidence.
+7. Keep Android paused unless explicitly reprioritized or no-app milestone evidence justifies resumption.
 
 ## Recovery protocol
 
-Read this file first. If PR #66 is open, verify its exact current head and exact-head CI before merge. If merged, verify `main`, reconcile `ASSET-IDENTIFIER-001` to completed, then activate exactly one next bounded packet. Never touch protected legacy asset/inventory state and never broaden identifier attachment into fitment/location/movement/OCR/Android by inference.
+Read this file first. If PR #67 is open, verify its exact current head and exact-head CI before merge. If merged, verify `main`, reconcile `LOCATION-STATE-001` to completed, then activate exactly one next bounded packet. Never touch protected legacy inventory/location state and never broaden location state into movement-event history, scanning, par/grocery, fitment, OCR or Android by inference.

@@ -38,6 +38,8 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("authority_binding/binding-receipt", protocol)
         self.assertIn("authority_binding/binding-asset", protocol)
         self.assertIn("authority_binding/binding-identifier", protocol)
+        self.assertIn("authority_binding/binding-location", protocol)
+        self.assertIn("authority_binding/binding-inventory-state", protocol)
         self.assertIn("resource id: `google-sheets-personal`", protocol)
         self.assertIn("resource id: `minimum-useful-setup`", protocol)
         self.assertIn("`timezone`", protocol)
@@ -61,6 +63,13 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("serial-level collision-protected identifiers", protocol)
         self.assertIn("identifiers cannot manufacture physical assets.", protocol)
         self.assertIn("Identifier attachment alone never infers fitment", protocol)
+        self.assertIn("## Canonical inventory participation and location state", protocol)
+        self.assertIn("canonical inventory participation resource type is `inventory_state`", protocol)
+        self.assertIn("Resource ID and payload `entity_uuid` must both be exactly", protocol)
+        self.assertIn("`intended_location_id` answers “where does this belong?”", protocol)
+        self.assertIn("`observed_location_id` answers “where was this item last supported as being?”", protocol)
+        self.assertIn("offset-aware ISO-8601 `observed_at`", protocol)
+        self.assertIn("This base location state is not movement-event history.", protocol)
         self.assertIn("`calendar_capability_verified`: false", protocol)
         self.assertIn("service_state/appointments_calendar", protocol)
         self.assertIn("`activation_state` to `requested`", protocol)
@@ -152,6 +161,39 @@ class WorkspaceBundleTests(unittest.TestCase):
         ].replace(
             "Identifier attachment alone never infers fitment",
             "Identifier attachment may infer fitment",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_missing_inventory_identity_binding(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("authority_binding/binding-inventory-state", "authority_binding/missing-inventory")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_collapsed_intended_observed_location_semantics(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "`observed_location_id` answers “where was this item last supported as being?”",
+            "one location field answers every location question",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_movement_side_effect_regression(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "This base location state is not movement-event history.",
+            "Location state is movement-event history.",
         )
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)

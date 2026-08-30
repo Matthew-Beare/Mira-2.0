@@ -33,6 +33,8 @@ class PersonalDistributionTests(unittest.TestCase):
                 "asset",
                 "entity",
                 "identifier",
+                "inventory_state",
+                "location",
                 "onboarding_ledger",
                 "ops_brief_run",
                 "receipt",
@@ -106,10 +108,7 @@ class PersonalDistributionTests(unittest.TestCase):
 
     def test_snapshot_verifier_accepts_exact_clean_starter(self) -> None:
         blueprint = load_blueprint()
-        tabs = {
-            tab.title: (tab.headers,) + tab.rows
-            for tab in blueprint.tabs
-        }
+        tabs = {tab.title: (tab.headers,) + tab.rows for tab in blueprint.tabs}
         snapshot = StarterSnapshot(
             title=blueprint.spreadsheet_title,
             time_zone=blueprint.spreadsheet_time_zone,
@@ -119,10 +118,7 @@ class PersonalDistributionTests(unittest.TestCase):
 
     def test_snapshot_verifier_rejects_header_drift_and_inherited_state(self) -> None:
         blueprint = load_blueprint()
-        tabs = {
-            tab.title: (tab.headers,) + tab.rows
-            for tab in blueprint.tabs
-        }
+        tabs = {tab.title: (tab.headers,) + tab.rows for tab in blueprint.tabs}
         bad_headers = dict(tabs)
         bad_headers["Resources"] = (("wrong",) + tabs["Resources"][0][1:],)
         with self.assertRaisesRegex(PersonalDistributionError, "headers"):
@@ -149,10 +145,7 @@ class PersonalDistributionTests(unittest.TestCase):
 
     def test_snapshot_verifier_rejects_metadata_drift(self) -> None:
         blueprint = load_blueprint()
-        tabs = {
-            tab.title: (tab.headers,) + tab.rows
-            for tab in blueprint.tabs
-        }
+        tabs = {tab.title: (tab.headers,) + tab.rows for tab in blueprint.tabs}
         metadata = list(tabs["Metadata"])
         metadata[1] = ("schema_version", "wrong")
         tabs["Metadata"] = tuple(metadata)
