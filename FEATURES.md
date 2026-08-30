@@ -80,7 +80,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `SPEC-001` | Provenance-locked technical specifications with exact applicability | required | test_verified | ASSET-001,KNOW-001,EVID-001
 - `SHOP-001` | Active shopping intent distinct from durable purchase history | accepted | specified | RECEIPT-001,FITMENT-001
 - `INV-001` | Inventory participation reuses canonical Entity UUID identity | accepted | test_verified | ASSET-001
-- `LOC-001` | Hierarchical locations with intended placement separate from observed/last-moved state | required / under active design | specified | INV-001
+- `LOC-001` | Hierarchical locations with intended placement separate from observed/last-moved state | required | test_verified | INV-001
 - `MOVE-001` | QR/barcode-driven inventory movement with explicit event/readback semantics | accepted/required-direction | candidate_unmerged | INV-001,IDENT-001,LOC-001
 - `INV-002` | Queryable household, loft and shop inventory projection | required | candidate_unmerged | INV-001,LOC-001,IDENT-001,ASSET-003
 - `PAR-001` | Target/par quantity with opt-in under-level notification | accepted | specified | INV-001
