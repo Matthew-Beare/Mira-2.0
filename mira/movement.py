@@ -11,9 +11,11 @@ a distributed transaction across the event and resource writes. If unrelated con
 mutation violates that boundary between the two writes, recovery fails closed rather
 than overwriting newer canonical state.
 
-Identifier recognition, barcode/QR/NFC/BLE capture, container propagation, intended
-location changes, par/grocery behavior and Android client behavior are outside this
-module.
+STORE-001 keeps provider event types generic (created/updated). Movement semantics are
+therefore identified by typed payload material instead of adding a provider-specific
+schema event type. Identifier recognition, barcode/QR/NFC/BLE capture, container
+propagation, intended-location changes, par/grocery behavior and Android client behavior
+are outside this module.
 """
 
 from __future__ import annotations
@@ -42,7 +44,8 @@ from .structured_state import (
 )
 
 
-MOVEMENT_EVENT_TYPE = "inventory_observation"
+MOVEMENT_EVENT_TYPE = "updated"
+MOVEMENT_EVENT_KIND = "inventory_observation"
 MOVEMENT_SCHEMA_VERSION = 1
 
 
@@ -100,13 +103,9 @@ class MovementService:
         adapter: StructuredStateAdapter,
         *,
         inventory_service: InventoryLocationService | None = None,
-        event_type: str = MOVEMENT_EVENT_TYPE,
-        stream_type: str = INVENTORY_STATE_RESOURCE_TYPE,
     ) -> None:
         self._adapter = adapter
         self._inventory = inventory_service or InventoryLocationService(adapter)
-        self._event_type = _text(event_type, "event_type", 128)
-        self._stream_type = _text(stream_type, "stream_type", 128)
 
     def record_observation(
         self,
@@ -172,9 +171,9 @@ class MovementService:
             )
             try:
                 replayed = self._adapter.append_event(
-                    self._stream_type,
+                    INVENTORY_STATE_RESOURCE_TYPE,
                     asset_id,
-                    self._event_type,
+                    MOVEMENT_EVENT_TYPE,
                     movement_id,
                     existing.payload,
                     idempotency_key=replay_key,
@@ -209,6 +208,7 @@ class MovementService:
 
         payload = {
             "schema_version": MOVEMENT_SCHEMA_VERSION,
+            "event_kind": MOVEMENT_EVENT_KIND,
             "event_id": movement_id,
             "entity_uuid": asset_id,
             "observed_location_id": destination,
@@ -224,9 +224,9 @@ class MovementService:
         }
         try:
             appended = self._adapter.append_event(
-                self._stream_type,
+                INVENTORY_STATE_RESOURCE_TYPE,
                 asset_id,
-                self._event_type,
+                MOVEMENT_EVENT_TYPE,
                 movement_id,
                 payload,
                 idempotency_key=replay_key,
@@ -261,7 +261,7 @@ class MovementService:
         try:
             self._inventory.get_inventory_state(asset_id)
             raw = self._adapter.events_for(
-                self._stream_type,
+                INVENTORY_STATE_RESOURCE_TYPE,
                 asset_id,
                 after_revision=after,
                 limit=1000,
@@ -275,7 +275,8 @@ class MovementService:
         rows = [
             _event_view(event)
             for event in raw
-            if event.event_type == self._event_type
+            if event.event_type == MOVEMENT_EVENT_TYPE
+            and event.payload.get("event_kind") == MOVEMENT_EVENT_KIND
         ]
         rows.sort(key=lambda item: item.stream_revision)
         return tuple(rows[:bounded_limit])
@@ -283,7 +284,7 @@ class MovementService:
     def _find_event(self, entity_uuid: str, event_id: str) -> EventRecord | None:
         try:
             rows = self._adapter.events_for(
-                self._stream_type,
+                INVENTORY_STATE_RESOURCE_TYPE,
                 entity_uuid,
                 after_revision=0,
                 limit=1000,
@@ -453,6 +454,8 @@ def _event_view(event: EventRecord, *, idempotent_replay: bool = False) -> Movem
     if event.event_type != MOVEMENT_EVENT_TYPE:
         raise MovementIntegrityError("event is not canonical inventory movement history")
     payload = dict(event.payload)
+    if payload.get("event_kind") != MOVEMENT_EVENT_KIND:
+        raise MovementIntegrityError("event payload is not an inventory observation")
     if payload.get("schema_version") != MOVEMENT_SCHEMA_VERSION:
         raise MovementIntegrityError("unsupported movement event schema version")
     event_id = _text(payload.get("event_id"), "event_id", 128)
@@ -621,6 +624,7 @@ def _limit(value: Any) -> int:
 
 
 __all__ = [
+    "MOVEMENT_EVENT_KIND",
     "MOVEMENT_EVENT_TYPE",
     "MOVEMENT_SCHEMA_VERSION",
     "MovementConflictError",
