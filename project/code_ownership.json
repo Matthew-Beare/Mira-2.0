@@ -216,6 +216,15 @@
       "verification": ["tests/test_grocery.py"]
     },
     {
+      "id": "backup-restore-core",
+      "responsibility": "Provider-neutral deterministic current-Resource snapshot, integrity digest, fresh-target restore and independent material-parity verification with explicit coverage limits.",
+      "why_separate": "Backup/restore is nonauthoritative recovery infrastructure above STORE-001. It must preserve canonical current Resource identity/material without becoming a second writable master or falsely claiming Event-history, archive, encryption, scheduling, retention, RPO/RTO or disaster-recovery guarantees.",
+      "owned_paths": ["mira/backup.py"],
+      "feature_ids": ["BACKUP-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["BACKUP-CORE-001"],
+      "verification": ["tests/test_backup.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",

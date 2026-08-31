@@ -45,7 +45,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `TASK-002` | Evidence-grounded next actions and honest completion state | accepted/integrity rule | specified | -
 - `RECOVERY-001` | Phase-aware Run Log, durable checkpoints and circuit-breaker recovery | required | test_verified | -
 - `RECOVERY-002` | Explicit module dependency boundaries and failure isolation | required | test_verified | -
-- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | specified+candidate_unmerged | RECOVERY-002
+- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | test_verified+provider_verified+candidate_unmerged | RECOVERY-002
 - `CAL-001` | Saturday AM seven-day appointment lookahead | required | test_verified | -
 - `CAL-002` | Day-before and morning-of appointment reminders | required | test_verified | -
 - `CAL-003` | Configurable relative appointment reminder, default one hour before | required | test_verified | -
@@ -85,7 +85,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `INV-002` | Queryable household, loft and shop inventory projection | required | test_verified+merged-provider-readback | INV-001,LOC-001,IDENT-001,ASSET-003
 - `PAR-001` | Target/par quantity with opt-in under-level notification | accepted | specified | INV-001
 - `PAR-002` | Optional scale-based passive stock sensing | optional/proposed | not_present | PAR-001
-- `GROCERY-001` | Grocery list, pantry and freezer stock reconciliation | accepted | test_verified+provider_verified+candidate_unmerged | SHOP-001,INV-001,LOC-001,RECEIPT-001
+- `GROCERY-001` | Grocery list, pantry and freezer stock reconciliation | accepted | test_verified+merged-provider-readback | SHOP-001,INV-001,LOC-001,RECEIPT-001
 - `RECIPE-001` | Durable recipe library with structured ingredients and provenance | required | specified | KNOW-001
 - `MEAL-001` | Dated meal planning with pantry-aware ingredient-gap and shopping reconciliation | required | specified | RECIPE-001,GROCERY-001,SHOP-001
 - `ONBOARD-002` | Sanitized generic starter with no inherited personal production state | required/privacy | test_verified | DATA-001

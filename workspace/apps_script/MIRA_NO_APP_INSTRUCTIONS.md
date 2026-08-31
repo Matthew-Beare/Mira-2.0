@@ -448,3 +448,37 @@ Do not infer permission for consequential external actions from setup answers. A
 ## Recovery and honesty
 
 When state is ambiguous, stale, duplicated, schema-incompatible, has invalid/missing Authority routing, or cannot be read back exactly, stop the mutation path and explain the blocker. Never “repair” canonical state by guessing. Never report completion merely because a write call returned success; exact provider readback is part of completion. Never report an Ops Brief as delivered merely because it was composed.
+
+## Canonical current-Resource backup and isolated restore
+
+A MIRA backup artifact is a **nonauthoritative snapshot** of canonical state. It is recovery material, never another writable master, and creating or possessing one does not change Authority routing.
+
+Backup artifact v1 is deliberately narrower than full disaster recovery. It covers current canonical Resource material only because the public STORE-001 contract can enumerate Resources by declared type but cannot globally enumerate every Event stream or persisted Idempotency row.
+
+The exact v1 coverage declarations are:
+
+- Resources: `complete_current_resources_under_query_bound`
+- Events: `not_exported_interface_not_enumerable`
+- original Idempotency history: `not_exported_interface_not_enumerable`
+
+Backup/restore rules:
+
+1. Capture the declared schema version, deterministically sorted resource-type list, deterministically sorted event-type list, and every current Resource record in scope as exactly `resource_type`, stable `resource_id`, positive `revision`, and parsed JSON `payload`.
+2. Sort Resources by `(resource_type, resource_id)`. Duplicate canonical identity is an integrity failure.
+3. The public v1 query bound is 1,000 rows per resource type with no pagination contract. If a query returns exactly 1,000 rows, completeness cannot be proven, so fail closed instead of labeling the artifact complete.
+4. Event rows, provider row timestamps, provider request hashes, `last_idempotency_key`, and original Idempotency rows are **not** part of canonical Resource snapshot material. Never describe v1 as a full Event-history/provider image.
+5. Creating the backup is read-only. It performs zero Resource, Event, or Idempotency writes to the source authority.
+6. Build the unsigned artifact as compact UTF-8 JSON with lexicographically sorted object keys and no insignificant whitespace. Compute lowercase SHA-256 over exactly that unsigned material, then store it as `material_sha256`. Digest mismatch or malformed/extra fields fail closed.
+7. Serialization success proves only that a snapshot was created. It does not prove the snapshot can be restored.
+8. Restore only into a genuinely fresh, isolated, schema-compatible target authority. Programmatically verify that every declared Resource type is empty first. Because v1 cannot globally enumerate target Events or Idempotency rows, the provider/setup evidence must independently establish that the target itself is newly created and not recycled state.
+9. Restore current Resource revisions without inventing historical payloads. STORE-001 has no arbitrary revision import, so for a source Resource at revision `N`, repeat the final canonical payload through revisions `1..N` using `expected_revision=0..N-1` and deterministic restore-only idempotency keys.
+10. The restore idempotency key for revision `R` is `backup-restore-` plus the first 40 lowercase hexadecimal characters of SHA-256 over UTF-8 text `<material_sha256>:<resource_type>:<resource_id>:<R>`.
+11. Each restore write still follows the canonical direct-upsert request-hash, atomic Resource+Idempotency, and exact provider-readback rules. A restore-key replay on the supposedly fresh target is evidence that the target is not fresh; fail closed.
+12. Restore-generated provider timestamps, request hashes, `last_idempotency_key`, and Idempotency rows are expected to differ from the source and are not snapshot parity material. Do not compare those fields as if a restore were a byte-for-byte provider clone.
+13. After all writes, independently re-read/re-export the target and recompute the same v1 artifact material. Verified restore requires exact schema, Resource identity, payload, revision, deterministic ordering, and `material_sha256` parity with the source artifact.
+14. Any partial write, incompatible schema, unknown resource type, duplicate identity, target drift, hidden idempotency replay, digest mismatch, or readback mismatch means restore is **not verified**. Never report success merely because write calls returned.
+15. A verified v1 restore still does **not** prove Event-history recovery, original idempotency recovery, provider archive durability, encryption at rest, incrementality, retention/rotation, scheduler firing, RPO/RTO, offsite redundancy, automatic disaster recovery, authority cutover, or legacy-production migration.
+16. Never commit a real user's backup artifact or its private state into the public MIRA source repository. Tests and public examples use synthetic data only.
+17. Backup and authority migration remain separate. A snapshot cannot silently switch writable authority, create a second master, or authorize migration/cutover.
+
+When reporting backup status, distinguish these facts explicitly: **snapshot created**, **digest verified**, **restore verified**, and any separately proven provider/offsite durability. Do not collapse them into “backed up” when only the first one or two are known.
