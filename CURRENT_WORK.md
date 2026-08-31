@@ -37,7 +37,7 @@ Evidence:
 - **Branch:** `integration/m0-019-grocery-core`
 - **Base SHA:** `b02e723396c4deb16394c59c63ed37071cdf59c7`
 - **PR:** `#73` (open, non-draft; resolve exact head/mergeability directly from GitHub before merge)
-- **Merge candidate:** current PR #73 head after this final documentation checkpoint; do not embed a SHA here because editing this file changes it.
+- **Merge candidate:** current PR #73 head. This file intentionally does not embed that SHA because editing the file would change it; GitHub PR readback is the exact-head authority for the merge gate.
 - **Last release-wired green head before lifecycle evidence:** `ad32344c97013f2cc370cd887b1e59934b7f8452`
 - **Objective:** add the smallest provider-neutral no-app grocery reconciliation slice that distinguishes active grocery procurement intent from known pantry/freezer/household stock using canonical shopping, asset/inventory and location truth, without pretending that acquisition quantity equals current consumable quantity or silently inventing par, recipe, meal-plan, spending, scanner or automatic purchase behavior.
 
@@ -198,12 +198,12 @@ No roadmap semantic change is required. This remains one bounded M2-M0.5 no-app 
 
 ## Exact next action
 
-1. Read PR #73 to resolve the exact current branch head.
-2. Run CI on that exact final candidate head.
+1. Read PR #73 to resolve the exact current branch head and mergeability.
+2. Run/verify CI on that exact final candidate head.
 3. Merge PR #73 only with expected-head protection after exact-head CI succeeds.
 4. Remotely verify `main` points to the merge commit and post-merge `main` CI is green.
 5. Create the next durable post-merge lifecycle checkpoint that marks `GROCERY-001` / `GROCERY-CORE-001` merged/completed and dynamically ranks the next bounded accepted packet.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-019-grocery-core` descends from verified green base `b02e723396c4deb16394c59c63ed37071cdf59c7`, PR #73 still targets `main`, and latest branch head has not changed unexpectedly. Candidate lifecycle state is reconciled, but a new exact-head CI run is required after this final documentation checkpoint. Do not touch protected legacy MIRA production data. Do not expand this packet into par automation, recipes, meal plans, automatic orders/purchasing, finance/spending, scanner/capture or Android.
+Read this file first. Confirm branch `integration/m0-019-grocery-core` descends from verified green base `b02e723396c4deb16394c59c63ed37071cdf59c7`, PR #73 still targets `main`, and latest branch head has not changed unexpectedly. Candidate lifecycle state is reconciled, but exact-head CI and merge/readback still gate completion. Do not touch protected legacy MIRA production data. Do not expand this packet into par automation, recipes, meal plans, automatic orders/purchasing, finance/spending, scanner/capture or Android.
