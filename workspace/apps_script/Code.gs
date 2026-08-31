@@ -19,6 +19,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('MIRA')
     .addItem('Initialize this copy', 'miraInitializeCopy')
+    .addItem('Enable Calendar', 'miraEnableGoogleCalendar')
     .addToUi();
 }
 
@@ -33,7 +34,21 @@ function miraInitializeCopy() {
   );
   SpreadsheetApp.getUi().alert(
     'MIRA initialized',
-    'This copy is now bound to its own MIRROR spreadsheet state.',
+    'This copy is now bound to its own MIRA spreadsheet state.',
+    SpreadsheetApp.getUi().ButtonSet.OK,
+  );
+}
+
+function miraEnableGoogleCalendar() {
+  const result = miraEnsureGoogleCalendar_();
+  const message = result.created
+    ? 'MIRA created a dedicated Google Calendar for MIRA-managed events.'
+    : result.recovered
+      ? 'MIRA recovered its existing dedicated Google Calendar and is ready to use it.'
+      : 'MIRA Calendar is already enabled and ready.';
+  SpreadsheetApp.getUi().alert(
+    'MIRA Calendar enabled',
+    message,
     SpreadsheetApp.getUi().ButtonSet.OK,
   );
 }
