@@ -46,6 +46,10 @@ class PersonalDistributionTests(unittest.TestCase):
                 "task",
             ],
         )
+        self.assertIn(
+            "workspace/apps_script/GoogleCalendarProjection.gs",
+            blueprint.workspace_artifacts,
+        )
         for tab in blueprint.tabs:
             if tab.title != "Metadata":
                 self.assertEqual(tab.rows, ())
@@ -59,7 +63,11 @@ class PersonalDistributionTests(unittest.TestCase):
         self.assertEqual(first.json_bytes(), second.json_bytes())
         projection = json.loads(first.json_bytes())
         self.assertEqual(projection["source_sha"], source_sha)
-        self.assertEqual(len(projection["artifacts"]), 5)
+        self.assertEqual(len(projection["artifacts"]), 6)
+        self.assertIn(
+            "workspace/apps_script/GoogleCalendarProjection.gs",
+            [item["path"] for item in projection["artifacts"]],
+        )
         self.assertEqual(
             [item["path"] for item in projection["artifacts"]],
             sorted(item["path"] for item in projection["artifacts"]),
