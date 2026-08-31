@@ -207,6 +207,15 @@
       "verification": ["tests/test_shopping.py"]
     },
     {
+      "id": "grocery-reconciliation",
+      "responsibility": "Provider-neutral read-only reconciliation of explicitly selected active grocery shopping intent against canonical observed inventory within an explicit location scope, with exact matching and honest unknown stock quantity.",
+      "why_separate": "Grocery reconciliation composes shopping and inventory/location authorities but must never become a second shopping list, stock-quantity, par, receipt, recipe or meal-plan authority.",
+      "owned_paths": ["mira/grocery.py"],
+      "feature_ids": ["GROCERY-001", "SHOP-001", "INV-001", "LOC-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["GROCERY-CORE-001"],
+      "verification": ["tests/test_grocery.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
