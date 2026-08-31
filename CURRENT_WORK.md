@@ -37,7 +37,8 @@ Evidence:
 - **Branch:** `integration/m0-019-grocery-core`
 - **Base SHA:** `b02e723396c4deb16394c59c63ed37071cdf59c7`
 - **PR:** `#73` (open, non-draft, mergeable at latest readback)
-- **Last release-wired green head before this evidence checkpoint:** `ad32344c97013f2cc370cd887b1e59934b7f8452`
+- **Current candidate head:** `f39b50b82731ed5532722d3ed2855e5890532ffb`
+- **Last release-wired green head before lifecycle evidence:** `ad32344c97013f2cc370cd887b1e59934b7f8452`
 - **Objective:** add the smallest provider-neutral no-app grocery reconciliation slice that distinguishes active grocery procurement intent from known pantry/freezer/household stock using canonical shopping, asset/inventory and location truth, without pretending that acquisition quantity equals current consumable quantity or silently inventing par, recipe, meal-plan, spending, scanner or automatic purchase behavior.
 
 ## Session-start alignment verification — 2026-08-30
@@ -93,6 +94,8 @@ Evidence:
 
 - `SHOP-001` is merged/provider-readback verified from PR #72 and `SHOP-CORE-001` is completed.
 - `GROCERY-CORE-001` is the sole active work row for this packet.
+- `GROCERY-001` is now `test_verified+provider_verified+candidate_unmerged`; it is not marked merged early.
+- `GROCERY-CORE-001` has candidate PR/CI/provider evidence in `BACKLOG.md` and remains active pending merge/readback.
 - No new mutable `grocery` Resource or Authority binding was introduced. Grocery is a read-only projection over already-canonical shopping and inventory/location truth.
 - `project/code_ownership.json` registers `grocery-reconciliation`, owning `mira/grocery.py` and directly verified by `tests/test_grocery.py`.
 
@@ -176,13 +179,13 @@ This provider proof exercises the stock-ChatGPT/native Google no-app reconciliat
 ### `FEATURES.md`
 
 - `SHOP-001`, inventory query, location and movement prerequisites remain merged/test/provider verified.
-- `GROCERY-001` now has direct implementation, direct tests, release-wired CI and fresh provider-readback evidence but must remain explicitly **candidate-unmerged** until PR #73 lands.
+- `GROCERY-001` has direct implementation, direct tests, release-wired CI and fresh provider-readback evidence and is explicitly `test_verified+provider_verified+candidate_unmerged` until PR #73 lands.
 - `PAR-001`, `RECIPE-001`, `MEAL-001`, automatic purchasing/orders, spending/finance, scanner/client behavior and Android remain unfinished.
 
 ### `BACKLOG.md`
 
 - `SHOP-CORE-001` is complete.
-- `GROCERY-CORE-001` remains the one active work row until PR #73 merge/readback.
+- `GROCERY-CORE-001` remains the one active work row with PR #73 / CI / provider candidate evidence until merge/readback.
 - `PAR-CORE-001` remains optional narrower quantity/threshold work and is not a hidden dependency of this packet.
 
 ### `ROADMAP.md`
@@ -191,17 +194,16 @@ No roadmap semantic change is required. This remains one bounded M2-M0.5 no-app 
 
 ### Direction result
 
-**ALIGNED FOR MERGE CANDIDATE.** Implementation, direct tests, no-app/release guards and fresh isolated Google zero-write provider proof are complete. Remaining work is lifecycle candidate evidence, exact-head CI, protected merge and remote `main` verification.
+**ALIGNED FOR MERGE CANDIDATE.** Implementation, direct tests, no-app/release guards, lifecycle candidate evidence and fresh isolated Google zero-write provider proof are complete. Remaining work is exact-head CI, protected merge and remote `main` verification.
 
 ## Exact next action
 
-1. Reconcile `GROCERY-001` to `test_verified+provider_verified+candidate_unmerged` and enrich the active `GROCERY-CORE-001` backlog row with PR/CI/provider evidence without marking it complete early.
-2. Update PR #73 body with final implementation/provider evidence and exact current head.
-3. Run CI on the exact final lifecycle/evidence head.
-4. Merge PR #73 only with expected-head protection after exact-head CI succeeds.
-5. Remotely verify `main` points to the merge commit and post-merge `main` CI is green.
-6. Create the next durable post-merge lifecycle checkpoint that marks `GROCERY-001` / `GROCERY-CORE-001` merged/completed and dynamically ranks the next bounded accepted packet.
+1. Update PR #73 body with final implementation/provider evidence and exact current head.
+2. Run CI on exact candidate head `f39b50b82731ed5532722d3ed2855e5890532ffb` or its direct documentation-only successor if this checkpoint changes the head.
+3. Merge PR #73 only with expected-head protection after exact-head CI succeeds.
+4. Remotely verify `main` points to the merge commit and post-merge `main` CI is green.
+5. Create the next durable post-merge lifecycle checkpoint that marks `GROCERY-001` / `GROCERY-CORE-001` merged/completed and dynamically ranks the next bounded accepted packet.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-019-grocery-core` descends from verified green base `b02e723396c4deb16394c59c63ed37071cdf59c7`, PR #73 still targets `main`, and latest branch head has not changed unexpectedly. The last fully green release-wired pre-evidence head is `ad32344c97013f2cc370cd887b1e59934b7f8452`; a new exact-head CI run is required after lifecycle/evidence commits. Do not touch protected legacy MIRA production data. Do not expand this packet into par automation, recipes, meal plans, automatic orders/purchasing, finance/spending, scanner/capture or Android.
+Read this file first. Confirm branch `integration/m0-019-grocery-core` descends from verified green base `b02e723396c4deb16394c59c63ed37071cdf59c7`, PR #73 still targets `main`, and latest branch head has not changed unexpectedly. Candidate lifecycle state is reconciled, but a new exact-head CI run is required after this documentation checkpoint. Do not touch protected legacy MIRA production data. Do not expand this packet into par automation, recipes, meal plans, automatic orders/purchasing, finance/spending, scanner/capture or Android.
