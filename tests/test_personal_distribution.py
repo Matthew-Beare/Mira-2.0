@@ -30,6 +30,7 @@ class PersonalDistributionTests(unittest.TestCase):
             [
                 "appointment",
                 "appointment_provider",
+                "calendar_projection",
                 "authority",
                 "authority_binding",
                 "asset",
