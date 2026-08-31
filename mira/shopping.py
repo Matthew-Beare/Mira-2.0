@@ -175,13 +175,36 @@ class ShoppingIntentService:
                 "only active shopping intent can be edited"
             )
         when = _timestamp(updated_at, "updated_at")
+        desired_description = (
+            current.description
+            if description is _UNSET
+            else _display_text(description, "description", 1000)
+        )
+        desired_quantity = current.quantity if quantity is _UNSET else _quantity(quantity)
+        desired_unit = (
+            current.unit if unit is _UNSET else _optional_text(unit, "unit", 128)
+        )
+        desired_note = (
+            current.note if note is _UNSET else _optional_text(note, "note", 4000)
+        )
+        if when == current.updated_at:
+            if (
+                desired_description == current.description
+                and desired_quantity == current.quantity
+                and desired_unit == current.unit
+                and desired_note == current.note
+            ):
+                return replace(current, idempotent_replay=True)
+            raise ShoppingIntentTransitionError(
+                "updated_at matches current state but requested shopping material differs"
+            )
         _strictly_later(when, current.updated_at, "updated_at")
         payload = _payload(
             intent_id=current.intent_id,
-            description=current.description if description is _UNSET else description,
-            quantity=current.quantity if quantity is _UNSET else quantity,
-            unit=current.unit if unit is _UNSET else unit,
-            note=current.note if note is _UNSET else note,
+            description=desired_description,
+            quantity=desired_quantity,
+            unit=desired_unit,
+            note=desired_note,
             state="active",
             created_at=current.created_at,
             updated_at=when,
@@ -247,15 +270,21 @@ class ShoppingIntentService:
     ) -> ShoppingIntentView:
         current = self.get(intent_id)
         when = _timestamp(reconciled_at, "reconciled_at")
-        receipt, line_id = self._validated_receipt_target(receipt_id, receipt_line_id)
-        reconciliation = ReceiptReconciliation(
-            receipt_id=receipt.receipt_id,
-            receipt_line_id=line_id,
-            receipt_revision=receipt.revision,
-            reconciled_at=when,
+        requested_receipt_id = _token(receipt_id, "receipt_id")
+        requested_line_id = (
+            None
+            if receipt_line_id is None
+            else _token(receipt_line_id, "receipt_line_id")
         )
         if current.state == "fulfilled":
-            if current.reconciliation == reconciliation and current.fulfilled_at == when:
+            prior = current.reconciliation
+            if (
+                prior is not None
+                and prior.receipt_id == requested_receipt_id
+                and prior.receipt_line_id == requested_line_id
+                and prior.reconciled_at == when
+                and current.fulfilled_at == when
+            ):
                 return replace(current, idempotent_replay=True)
             raise ShoppingIntentTransitionError(
                 "shopping intent is already fulfilled from different receipt material"
@@ -265,6 +294,15 @@ class ShoppingIntentService:
                 "only active shopping intent can be fulfilled"
             )
         _strictly_later(when, current.updated_at, "reconciled_at")
+        receipt, line_id = self._validated_receipt_target(
+            requested_receipt_id, requested_line_id
+        )
+        reconciliation = ReceiptReconciliation(
+            receipt_id=receipt.receipt_id,
+            receipt_line_id=line_id,
+            receipt_revision=receipt.revision,
+            reconciled_at=when,
+        )
         payload = _payload(
             intent_id=current.intent_id,
             description=current.description,
@@ -332,12 +370,6 @@ class ShoppingIntentService:
             )
         if receipt_line_id is None:
             return receipt, None
-        if not isinstance(receipt_line_id, str) or not receipt_line_id.strip():
-            raise ShoppingIntentValidationError(
-                "receipt_line_id must be a non-empty trimmed string when supplied"
-            )
-        if receipt_line_id != receipt_line_id.strip():
-            raise ShoppingIntentValidationError("receipt_line_id must be trimmed")
         matches = [line for line in receipt.lines if line.line_id == receipt_line_id]
         if len(matches) != 1:
             raise ShoppingIntentValidationError(
@@ -449,19 +481,22 @@ def _view(
     intent_id = _intent_id(payload.get("intent_id"))
     if intent_id != record.resource_id:
         raise ShoppingIntentIntegrityError("shopping-intent identity/readback mismatch")
-    normalized = _payload(
-        intent_id=intent_id,
-        description=payload.get("description"),
-        quantity=payload.get("quantity"),
-        unit=payload.get("unit"),
-        note=payload.get("note"),
-        state=payload.get("state"),
-        created_at=payload.get("created_at"),
-        updated_at=payload.get("updated_at"),
-        fulfilled_at=payload.get("fulfilled_at"),
-        cancelled_at=payload.get("cancelled_at"),
-        reconciliation=payload.get("reconciliation"),
-    )
+    try:
+        normalized = _payload(
+            intent_id=intent_id,
+            description=payload.get("description"),
+            quantity=payload.get("quantity"),
+            unit=payload.get("unit"),
+            note=payload.get("note"),
+            state=payload.get("state"),
+            created_at=payload.get("created_at"),
+            updated_at=payload.get("updated_at"),
+            fulfilled_at=payload.get("fulfilled_at"),
+            cancelled_at=payload.get("cancelled_at"),
+            reconciliation=payload.get("reconciliation"),
+        )
+    except ShoppingIntentValidationError as exc:
+        raise ShoppingIntentIntegrityError(str(exc)) from exc
     if payload != normalized:
         raise ShoppingIntentIntegrityError(
             "persisted shopping-intent payload is noncanonical or malformed"
@@ -501,8 +536,12 @@ def _reconciliation(
         raise ShoppingIntentValidationError(
             "reconciliation fields are incomplete or unexpected"
         )
-    receipt_id = _display_text(material["receipt_id"], "receipt_id", 128)
-    line_id = _optional_text(material["receipt_line_id"], "receipt_line_id", 128)
+    receipt_id = _token(material["receipt_id"], "receipt_id")
+    line_id = (
+        None
+        if material["receipt_line_id"] is None
+        else _token(material["receipt_line_id"], "receipt_line_id")
+    )
     revision = material["receipt_revision"]
     if not isinstance(revision, int) or isinstance(revision, bool) or revision < 1:
         raise ShoppingIntentValidationError("receipt_revision must be a positive integer")
