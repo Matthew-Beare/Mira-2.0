@@ -77,6 +77,14 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("`observed_location_id` answers “where was this item last supported as being?”", protocol)
         self.assertIn("offset-aware ISO-8601 `observed_at`", protocol)
         self.assertIn("This base location state is not movement-event history.", protocol)
+        self.assertIn("## Canonical grocery list vs known-stock reconciliation", protocol)
+        self.assertIn("explicitly select one or more canonical shopping-intent IDs", protocol)
+        self.assertIn("supply one existing canonical `stock_location_id`", protocol)
+        self.assertIn("Substring, fuzzy, semantic, LLM-selected", protocol)
+        self.assertIn("`stock_quantity=null` and `stock_quantity_known=false`", protocol)
+        self.assertIn("Never use immutable asset acquisition `quantity`", protocol)
+        self.assertIn("Grocery reconciliation performs zero Resource, Event, or Idempotency writes.", protocol)
+        self.assertIn("`PAR-001` current-quantity/target/threshold behavior remains optional", protocol)
         self.assertIn("## Canonical append-event rule", protocol)
         self.assertIn("expected_stream_revision", protocol)
         self.assertIn("## Canonical inventory movement / observation history", protocol)
@@ -167,6 +175,42 @@ class WorkspaceBundleTests(unittest.TestCase):
         ].replace(
             "Receipt reconciliation never mutates the canonical receipt",
             "Receipt reconciliation rewrites the canonical receipt",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_grocery_fuzzy_matching_regression(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "Substring, fuzzy, semantic, LLM-selected, and “close enough” matches are not allowed.",
+            "Fuzzy semantic matching may choose a plausible stock item.",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_grocery_acquisition_quantity_as_stock_regression(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "Never use immutable asset acquisition `quantity`",
+            "Use immutable asset acquisition `quantity`",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_grocery_query_write_regression(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "Grocery reconciliation performs zero Resource, Event, or Idempotency writes.",
+            "Grocery reconciliation may update shopping and inventory state.",
         )
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)
