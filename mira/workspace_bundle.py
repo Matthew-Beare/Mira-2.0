@@ -222,6 +222,8 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
     required_symbols = (
         "function onOpen()",
         "function miraInitializeCopy()",
+        "function miraEnableGoogleCalendar()",
+        ".addItem('Enable Calendar', 'miraEnableGoogleCalendar')",
         "function doGet(e)",
         "function doPost(e)",
         "function miraWorkspaceSchema_()",
@@ -251,6 +253,11 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
     calendar = files["GoogleCalendarProjection.gs"]
     calendar_markers = (
         "function miraGoogleCalendarCapability_()",
+        "function miraEnsureGoogleCalendar_()",
+        "MIRA_GOOGLE_CALENDAR_INSTALLATION_ID",
+        "Managed by MIRA. Installation:",
+        "function miraGoogleCalendarFindOwnedCalendars_(",
+        "/users/me/calendarList?maxResults=250",
         "function miraGoogleCalendarUpsertEvent_(",
         "function miraGoogleCalendarReadEvent_(",
         "privateExtendedProperty",
@@ -280,17 +287,25 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
         raise WorkspaceBundleError(
             "Workspace Google Calendar adapter requires external-request scope"
         )
-    if "https://www.googleapis.com/auth/calendar.events" not in manifest:
+    if "https://www.googleapis.com/auth/calendar.app.created" not in manifest:
         raise WorkspaceBundleError(
-            "Workspace Google Calendar adapter requires event read/write scope"
+            "Workspace Google Calendar bootstrap requires app-created Calendar scope"
+        )
+    if "https://www.googleapis.com/auth/calendar.calendarlist.readonly" not in manifest:
+        raise WorkspaceBundleError(
+            "Workspace Google Calendar bootstrap requires read-only CalendarList recovery scope"
         )
     if '"https://www.googleapis.com/auth/calendar"' in manifest:
         raise WorkspaceBundleError(
-            "Workspace starter must not request broad Calendar-management scope for event projection"
+            "Workspace starter must not request broad Calendar-management scope"
+        )
+    if '"https://www.googleapis.com/auth/calendar.events"' in manifest:
+        raise WorkspaceBundleError(
+            "Workspace starter must not request blanket all-calendar event access for the default MIRA-owned Calendar path"
         )
     if "https://www.googleapis.com/auth/calendar.calendars" in manifest:
         raise WorkspaceBundleError(
-            "Workspace starter must not request Calendar-management scope merely to create test fixtures"
+            "Workspace starter must use app-created Calendar scope instead of broad Calendar property management"
         )
 
     if "MIRA_SPREADSHEET_ID" not in code or "PropertiesService" not in code:
