@@ -31,7 +31,7 @@ Required Metadata truths:
 - `schema_version=mira-structured-state-v1`
 - `adapter_contract=STORE-001`
 - `writer_model=single_writer`
-- `resource_types_json` contains `authority`, `authority_binding`, `asset`, `entity`, `identifier`, `inventory_state`, `location`, `onboarding_ledger`, `ops_brief_run`, `receipt`, `service_state`, and `task`
+- `resource_types_json` contains `authority`, `authority_binding`, `asset`, `entity`, `identifier`, `inventory_state`, `location`, `onboarding_ledger`, `ops_brief_run`, `receipt`, `service_state`, `shopping_intent`, and `task`
 - `event_types_json` contains both `created` and `updated`
 
 Also inspect mutation mode when present. Direct native mutation is allowed only in the Personal single-writer mode. If `mutation_mode=queued_writer`, shared-writer mode is active: do not directly mutate canonical Resource or Event rows. Use the canonical command-inbox path only when that path is available and verified; otherwise fail closed.
@@ -134,6 +134,7 @@ The required bindings are:
 - `authority_binding/binding-identifier` → `{"authority_id":"google-sheets-personal","data_class":"identifier"}`
 - `authority_binding/binding-location` → `{"authority_id":"google-sheets-personal","data_class":"location"}`
 - `authority_binding/binding-inventory-state` → `{"authority_id":"google-sheets-personal","data_class":"inventory_state"}`
+- `authority_binding/binding-shopping-intent` → `{"authority_id":"google-sheets-personal","data_class":"shopping_intent"}`
 
 Bootstrap must be all-new or all-replay. If a binding already routes one of these data classes to a different authority, or the persisted Personal authority materially differs, fail closed instead of overwriting it. Create/replay the authority and all required bindings using the canonical revision/idempotency/readback rule. Exact post-bootstrap readback must prove one valid binding for each data class and the one referenced authority.
 
@@ -217,6 +218,30 @@ Receipt integrity rules:
 8. Exact source-fingerprint replay cannot be bypassed by marking a transaction distinct.
 9. Purchase-history queries may filter stable receipt ID, merchant, order number, and date range and sort newest-first deterministically.
 10. Receipt capture does **not** automatically create or mutate an asset, fitment, identifier, inventory item/location, order/shipment lifecycle, spending allocation/rollup, reimbursement, grocery stock, payment settlement, Gmail label/archive state, or Drive receipt archive.
+
+## Canonical shopping intent and receipt reconciliation
+
+Shopping intent is current procurement truth: what the user still intends to obtain. The canonical resource type is `shopping_intent`, schema version 1. It is separate from tasks, durable purchase history, orders/shipments, physical assets, inventory, fitment, groceries/par levels, and spending/payment state.
+
+Each canonical shopping intent stores stable opaque `intent_id` equal to Resource ID, exact display `description`, deterministic case-folded/collapsed-whitespace `search_text`, positive decimal-string `quantity`, optional `unit`, optional `note`, lifecycle state `active|fulfilled|cancelled`, offset-aware `created_at` and `updated_at`, terminal timestamp when applicable, and optional receipt reconciliation only when fulfilled.
+
+Shopping-intent rules:
+
+1. `active` means the user still intends to obtain the item. Silence, elapsed time, disappearance from chat, a recommendation, an order/shipment hint, or a receipt merely existing never fulfills shopping intent. A canonical receipt merely existing never fulfills shopping intent.
+2. `fulfilled` requires an explicit reconciliation operation. `cancelled` means intent ended without claiming purchase. Cancellation is not fulfillment.
+3. Create/update/cancel/fulfill mutations use the canonical upsert revision, idempotency, atomic Resource+Idempotency batch, and exact provider-readback rules.
+4. Only active intent is editable in this first slice. Terminal fulfilled/cancelled intent is not silently reopened or rewritten; a new need should use a new stable intent unless a later explicit reopen feature is implemented.
+5. Exact semantic replay performs zero write. Reusing an idempotency identity for changed material fails closed.
+6. Shopping fulfillment requires a canonical receipt whose state is `captured`. A missing receipt fails closed. A `needs_review` receipt cannot fulfill shopping intent.
+7. Reconciliation may target the whole captured receipt or one exact canonical receipt line. If a line is supplied, it must resolve exactly once on that receipt. Never pick one of several plausible lines or receipts automatically.
+8. Fulfillment stores only canonical receipt ID, optional exact line ID, the receipt revision observed during reconciliation, and offset-aware `reconciled_at`. Do not copy raw source evidence into shopping state.
+9. The stored receipt revision is historical provenance. A later receipt correction does not rewrite the fulfilled shopping intent or retroactively change which receipt revision was reconciled.
+10. Exact replay of an already-fulfilled intent compares against its stored historical receipt/line/time reconciliation. It does not require the receipt to remain at the old revision and performs zero write when the logical fulfillment is already canonical.
+11. Receipt reconciliation never mutates the canonical receipt and never creates an asset, changes inventory/location, infers fitment, changes par/grocery state, creates/updates order or shipment state, records spending/payment settlement, or performs provider filing.
+12. Query shopping intent by exact intent ID, exact lifecycle state, and case-insensitive description substring. Sort deterministically before applying a bounded result limit. Current shopping intent is read from canonical `shopping_intent`, never reconstructed from chat history or purchase history.
+13. If receipt evidence appears relevant to an active intent, MIRA may present the candidate and ask for explicit reconciliation. Ambiguous evidence remains unresolved; no silent auto-match.
+
+When the user asks what still needs to be bought, use active canonical shopping intent. When the user asks what was purchased, use canonical receipt history. Those questions intentionally have different authorities.
 
 ## Canonical physical assets and receipt-linked acquisition
 
@@ -379,19 +404,20 @@ After Minimum Useful Setup is complete:
 2. Resolve every mutable data class through persisted Authority binding.
 3. Use canonical task state for commitments/completion.
 4. Use canonical receipt state for purchases/history; dedupe conservatively and fail closed on conflict.
-5. Receipt capture alone never proves asset acquisition, identifiers, inventory placement, fulfillment, spending allocation, reimbursement, grocery stock, settlement, Gmail archival, or Drive archival.
-6. Use canonical asset state for physical identity. Never replace an Entity UUID because receipt text, labels, identifiers, fitment, location, or later evidence changes.
-7. Use canonical identifier state for product/device IDs and identifier-origin asset lookup. A barcode, serial, IMEI, MAC, model, SKU, or part number never replaces the asset UUID.
-8. Use canonical `inventory_state` keyed by that same asset UUID for inventory participation. Never invent a separate inventory-object UUID for the same physical item.
-9. Read intended and observed locations separately. Intended placement is not proof of current physical presence; observed location is not permission to redefine the intended home.
-10. For inventory questions, use the canonical read-only inventory query rules above. Report “no matching tracked inventory item” rather than treating an empty tracked-inventory result as proof that no receipt or asset exists.
-11. For explicit movement/observation, use the event-first/projection-second movement protocol above. Recognition or scanning alone is never permission to mutate observed location.
-12. Asset, identifier, inventory, inventory-query, or current observed state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
-13. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
-14. `requested` means wanted but not active. `suspended` means not operational.
-15. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
-16. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
-17. Preserve accepted unfinished feature families such as appointments, expanded Ops Brief sections, fitment, scanner/capture surfaces, container propagation, par/grocery, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+5. Use canonical `shopping_intent` state for what the user still intends to obtain. Never infer active shopping intent from purchase history, and never infer fulfillment merely because a receipt exists.
+6. Receipt capture alone never proves asset acquisition, identifiers, inventory placement, shopping fulfillment, spending allocation, reimbursement, grocery stock, settlement, Gmail archival, or Drive archival.
+7. Use canonical asset state for physical identity. Never replace an Entity UUID because receipt text, labels, identifiers, fitment, location, or later evidence changes.
+8. Use canonical identifier state for product/device IDs and identifier-origin asset lookup. A barcode, serial, IMEI, MAC, model, SKU, or part number never replaces the asset UUID.
+9. Use canonical `inventory_state` keyed by that same asset UUID for inventory participation. Never invent a separate inventory-object UUID for the same physical item.
+10. Read intended and observed locations separately. Intended placement is not proof of current physical presence; observed location is not permission to redefine the intended home.
+11. For inventory questions, use the canonical read-only inventory query rules above. Report “no matching tracked inventory item” rather than treating an empty tracked-inventory result as proof that no receipt or asset exists.
+12. For explicit movement/observation, use the event-first/projection-second movement protocol above. Recognition or scanning alone is never permission to mutate observed location.
+13. Asset, identifier, inventory, inventory-query, shopping-intent, or current observed state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
+14. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
+15. `requested` means wanted but not active. `suspended` means not operational.
+16. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
+17. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
+18. Preserve accepted unfinished feature families such as appointments, expanded Ops Brief sections, fitment, scanner/capture surfaces, container propagation, par/grocery, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 
