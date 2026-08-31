@@ -34,11 +34,10 @@ Reviewed the active milestone direction. The packet remains aligned with the sto
 - **Feature:** `BACKUP-001`
 - **PR:** #74
 - **Final PR head:** `7bc9052090d53790c6d79f658108f94e76efc088`
-- **Merge SHA / current verified main checkpoint:** `10a8c43084ae75703a197ce7ea2f0cda734fca04`
+- **Merge SHA / verified main checkpoint:** `10a8c43084ae75703a197ce7ea2f0cda734fca04`
 - **Exact-head CI:** `33369577945` green
 - **Post-merge main CI:** `33369639977` green
 - **Provider evidence:** fresh isolated Google source/target proof verified zero source mutation, deterministic current-Resource export, exact revision restore into a fresh target, matching SHA-256 material parity, and explicit noncoverage of Event history/original idempotency history.
-- **Evidence ceiling:** no claim of provider archive durability, encryption, retention/rotation, incremental backup, scheduler firing, RPO/RTO, automatic disaster recovery, authority cutover, or legacy migration.
 
 `BACKUP-001` is reconciled to merged/provider-readback evidence in `FEATURES.md`; `BACKUP-CORE-001` is reconciled complete in `BACKLOG.md`.
 
@@ -47,15 +46,15 @@ Reviewed the active milestone direction. The packet remains aligned with the sto
 ### `M2-M0-021` — Appointment identity reconciliation core
 
 - **Primary work:** `APPOINTMENT-IDENTITY-001`
-- **Primary features:** `CAL-005`
+- **Primary feature:** `CAL-005`
 - **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `PROFILE-012`, `PROFILE-013`, `CAL-008`, `CAL-006`, `CAL-007`, `MAIL-002`, `HEALTH-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-021-appointment-identity`
 - **Base SHA:** `10a8c43084ae75703a197ce7ea2f0cda734fca04`
-- **Lifecycle checkpoint commits:** `83faeed82c43eb970926290abd8b30f4d67d3156`, `70c36b758895d32bbf662d365da999b028653f4c`
-- **Implementation/ownership head before this checkpoint:** `9702da81571275b2b9ba18ccb35cfa820384b6eb`
 - **PR:** #75 draft
-- **Blockers:** first PR CI run `33372617001` failed only at the work-session-alignment gate because this file used noncanonical field labels and omitted the required session-start authority review; compile, feature registry, product ledger, and Personal starter distribution passed before that gate stopped the job.
+- **Latest verified implementation/release head before this checkpoint:** `22e8cd775a807b652382753f4af40d5c16df0ffa`
+- **Exact-head CI:** `33375779566` green on `22e8cd775a807b652382753f4af40d5c16df0ffa`
+- **Current blockers:** none known; this checkpoint commit itself must receive green exact-head CI before draft removal/merge.
 
 ### Objective
 
@@ -81,27 +80,31 @@ Implement the smallest provider-neutral canonical appointment/provider identity 
 6. User-confirmed identity corrections outrank lower-authority derived suggestions while original evidence remains immutable/auditable.
 7. The core performs no Calendar write, reminder creation, outbound email, medical inference, or legacy production mutation.
 8. Direct tests cover provider create/replay/update, same-provider multiple appointments, duplicate appointment reconciliation, conflicting provider candidates, missing optional metadata, user-confirmed correction precedence, and zero out-of-scope side effects.
-9. Component ownership/direct-verification mapping and release/no-app contract are updated if new production code is added.
+9. Component ownership/direct-verification mapping and release/no-app contract are updated for the new production resource types without falsely activating Calendar/reminder services.
 10. Required CI is green on the exact final PR head before merge; merge uses expected-head protection; post-merge main CI must pass before completion is claimed.
 
 ## Completed evidence for this packet
 
-- `FEATURES.md` defines `CAL-005` as required appointment/provider identity reconciliation with normalized organization/contact and specialty/type attributes.
-- `BACKLOG.md` ranks `APPOINTMENT-IDENTITY-001` active in `M2-M0-021` and records the explicit provider-neutral identity-only scope.
-- `mira/appointments.py` now implements separate provider and appointment resources, exact identity-key reconciliation, immutable source fingerprints, field-authority precedence, explicit Needs Review outcomes, and no downstream Calendar/reminder/contact behavior.
-- `tests/test_appointments.py` provides 12 direct synthetic tests covering the acceptance boundary; the same matrix passed against a local contract-compatible in-memory adapter before push.
+- `mira/appointments.py` implements separate `appointment_provider` and `appointment` Resources, deterministic exact-key reconciliation, immutable evidence fingerprints, field-authority precedence, explicit Needs Review outcomes, and no downstream Calendar/reminder/contact behavior.
+- `tests/test_appointments.py` provides 12 direct synthetic tests covering provider create/replay/enrichment, exact-vs-fuzzy behavior, ambiguity, immutable evidence, user-confirmed correction precedence, same-provider multiple appointments, appointment replay/correction, missing identity, and zero Event/Calendar/reminder side effects.
 - `project/code_ownership.json` registers `mira/appointments.py` under `APPOINTMENT-IDENTITY-001` / `CAL-005` with direct verification at `tests/test_appointments.py`.
-- Draft PR #75 exists solely to run the required PR CI gates before release wiring or merge consideration.
+- `distribution/personal_google_starter.json` now declares `appointment` and `appointment_provider` as permitted clean-starter Resource types.
+- `tests/test_personal_distribution.py` verifies those resource types are present in the deterministic sanitized Personal starter contract.
+- `mira/personal_distribution.py` now validates the same appointment-aware Resource-type schema rather than the stale pre-appointment list. This repaired CI failure `33372985014` without weakening privacy, empty-state, artifact, manifest, or snapshot checks.
+- Exact-head CI `33375779566` passed compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Python unit tests, and Workspace Apps Script tests on `22e8cd775a807b652382753f4af40d5c16df0ffa`.
 - Protected legacy production state has not been used or modified for this packet.
+- No claim is made that appointment intake, Calendar projection, reminder delivery, or appointment-service activation is live. Those remain downstream work.
 
 ## Exact next action / resume point
 
-1. Verify the new PR CI run after this alignment repair.
-2. If any gate fails, repair only the reported packet/baseline blocker before adding further feature work.
-3. Once direct core and repository gates are green, inspect the no-app/release contract and add only the minimum provider-neutral wiring/evidence required by acceptance criterion 9.
-4. Re-run exact-head CI, update `CURRENT_WORK`, `FEATURES`, `BACKLOG`, and `ROADMAP` with evidence, then remove draft status only when the packet is actually merge-ready.
-5. Do not expand into `CAL-008`, Calendar projection, reminders, outbound email, health interpretation, migration, or Android.
+1. Require green CI on this CURRENT_WORK checkpoint head.
+2. If green, update PR #75 description with the verified Personal starter schema evidence and evidence ceiling, then mark the PR ready for review.
+3. Re-read the exact PR head/mergeability and require green CI on that exact head.
+4. Merge PR #75 with `expected_head_sha` protection only.
+5. Verify remote `main` points to the merge SHA and require post-merge `main` CI success.
+6. Only after post-merge success, create the lifecycle checkpoint that marks `CAL-005` / `APPOINTMENT-IDENTITY-001` merged/completed and dynamically selects the next bounded packet.
+7. Do not expand this packet into intake, Calendar projection, reminders, outbound contact, medical interpretation, migration, or Android.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-021-appointment-identity` and its remote head before any implementation. If the branch head differs from the recorded checkpoint, inspect the intervening commits instead of reconstructing from chat. `M2-M0-020` is complete and must not be reopened absent new integrity evidence. Protected legacy MIRA production state remains read-only and unavailable as a development fixture.
+Read this file first. Confirm branch `integration/m0-021-appointment-identity` and its remote head before any implementation or merge. If the branch head differs from the recorded checkpoint, inspect the intervening commits instead of reconstructing from chat. `M2-M0-020` is complete and must not be reopened absent new integrity evidence. Protected legacy MIRA production state remains read-only and unavailable as a development fixture.
