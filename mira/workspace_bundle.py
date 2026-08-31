@@ -151,7 +151,7 @@ _PROTOCOL_MARKERS = (
     "`appointment_service_activated`: false",
     "service_state/appointments_calendar",
     "`activation_state` to `requested`",
-    "Do **not** mark the service active.",
+    "Do **not** mark the service active",
     "## Canonical current-Resource backup and isolated restore",
     "A MIRA backup artifact is a **nonauthoritative snapshot**",
     "complete_current_resources_under_query_bound",
