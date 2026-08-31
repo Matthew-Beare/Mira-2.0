@@ -1,15 +1,23 @@
 /*
  * MIRA Google Calendar projection adapter for the browser-first Personal lane.
  *
- * This adapter uses Calendar REST v3 through UrlFetchApp so the provider-neutral
- * projection contract can use Google private extended properties for stable
- * projection identity and HTTP If-Match ETags for atomic lost-update protection.
- * It deliberately does not create calendars, send attendee notifications, add
- * Google Meet links, schedule reminders, or infer appointment/medical meaning.
+ * The default path is deliberately simple for ordinary users: MIRA creates and
+ * owns one dedicated secondary Google Calendar after explicit Calendar opt-in.
+ * The adapter uses Calendar REST v3 through UrlFetchApp so provider projection
+ * can retain private extended properties, exact readback, and If-Match ETags.
+ *
+ * Calendar creation is also recovery-safe. A local installation UUID is stored
+ * before the provider write and stamped into the calendar description. If the
+ * create acknowledgement is lost, MIRA can rediscover the one matching calendar
+ * through read-only CalendarList access instead of creating a duplicate.
  */
 
 const MIRA_GOOGLE_CALENDAR_API_ROOT_ = 'https://www.googleapis.com/calendar/v3';
 const MIRA_GOOGLE_CALENDAR_LANE_ = 'google';
+const MIRA_GOOGLE_CALENDAR_NAME_ = 'MIRA';
+const MIRA_GOOGLE_CALENDAR_ID_PROPERTY_ = 'MIRA_GOOGLE_CALENDAR_ID';
+const MIRA_GOOGLE_CALENDAR_INSTALLATION_PROPERTY_ = 'MIRA_GOOGLE_CALENDAR_INSTALLATION_ID';
+const MIRA_GOOGLE_CALENDAR_DESCRIPTION_PREFIX_ = 'Managed by MIRA. Installation: ';
 const MIRA_CALENDAR_PROJECTION_PROPERTY_ = 'miraProjectionKey';
 const MIRA_CALENDAR_IDEMPOTENCY_PROPERTY_ = 'miraIdempotencyKey';
 const MIRA_CALENDAR_REQUEST_HASH_PROPERTY_ = 'miraRequestHash';
@@ -23,7 +31,119 @@ function miraGoogleCalendarCapability_() {
     stable_projection_key: true,
     guarded_updates: true,
     provider_version_kind: 'etag',
+    managed_calendar_bootstrap: true,
   };
+}
+
+function miraEnsureGoogleCalendar_() {
+  const properties = PropertiesService.getScriptProperties();
+  let installationId = properties.getProperty(MIRA_GOOGLE_CALENDAR_INSTALLATION_PROPERTY_);
+  if (!installationId) {
+    installationId = miraCalendarToken_(Utilities.getUuid(), 'calendar_installation_id');
+    properties.setProperty(MIRA_GOOGLE_CALENDAR_INSTALLATION_PROPERTY_, installationId);
+  } else {
+    installationId = miraCalendarToken_(installationId, 'calendar_installation_id');
+  }
+  const description = MIRA_GOOGLE_CALENDAR_DESCRIPTION_PREFIX_ + installationId;
+
+  const storedId = properties.getProperty(MIRA_GOOGLE_CALENDAR_ID_PROPERTY_);
+  if (storedId) {
+    const calendarId = miraCalendarText_(storedId, 'calendar_ref', 500);
+    const metadata = miraGoogleCalendarReadCalendarMetadata_(calendarId);
+    miraGoogleCalendarVerifyOwnedCalendarMetadata_(metadata, description);
+    return {
+      calendar_ref: calendarId,
+      created: false,
+      recovered: false,
+    };
+  }
+
+  const matches = miraGoogleCalendarFindOwnedCalendars_(description);
+  if (matches.length > 1) {
+    throw miraCalendarError_(
+      'conflict',
+      'multiple Google Calendars match this MIRA installation marker'
+    );
+  }
+  if (matches.length === 1) {
+    const recoveredId = miraCalendarText_(matches[0].id, 'calendar_ref', 500);
+    const recovered = miraGoogleCalendarReadCalendarMetadata_(recoveredId);
+    miraGoogleCalendarVerifyOwnedCalendarMetadata_(recovered, description);
+    properties.setProperty(MIRA_GOOGLE_CALENDAR_ID_PROPERTY_, recoveredId);
+    return {
+      calendar_ref: recoveredId,
+      created: false,
+      recovered: true,
+    };
+  }
+
+  const createdRaw = miraGoogleCalendarRequest_(
+    'post',
+    '/calendars',
+    {
+      summary: MIRA_GOOGLE_CALENDAR_NAME_,
+      description: description,
+    },
+    null
+  );
+  const createdId = miraCalendarText_(createdRaw.id, 'calendar_ref', 500);
+  const created = miraGoogleCalendarReadCalendarMetadata_(createdId);
+  miraGoogleCalendarVerifyOwnedCalendarMetadata_(created, description);
+  properties.setProperty(MIRA_GOOGLE_CALENDAR_ID_PROPERTY_, createdId);
+  return {
+    calendar_ref: createdId,
+    created: true,
+    recovered: false,
+  };
+}
+
+function miraGoogleCalendarReadCalendarMetadata_(calendarRef) {
+  const calendar = miraCalendarText_(calendarRef, 'calendar_ref', 500);
+  const raw = miraGoogleCalendarRequest_(
+    'get',
+    '/calendars/' + encodeURIComponent(calendar),
+    null,
+    null
+  );
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw miraCalendarError_('readback_error', 'Google Calendar metadata response is malformed');
+  }
+  return raw;
+}
+
+function miraGoogleCalendarVerifyOwnedCalendarMetadata_(raw, expectedDescription) {
+  if (raw.summary !== MIRA_GOOGLE_CALENDAR_NAME_) {
+    throw miraCalendarError_('conflict', 'stored MIRA Calendar was renamed or points to the wrong calendar');
+  }
+  if (raw.description !== expectedDescription) {
+    throw miraCalendarError_('conflict', 'stored MIRA Calendar ownership marker does not match this installation');
+  }
+}
+
+function miraGoogleCalendarFindOwnedCalendars_(description) {
+  const expectedDescription = miraCalendarText_(description, 'calendar_description', 1000);
+  const matches = [];
+  let pageToken = null;
+  do {
+    let path = '/users/me/calendarList?maxResults=250';
+    if (pageToken) path += '&pageToken=' + encodeURIComponent(pageToken);
+    const raw = miraGoogleCalendarRequest_('get', path, null, null);
+    const items = Array.isArray(raw.items) ? raw.items : [];
+    items.forEach(function (item) {
+      if (
+        item &&
+        item.summary === MIRA_GOOGLE_CALENDAR_NAME_ &&
+        item.description === expectedDescription
+      ) {
+        matches.push({id: miraCalendarText_(item.id, 'calendar_ref', 500)});
+      }
+    });
+    if (matches.length > 1) break;
+    pageToken = typeof raw.nextPageToken === 'string' && raw.nextPageToken
+      ? raw.nextPageToken
+      : null;
+  } while (pageToken);
+  return matches;
 }
 
 function miraGoogleCalendarUpsertEvent_(
