@@ -14,13 +14,31 @@ Bundle validation fails if safety-critical protocol clauses disappear, so the co
 
 A normal stock-ChatGPT Personal setup remains **zero infrastructure**:
 
-1. copy the MIRA Workspace starter;
+1. copy the official MIRA Workspace starter;
 2. authorize/connect Google;
-3. initialize the copied Sheet;
+3. choose **MIRA → Initialize this copy** once;
 4. replace the Personal MIRA operating-instruction block with the complete `MIRA_NO_APP_INSTRUCTIONS.md` contents;
-5. use stock ChatGPT's official Google Drive/Sheets connection against that user's canonical MIRROR state.
+5. use stock ChatGPT's official Google Drive/Sheets connection against that user's canonical MIRA state.
+
+Copying the official Google Sheet also copies its container-bound Apps Script. Ordinary users are not expected to copy script files, deploy Apps Script manually, use `clasp`, configure a Google Cloud project, or paste provider IDs.
 
 In this baseline, MIRA is intentionally `direct_single_writer`: stock ChatGPT is the only software writer. The existing native Google protocol preserves Authority, revision, idempotency and exact provider-readback semantics without requiring Cloud Run, Linux, SQL, a terminal, or paid OpenAI API usage.
+
+## One-click Calendar activation
+
+Calendar support is opt-in. When the user has requested Google Calendar support, the copied starter exposes **MIRA → Enable Calendar**.
+
+The ordinary-user flow is:
+
+1. choose **MIRA → Enable Calendar**;
+2. approve Google's required authorization screen if prompted;
+3. MIRA creates or safely recovers one dedicated secondary Calendar named `MIRA`.
+
+The user does **not** manually create a secondary calendar, copy a Calendar ID, edit OAuth scopes, open the Apps Script editor, or configure Calendar API details.
+
+The managed Calendar bootstrap is deliberately isolated from Primary, Family and legacy calendars. Before provider creation MIRA persists a local installation UUID. The created Calendar carries the corresponding ownership marker in its description. If provider creation succeeds but the acknowledgement is lost before the Calendar ID is stored, MIRA uses a read-only CalendarList scan to recover the unique matching managed Calendar instead of creating a duplicate. Ambiguous ownership markers, a missing previously stored managed Calendar, or ownership/name drift fail closed.
+
+Calendar event projection then uses private extended properties for stable MIRA projection/idempotency identity, exact provider GET readback, and Google ETags with `If-Match` for guarded updates. It does not add attendees, send attendee notifications, create Meet links, or infer appointment/medical meaning.
 
 ## Shared / Android queued-writer mode
 
@@ -58,6 +76,7 @@ Stock ChatGPT submits Personal commands through its official authenticated Googl
 Implemented in `Code.gs`:
 
 - **MIRA → Initialize this copy** browser action;
+- **MIRA → Enable Calendar** opt-in Calendar action;
 - copied Sheet identity stored at runtime in Apps Script `ScriptProperties`, never hard-coded in public source;
 - `/v1/health` web-app readback;
 - `/v1/schema` readback against the starter `Metadata` tab;
@@ -84,16 +103,25 @@ The starter metadata declares `adapter_contract=STORE-001` and `writer_model=sin
 
 The public Apps Script manifest is intentionally bounded to:
 
-- the current spreadsheet;
-- this Apps Script project's trigger-management scope, required to install/verify the time-driven command worker.
+- `spreadsheets.currentonly` for the copied MIRA Sheet;
+- `script.scriptapp` for bounded trigger management used by queued-writer mode;
+- `script.external_request` for Google Calendar REST calls from the bound script;
+- `calendar.app.created` so MIRA can create/manage the Calendar and events created by MIRA itself;
+- `calendar.calendarlist.readonly` only to recover a uniquely marked MIRA-owned Calendar after a lost creation acknowledgement.
 
-No account/provider identifier or long-lived credential is stored in source.
+The release validator rejects broad `calendar`, blanket `calendar.events`, and `calendar.calendars` scopes. No account/provider identifier or long-lived credential is stored in source.
+
+## Template publication boundary
+
+The source-controlled bundle is the release authority for Apps Script code and its manifest. A public/official starter template must be refreshed from a verified release before it is presented to ordinary users. Copying a spreadsheet preserves its attached bound scripts, so once the official template contains the verified release, user installation is a normal Sheet copy rather than a script-deployment procedure.
+
+Maintainer/template publication evidence is separate from ordinary-user installation evidence. MIRA must not claim a Drive template contains a particular Git release merely because its sheet cells look correct; the bound-script release must be verified before that template becomes the canonical public starter.
 
 ## Evidence boundary
 
-The queued-writer implementation is tested synthetically before any live Google worker activation. Code existence or fake-Apps-Script tests do **not** count as live provider proof. Legacy MIRA production Sheets remain protected and are never test fixtures.
+The queued-writer implementation and Calendar adapter are tested synthetically before any live Google activation. Code existence or fake-Apps-Script tests do **not** count as live provider proof. Legacy MIRA production Sheets and Calendars remain protected and are never test fixtures.
 
-Likewise, validating `MIRA_NO_APP_INSTRUCTIONS.md` proves the stock-ChatGPT operating contract is source-controlled and internally consistent; it does not by itself prove every current ChatGPT connector surface can execute every mutation. Provider behavior is upgraded to live evidence only after exact read/write/readback proof against an isolated synthetic Workspace copy.
+Likewise, validating `MIRA_NO_APP_INSTRUCTIONS.md` proves the stock-ChatGPT operating contract is source-controlled and internally consistent; it does not by itself prove every current ChatGPT connector surface can execute every mutation. Provider behavior is upgraded to live evidence only after exact read/write/readback proof against isolated MIRA-owned Workspace state.
 
 ## Portability rule
 
