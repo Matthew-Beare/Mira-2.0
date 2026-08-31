@@ -58,8 +58,8 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 - **Branch:** `integration/m0-023-google-calendar-projection`
 - **Base SHA:** `fcc81f0e9d9510d05406acd9068d9ca4ee016806`
 - **PR:** #78 open, non-draft, mergeable
-- **Last verified green head before this checkpoint:** `eaa12921e3b59feb2cedfe6f77236370771ddc9f`
-- **Exact-head CI:** `33433388836` green on `eaa12921e3b59feb2cedfe6f77236370771ddc9f`
+- **Last verified green head before this checkpoint:** `daab937aa924b8f380ba11c62fb24febda1abcc4`
+- **Exact-head CI:** `33433528069` green on `daab937aa924b8f380ba11c62fb24febda1abcc4`
 - **Current head rule:** this file is itself a governance checkpoint; require green CI on the new exact live head before any merge decision.
 
 ### Objective
@@ -78,14 +78,14 @@ Provide a browser-first Google Calendar lane with no server/terminal requirement
 - Event projection uses private extended properties for stable MIRA projection/idempotency identity, independent exact GET readback, and exact prior ETag through `If-Match` for updates.
 - No attendees, attendee notifications, Meet links, reminders, appointment extraction, Microsoft/Apple behavior, medical behavior, or legacy Calendar mutation are introduced.
 - The deterministic Personal distribution ships the Calendar adapter as part of the validated Workspace bundle.
-- `workspace/apps_script/README.md` now documents the ordinary-user copy/initialize/Enable Calendar flow, narrow scopes, and the separate maintainer template-publication evidence boundary.
-- `mira/workspace_bundle.py` now fails release validation if that one-click install/Calendar guidance or narrow-scope contract disappears.
+- `workspace/apps_script/README.md` documents the ordinary-user copy/initialize/Enable Calendar flow, narrow scopes, and the separate maintainer template-publication evidence boundary.
+- `mira/workspace_bundle.py` fails release validation if that one-click install/Calendar guidance or narrow-scope contract disappears.
 - Google documentation confirms that making a copy of a spreadsheet copies its attached container-bound scripts; therefore the intended public install path is an ordinary Sheet copy rather than per-user script deployment.
-- CI `33433388836` passed all repository gates on `eaa12921e3b59feb2cedfe6f77236370771ddc9f`.
+- CI `33433528069` passed all repository gates on `daab937aa924b8f380ba11c62fb24febda1abcc4`.
 
 ### Private isolated provider-proof target
 
-A fresh Drive copy named **`MIRA Calendar Provider Proof - ISOLATED DEV - 2026-08-31`** has been created from the existing **`MIRA Personal Starter - Clean Template`**. It is synthetic MIRA 2.0 development state, not a legacy production artifact. Its provider ID is intentionally not recorded in public Git.
+A fresh Drive copy named **`MIRA Calendar Provider Proof - ISOLATED DEV - 2026-08-31`** was created from the existing **`MIRA Personal Starter - Clean Template`**. It is synthetic MIRA 2.0 development state, not a legacy production artifact. Its provider ID is intentionally not recorded in public Git.
 
 Copying the template gives us an isolated install target and preserves whatever bound script is actually published in the template. The current connector cannot inspect or execute that bound script, so the next proof must determine whether the template already contains the current **Enable Calendar** release or whether maintainer template publication is still required.
 
