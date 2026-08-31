@@ -79,17 +79,43 @@ _REQUIRED_TAB_HEADERS = {
         "resource_ref",
     ),
 }
+_RESOURCE_TYPES = (
+    "appointment",
+    "appointment_provider",
+    "authority",
+    "authority_binding",
+    "asset",
+    "entity",
+    "identifier",
+    "inventory_state",
+    "location",
+    "onboarding_ledger",
+    "ops_brief_run",
+    "receipt",
+    "service_state",
+    "shopping_intent",
+    "task",
+)
 _REQUIRED_METADATA = {
     "schema_version": "mira-structured-state-v1",
     "store_role": "personal_google_starter",
     "environment": "mira_2_personal_clean",
     "data_policy": "clean_starter_only",
     "adapter_contract": "STORE-001",
-    "resource_types_json": '["authority","authority_binding","asset","entity","identifier","inventory_state","location","onboarding_ledger","ops_brief_run","receipt","service_state","shopping_intent","task"]',
+    "resource_types_json": json.dumps(list(_RESOURCE_TYPES), separators=(",", ":")),
     "event_types_json": '["created","updated"]',
     "writer_model": "single_writer",
 }
 _MUTABLE_EMPTY_TABS = frozenset({"Resources", "Events", "Idempotency"})
+_EXPECTED_ARTIFACTS = frozenset(
+    {
+        "workspace/apps_script/Code.gs",
+        "workspace/apps_script/CommandWorker.gs",
+        "workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md",
+        "workspace/apps_script/README.md",
+        "workspace/apps_script/appsscript.json",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -238,18 +264,9 @@ def validate_blueprint(
                 f"clean starter {title} must enforce empty mutable state"
             )
 
-    invariants = frozenset(blueprint.privacy_invariants)
-    if invariants != _REQUIRED_PRIVACY_INVARIANTS:
+    if frozenset(blueprint.privacy_invariants) != _REQUIRED_PRIVACY_INVARIANTS:
         raise PersonalDistributionError("starter privacy invariants are incomplete or unexpected")
-
-    expected_artifacts = {
-        "workspace/apps_script/Code.gs",
-        "workspace/apps_script/CommandWorker.gs",
-        "workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md",
-        "workspace/apps_script/README.md",
-        "workspace/apps_script/appsscript.json",
-    }
-    if set(blueprint.workspace_artifacts) != expected_artifacts:
+    if set(blueprint.workspace_artifacts) != _EXPECTED_ARTIFACTS:
         raise PersonalDistributionError("starter Workspace artifact set is incomplete or unexpected")
     if len(set(blueprint.workspace_artifacts)) != len(blueprint.workspace_artifacts):
         raise PersonalDistributionError("starter Workspace artifact list contains duplicates")
@@ -316,9 +333,8 @@ def verify_release_manifest(
 ) -> None:
     if not isinstance(manifest, Mapping):
         raise PersonalDistributionError("release manifest must be an object")
-    source_sha = manifest.get("source_sha")
     expected = build_release_manifest(
-        source_sha,
+        manifest.get("source_sha"),
         blueprint_path=blueprint_path,
         repository_root=repository_root,
     ).projection()
@@ -349,15 +365,16 @@ def verify_snapshot(
         header = tuple(str(value) for value in rows[0])
         if header != tab.headers:
             raise PersonalDistributionError(f"snapshot {title} headers do not match blueprint")
-        actual_data = tuple(tuple(row) for row in rows[1:] if any(value not in (None, "") for value in row))
+        actual_data = tuple(
+            tuple(row)
+            for row in rows[1:]
+            if any(value not in (None, "") for value in row)
+        )
         if title == "Metadata":
-            metadata_rows = tuple(tuple(row) for row in tab.rows)
-            if actual_data != metadata_rows:
+            if actual_data != tuple(tuple(row) for row in tab.rows):
                 raise PersonalDistributionError("snapshot Metadata does not match blueprint seed rows")
         elif tab.must_be_empty_after_seed_rows and actual_data:
-            raise PersonalDistributionError(
-                f"snapshot {title} contains inherited mutable state"
-            )
+            raise PersonalDistributionError(f"snapshot {title} contains inherited mutable state")
 
 
 def snapshot_from_mapping(material: Mapping[str, Any]) -> StarterSnapshot:
@@ -416,6 +433,7 @@ def _parse_blueprint(
         raise PersonalDistributionError("starter spreadsheet title/time_zone must be text")
     if not isinstance(raw_tabs, list) or not raw_tabs:
         raise PersonalDistributionError("starter tabs must be a non-empty list")
+
     tabs: list[StarterTab] = []
     for raw_tab in raw_tabs:
         if not isinstance(raw_tab, Mapping):
@@ -537,11 +555,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(
                 "Personal starter valid: "
                 f"distribution={blueprint.distribution_id}; tabs={len(blueprint.tabs)}; "
-                f"artifacts={len(blueprint.workspace_artifacts)}; blueprint_sha256={blueprint.source_sha256}"
+                f"artifacts={len(blueprint.workspace_artifacts)}; "
+                f"blueprint_sha256={blueprint.source_sha256}"
             )
             return 0
         if args.command == "manifest":
-            sys.stdout.buffer.write(build_release_manifest(args.source_sha, blueprint_path=args.blueprint).json_bytes())
+            sys.stdout.buffer.write(
+                build_release_manifest(args.source_sha, blueprint_path=args.blueprint).json_bytes()
+            )
             return 0
         if args.command == "verify-manifest":
             verify_release_manifest(_read_json(args.manifest_path), blueprint_path=args.blueprint)
