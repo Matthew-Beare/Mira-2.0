@@ -58,9 +58,9 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 - **Branch:** `integration/m0-023-google-calendar-projection`
 - **Base SHA:** `fcc81f0e9d9510d05406acd9068d9ca4ee016806`
 - **PR:** #78 open, non-draft, mergeable
-- **Last verified green head before this checkpoint:** `daab937aa924b8f380ba11c62fb24febda1abcc4`
-- **Exact-head CI:** `33433528069` green on `daab937aa924b8f380ba11c62fb24febda1abcc4`
-- **Current head rule:** this file is itself a governance checkpoint; require green CI on the new exact live head before any merge decision.
+- **Last verified green implementation/governance head:** `b213211d626455848d5d0aff17bc2c120a71a4b0`
+- **Exact-head CI:** `33433628453` green on `b213211d626455848d5d0aff17bc2c120a71a4b0`
+- **Current head rule:** this file is a recovery checkpoint; resolve the live PR head and require green CI again before merge if any newer source commit exists.
 
 ### Objective
 
@@ -81,7 +81,7 @@ Provide a browser-first Google Calendar lane with no server/terminal requirement
 - `workspace/apps_script/README.md` documents the ordinary-user copy/initialize/Enable Calendar flow, narrow scopes, and the separate maintainer template-publication evidence boundary.
 - `mira/workspace_bundle.py` fails release validation if that one-click install/Calendar guidance or narrow-scope contract disappears.
 - Google documentation confirms that making a copy of a spreadsheet copies its attached container-bound scripts; therefore the intended public install path is an ordinary Sheet copy rather than per-user script deployment.
-- CI `33433528069` passed all repository gates on `daab937aa924b8f380ba11c62fb24febda1abcc4`.
+- CI `33433628453` passed all repository gates on `b213211d626455848d5d0aff17bc2c120a71a4b0`.
 
 ### Private isolated provider-proof target
 
@@ -120,12 +120,11 @@ This is a live execution/template-publication evidence boundary, not an ordinary
 
 ## Exact next action / resume point
 
-1. Re-read PR #78 and require green CI on this checkpoint head.
-2. Open the private isolated Drive copy **`MIRA Calendar Provider Proof - ISOLATED DEV - 2026-08-31`** and observe the MIRA menu. This is a simple UI observation, not developer configuration.
-3. If **Enable Calendar** is already present, run it once, approve Google if prompted, then verify the dedicated MIRA-owned Calendar through connected Calendar readback and execute one bounded synthetic event create → exact readback → guarded update → exact readback → replay proof.
-4. If **Enable Calendar** is absent, do not ask an ordinary user to paste scripts. Treat the official template as stale and create a bounded maintainer template-publication prerequisite that refreshes the bound script from the verified source release before live proof continues.
-5. Never use Primary, Family, or legacy calendars as test fixtures. Never write live provider IDs/tokens/ETags into public Git.
-6. After live proof succeeds, reconcile lifecycle state, require fresh exact-head CI, merge PR #78 with expected-head protection, verify remote `main`, and require post-merge main CI.
+1. Open the private isolated Drive copy **`MIRA Calendar Provider Proof - ISOLATED DEV - 2026-08-31`** and observe the MIRA menu. This is a simple UI observation, not developer configuration.
+2. If **Enable Calendar** is already present, run it once, approve Google if prompted, then verify the dedicated MIRA-owned Calendar through connected Calendar readback and execute one bounded synthetic event create → exact readback → guarded update → exact readback → replay proof.
+3. If **Enable Calendar** is absent, do not ask an ordinary user to paste scripts. Treat the official template as stale and create a bounded maintainer template-publication prerequisite that refreshes the bound script from the verified source release before live proof continues.
+4. Never use Primary, Family, or legacy calendars as test fixtures. Never write live provider IDs/tokens/ETags into public Git.
+5. After live proof succeeds, reconcile lifecycle state, require fresh exact-head CI, merge PR #78 with expected-head protection, verify remote `main`, and require post-merge main CI.
 
 ## Recovery protocol
 
