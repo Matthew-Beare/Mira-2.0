@@ -78,10 +78,10 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `KNOW-001` | Canonical durable Knowledge source identity and retained-source lifecycle | required | test_verified+scope-refined | RECOVERY-002
 - `KNOW-002` | Provenance-bound knowledge excerpts and derived facts | required/accepted | specified/not_present | KNOW-001,RECOVERY-002
 - `SPEC-001` | Provenance-locked technical specifications with exact applicability | required | test_verified | ASSET-001,KNOW-001,EVID-001
-- `SHOP-001` | Active shopping intent distinct from durable purchase history | accepted | specified | RECEIPT-001,FITMENT-001
+- `SHOP-001` | Active shopping intent distinct from durable purchase history | accepted | test_verified+provider_verified+candidate_unmerged | RECEIPT-001,FITMENT-001
 - `INV-001` | Inventory participation reuses canonical Entity UUID identity | accepted | test_verified | ASSET-001
 - `LOC-001` | Hierarchical locations with intended placement separate from observed/last-moved state | required | test_verified | INV-001
-- `MOVE-001` | QR/barcode-driven inventory movement with explicit event/readback semantics | accepted/required-direction | candidate_unmerged | INV-001,IDENT-001,LOC-001
+- `MOVE-001` | QR/barcode-driven inventory movement with explicit event/readback semantics | accepted/required-direction | test_verified+merged-provider-readback | INV-001,IDENT-001,LOC-001
 - `INV-002` | Queryable household, loft and shop inventory projection | required | test_verified+merged-provider-readback | INV-001,LOC-001,IDENT-001,ASSET-003
 - `PAR-001` | Target/par quantity with opt-in under-level notification | accepted | specified | INV-001
 - `PAR-002` | Optional scale-based passive stock sensing | optional/proposed | not_present | PAR-001
@@ -190,7 +190,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `CLIENT-ANDROID-001` is a client adapter over `API-001`, never a provider/data/source authority. Offline state is a replay queue/cache, not a second writable master.
 - `DEV-005` keeps `FEATURES.md` and `BACKLOG.md` canonical and machine-readable views derived; `DEV-006` uses bounded component ownership rather than one-file/one-feature fragmentation; `DEV-007` requires packet-level feature/lifecycle alignment before implementation and merge so passing local tests cannot substitute for preserving accepted product behavior or reconciling completed work.
 - `ONBOARD-003` no longer asks the assistant/product name because it is fixed as MIRA. Its fourth kickoff question explicitly offers appointment-reminder help and preferred Calendar auto-sync selection, then immediately offers continue-setup-now versus start-using-MIRA without blocking ordinary use.
-- `ONBOARD-004` owns optional progressive post-setup discovery. Silence never counts as an answer; brief delivery is bounded to one discovery topic per local day for up to seven topic-days, and accepted topics feed existing domain/service authorities rather than creating parallel databases.
+- `ONBOARD-004` owns optional progressive post-setup discovery. Silence never counts as an answer; brief delivery is bounded to one discovery topic per local day for up to seven topic-days, and accepted topics feed existing canonical domains/services rather than creating parallel databases.
 - `CAL-008` makes email/photo/text appointment intake explicit rather than assuming `CAL-005` identity reconciliation magically includes evidence ingestion. Extracted provider specialty/type is durable canonical provider metadata so reminders can say useful things such as “cardiologist appointment” without repeatedly re-parsing source evidence.
 - `STUDIO-001` is the user-facing continuous-improvement layer over bounded custom feature creation and controlled sharing. Studio may generate/reconcile private changes, but imported/shared behavior never silently activates.
 - PR #31 and independent legacy productization code remain selective salvage only. Direct client-to-provider mutation, coarse authorization, dual writable masters, silent schedulers, path identity, collapsed intended/observed location, and CI-implied live/signing/device/provider claims remain rejected.

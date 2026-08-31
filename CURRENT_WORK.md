@@ -10,24 +10,32 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ## Completed predecessor
 
-### `M2-M0-016` — Canonical inventory query projection
+### `M2-M0-017` — Replay-safe inventory movement / observation history
 
-PR #70 merged to `main` as `95728763816b2ab26e29973dd2e204d7c4bdbe9c` from verified head `793f9f7866f5998509a6a3d3584cee39ed99323e`. Exact-head CI `33341004699` and post-merge main CI `33341027064` passed. Fresh isolated Google proof verified tracked-vs-untracked query behavior, identifier/location joins and zero query-side Resource/Event/Idempotency writes.
+PR #71 merged to `main` as `86778802e0f32cf7d4e83c78063231a6e6e68a31` from exact verified head `e6caf2689421b36de8b8f31ed9e6ce5f615ffcb7`.
 
-`INV-002` and `INVENTORY-QUERY-001` are reconciled in canonical feature/backlog state as merged/completed evidence.
+Evidence:
+
+- core PR CI `33341918685` green;
+- release-wired PR CI `33342170586` green;
+- final exact-head CI `33342460536` green;
+- post-merge `main` CI `33342490468` green on the merge commit;
+- fresh isolated Google proof verified event-first/projection-second movement, intended-location preservation, exact observed time, and zero-write replay;
+- `MOVE-001` and `MOVEMENT-CORE-001` are reconciled to merged/completed evidence in canonical lifecycle state.
 
 ## Active packet
 
-### `M2-M0-017` — Replay-safe inventory movement / observation history
+### `M2-M0-018` — Canonical shopping intent + receipt reconciliation
 
-- **Primary work:** `MOVEMENT-CORE-001`
-- **Primary features:** `MOVE-001`
-- **Related invariants/features:** `INV-001`, `LOC-001`, `INV-002`, `IDENT-001`, `ASSET-001`, `STORE-001`, `RECOVERY-002`
+- **Primary work:** `SHOP-CORE-001`
+- **Primary features:** `SHOP-001`
+- **Related invariants/features:** `RECEIPT-001`, `RECEIPT-002`, `FITMENT-001`, `STORE-001`, `RECOVERY-002`, `GROCERY-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-017-movement-core`
-- **Base SHA:** `95728763816b2ab26e29973dd2e204d7c4bdbe9c`
-- **PR:** `#71` (non-draft; opened non-draft because the connector's draft-to-ready mutation is known broken from M2-M0-016)
-- **Objective:** add provider-neutral replay-safe event history for explicit physical asset observations/movements and deterministically project supported observed location while preserving intended placement, immutable asset identity and exact observation time. Scanner/capture, Android, passive reads, container propagation, par/grocery, fitment and OCR/evidence enrichment remain separate.
+- **Branch:** `integration/m0-018-shopping-intent`
+- **Base SHA:** `86778802e0f32cf7d4e83c78063231a6e6e68a31`
+- **PR:** `#72` (open, non-draft)
+- **Last fully green release-wired head before this evidence checkpoint:** `6b1000b9edb25c9cab7aeb703f6d2fe49228a167`
+- **Objective:** add a provider-neutral no-app shopping-intent authority that records what the user still intends to obtain, keeps that intent separate from durable receipt/purchase history, and allows explicit conservative reconciliation to canonical captured-receipt evidence without silently creating assets, inventory, fitment, spending, grocery stock, or order state.
 
 ## Session-start alignment verification — 2026-08-30
 
@@ -35,160 +43,182 @@ PR #70 merged to `main` as `95728763816b2ab26e29973dd2e204d7c4bdbe9c` from verif
 
 Verified before implementation:
 
-- `MOVE-001` is accepted required-direction work for explicit movement with event/readback semantics;
-- `INV-001` keeps physical identity on the canonical asset Entity UUID;
-- `LOC-001` keeps intended placement separate from supported observed state;
-- `INV-002` is a read-only query projection and must not become a movement authority;
-- `IDENT-001` enables later recognition/capture but recognition alone must never equal movement.
+- `SHOP-001` requires active shopping intent to remain distinct from durable purchase history;
+- `RECEIPT-001` / `RECEIPT-002` already provide canonical purchase evidence and queryable history;
+- `FITMENT-001` remains a separate fitment truth and this packet must not invent automatic fitment resolution;
+- `GROCERY-001` remains downstream and depends on shopping intent plus inventory/location truth.
 
 ### `BACKLOG.md`
 
 Verified and reconciled before implementation:
 
-- `INVENTORY-QUERY-001` is complete from PR #70;
-- `MOVEMENT-CORE-001` is the one active work row;
-- its prerequisites are satisfied by merged asset/identifier/location/inventory work;
-- `ANDROID-CAPTURE-001`, par/grocery, fitment/OCR and other adjacent work remain unfinished.
+- `MOVEMENT-CORE-001` is complete from PR #71;
+- `SHOP-CORE-001` is the one active work row;
+- `GROCERY-CORE-001`, `PAR-CORE-001`, scanner/capture, fitment, orders and finance remain separate unfinished work.
 
 ### `ROADMAP.md`
 
-Verified before implementation:
+Verified before implementation and again before merge-candidate closeout:
 
-- M2-M0.5 prioritizes useful stock-ChatGPT + Google Workspace verticals before Android;
-- assets/inventory/location/scanning are an accepted family but packets must remain bounded;
-- camera/barcode/QR/NFC/BLE capture is downstream client work, not part of provider-neutral movement semantics.
+- M2-M0.5 prioritizes repeated useful stock-ChatGPT + Google Workspace verticals before Android;
+- shopping/procurement and meals/groceries are accepted Personal families;
+- a bounded packet must not fan out into grocery, finance, fulfillment, fitment, recommendation or Android/client systems.
 
 ### Direction result
 
-**ALIGNED.** Movement event semantics are the prerequisite that prevents a future scanner from turning mere identifier recognition into fabricated physical movement.
+**ALIGNED.** `SHOP-CORE-001` is directly useful in stock ChatGPT and unlocks later grocery/pantry reconciliation while preserving bounded authority boundaries.
 
 ## Acceptance criteria
 
-1. Movement references one existing tracked asset using the same immutable Entity UUID; missing/untracked assets fail closed.
-2. Destination must be an existing canonical location; movement never creates a location implicitly.
-3. Every observation uses an explicit offset-aware ISO-8601 physical observation timestamp.
-4. Event identity/idempotency are independent of asset UUID; exact replay produces zero duplicate event and zero extra state revision.
-5. Reusing event/idempotency identity with changed material fails closed.
-6. Valid movement changes only observed location/time; intended placement and asset/acquisition/tracking/quantity/identifier truth are preserved.
-7. Event records prior inventory revision, intended location, prior observed state and preserved note material required for deterministic recovery/readback.
-8. Stale revision or contradictory prior-state expectations fail before a new event is acknowledged.
-9. History is bounded/deterministic and derived only from persisted movement events, never synthesized from current state.
-10. Same-location re-observation requires a new explicit event with a later timestamp.
-11. Existing provider-neutral Resource/Event/Idempotency primitives are used; no second movement database exists.
-12. Event-first/projection-second interruption recovery converges without duplicate history; unrelated state advancement causes fail-closed conflict rather than overwrite.
-13. Passive identifier recognition/scanning is not movement.
-14. Container-following propagation is not implemented.
-15. No intended-location mutation, fitment, par/grocery, warranty/maintenance, OCR/evidence or Android behavior is claimed.
-16. Direct tests cover success, replay, conflicting replay, stale/prior conflict, unknown/untracked asset, missing location, same-location observation, intended preservation, deterministic history, generic-event filtering and both interruption windows.
-17. Complete Personal no-app instructions define append-event and movement semantics and release validation guards the honesty/recovery boundaries.
-18. `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` and code-ownership evidence remain aligned before merge.
-19. Required CI is green on the exact merge-candidate head.
-20. Fresh isolated Google proof demonstrates persisted movement Event + observed-state projection + exact idempotency/readback/replay behavior using synthetic state only.
-21. Whole-product reconciliation leaves scanning/capture, container propagation, par/grocery, fitment/OCR and Android unfinished.
+1. Add one canonical `shopping_intent` mutable data class/resource; it is not a task, receipt, asset, inventory row, order, or spending record.
+2. Each intent has one stable opaque intent ID/Resource ID, exact user-facing description, deterministic normalized search text, explicit positive quantity, optional unit/note, state, and timestamps needed for honest lifecycle readback.
+3. Supported lifecycle is explicit and finite: `active`, `fulfilled`, or `cancelled`. Cancellation is not fulfillment. Silence, elapsed time, a receipt merely existing, or an item disappearing from chat never fulfills an intent.
+4. Create/replay/update behavior is revision-checked and idempotent through STORE-001; same logical replay is zero-write and conflicting identity/material fails closed.
+5. Bounded deterministic query supports exact intent ID, state, and case-insensitive description search; active-shopping queries never infer purchase history from chat memory.
+6. Fulfillment is an explicit reconciliation operation against one existing canonical captured receipt and, when supplied, one exact receipt line. Missing/review-only receipt evidence fails closed.
+7. A fulfillment link stores canonical receipt ID, optional exact receipt-line ID, observed receipt revision and reconciliation timestamp without copying raw evidence or replacing receipt identity.
+8. This first slice does not silently auto-match an ambiguous receipt to an intent. If deterministic exact material is not supplied/verified, the intent remains active.
+9. Fulfilling or cancelling an intent never mutates the canonical receipt, creates an asset, changes inventory/location, assigns fitment, changes par/grocery stock, creates an order/shipment record, or records spending/payment settlement.
+10. Receipt history remains durable even after an intent is fulfilled/cancelled; shopping intent is current procurement intent, not purchase-history authority.
+11. The first slice rejects implicit reopen of fulfilled/cancelled intent rather than rewriting terminal history.
+12. Clean Personal Workspace schema/Authority bootstrap includes `shopping_intent` without external infrastructure.
+13. Complete no-app operating instructions define shopping-intent truth, lifecycle, explicit receipt reconciliation, historical receipt-revision provenance and forbidden side effects; release validation guards those clauses.
+14. Direct tests cover create/read/query/replay/conflict, lifecycle transitions, explicit receipt/line fulfillment, missing/review-only evidence, cancellation-vs-fulfillment, deterministic ordering/limits, later receipt revision, malformed state and forbidden side effects.
+15. Provider proof uses a fresh isolated synthetic Google Sheet only and verifies create/replay/fulfillment/provider readback without touching protected legacy production state.
+16. `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` and code ownership are reconciled before merge; `SHOP-001` remains unmerged evidence until PR #72 lands.
+17. Required CI is green on the exact merge candidate head and post-merge `main` is remotely verified.
+18. Whole-product reconciliation leaves grocery/par, product recommendations, automatic fitment, orders/shipments, spending/finance, asset creation, scanner/client behavior and Android unfinished.
 
 ## Completed evidence in this packet
 
-### Implementation
+### Lifecycle and component alignment
 
-- Added `mira/movement.py` as a dedicated provider-neutral movement component.
-- STORE event type remains the generic existing `updated`; movement is typed by payload `event_kind=inventory_observation`, avoiding a Google/provider schema fork or starter migration for domain event names.
-- New observation preflight requires tracked canonical inventory, an existing destination, expected inventory revision, optional exact prior observed state and a strictly newer offset-aware observation timestamp when prior observation exists.
-- Event payload retains exact prior inventory revision, prior observed state, intended location and inventory note plus resulting inventory revision.
-- Mutation order is **event first, projection second**. Event append and observed-state projection each use the existing atomic provider-neutral Event/Idempotency or Resource/Idempotency primitive.
-- Projection idempotency is deterministic from Event ID (`movement-state-` + first 40 lowercase SHA-256 hex characters), allowing an event-first interruption to resume without a duplicate event.
-- Projection preserves inventory participation, intended location and inventory note while changing only observed location/time.
-- History filters only `updated` events whose payload is `event_kind=inventory_observation`; unrelated generic `updated` events in the same stream are excluded.
+- `BACKLOG.md` was first reconciled so `MOVEMENT-CORE-001` is complete and `SHOP-CORE-001` is the sole active work row.
+- `project/code_ownership.json` registers `canonical-shopping-intent`, owning `mira/shopping.py` and directly verified by `tests/test_shopping.py`.
+- No legacy production Google state was used as a fixture.
+
+### Provider-neutral shopping implementation
+
+Added `mira/shopping.py` with canonical resource type `shopping_intent`, schema version 1 and lifecycle states `active|fulfilled|cancelled`.
+
+The service provides:
+
+- stable intent creation/read;
+- active-intent update;
+- explicit cancellation;
+- explicit fulfillment from one canonical captured receipt, optionally one exact receipt line;
+- bounded deterministic query by exact intent ID, lifecycle state and case-insensitive description substring;
+- positive decimal-string quantity normalization and offset-aware timestamps;
+- canonical Resource revision/idempotency conflict handling and exact readback;
+- exact semantic zero-write replay for create/update/cancel/fulfill;
+- historical reconciliation retaining receipt ID, optional line ID, the receipt revision actually observed, and reconciliation time;
+- replay of fulfilled intent against stored historical reconciliation even if the receipt later advances to a newer revision;
+- no receipt mutation or downstream asset/inventory/fitment/order/spending/grocery side effects.
+
+Terminal fulfilled/cancelled intent is intentionally not silently reopened in this slice.
 
 ### Direct/test evidence
 
-`tests/test_movement.py` covers:
+`tests/test_shopping.py` covers:
 
-- successful event + projection with intended location preserved;
-- exact replay with one event and no extra inventory revision;
-- conflicting event/replay material;
-- stale revision and contradictory prior-state rejection before event append;
-- missing/untracked asset and missing destination failures;
-- explicit same-location later re-observation and equal-time rejection;
-- deterministic stream ordering, `after_revision` and result limits;
-- unrelated generic `updated` stream events excluded from movement history;
-- crash after Event append/before projection, then exact one-time recovery;
-- crash after projection write/before acknowledgement, then zero-duplicate replay;
-- offset-aware timestamp enforcement and UTC `Z` canonicalization.
+- create/read and exact create replay;
+- conflicting idempotency material;
+- revisioned active update and semantic zero-write update replay;
+- deterministic query filtering/order/limit;
+- receipt existence alone not fulfilling intent;
+- explicit receipt-line fulfillment and receipt immutability;
+- explicit whole-receipt fulfillment;
+- missing receipt, missing line and `needs_review` receipt rejection;
+- cancellation distinct from fulfillment and terminal no-reopen behavior;
+- fulfilled replay with no extra revision and conflicting reconciliation rejection;
+- later receipt correction not rewriting historical shopping reconciliation;
+- timestamp, quantity and query validation;
+- corrupt persisted identity failing closed.
 
-`project/code_ownership.json` registers `canonical-inventory-movement` owning `mira/movement.py` with direct verification in `tests/test_movement.py`.
+Core CI run `33343292090` passed on `6e16387d0352137fbf00c5fcc7e3bd735450842c`.
 
-PR #71 early core CI run `33341918685` passed. Release-wired CI run `33342170586` passed on `f8977ede3922284d070602552ef5bf2e6a6f40cb`. A final exact-head run remains required after this evidence checkpoint.
+### Clean Personal release wiring
 
-### No-app/release evidence
+The clean Personal starter now includes `shopping_intent` in exact `resource_types_json`, and `mira/personal_distribution.py` plus direct distribution tests require that schema.
 
 The complete `workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md` now includes:
 
-- exact Events table preflight and generic append-event request/idempotency/readback rules;
-- explicit statement that recognition alone is not movement;
-- `inventory_state` / `updated` / `event_kind=inventory_observation` movement identity;
-- fresh prior-state/revision/time requirements;
-- event-first/projection-second mutation order;
-- deterministic projection idempotency key;
-- both replay-recovery windows and fail-closed unrelated-state advancement;
-- same-location re-observation semantics;
-- movement history from persisted movement events only;
-- explicit non-implementation of container propagation, scanner/client surfaces and adjacent domain behavior.
+- `shopping_intent` in Workspace preflight and Authority bootstrap;
+- `authority_binding/binding-shopping-intent`;
+- explicit current-procurement authority separate from purchase history;
+- `active|fulfilled|cancelled` lifecycle;
+- receipt existence never implying fulfillment;
+- fulfillment requiring canonical receipt state `captured`;
+- `needs_review` receipt rejection;
+- optional exact receipt-line reconciliation;
+- historical receipt-revision provenance and later-correction stability;
+- exact replay with zero write;
+- receipt immutability and forbidden downstream side effects;
+- deterministic shopping query semantics.
 
-`mira/workspace_bundle.py` and `tests/test_workspace_bundle.py` directly guard those clauses, including regressions where recognition is treated as movement or recovery order is weakened.
+`mira/workspace_bundle.py` and `tests/test_workspace_bundle.py` directly guard the shopping binding, receipt-does-not-auto-fulfill rule, captured-only rule, review-only rejection, and receipt-immutability boundary.
+
+An intermediate release CI run `33343612807` failed before unit tests only because one exact protocol marker used lowercase `shopping` while the canonical sentence began `Shopping`. The guard was corrected without changing semantics. Release-wired CI run `33343692494` then passed on exact head `6b1000b9edb25c9cab7aeb703f6d2fe49228a167`.
 
 ### Fresh isolated Google provider proof
 
-A brand-new Google Sheet clearly marked `NOT A STARTER` was created solely for M2-M0-017. Provider ID/URL is intentionally excluded from public Git. No legacy MIRA production artifact was used or modified.
+A brand-new native Google Sheet clearly marked `NOT A STARTER` was created solely for M2-M0-018. Its provider identifier/URL is intentionally excluded from public Git. No protected legacy MIRA artifact was opened, altered, copied as state, or used as a fixture.
 
-Synthetic state contained one receipt-linked asset UUID, canonical shop/shelf/workbench locations, and one tracked `inventory_state` revision 1 with intended Shelf A, no observed location and a preserved inventory note.
+The synthetic sheet uses native `Metadata`, `Resources`, `Events`, and `Idempotency` tabs with STORE-001-shaped headers and metadata declaring the synthetic environment and `shopping_intent` resource support.
 
-The stock-ChatGPT no-app STORE protocol was then exercised in two exact phases:
+Synthetic canonical source evidence:
 
-1. one atomic Event + Idempotency batch appended one `updated` Event with `event_kind=inventory_observation`, stream revision 1, explicit Workbench observation timestamp and prior-state material;
-2. after exact Event readback, one atomic Resource + Idempotency batch projected the same asset's `inventory_state` from revision 1 to revision 2, preserving intended Shelf A and note while setting observed Workbench + exact observation time.
+- one captured receipt at revision 1;
+- one exact receipt line for a synthetic torque wrench;
+- receipt Resource + matching seed Idempotency result persisted before shopping operations;
+- Events remained header-only throughout the shopping proof.
 
-Exact provider readback verified:
+Shopping proof sequence:
 
-- asset and location Resources stayed revision 1;
-- inventory state is exactly revision 2;
-- intended location remained Shelf A;
-- observed location is Workbench with the exact explicit timestamp;
-- exactly one movement Event exists at stream revision 1;
-- exactly two movement-operation Idempotency records exist, one for Event append and one for state projection, with the expected persisted results and request hashes.
+1. Created one `shopping_intent` as revision 1 / `active` using one atomic Resource+Idempotency batch and exact readback.
+2. Re-read the exact create idempotency key/hash/result and Resource state. Because replay material matched, the correct replay path invoked **no Google write**; the intent remained revision 1.
+3. Explicitly reconciled the active intent to the exact captured receipt line using expected revision 1 and one atomic Resource+Idempotency batch.
+4. Exact readback proved shopping intent revision 2 / `fulfilled`, with reconciliation storing the exact receipt ID, exact line ID, receipt revision 1 and exact offset-aware reconciliation time.
+5. Exact readback simultaneously proved the canonical receipt remained revision 1 with its original payload, request hash and idempotency key unchanged.
+6. Events remained empty: shopping lifecycle in this slice is Resource-state lifecycle, not fabricated event history.
+7. The final store contained only the synthetic receipt and shopping-intent Resources. No asset, inventory, location, fitment, order/shipment, spending/payment, par or grocery state appeared.
+8. Terminal replay was verified by read-only lookup of the fulfillment idempotency record: the stable fulfillment key resolves to the exact persisted request hash and revision-2 result, so replay correctly requires zero write.
 
-Replay was then evaluated using **read-only idempotency preflight**. Both stable keys resolved to the exact original operation/hash/result material, so the correct replay path invoked no Google write. A subsequent full `Resources`/`Events`/`Idempotency` snapshot remained unchanged: one movement Event, inventory revision 2 and exactly the same two idempotency records. This proves zero-write replay for the stock-ChatGPT provider protocol without manufacturing an unnecessary replay mutation call.
+The proof sheet received only minimal presentation cleanup after functional replay verification: native tabs retained their schema, header rows were frozen, and long JSON columns were widened. Final metadata readback confirmed all four native tabs remained intact.
 
-This provider proof exercises the no-app Google STORE protocol directly. It does not falsely claim the Python `MovementService` itself was executed inside Google's connector runtime.
+This provider proof exercises the stock-ChatGPT/native Google STORE protocol directly. It does not falsely claim that the Python `ShoppingIntentService` executed inside the Google connector runtime.
 
 ## Session-end whole-product reconciliation — 2026-08-30
 
 ### `FEATURES.md`
 
-- `INV-002` correctly carries merged/test/provider evidence from M2-M0-016.
-- `MOVE-001` remains `candidate_unmerged` until PR #71 actually merges. Direct tests/provider proof do not substitute for merge evidence.
+- `MOVE-001` remains correctly merged/test/provider verified from M2-M0-017.
+- `SHOP-001` now has direct implementation/test/provider evidence but must remain explicitly **unmerged** until PR #72 lands.
+- `GROCERY-001`, `PAR-001`, fitment, orders/shipments, finance and Android/client features remain separate unfinished scope.
 
 ### `BACKLOG.md`
 
-- `INVENTORY-QUERY-001` is complete.
-- `MOVEMENT-CORE-001` remains the one active work row until PR #71 merge/readback.
-- Scanner/capture, Android, container propagation, par/grocery, fitment and OCR/evidence remain unfinished.
+- `MOVEMENT-CORE-001` is complete.
+- `SHOP-CORE-001` remains the one active work row until PR #72 merge/readback.
+- `GROCERY-CORE-001` is now dependency-close except for `SHOP-001` actually merging; it is a likely next no-app candidate, not part of this packet.
 
 ### `ROADMAP.md`
 
-No semantic change required. The packet remains a bounded no-app movement prerequisite and does not reactivate Android or expand into the entire inventory subsystem.
+No semantic roadmap change is required. This remains one bounded M2-M0.5 no-app vertical/prerequisite on the Google-first Personal path. Android stays paused and no advanced runtime dependency was introduced.
 
 ### Direction result
 
-**ALIGNED FOR MERGE CANDIDATE.** Implementation, direct tests, no-app/release guards and fresh provider proof are complete. Only final exact-head CI, protected merge and remote `main` verification remain.
+**ALIGNED FOR MERGE CANDIDATE.** Implementation, direct tests, starter/bootstrap changes, complete no-app/release guards and fresh isolated Google provider proof are complete. Remaining work is final lifecycle evidence text, exact-head CI, protected merge and remote `main` verification.
 
 ## Exact next action
 
-1. Verify CI is green on the exact branch head after this checkpoint and the generic-event filtering regression.
-2. Update PR #71 evidence/merge gate and re-read its exact head/mergeability.
-3. Merge only with expected-head protection after exact-head CI succeeds.
-4. Remotely verify `main` contains the merge and post-merge CI is green.
-5. Create a post-merge lifecycle checkpoint marking `MOVEMENT-CORE-001` complete / `MOVE-001` merged evidence, then rerank unfinished accepted work before activating the next bounded packet.
+1. Reconcile `SHOP-001` to explicit candidate-unmerged evidence and enrich the active `SHOP-CORE-001` backlog row with PR/CI/provider evidence without marking it complete early.
+2. Re-read PR #72 and record its exact current head/mergeability.
+3. Run CI on the exact final documentation/lifecycle head.
+4. Update PR #72 merge gate to that exact SHA and merge only with expected-head protection after CI succeeds.
+5. Remotely verify `main` points to the merge and post-merge push CI is green.
+6. Create a post-merge lifecycle checkpoint that marks `SHOP-001` / `SHOP-CORE-001` merged/completed and reranks unfinished accepted work before activating the next bounded packet.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-017-movement-core` descends from verified base `95728763816b2ab26e29973dd2e204d7c4bdbe9c` and PR #71 still targets `main`. Do not touch protected legacy MIRA production data. Do not implement barcode/QR/NFC/BLE capture, Android, passive-read movement, container-following propagation, par/grocery, fitment or OCR/evidence enrichment in this packet.
+Read this file first. Confirm branch `integration/m0-018-shopping-intent` descends from verified green base `86778802e0f32cf7d4e83c78063231a6e6e68a31` and PR #72 still targets `main`. The last fully green release-wired pre-evidence head is `6b1000b9edb25c9cab7aeb703f6d2fe49228a167`; a new exact-head run is required after lifecycle/evidence commits. Do not touch protected legacy MIRA production data. Do not expand this packet into grocery/par, automatic product recommendation or fitment, orders/shipments, finance/spending, asset/inventory mutation, scanner/capture, or Android.
