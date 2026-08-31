@@ -58,9 +58,9 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 - **Branch:** `integration/m0-023-google-calendar-projection`
 - **Base SHA:** `fcc81f0e9d9510d05406acd9068d9ca4ee016806`
 - **PR:** #78 open, non-draft, mergeable
-- **Last verified green implementation/governance head:** `94150fe1ae3b604495b86e96ce98051d17195331`
-- **Exact-head CI:** `33433809624` green on `94150fe1ae3b604495b86e96ce98051d17195331`
-- **Current head rule:** this file is the recovery checkpoint. Resolve the live PR head before merge and require green CI on that exact head; do not create another source-only checkpoint merely to restate its own SHA.
+- **Verified green head:** `317eec35ca6f380e9f388bc8eba81f05666bba8b`
+- **Exact-head CI:** `33433962675` green on `317eec35ca6f380e9f388bc8eba81f05666bba8b`
+- **Current head rule:** resolve the live PR head before merge and require green CI on that exact head. Do not create another source-only checkpoint merely to restate its own SHA.
 
 ### Objective
 
@@ -81,7 +81,7 @@ Provide a browser-first Google Calendar lane with no server/terminal requirement
 - `workspace/apps_script/README.md` documents the ordinary-user copy/initialize/Enable Calendar flow, narrow scopes, and the separate maintainer template-publication evidence boundary.
 - `mira/workspace_bundle.py` fails release validation if that one-click install/Calendar guidance or narrow-scope contract disappears.
 - Google documentation confirms that making a copy of a spreadsheet copies its attached container-bound scripts; therefore the intended public install path is an ordinary Sheet copy rather than per-user script deployment.
-- CI `33433809624` passed all repository gates on `94150fe1ae3b604495b86e96ce98051d17195331`.
+- CI `33433962675` passed all repository gates on `317eec35ca6f380e9f388bc8eba81f05666bba8b`.
 
 ### Private isolated provider-proof target
 
