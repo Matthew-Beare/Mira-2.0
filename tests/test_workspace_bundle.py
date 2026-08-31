@@ -55,7 +55,7 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("## Canonical shopping intent and receipt reconciliation", protocol)
         self.assertIn("canonical resource type is `shopping_intent`", protocol)
         self.assertIn("A canonical receipt merely existing never fulfills shopping intent.", protocol)
-        self.assertIn("shopping fulfillment requires a canonical receipt whose state is `captured`", protocol)
+        self.assertIn("Shopping fulfillment requires a canonical receipt whose state is `captured`", protocol)
         self.assertIn("A `needs_review` receipt cannot fulfill shopping intent.", protocol)
         self.assertIn("Receipt reconciliation never mutates the canonical receipt", protocol)
         self.assertIn("## Canonical physical assets and receipt-linked acquisition", protocol)
