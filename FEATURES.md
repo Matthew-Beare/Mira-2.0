@@ -45,7 +45,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `TASK-002` | Evidence-grounded next actions and honest completion state | accepted/integrity rule | specified | -
 - `RECOVERY-001` | Phase-aware Run Log, durable checkpoints and circuit-breaker recovery | required | test_verified | -
 - `RECOVERY-002` | Explicit module dependency boundaries and failure isolation | required | test_verified | -
-- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | test_verified+provider_verified+candidate_unmerged | RECOVERY-002
+- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | test_verified+merged-provider-readback+current-resource-scope | RECOVERY-002
 - `CAL-001` | Saturday AM seven-day appointment lookahead | required | test_verified | -
 - `CAL-002` | Day-before and morning-of appointment reminders | required | test_verified | -
 - `CAL-003` | Configurable relative appointment reminder, default one hour before | required | test_verified | -
