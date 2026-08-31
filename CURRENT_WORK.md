@@ -46,7 +46,7 @@ Reviewed the active milestone direction. The packet remains aligned with the sto
 ### `M2-M0-021` — Appointment identity reconciliation core
 
 - **Primary work:** `APPOINTMENT-IDENTITY-001`
-- **Primary feature:** `CAL-005`
+- **Primary features:** `CAL-005`
 - **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `PROFILE-012`, `PROFILE-013`, `CAL-008`, `CAL-006`, `CAL-007`, `MAIL-002`, `HEALTH-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-021-appointment-identity`
