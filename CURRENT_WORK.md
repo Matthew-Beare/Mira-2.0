@@ -52,9 +52,9 @@ Reviewed the active milestone direction. The packet remains aligned with the sto
 - **Branch:** `integration/m0-021-appointment-identity`
 - **Base SHA:** `10a8c43084ae75703a197ce7ea2f0cda734fca04`
 - **PR:** #75 draft
-- **Latest verified implementation/release head before this checkpoint:** `22e8cd775a807b652382753f4af40d5c16df0ffa`
-- **Exact-head CI:** `33375779566` green on `22e8cd775a807b652382753f4af40d5c16df0ffa`
-- **Current blockers:** none known; this checkpoint commit itself must receive green exact-head CI before draft removal/merge.
+- **Final candidate head before merge:** `fb45d30b5eba90581b792e35e7e654d9db71fc7b`
+- **Exact-head CI:** `33376021181` green on `fb45d30b5eba90581b792e35e7e654d9db71fc7b`
+- **Current blockers:** none known. Merge must use exact expected-head protection, followed by remote `main` and post-merge CI verification.
 
 ### Objective
 
@@ -88,22 +88,21 @@ Implement the smallest provider-neutral canonical appointment/provider identity 
 - `mira/appointments.py` implements separate `appointment_provider` and `appointment` Resources, deterministic exact-key reconciliation, immutable evidence fingerprints, field-authority precedence, explicit Needs Review outcomes, and no downstream Calendar/reminder/contact behavior.
 - `tests/test_appointments.py` provides 12 direct synthetic tests covering provider create/replay/enrichment, exact-vs-fuzzy behavior, ambiguity, immutable evidence, user-confirmed correction precedence, same-provider multiple appointments, appointment replay/correction, missing identity, and zero Event/Calendar/reminder side effects.
 - `project/code_ownership.json` registers `mira/appointments.py` under `APPOINTMENT-IDENTITY-001` / `CAL-005` with direct verification at `tests/test_appointments.py`.
-- `distribution/personal_google_starter.json` now declares `appointment` and `appointment_provider` as permitted clean-starter Resource types.
+- `distribution/personal_google_starter.json` declares `appointment` and `appointment_provider` as permitted clean-starter Resource types.
 - `tests/test_personal_distribution.py` verifies those resource types are present in the deterministic sanitized Personal starter contract.
-- `mira/personal_distribution.py` now validates the same appointment-aware Resource-type schema rather than the stale pre-appointment list. This repaired CI failure `33372985014` without weakening privacy, empty-state, artifact, manifest, or snapshot checks.
-- Exact-head CI `33375779566` passed compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Python unit tests, and Workspace Apps Script tests on `22e8cd775a807b652382753f4af40d5c16df0ffa`.
+- `mira/personal_distribution.py` validates the same appointment-aware Resource-type schema rather than the stale pre-appointment list. This repaired CI failure `33372985014` without weakening privacy, empty-state, artifact, manifest, or snapshot checks.
+- Exact-head CI `33376021181` passed compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Python unit tests, and Workspace Apps Script tests on final candidate head `fb45d30b5eba90581b792e35e7e654d9db71fc7b`.
 - Protected legacy production state has not been used or modified for this packet.
 - No claim is made that appointment intake, Calendar projection, reminder delivery, or appointment-service activation is live. Those remain downstream work.
 
 ## Exact next action / resume point
 
-1. Require green CI on this CURRENT_WORK checkpoint head.
-2. If green, update PR #75 description with the verified Personal starter schema evidence and evidence ceiling, then mark the PR ready for review.
-3. Re-read the exact PR head/mergeability and require green CI on that exact head.
-4. Merge PR #75 with `expected_head_sha` protection only.
-5. Verify remote `main` points to the merge SHA and require post-merge `main` CI success.
-6. Only after post-merge success, create the lifecycle checkpoint that marks `CAL-005` / `APPOINTMENT-IDENTITY-001` merged/completed and dynamically selects the next bounded packet.
-7. Do not expand this packet into intake, Calendar projection, reminders, outbound contact, medical interpretation, migration, or Android.
+1. Update PR #75 description with the verified Personal starter schema evidence and evidence ceiling, then mark it ready for review.
+2. Re-read the exact PR head and mergeability; require head `fb45d30b5eba90581b792e35e7e654d9db71fc7b` and green CI `33376021181`.
+3. Merge PR #75 with `expected_head_sha=fb45d30b5eba90581b792e35e7e654d9db71fc7b`.
+4. Verify remote `main` points to the returned merge SHA and require post-merge `main` CI success.
+5. Only after post-merge success, create the lifecycle checkpoint that marks `CAL-005` / `APPOINTMENT-IDENTITY-001` merged/completed and dynamically selects the next bounded packet.
+6. Do not expand this packet into intake, Calendar projection, reminders, outbound contact, medical interpretation, migration, or Android.
 
 ## Recovery protocol
 
