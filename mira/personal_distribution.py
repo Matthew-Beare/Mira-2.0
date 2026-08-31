@@ -82,6 +82,7 @@ _REQUIRED_TAB_HEADERS = {
 _RESOURCE_TYPES = (
     "appointment",
     "appointment_provider",
+    "calendar_projection",
     "authority",
     "authority_binding",
     "asset",
