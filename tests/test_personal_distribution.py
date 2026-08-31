@@ -28,6 +28,8 @@ class PersonalDistributionTests(unittest.TestCase):
         self.assertEqual(
             json.loads(metadata["resource_types_json"]),
             [
+                "appointment",
+                "appointment_provider",
                 "authority",
                 "authority_binding",
                 "asset",
