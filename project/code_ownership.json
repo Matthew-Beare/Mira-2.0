@@ -225,6 +225,15 @@
       "verification": ["tests/test_backup.py"]
     },
     {
+      "id": "canonical-appointment-identity",
+      "responsibility": "Provider-neutral durable provider identity and separate appointment-occurrence identity reconciliation from already-normalized evidence, with exact deterministic keys, immutable provenance, explicit ambiguity, and user-confirmed correction precedence.",
+      "why_separate": "Appointment/provider truth must exist before intake extraction, Calendar projection, reminders, outbound contact, or administrative-health composition; keeping this core separate prevents those downstream surfaces from becoming identity authorities or implying medical meaning.",
+      "owned_paths": ["mira/appointments.py"],
+      "feature_ids": ["CAL-005", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["APPOINTMENT-IDENTITY-001"],
+      "verification": ["tests/test_appointments.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
