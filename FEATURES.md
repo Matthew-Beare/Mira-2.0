@@ -78,7 +78,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `KNOW-001` | Canonical durable Knowledge source identity and retained-source lifecycle | required | test_verified+scope-refined | RECOVERY-002
 - `KNOW-002` | Provenance-bound knowledge excerpts and derived facts | required/accepted | specified/not_present | KNOW-001,RECOVERY-002
 - `SPEC-001` | Provenance-locked technical specifications with exact applicability | required | test_verified | ASSET-001,KNOW-001,EVID-001
-- `SHOP-001` | Active shopping intent distinct from durable purchase history | accepted | test_verified+provider_verified+candidate_unmerged | RECEIPT-001,FITMENT-001
+- `SHOP-001` | Active shopping intent distinct from durable purchase history | accepted | test_verified+merged-provider-readback | RECEIPT-001,FITMENT-001
 - `INV-001` | Inventory participation reuses canonical Entity UUID identity | accepted | test_verified | ASSET-001
 - `LOC-001` | Hierarchical locations with intended placement separate from observed/last-moved state | required | test_verified | INV-001
 - `MOVE-001` | QR/barcode-driven inventory movement with explicit event/readback semantics | accepted/required-direction | test_verified+merged-provider-readback | INV-001,IDENT-001,LOC-001
@@ -103,7 +103,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `PROFILE-008` | Student role with explicit HOME/CAMPUS context option | accepted | implemented/partial-test | SERVICE-001,CTX-001,CTX-002,PROFILE-005
 - `PROFILE-009` | Mixed/custom role composition preserves underlying roles and explicit primary routing | required | test_verified | SERVICE-001
 - `PROFILE-010` | Preference-driven usability and accessibility without demographic inference | accepted-direction | partial-test/specified | SERVICE-001
-- `PROFILE-011` | Public “Boomer mode” is rejected; private user-chosen alias remains presentation-only | rejected/public; private-alias accepted | rejected+alias-partial-test | PROFILE-010,ONBOARD-002
+- `PROFILE-011` | Public “Boomer mode” is rejected; private user-chosen alias remains presentation-only | rejected/public; private-alias accepted | PROFILE-010,ONBOARD-002
 - `PROFILE-012` | Canonical per-person identity and explicit relationship graph | accepted | specified | -
 - `PROFILE-013` | Explicit permission and sharing scopes separate from relationship labels | required/privacy-critical | specified | PROFILE-012
 - `DIST-001` | Private deployment lineage and controlled upstream feature sharing | required | partial-test/specified | ONBOARD-002
