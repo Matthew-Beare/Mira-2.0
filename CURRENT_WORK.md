@@ -8,7 +8,7 @@ Default Personal MIRA is stock ChatGPT + Google Workspace with no external infra
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`.
 
-## Session alignment — 2026-08-31
+## Session-start alignment verification — 2026-08-31
 
 - `CAL-005` appointment/provider identity is merged/test-verified through PR #76.
 - `CAL-007` provider-neutral Calendar projection is merged/test-verified through PR #77 with synthetic provider readback only.
