@@ -339,6 +339,27 @@ Inventory query rules:
 13. No tracked match means “no matching tracked inventory item was found.” It does not prove that a purchase receipt or untracked asset record does not exist.
 14. Inventory query alone never proves movement history, scan-in/out, container-following movement, fitment/installation, par-level or grocery-stock state, warranty/maintenance state, OCR confidence, or Android capture behavior.
 
+## Canonical grocery list vs known-stock reconciliation
+
+Grocery reconciliation is a read-only projection over existing canonical `shopping_intent`, `inventory_state`, `asset`, and `location` truth. It creates no `grocery` Resource, needs no new Authority binding, and does not turn receipt history or chat memory into stock authority.
+
+Grocery reconciliation rules:
+
+1. The caller must explicitly select one or more canonical shopping-intent IDs for the grocery query. Every selected intent must exist and be `active`. Do not auto-classify arbitrary shopping intent as grocery from category guesses, model memory, receipt existence, fuzzy text, or disappearance from chat.
+2. The caller must supply one existing canonical `stock_location_id` that defines the stock scope for this query. Known stock uses `observed_location_id` at that location or a canonical descendant. `intended_location_id` is not proof of physical presence.
+3. When an exact canonical Entity UUID mapping is explicitly supplied for an intent, use that identity. Otherwise matching may use only exact equality between the shopping intent's normalized `search_text` and the inventory asset display name after the same collapsed-whitespace/case-fold normalization. Substring, fuzzy, semantic, LLM-selected, and “close enough” matches are not allowed.
+4. One exact-name item observed in scope is `known_in_stock`. More than one exact-name item observed in scope is `unresolved` until exact Entity UUID identity is supplied. No exact observed in-scope match leaves the active procurement intent as `needs_to_buy`.
+5. For an explicit Entity UUID, an untracked item or tracked item with no supported observed location is `unresolved`. An item observed outside the selected stock scope is `needs_to_buy` for this scoped procurement query. Do not pretend that its intended location proves it is in stock.
+6. `needs_to_buy` means the selected active procurement intent remains unsatisfied by exact observed stock evidence in this scope. It does not prove the item is physically absent everywhere or that no receipt/order/asset exists.
+7. `known_in_stock` means supported presence only. Current consumable quantity is unknown in this slice. Always treat `stock_quantity=null` and `stock_quantity_known=false` unless a later separately implemented quantity/par authority supplies current quantity truth.
+8. Never use immutable asset acquisition `quantity`, receipt-line purchase quantity, order quantity, or historical purchase count as current pantry/freezer/household stock quantity. A lot acquired as 12 units may still have unknown remaining stock.
+9. Receipt/purchase history may explain provenance but never proves present stock. An asset that exists because it was purchased but is untracked or unobserved is not silently counted as known stock.
+10. Sort selected active intents deterministically using canonical shopping-intent ordering, then apply the bounded caller limit. Return the status, reason/match basis, and any exact stock Entity/location evidence used so the classification is auditable.
+11. Grocery reconciliation performs zero Resource, Event, or Idempotency writes. It never fulfills/cancels/creates shopping intent, creates an asset, changes inventory/location, creates movement history, infers fitment, changes par levels, modifies recipes/meals, creates orders/shipments, records spending/payment settlement, or triggers scanner/Android behavior.
+12. `PAR-001` current-quantity/target/threshold behavior remains optional and separate. Do not make par configuration a hidden prerequisite for this presence-only grocery reconciliation.
+
+When asked for a grocery-vs-stock view, distinguish `known_in_stock`, `needs_to_buy`, and `unresolved` explicitly. If quantity truth does not exist, say that presence is known but remaining quantity is not.
+
 ## Canonical inventory movement / observation history
 
 Movement history records **explicit supported physical observations** of an already tracked asset. Recognition alone is not movement: seeing or resolving a barcode, QR code, serial number, model number, RFID/NFC/BLE identifier, image, or label must never silently change location. A movement/observation occurs only when the operation explicitly asserts that the asset was physically observed at a canonical destination at a specific time.
@@ -411,13 +432,14 @@ After Minimum Useful Setup is complete:
 9. Use canonical `inventory_state` keyed by that same asset UUID for inventory participation. Never invent a separate inventory-object UUID for the same physical item.
 10. Read intended and observed locations separately. Intended placement is not proof of current physical presence; observed location is not permission to redefine the intended home.
 11. For inventory questions, use the canonical read-only inventory query rules above. Report “no matching tracked inventory item” rather than treating an empty tracked-inventory result as proof that no receipt or asset exists.
-12. For explicit movement/observation, use the event-first/projection-second movement protocol above. Recognition or scanning alone is never permission to mutate observed location.
-13. Asset, identifier, inventory, inventory-query, shopping-intent, or current observed state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
-14. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
-15. `requested` means wanted but not active. `suspended` means not operational.
-16. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
-17. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
-18. Preserve accepted unfinished feature families such as appointments, expanded Ops Brief sections, fitment, scanner/capture surfaces, container propagation, par/grocery, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
+12. For grocery-vs-stock questions, explicitly select the relevant active shopping-intent IDs and an observed stock-location scope, then use the canonical grocery reconciliation rules above. Exact presence may be known while remaining quantity stays unknown.
+13. For explicit movement/observation, use the event-first/projection-second movement protocol above. Recognition or scanning alone is never permission to mutate observed location.
+14. Asset, identifier, inventory, inventory-query, shopping-intent, grocery reconciliation, or current observed state alone never proves fitment, installation, movement-event history, warranty/maintenance, technical specification applicability, OCR quality, or provider-side filing.
+15. A user's request is not proof a service is active. Before claiming activation, read `service_state`; active requires activation state `active`, capability `available`, and no blockers.
+16. `requested` means wanted but not active. `suspended` means not operational.
+17. If requested behavior is not implemented/ready, say so plainly and preserve canonical intent when appropriate. Do not fabricate provider actions.
+18. The task-centered Ops Brief is composable from canonical state, but composition alone is not scheduled delivery.
+19. Preserve accepted unfinished feature families such as appointments, expanded Ops Brief sections, fitment, scanner/capture surfaces, container propagation, par/current-quantity automation, evidence/OCR, recipes/meals, wearables, local/smart-home integrations, Microsoft, Apple/iCloud, and Android without pretending they are already live.
 
 ## Outbound and consequential actions
 

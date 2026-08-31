@@ -10,215 +10,200 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ## Completed predecessor
 
-### `M2-M0-017` — Replay-safe inventory movement / observation history
+### `M2-M0-018` — Canonical shopping intent + receipt reconciliation
 
-PR #71 merged to `main` as `86778802e0f32cf7d4e83c78063231a6e6e68a31` from exact verified head `e6caf2689421b36de8b8f31ed9e6ce5f615ffcb7`.
+PR #72 merged to `main` as `b02e723396c4deb16394c59c63ed37071cdf59c7` from exact verified head `c380602b8538186a6b9ecac01376b47cdd209fd2`.
 
 Evidence:
 
-- core PR CI `33341918685` green;
-- release-wired PR CI `33342170586` green;
-- final exact-head CI `33342460536` green;
-- post-merge `main` CI `33342490468` green on the merge commit;
-- fresh isolated Google proof verified event-first/projection-second movement, intended-location preservation, exact observed time, and zero-write replay;
-- `MOVE-001` and `MOVEMENT-CORE-001` are reconciled to merged/completed evidence in canonical lifecycle state.
+- core CI `33343292090` green;
+- release-wired CI `33343692494` green;
+- final exact-head CI `33347846273` green on `c380602b8538186a6b9ecac01376b47cdd209fd2`;
+- post-merge `main` CI `33347884489` green on `b02e723396c4deb16394c59c63ed37071cdf59c7`;
+- fresh isolated synthetic Google proof verified active shopping-intent create, read-only zero-write replay, exact captured-receipt-line fulfillment, unchanged receipt truth, no fabricated Events and no asset/inventory/fitment/order/spending/grocery side effects;
+- clean Personal Workspace schema, Authority bootstrap, complete no-app protocol, direct regression guards and component ownership are merged;
+- protected legacy MIRA production state was not used as a fixture or modified.
+
+`SHOP-001` / `SHOP-CORE-001` are reconciled to merged/completed evidence in `FEATURES.md` and `BACKLOG.md`.
 
 ## Active packet
 
-### `M2-M0-018` — Canonical shopping intent + receipt reconciliation
+### `M2-M0-019` — Grocery list vs known-stock reconciliation
 
-- **Primary work:** `SHOP-CORE-001`
-- **Primary features:** `SHOP-001`
-- **Related invariants/features:** `RECEIPT-001`, `RECEIPT-002`, `FITMENT-001`, `STORE-001`, `RECOVERY-002`, `GROCERY-001`
+- **Primary work:** `GROCERY-CORE-001`
+- **Primary features:** `GROCERY-001`
+- **Related invariants/features:** `SHOP-001`, `INV-001`, `LOC-001`, `RECEIPT-001`, `PAR-001`, `RECIPE-001`, `MEAL-001`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-018-shopping-intent`
-- **Base SHA:** `86778802e0f32cf7d4e83c78063231a6e6e68a31`
-- **PR:** `#72` (open, non-draft)
-- **Last fully green release-wired head before this evidence checkpoint:** `6b1000b9edb25c9cab7aeb703f6d2fe49228a167`
-- **Objective:** add a provider-neutral no-app shopping-intent authority that records what the user still intends to obtain, keeps that intent separate from durable receipt/purchase history, and allows explicit conservative reconciliation to canonical captured-receipt evidence without silently creating assets, inventory, fitment, spending, grocery stock, or order state.
+- **Branch:** `integration/m0-019-grocery-core`
+- **Base SHA:** `b02e723396c4deb16394c59c63ed37071cdf59c7`
+- **PR:** `#73`
+- **Merge candidate authority:** the live PR #73 head returned by GitHub. This checkpoint is frozen before the merge gate; do not make another pre-merge documentation-only commit.
+- **Last release-wired green head before lifecycle evidence:** `ad32344c97013f2cc370cd887b1e59934b7f8452`
+- **Objective:** add the smallest provider-neutral no-app grocery reconciliation slice that distinguishes active grocery procurement intent from known pantry/freezer/household stock using canonical shopping, asset/inventory and location truth, without pretending that acquisition quantity equals current consumable quantity or silently inventing par, recipe, meal-plan, spending, scanner or automatic purchase behavior.
 
 ## Session-start alignment verification — 2026-08-30
 
 ### `FEATURES.md`
 
-Verified before implementation:
-
-- `SHOP-001` requires active shopping intent to remain distinct from durable purchase history;
-- `RECEIPT-001` / `RECEIPT-002` already provide canonical purchase evidence and queryable history;
-- `FITMENT-001` remains a separate fitment truth and this packet must not invent automatic fitment resolution;
-- `GROCERY-001` remains downstream and depends on shopping intent plus inventory/location truth.
+- `GROCERY-001` is accepted and depends on `SHOP-001`, `INV-001`, `LOC-001`, and `RECEIPT-001`.
+- Those hard semantic prerequisites are implemented/test/provider verified through merged shopping, receipt, asset/inventory/location packets.
+- `PAR-001` is accepted but intentionally **not** a universal dependency of grocery. Quantity-aware target/threshold behavior remains optional rather than being smuggled into this packet.
+- `RECIPE-001` and `MEAL-001` remain downstream/adjacent features; grocery core must not become recipe or meal planning.
 
 ### `BACKLOG.md`
 
-Verified and reconciled before implementation:
-
-- `MOVEMENT-CORE-001` is complete from PR #71;
-- `SHOP-CORE-001` is the one active work row;
-- `GROCERY-CORE-001`, `PAR-CORE-001`, scanner/capture, fitment, orders and finance remain separate unfinished work.
+- `GROCERY-CORE-001` is the one active work packet.
+- `PAR-CORE-001` remains a narrower optional quantity/threshold enhancement.
+- scanner/capture remains Android/client work and does not outrank a stock-ChatGPT Personal vertical.
 
 ### `ROADMAP.md`
 
-Verified before implementation and again before merge-candidate closeout:
-
-- M2-M0.5 prioritizes repeated useful stock-ChatGPT + Google Workspace verticals before Android;
-- shopping/procurement and meals/groceries are accepted Personal families;
-- a bounded packet must not fan out into grocery, finance, fulfillment, fitment, recommendation or Android/client systems.
+- M2-M0.5 still prioritizes repeated useful stock-ChatGPT + Google Workspace verticals before Android.
+- meals/groceries are an accepted Personal family.
+- this packet remains bounded and does not expand into recipes, meal planning, par automation, finance, ordering, scanning or Android.
 
 ### Direction result
 
-**ALIGNED.** `SHOP-CORE-001` is directly useful in stock ChatGPT and unlocks later grocery/pantry reconciliation while preserving bounded authority boundaries.
+**ALIGNED.** Grocery reconciliation is dependency-ready and directly useful in stock ChatGPT. The implementation preserves the audited rule that par/current-quantity tracking is optional, not a hidden prerequisite.
 
 ## Acceptance criteria
 
-1. Add one canonical `shopping_intent` mutable data class/resource; it is not a task, receipt, asset, inventory row, order, or spending record.
-2. Each intent has one stable opaque intent ID/Resource ID, exact user-facing description, deterministic normalized search text, explicit positive quantity, optional unit/note, state, and timestamps needed for honest lifecycle readback.
-3. Supported lifecycle is explicit and finite: `active`, `fulfilled`, or `cancelled`. Cancellation is not fulfillment. Silence, elapsed time, a receipt merely existing, or an item disappearing from chat never fulfills an intent.
-4. Create/replay/update behavior is revision-checked and idempotent through STORE-001; same logical replay is zero-write and conflicting identity/material fails closed.
-5. Bounded deterministic query supports exact intent ID, state, and case-insensitive description search; active-shopping queries never infer purchase history from chat memory.
-6. Fulfillment is an explicit reconciliation operation against one existing canonical captured receipt and, when supplied, one exact receipt line. Missing/review-only receipt evidence fails closed.
-7. A fulfillment link stores canonical receipt ID, optional exact receipt-line ID, observed receipt revision and reconciliation timestamp without copying raw evidence or replacing receipt identity.
-8. This first slice does not silently auto-match an ambiguous receipt to an intent. If deterministic exact material is not supplied/verified, the intent remains active.
-9. Fulfilling or cancelling an intent never mutates the canonical receipt, creates an asset, changes inventory/location, assigns fitment, changes par/grocery stock, creates an order/shipment record, or records spending/payment settlement.
-10. Receipt history remains durable even after an intent is fulfilled/cancelled; shopping intent is current procurement intent, not purchase-history authority.
-11. The first slice rejects implicit reopen of fulfilled/cancelled intent rather than rewriting terminal history.
-12. Clean Personal Workspace schema/Authority bootstrap includes `shopping_intent` without external infrastructure.
-13. Complete no-app operating instructions define shopping-intent truth, lifecycle, explicit receipt reconciliation, historical receipt-revision provenance and forbidden side effects; release validation guards those clauses.
-14. Direct tests cover create/read/query/replay/conflict, lifecycle transitions, explicit receipt/line fulfillment, missing/review-only evidence, cancellation-vs-fulfillment, deterministic ordering/limits, later receipt revision, malformed state and forbidden side effects.
-15. Provider proof uses a fresh isolated synthetic Google Sheet only and verifies create/replay/fulfillment/provider readback without touching protected legacy production state.
-16. `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md` and code ownership are reconciled before merge; `SHOP-001` remains unmerged evidence until PR #72 lands.
-17. Required CI is green on the exact merge candidate head and post-merge `main` is remotely verified.
-18. Whole-product reconciliation leaves grocery/par, product recommendations, automatic fitment, orders/shipments, spending/finance, asset creation, scanner/client behavior and Android unfinished.
+1. Reconcile `SHOP-001` / `SHOP-CORE-001` to merged/completed evidence before grocery implementation grows, and make `GROCERY-CORE-001` the sole active work row.
+2. Define one provider-neutral grocery reconciliation contract over canonical shopping intent plus canonical inventory/location truth; do not create a second shopping-list or purchase-history authority.
+3. Grocery intent selection must be explicit/deterministic. Arbitrary shopping text, receipt existence, model memory or fuzzy similarity alone must not silently classify an intent as grocery.
+4. Known stock must come only from canonical tracked inventory/asset/location state. Chat memory, a receipt, an order, or a prior purchase does not prove an item is currently in stock.
+5. Preserve `intended_location_id` versus `observed_location_id` semantics. Pantry/freezer/household location filtering must use explicit canonical location identity and deterministic descendant behavior where supported.
+6. Do not treat immutable acquisition quantity as current consumable quantity. If exact current quantity is unavailable, the result must say presence/known-stock only rather than manufacture a count.
+7. `PAR-001` target/threshold/observed-quantity behavior remains optional and outside this first slice unless a hard acceptance dependency is discovered and documented before implementation.
+8. The first slice supports bounded deterministic reconciliation of grocery intents into needs-to-buy, known-in-stock, and unresolved/ambiguous, with evidence/rule behind each classification available for readback.
+9. No fuzzy or ambiguous automatic matching between grocery intent and inventory. Deterministic explicit identity/mapping or another exact auditable match is required; otherwise remain unresolved.
+10. Reconciliation is read-only with respect to shopping intent, receipt, asset, inventory/location and purchase history unless an explicit separately authorized mutation is part of an existing canonical service contract. Merely querying groceries performs zero canonical writes.
+11. Grocery reconciliation never creates/fulfills/cancels shopping intent, creates assets, moves inventory, changes fitment, records spending/payment, creates orders/shipments, changes par levels, or alters recipe/meal plans.
+12. Receipt evidence may support provenance/identity only where already canonical; a receipt or historical purchase never proves present pantry/freezer stock.
+13. Bounded deterministic query supports explicit grocery intent selection, canonical location scope and result limits/order sufficient for a no-app list view.
+14. Clean Personal Workspace/no-app release artifacts expose any new canonical resource/binding only if implementation genuinely requires one; this pure projection adds neither.
+15. Complete no-app operating instructions define grocery-vs-stock truth, optional quantity honesty, exact-match requirements and forbidden side effects; release guards protect those clauses.
+16. Direct tests cover explicit grocery selection, known-stock presence, missing/untracked stock, pantry/freezer location scope, ambiguity, no-fuzzy-match behavior, quantity honesty, deterministic ordering/limits and zero-write reconciliation.
+17. Fresh isolated synthetic Google provider proof verifies the selected no-app reconciliation path and zero-write readback without touching protected legacy production state.
+18. Exact-head CI and post-merge `main` CI are required before completion.
+19. Whole-product reconciliation leaves par automation, recipe library, meal planning, automatic purchasing/orders, spending/finance, scanner/client behavior and Android unfinished.
 
 ## Completed evidence in this packet
 
-### Lifecycle and component alignment
+### Lifecycle and architecture
 
-- `BACKLOG.md` was first reconciled so `MOVEMENT-CORE-001` is complete and `SHOP-CORE-001` is the sole active work row.
-- `project/code_ownership.json` registers `canonical-shopping-intent`, owning `mira/shopping.py` and directly verified by `tests/test_shopping.py`.
-- No legacy production Google state was used as a fixture.
+- `SHOP-001` is merged/provider-readback verified from PR #72 and `SHOP-CORE-001` is completed.
+- `GROCERY-CORE-001` is the sole active work row for this packet.
+- `GROCERY-001` is `test_verified+provider_verified+candidate_unmerged`; it is not marked merged early.
+- `GROCERY-CORE-001` has candidate PR/CI/provider evidence in `BACKLOG.md` and remains active pending merge/readback.
+- No new mutable `grocery` Resource or Authority binding was introduced. Grocery is a read-only projection over already-canonical shopping and inventory/location truth.
+- `project/code_ownership.json` registers `grocery-reconciliation`, owning `mira/grocery.py` and directly verified by `tests/test_grocery.py`.
 
-### Provider-neutral shopping implementation
+### Provider-neutral grocery implementation
 
-Added `mira/shopping.py` with canonical resource type `shopping_intent`, schema version 1 and lifecycle states `active|fulfilled|cancelled`.
+Added `mira/grocery.py` with `GroceryReconciliationService` and explicit outcomes `known_in_stock`, `needs_to_buy`, and `unresolved`.
 
-The service provides:
+The bounded contract is:
 
-- stable intent creation/read;
-- active-intent update;
-- explicit cancellation;
-- explicit fulfillment from one canonical captured receipt, optionally one exact receipt line;
-- bounded deterministic query by exact intent ID, lifecycle state and case-insensitive description substring;
-- positive decimal-string quantity normalization and offset-aware timestamps;
-- canonical Resource revision/idempotency conflict handling and exact readback;
-- exact semantic zero-write replay for create/update/cancel/fulfill;
-- historical reconciliation retaining receipt ID, optional line ID, the receipt revision actually observed, and reconciliation time;
-- replay of fulfilled intent against stored historical reconciliation even if the receipt later advances to a newer revision;
-- no receipt mutation or downstream asset/inventory/fitment/order/spending/grocery side effects.
+- callers explicitly select active canonical shopping-intent IDs;
+- callers explicitly select one canonical stock-location root;
+- stock eligibility uses **observed** location at that root or a canonical descendant, never intended placement alone;
+- an explicitly supplied canonical Entity UUID is authoritative for matching;
+- otherwise matching is exact equality between shopping `search_text` and asset display name after identical collapsed-whitespace/case-fold normalization;
+- fuzzy, substring, semantic and LLM-selected matches are not accepted;
+- one exact in-scope match is `known_in_stock`;
+- multiple exact matches are `unresolved` until exact Entity UUID identity is supplied;
+- no exact in-scope match leaves the active procurement intent as `needs_to_buy`;
+- explicit untracked entity or tracked entity with no supported observation is `unresolved`;
+- explicit entity observed outside scope is `needs_to_buy` for that scoped procurement query;
+- every result retains reason/match basis and exact stock identity/location evidence when available;
+- immutable acquisition quantity is never surfaced as remaining consumable quantity: `stock_quantity=null`, `stock_quantity_known=false` in this first slice;
+- the service performs no canonical mutation.
 
-Terminal fulfilled/cancelled intent is intentionally not silently reopened in this slice.
+### Direct and release evidence
 
-### Direct/test evidence
+`tests/test_grocery.py` covers:
 
-`tests/test_shopping.py` covers:
+- one exact observed name becoming known stock;
+- acquisition lot quantity 12 remaining explicitly **unknown** as current stock quantity;
+- missing exact observed match remaining needs-to-buy;
+- multiple exact names remaining unresolved until Entity UUID is supplied;
+- explicit entity outside stock scope;
+- tracked entity without observation;
+- explicit untracked entity;
+- observed descendant location scope;
+- fuzzy/substring mismatch refusal;
+- purchase/asset history without tracked observation not proving stock;
+- malformed selection/mapping/scope/terminal-intent validation;
+- deterministic ordering and limit;
+- exact zero Resource/Event/Idempotency mutation during reconciliation.
 
-- create/read and exact create replay;
-- conflicting idempotency material;
-- revisioned active update and semantic zero-write update replay;
-- deterministic query filtering/order/limit;
-- receipt existence alone not fulfilling intent;
-- explicit receipt-line fulfillment and receipt immutability;
-- explicit whole-receipt fulfillment;
-- missing receipt, missing line and `needs_review` receipt rejection;
-- cancellation distinct from fulfillment and terminal no-reopen behavior;
-- fulfilled replay with no extra revision and conflicting reconciliation rejection;
-- later receipt correction not rewriting historical shopping reconciliation;
-- timestamp, quantity and query validation;
-- corrupt persisted identity failing closed.
+Core/release evidence:
 
-Core CI run `33343292090` passed on `6e16387d0352137fbf00c5fcc7e3bd735450842c`.
-
-### Clean Personal release wiring
-
-The clean Personal starter now includes `shopping_intent` in exact `resource_types_json`, and `mira/personal_distribution.py` plus direct distribution tests require that schema.
-
-The complete `workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md` now includes:
-
-- `shopping_intent` in Workspace preflight and Authority bootstrap;
-- `authority_binding/binding-shopping-intent`;
-- explicit current-procurement authority separate from purchase history;
-- `active|fulfilled|cancelled` lifecycle;
-- receipt existence never implying fulfillment;
-- fulfillment requiring canonical receipt state `captured`;
-- `needs_review` receipt rejection;
-- optional exact receipt-line reconciliation;
-- historical receipt-revision provenance and later-correction stability;
-- exact replay with zero write;
-- receipt immutability and forbidden downstream side effects;
-- deterministic shopping query semantics.
-
-`mira/workspace_bundle.py` and `tests/test_workspace_bundle.py` directly guard the shopping binding, receipt-does-not-auto-fulfill rule, captured-only rule, review-only rejection, and receipt-immutability boundary.
-
-An intermediate release CI run `33343612807` failed before unit tests only because one exact protocol marker used lowercase `shopping` while the canonical sentence began `Shopping`. The guard was corrected without changing semantics. Release-wired CI run `33343692494` then passed on exact head `6b1000b9edb25c9cab7aeb703f6d2fe49228a167`.
+- core CI `33348876359` passed on `faea8049d120cd5dae5340cf23b60e9d19b21657`;
+- release-wired CI `33349090500` passed on `ad32344c97013f2cc370cd887b1e59934b7f8452`;
+- complete no-app protocol now contains a dedicated grocery-vs-known-stock section;
+- release markers guard explicit grocery intent selection, observed-location truth, exact-only matching, quantity honesty, zero-write behavior and optional-par separation;
+- no clean starter schema change was required because this is a pure projection.
 
 ### Fresh isolated Google provider proof
 
-A brand-new native Google Sheet clearly marked `NOT A STARTER` was created solely for M2-M0-018. Its provider identifier/URL is intentionally excluded from public Git. No protected legacy MIRA artifact was opened, altered, copied as state, or used as a fixture.
+A brand-new native Google Sheet clearly marked `NOT A STARTER` was created solely for M2-M0-019. Its provider identifier/URL is intentionally excluded from public Git. Protected legacy MIRA production state was not opened, copied as state, modified or used as a fixture.
 
-The synthetic sheet uses native `Metadata`, `Resources`, `Events`, and `Idempotency` tabs with STORE-001-shaped headers and metadata declaring the synthetic environment and `shopping_intent` resource support.
+The synthetic sheet contains `Metadata`, `Resources`, `Events`, and `Idempotency` tabs with STORE-001-shaped headers. Metadata declares synthetic-only proof state, the STORE-001 contract, single-writer model, supported source resource types, and `proof_mode=read_only_grocery_projection`.
 
-Synthetic canonical source evidence:
+Seeded canonical synthetic state contains:
 
-- one captured receipt at revision 1;
-- one exact receipt line for a synthetic torque wrench;
-- receipt Resource + matching seed Idempotency result persisted before shopping operations;
-- Events remained header-only throughout the shopping proof.
+- one captured receipt for a synthetic Whole Milk purchase;
+- one receipt-linked canonical physical asset named `Whole Milk`, deliberately represented as a `lot` with immutable acquisition quantity **12**;
+- hierarchical `Synthetic Home -> Kitchen -> Pantry` locations;
+- one tracked `inventory_state` for that asset with intended and observed location both Pantry and an explicit offset-aware observation time;
+- two active canonical shopping intents: `Whole Milk` requesting one gallon and `Bananas` requesting six each;
+- eight Resource rows total and eight matching seed Idempotency rows;
+- no domain Events beyond the header row.
 
-Shopping proof sequence:
+The read-only grocery proof selected both shopping intents and stock scope `Kitchen` and used only bounded provider reads. The resulting deterministic classification was:
 
-1. Created one `shopping_intent` as revision 1 / `active` using one atomic Resource+Idempotency batch and exact readback.
-2. Re-read the exact create idempotency key/hash/result and Resource state. Because replay material matched, the correct replay path invoked **no Google write**; the intent remained revision 1.
-3. Explicitly reconciled the active intent to the exact captured receipt line using expected revision 1 and one atomic Resource+Idempotency batch.
-4. Exact readback proved shopping intent revision 2 / `fulfilled`, with reconciliation storing the exact receipt ID, exact line ID, receipt revision 1 and exact offset-aware reconciliation time.
-5. Exact readback simultaneously proved the canonical receipt remained revision 1 with its original payload, request hash and idempotency key unchanged.
-6. Events remained empty: shopping lifecycle in this slice is Resource-state lifecycle, not fabricated event history.
-7. The final store contained only the synthetic receipt and shopping-intent Resources. No asset, inventory, location, fitment, order/shipment, spending/payment, par or grocery state appeared.
-8. Terminal replay was verified by read-only lookup of the fulfillment idempotency record: the stable fulfillment key resolves to the exact persisted request hash and revision-2 result, so replay correctly requires zero write.
+1. `Whole Milk` -> `known_in_stock`: exactly one canonical tracked asset has exact normalized name `whole milk`, and its supported observed location is Pantry, a canonical descendant of Kitchen.
+2. `Bananas` -> `needs_to_buy`: no exact observed in-scope inventory match exists.
+3. The milk asset's acquisition quantity **12** was explicitly ignored as current consumable stock; remaining stock quantity stays unknown.
 
-The proof sheet received only minimal presentation cleanup after functional replay verification: native tabs retained their schema, header rows were frozen, and long JSON columns were widened. Final metadata readback confirmed all four native tabs remained intact.
+A complete canonical before snapshot and complete after snapshot of `Metadata`, `Resources`, `Events`, and `Idempotency` were read around the grocery reconciliation. The after readback is unchanged: same eight Resource rows, same revisions/payloads/request hashes, same eight Idempotency rows, and Events remain header-only. Therefore the grocery reconciliation path itself performed **zero Google writes**.
 
-This provider proof exercises the stock-ChatGPT/native Google STORE protocol directly. It does not falsely claim that the Python `ShoppingIntentService` executed inside the Google connector runtime.
+After functional zero-write verification, only noncanonical presentation cleanup widened columns/froze headers for readability; it did not alter canonical Resource/Event/Idempotency values.
+
+This provider proof exercises the stock-ChatGPT/native Google no-app reconciliation protocol directly. It does **not** falsely claim the Python `GroceryReconciliationService` executed inside the Google connector runtime.
 
 ## Session-end whole-product reconciliation — 2026-08-30
 
 ### `FEATURES.md`
 
-- `MOVE-001` remains correctly merged/test/provider verified from M2-M0-017.
-- `SHOP-001` now has direct implementation/test/provider evidence but must remain explicitly **unmerged** until PR #72 lands.
-- `GROCERY-001`, `PAR-001`, fitment, orders/shipments, finance and Android/client features remain separate unfinished scope.
+- `SHOP-001`, inventory query, location and movement prerequisites remain merged/test/provider verified.
+- `GROCERY-001` has direct implementation, direct tests, release-wired CI and fresh provider-readback evidence and is explicitly `test_verified+provider_verified+candidate_unmerged` until PR #73 lands.
+- `PAR-001`, `RECIPE-001`, `MEAL-001`, automatic purchasing/orders, spending/finance, scanner/client behavior and Android remain unfinished.
 
 ### `BACKLOG.md`
 
-- `MOVEMENT-CORE-001` is complete.
-- `SHOP-CORE-001` remains the one active work row until PR #72 merge/readback.
-- `GROCERY-CORE-001` is now dependency-close except for `SHOP-001` actually merging; it is a likely next no-app candidate, not part of this packet.
+- `SHOP-CORE-001` is complete.
+- `GROCERY-CORE-001` remains the one active work row with PR #73 / CI / provider candidate evidence until merge/readback.
+- `PAR-CORE-001` remains optional narrower quantity/threshold work and is not a hidden dependency of this packet.
 
 ### `ROADMAP.md`
 
-No semantic roadmap change is required. This remains one bounded M2-M0.5 no-app vertical/prerequisite on the Google-first Personal path. Android stays paused and no advanced runtime dependency was introduced.
+No roadmap semantic change is required. This remains one bounded M2-M0.5 no-app vertical on the Google-first Personal path. Android remains paused and no advanced runtime dependency was introduced.
 
 ### Direction result
 
-**ALIGNED FOR MERGE CANDIDATE.** Implementation, direct tests, starter/bootstrap changes, complete no-app/release guards and fresh isolated Google provider proof are complete. Remaining work is final lifecycle evidence text, exact-head CI, protected merge and remote `main` verification.
+**ALIGNED FOR MERGE CANDIDATE.** Implementation, direct tests, no-app/release guards, lifecycle candidate evidence and fresh isolated Google zero-write provider proof are complete. Remaining work is exact-head CI, protected merge and remote `main` verification.
 
 ## Exact next action
 
-1. Reconcile `SHOP-001` to explicit candidate-unmerged evidence and enrich the active `SHOP-CORE-001` backlog row with PR/CI/provider evidence without marking it complete early.
-2. Re-read PR #72 and record its exact current head/mergeability.
-3. Run CI on the exact final documentation/lifecycle head.
-4. Update PR #72 merge gate to that exact SHA and merge only with expected-head protection after CI succeeds.
-5. Remotely verify `main` points to the merge and post-merge push CI is green.
-6. Create a post-merge lifecycle checkpoint that marks `SHOP-001` / `SHOP-CORE-001` merged/completed and reranks unfinished accepted work before activating the next bounded packet.
+1. Read PR #73 to resolve the exact current branch head and mergeability.
+2. Verify CI on that exact final candidate head.
+3. Merge PR #73 only with expected-head protection after exact-head CI succeeds.
+4. Remotely verify `main` points to the merge commit and post-merge `main` CI is green.
+5. Create the next durable post-merge lifecycle checkpoint that marks `GROCERY-001` / `GROCERY-CORE-001` merged/completed and dynamically ranks the next bounded accepted packet.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-018-shopping-intent` descends from verified green base `86778802e0f32cf7d4e83c78063231a6e6e68a31` and PR #72 still targets `main`. The last fully green release-wired pre-evidence head is `6b1000b9edb25c9cab7aeb703f6d2fe49228a167`; a new exact-head run is required after lifecycle/evidence commits. Do not touch protected legacy MIRA production data. Do not expand this packet into grocery/par, automatic product recommendation or fitment, orders/shipments, finance/spending, asset/inventory mutation, scanner/capture, or Android.
+Read this file first. Confirm branch `integration/m0-019-grocery-core` descends from verified green base `b02e723396c4deb16394c59c63ed37071cdf59c7`, PR #73 still targets `main`, and latest branch head has not changed unexpectedly. Candidate lifecycle state is reconciled, but exact-head CI and merge/readback still gate completion. Do not touch protected legacy MIRA production data. Do not expand this packet into par automation, recipes, meal plans, automatic orders/purchasing, finance/spending, scanner/capture or Android.
