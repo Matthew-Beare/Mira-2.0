@@ -36,8 +36,8 @@ Evidence:
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-019-grocery-core`
 - **Base SHA:** `b02e723396c4deb16394c59c63ed37071cdf59c7`
-- **PR:** `#73` (open, non-draft; resolve exact head/mergeability directly from GitHub before merge)
-- **Merge candidate:** current PR #73 head. This file intentionally does not embed that SHA because editing the file would change it; GitHub PR readback is the exact-head authority for the merge gate.
+- **PR:** `#73`
+- **Merge candidate authority:** the exact live PR #73 head returned by GitHub immediately before CI and merge. Do not change this file again before the merge gate merely to record that SHA.
 - **Last release-wired green head before lifecycle evidence:** `ad32344c97013f2cc370cd887b1e59934b7f8452`
 - **Objective:** add the smallest provider-neutral no-app grocery reconciliation slice that distinguishes active grocery procurement intent from known pantry/freezer/household stock using canonical shopping, asset/inventory and location truth, without pretending that acquisition quantity equals current consumable quantity or silently inventing par, recipe, meal-plan, spending, scanner or automatic purchase behavior.
 
@@ -94,7 +94,7 @@ Evidence:
 
 - `SHOP-001` is merged/provider-readback verified from PR #72 and `SHOP-CORE-001` is completed.
 - `GROCERY-CORE-001` is the sole active work row for this packet.
-- `GROCERY-001` is now `test_verified+provider_verified+candidate_unmerged`; it is not marked merged early.
+- `GROCERY-001` is `test_verified+provider_verified+candidate_unmerged`; it is not marked merged early.
 - `GROCERY-CORE-001` has candidate PR/CI/provider evidence in `BACKLOG.md` and remains active pending merge/readback.
 - No new mutable `grocery` Resource or Authority binding was introduced. Grocery is a read-only projection over already-canonical shopping and inventory/location truth.
 - `project/code_ownership.json` registers `grocery-reconciliation`, owning `mira/grocery.py` and directly verified by `tests/test_grocery.py`.
@@ -199,7 +199,7 @@ No roadmap semantic change is required. This remains one bounded M2-M0.5 no-app 
 ## Exact next action
 
 1. Read PR #73 to resolve the exact current branch head and mergeability.
-2. Run/verify CI on that exact final candidate head.
+2. Verify CI on that exact final candidate head.
 3. Merge PR #73 only with expected-head protection after exact-head CI succeeds.
 4. Remotely verify `main` points to the merge commit and post-merge `main` CI is green.
 5. Create the next durable post-merge lifecycle checkpoint that marks `GROCERY-001` / `GROCERY-CORE-001` merged/completed and dynamically ranks the next bounded accepted packet.
