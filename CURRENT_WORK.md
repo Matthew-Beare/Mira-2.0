@@ -52,9 +52,10 @@ Reviewed the active milestone direction. The packet remains aligned with the sto
 - **Branch:** `integration/m0-021-appointment-identity`
 - **Base SHA:** `10a8c43084ae75703a197ce7ea2f0cda734fca04`
 - **PR:** #75 draft
-- **Final candidate head before merge:** `fb45d30b5eba90581b792e35e7e654d9db71fc7b`
+- **Last verified green candidate head before the final governance checkpoint:** `fb45d30b5eba90581b792e35e7e654d9db71fc7b`
 - **Exact-head CI:** `33376021181` green on `fb45d30b5eba90581b792e35e7e654d9db71fc7b`
-- **Current blockers:** none known. Merge must use exact expected-head protection, followed by remote `main` and post-merge CI verification.
+- **Current head rule:** because this file is itself part of the checkpoint commit, resolve the live branch/PR head from GitHub immediately before merge and require green CI on that exact live head. Do not copy a pre-checkpoint SHA forward as the merge target.
+- **Current blockers:** none known beyond green CI/readback on the final governance checkpoint head.
 
 ### Objective
 
@@ -91,19 +92,20 @@ Implement the smallest provider-neutral canonical appointment/provider identity 
 - `distribution/personal_google_starter.json` declares `appointment` and `appointment_provider` as permitted clean-starter Resource types.
 - `tests/test_personal_distribution.py` verifies those resource types are present in the deterministic sanitized Personal starter contract.
 - `mira/personal_distribution.py` validates the same appointment-aware Resource-type schema rather than the stale pre-appointment list. This repaired CI failure `33372985014` without weakening privacy, empty-state, artifact, manifest, or snapshot checks.
-- Exact-head CI `33376021181` passed compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Python unit tests, and Workspace Apps Script tests on final candidate head `fb45d30b5eba90581b792e35e7e654d9db71fc7b`.
+- Exact-head CI `33376021181` passed compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Python unit tests, and Workspace Apps Script tests on `fb45d30b5eba90581b792e35e7e654d9db71fc7b`.
 - Protected legacy production state has not been used or modified for this packet.
 - No claim is made that appointment intake, Calendar projection, reminder delivery, or appointment-service activation is live. Those remain downstream work.
 
 ## Exact next action / resume point
 
-1. Update PR #75 description with the verified Personal starter schema evidence and evidence ceiling, then mark it ready for review.
-2. Re-read the exact PR head and mergeability; require head `fb45d30b5eba90581b792e35e7e654d9db71fc7b` and green CI `33376021181`.
-3. Merge PR #75 with `expected_head_sha=fb45d30b5eba90581b792e35e7e654d9db71fc7b`.
-4. Verify remote `main` points to the returned merge SHA and require post-merge `main` CI success.
-5. Only after post-merge success, create the lifecycle checkpoint that marks `CAL-005` / `APPOINTMENT-IDENTITY-001` merged/completed and dynamically selects the next bounded packet.
-6. Do not expand this packet into intake, Calendar projection, reminders, outbound contact, medical interpretation, migration, or Android.
+1. Require green CI on the live final governance-checkpoint head.
+2. Update PR #75 description with the verified Personal starter schema evidence and evidence ceiling, then mark it ready for review. PR metadata changes do not alter the source head.
+3. Re-read the exact live PR head and mergeability and verify the successful CI belongs to that exact head.
+4. Merge PR #75 using that exact live SHA as `expected_head_sha`.
+5. Verify remote `main` points to the returned merge SHA and require post-merge `main` CI success.
+6. Only after post-merge success, create the lifecycle checkpoint that marks `CAL-005` / `APPOINTMENT-IDENTITY-001` merged/completed and dynamically selects the next bounded packet.
+7. Do not expand this packet into intake, Calendar projection, reminders, outbound contact, medical interpretation, migration, or Android.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-021-appointment-identity` and its remote head before any implementation or merge. If the branch head differs from the recorded checkpoint, inspect the intervening commits instead of reconstructing from chat. `M2-M0-020` is complete and must not be reopened absent new integrity evidence. Protected legacy MIRA production state remains read-only and unavailable as a development fixture.
+Read this file first. Confirm branch `integration/m0-021-appointment-identity` and its remote head before any implementation or merge. If the branch head differs from the recorded last-green checkpoint, inspect the intervening commits and their CI rather than reconstructing from chat. `M2-M0-020` is complete and must not be reopened absent new integrity evidence. Protected legacy MIRA production state remains read-only and unavailable as a development fixture.
