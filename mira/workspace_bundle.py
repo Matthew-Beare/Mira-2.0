@@ -83,7 +83,7 @@ _PROTOCOL_MARKERS = (
     "## Canonical shopping intent and receipt reconciliation",
     "canonical resource type is `shopping_intent`",
     "A canonical receipt merely existing never fulfills shopping intent.",
-    "shopping fulfillment requires a canonical receipt whose state is `captured`",
+    "Shopping fulfillment requires a canonical receipt whose state is `captured`",
     "A `needs_review` receipt cannot fulfill shopping intent.",
     "Receipt reconciliation never mutates the canonical receipt",
     "## Canonical physical assets and receipt-linked acquisition",
