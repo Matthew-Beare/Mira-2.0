@@ -4,160 +4,83 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Repeated useful no-app verticals and integrity/recovery hardening remain ahead of Android. Completed work stays durable in Git.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Repeated useful no-app verticals and integrity/recovery hardening remain ahead of Android. Normal user-facing branding is **MIRA**. `MIRROR` remains an internal database/reality-layer term only when a technical database-specific context requires it; normal product UI, brief titles, automation titles, and ordinary conversation say MIRA.
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`.
 
 ## Completed predecessor
 
-### `M2-M0-019` — Grocery list vs known-stock reconciliation
+### `M2-M0-020` — Provider-neutral backup / restore core
 
-PR #73 merged to `main` as `a906fdd0e64dc661774fc7530007030dd1249522` from exact verified head `83914c9d5d2074c611547dcdedd786300f8463f2`.
+- **Work:** `BACKUP-CORE-001`
+- **Feature:** `BACKUP-001`
+- **PR:** #74
+- **Final PR head:** `7bc9052090d53790c6d79f658108f94e76efc088`
+- **Merge SHA / current verified main checkpoint:** `10a8c43084ae75703a197ce7ea2f0cda734fca04`
+- **Exact-head CI:** `33369577945` green
+- **Post-merge main CI:** `33369639977` green
+- **Provider evidence:** fresh isolated Google source/target proof verified zero source mutation, deterministic current-Resource export, exact revision restore into a fresh target, matching SHA-256 material parity, and explicit noncoverage of Event history/original idempotency history.
+- **Evidence ceiling:** no claim of provider archive durability, encryption, retention/rotation, incremental backup, scheduler firing, RPO/RTO, automatic disaster recovery, authority cutover, or legacy migration.
 
-Evidence:
-- exact-head CI `33355952138` green;
-- post-merge `main` CI `33355975328` green;
-- fresh isolated synthetic Google proof verified exact active-grocery selection, observed-descendant stock truth, honest unknown remaining quantity despite acquisition quantity 12, and zero canonical writes;
-- protected legacy production state was not used or modified.
-
-`GROCERY-001` / `GROCERY-CORE-001` are reconciled to merged/completed evidence in `FEATURES.md` and `BACKLOG.md`.
+`BACKUP-001` is reconciled to merged/provider-readback evidence in `FEATURES.md`; `BACKUP-CORE-001` is reconciled complete in `BACKLOG.md`.
 
 ## Active packet
 
-### `M2-M0-020` — Provider-neutral backup / restore core
+### `M2-M0-021` — Appointment identity reconciliation core
 
-- **Primary work:** `BACKUP-CORE-001`
-- **Primary features:** `BACKUP-001`
-- **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `AUTH-001`, `DATA-001`
-- **Downstream work unlocked by verified backup:** `AUTHORITY-MIGRATION-001`, `SERVICE-DEPS-009`
+- **Primary work:** `APPOINTMENT-IDENTITY-001`
+- **Primary feature:** `CAL-005`
+- **Related features/invariants:** `RECOVERY-002`, `PROFILE-012`, `PROFILE-013`, `CAL-008`, `CAL-006`, `CAL-007`, `MAIL-002`, `HEALTH-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-020-backup-core`
-- **Base SHA:** `a906fdd0e64dc661774fc7530007030dd1249522`
-- **PR:** #74
-- **Last green implementation/release head before provider-evidence checkpoint:** `141a66e9372ab2d5bd3daf1e78d3026682b7b2f3`
-- **CI:** `33367710706` green on `141a66e9372ab2d5bd3daf1e78d3026682b7b2f3`
-- **Objective:** implement the smallest provider-neutral backup/restore integrity slice that deterministically exports canonical current structured Resource state, hashes and verifies the artifact, restores into a fresh isolated compatible authority, and proves material parity without claiming provider archive durability, Event-history recovery, original idempotency-history recovery, encryption, incrementality, scheduling, migration cutover, or disaster-recovery guarantees that are not actually verified.
+- **Branch:** `integration/m0-021-appointment-identity`
+- **Base SHA:** `10a8c43084ae75703a197ce7ea2f0cda734fca04`
+- **Lifecycle checkpoint commits:** `83faeed82c43eb970926290abd8b30f4d67d3156`, `70c36b758895d32bbf662d365da999b028653f4c`
+- **Current head before this checkpoint:** `70c36b758895d32bbf662d365da999b028653f4c`
+- **PR:** not opened yet
+- **Blockers:** none known; implementation must remain provider-neutral and synthetic-first.
 
-## Session-start alignment verification — 2026-08-31
+### Objective
 
-### `FEATURES.md`
+Implement the smallest provider-neutral canonical appointment/provider identity slice that can create or reconcile durable provider and appointment identities from already-normalized evidence, preserve provenance/confidence and ambiguity truth, deduplicate deterministic repeats, and return human-usable provider specialty/type semantics without conflating provider identity, appointment occurrence identity, Calendar projection, reminder delivery, or medical meaning.
 
-- `BACKUP-001` is required data-integrity work and depends semantically only on `RECOVERY-002`.
-- `RECOVERY-002` is test-verified.
-- `AUTHORITY-MIGRATION-001` is downstream of verified backup/restore rather than part of this packet.
-- `GROCERY-001` is already merged/provider-readback verified and is not active work.
+### Explicitly out of scope
 
-### `BACKLOG.md`
+- inbound email/photo/OCR/text extraction (`CAL-008` / `APPOINTMENT-INTAKE-001`);
+- Google/Microsoft/Apple Calendar writes or provider readback (`CAL-006` / `CAL-007`);
+- reminder scheduling/delivery (`CAL-001` through `CAL-003`);
+- outbound email, appointment negotiation, or contact (`MAIL-002` remains intact);
+- diagnosis, treatment, medication, clinical inference, or interpreting specialty as medical meaning;
+- legacy production migration or use of protected production appointment data as a test fixture;
+- Android/mobile work.
 
-- `BACKUP-CORE-001` is the sole active work row.
-- `GROCERY-CORE-001` is complete in PR #73.
-- `PAR-CORE-001` is an optional enhancement, while recipe/meal work remains later.
-- Data-integrity work outranks those convenience enhancements under the canonical backlog ranking policy.
+## Acceptance criteria
 
-### `ROADMAP.md`
+1. Stable canonical provider identity is distinct from appointment occurrence identity.
+2. Provider reconciliation supports normalized organization/name plus available contact and specialty/type attributes without requiring every field to exist.
+3. Exact durable identifiers or deterministic normalized identity keys reconcile repeats idempotently; fuzzy/semantic guesses do not silently merge distinct providers or appointments.
+4. Appointment occurrence identity preserves source/provenance references and supports repeated appointments with the same provider without collapsing them into one record.
+5. Conflicting or insufficient identity evidence remains explicitly ambiguous/Needs Review rather than inventing a provider, specialty, time, or relationship.
+6. User-confirmed identity corrections outrank lower-authority derived suggestions while original evidence remains immutable/auditable.
+7. The core performs no Calendar write, reminder creation, outbound email, medical inference, or legacy production mutation.
+8. Direct tests cover provider create/replay/update, same-provider multiple appointments, duplicate appointment reconciliation, conflicting provider candidates, missing optional metadata, user-confirmed correction precedence, and zero out-of-scope side effects.
+9. Component ownership/direct-verification mapping and release/no-app contract are updated if new production code is added.
+10. Required CI is green on the exact final PR head before merge; merge uses expected-head protection; post-merge main CI must pass before completion is claimed.
 
-- M2-M0.5 explicitly includes backup/restore as release/onboarding hardening around the no-app Personal path.
-- The default baseline remains stock ChatGPT + Personal Google Workspace with no Linux/SQL/Cloud Run prerequisite.
-- Future Linux/SQL/managed authority migration must preserve the same product semantics rather than become part of this backup packet.
-- Android remains paused behind no-app usefulness/integrity work.
+## Completed evidence for this packet
 
-### Direction result
+- `FEATURES.md` defines `CAL-005` as required appointment/provider identity reconciliation with normalized organization/contact and specialty/type attributes.
+- `BACKLOG.md` ranks `APPOINTMENT-IDENTITY-001` active in `M2-M0-021` and records the explicit provider-neutral identity-only scope.
+- Branch `integration/m0-021-appointment-identity` is based on the verified PR #74 merge checkpoint and contains only lifecycle activation changes so far.
+- Protected legacy production state has not been used or modified for this packet.
 
-**ALIGNED.** `BACKUP-001` is dependency-ready, required data-integrity infrastructure and unlocks protected future authority migration. This packet remains bounded to current-Resource snapshot and isolated restore parity rather than expanding into provider archive infrastructure, Event-history backup, scheduling, encryption policy or migration.
+## Exact next action / resume point
 
-## Implemented contract
-
-`mira/backup.py` implements backup artifact v1 and `BackupService` with these invariants:
-
-1. Backup artifacts are nonauthoritative snapshots, never writable masters.
-2. Artifact v1 captures exact schema identity plus complete current Resource state under the public STORE query bound.
-3. Resource material is sorted deterministically by `(resource_type, resource_id)` and canonical JSON is SHA-256 digested.
-4. Coverage is explicit:
-   - Resources: `complete_current_resources_under_query_bound`;
-   - Events: `not_exported_interface_not_enumerable`;
-   - original persisted idempotency history: `not_exported_interface_not_enumerable`.
-5. The public `StructuredStateAdapter` cannot globally enumerate all Event streams or persisted idempotency rows, so v1 does not fabricate completeness for either.
-6. If a Resource query returns exactly the 1,000-row public bound, export fails closed because completeness cannot be proven without pagination.
-7. Backup creation is read-only and performs no source Resource/Event/idempotency mutation.
-8. Restore requires an exact schema match, caller/provider-proven fresh isolated authority, and programmatic Resource emptiness.
-9. Current Resource IDs, payloads and revision numbers are reproduced using deterministic restore-only idempotency keys and repeated final-payload upserts.
-10. A restore-key replay on the supposedly fresh target is evidence that the target is not fresh and fails closed.
-11. Independent target re-export must reproduce the exact unsigned material and SHA-256 digest before restore is marked verified.
-12. No Event history is synthesized; original source idempotency history is not copied.
-13. Provider-generated timestamps, request hashes and restore-only idempotency records are target execution evidence, not backup material.
-14. No claim is made for provider archive durability, offsite redundancy, encryption, incremental backup, retention/rotation, scheduler firing, RPO/RTO, automatic disaster recovery, authority cutover, or legacy migration.
-
-## Direct and release evidence
-
-- `tests/test_backup.py` covers deterministic export/digest, explicit coverage, source zero-write, fresh-target restore, multi-revision parity, malformed/tampered artifact rejection, duplicate/sort validation, incompatible and non-empty target rejection, independent readback drift failure, hidden restore-key replay failure, 1,000-row completeness failure, and canonical parser roundtrip.
-- `project/code_ownership.json` registers `backup-restore-core`, owning `mira/backup.py` and directly verified by `tests/test_backup.py`.
-- `workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md` contains the complete no-app backup/restore integrity contract.
-- `mira/workspace_bundle.py` plus `tests/test_backup_release_protocol.py` guard nonauthoritative snapshot semantics, source read-only behavior, fresh-target requirement, explicit Event/idempotency coverage limits, restore replay failure, exact restore verification, and separation from authority migration.
-- CI `33367710706` is green on implementation/release head `141a66e9372ab2d5bd3daf1e78d3026682b7b2f3`.
-
-## Fresh isolated Google provider proof
-
-Two brand-new native Google Sheets authorities, both clearly marked `NOT A STARTER`, were created solely for this synthetic proof. Their provider identifiers/URLs are intentionally excluded from public Git. Protected legacy MIRA production state was not opened, copied as state, modified, or used as a fixture.
-
-Both authorities used STORE-001-shaped `Metadata`, `Resources`, `Events`, and `Idempotency` tabs with schema version `1`, resource types `entity`/`task`, event types `created`/`updated`, `writer_model=single_writer`, and synthetic-only proof metadata.
-
-### Source authority
-
-The source contained:
-- one canonical Entity at revision 2 with final payload `Synthetic Alpha / verified`;
-- one canonical Task at revision 1 with final payload `Synthetic restore proof task / open`;
-- one deliberate canonical `created` Event for the Entity;
-- four original source idempotency rows covering Entity revision 1, Entity revision 2, Task revision 1, and the Event append.
-
-A complete canonical source snapshot was read before backup/restore work. The exact same canonical source cells were read again afterward and were unchanged: same two Resources, same revisions/payloads/request hashes, same Event, and same four original idempotency rows. Provider backup/export therefore performed zero canonical source writes.
-
-### Backup material
-
-The v1 snapshot contained only the two current Resources, exact schema and explicit coverage declarations. Canonical material SHA-256 was:
-
-`7d99f927d3d5cec73a0c06abd13db06fc707b8f517090f2c6cd195db5ebd4c45`
-
-The deliberate source Event and four original idempotency-history rows were not part of artifact material, exactly as v1 declares.
-
-### Fresh target and restore
-
-Before restore, the independent target had metadata/headers only and zero Resources, zero Events and zero idempotency rows.
-
-Restore replayed exactly the v1 service semantics:
-1. final Entity payload -> revision 1;
-2. same final Entity payload -> revision 2;
-3. final Task payload -> revision 1.
-
-Each revision used a deterministic restore-only idempotency key and an atomic Google batch containing the Resource mutation plus its restore Idempotency record. Exact readback after Entity revisions confirmed the expected state.
-
-Final target state:
-- Entity: exact source identity/payload at revision 2;
-- Task: exact source identity/payload at revision 1;
-- Events: header-only, proving the source Event was **not** silently restored;
-- Idempotency: exactly three restore-generated upsert records, not the four original source-history records.
-
-Independent target re-export reproduced the same backup unsigned material and exact SHA-256:
-
-`7d99f927d3d5cec73a0c06abd13db06fc707b8f517090f2c6cd195db5ebd4c45`
-
-This proves the stock-ChatGPT/native Google current-Resource export/fresh-target restore/readback protocol faithfully. It does **not** claim that the Python `BackupService` executed inside Google connector runtime, and it does not upgrade v1 into Event-history, archive, encryption, scheduler, RPO/RTO, or disaster-recovery proof.
-
-Presentation-only header freezing/column sizing occurred only after functional proof and did not alter canonical Resource/Event/Idempotency material.
-
-## Candidate lifecycle state
-
-- `BACKUP-001`: implementation, direct tests, release guards and fresh provider restore/readback evidence complete; must remain **candidate-unmerged** until PR #74 merges and post-merge `main` verification passes.
-- `BACKUP-CORE-001`: sole active work row; not complete until exact-head CI, protected merge and post-merge `main` CI are green.
-- `AUTHORITY-MIGRATION-001`, provider archive adapters, encryption/retention policy, automatic scheduling, service activation, legacy migration, Android, par, recipes and meals remain unfinished.
-
-## Exact next action
-
-1. Read the live PR #74 exact head and mergeability.
-2. Require CI success on that exact final head.
-3. Merge PR #74 only with expected-head protection.
-4. Verify remote `main` points to the merge SHA and require post-merge `main` CI success.
-5. Create a fresh post-merge lifecycle checkpoint marking `BACKUP-001` / `BACKUP-CORE-001` merged/completed and dynamically rank the next bounded packet.
+1. Inspect existing canonical identity/resource models and appointment/provider-related tests/contracts before adding code.
+2. Draft the minimal data/service contract for provider identity, appointment occurrence identity, reconciliation result, provenance/confidence, and ambiguity handling.
+3. Implement the smallest synthetic provider-neutral slice with direct tests.
+4. Run baseline repository gates before adding release/no-app wiring.
+5. Keep `CURRENT_WORK`, `FEATURES`, `BACKLOG`, and `ROADMAP` aligned at every checkpoint; do not expand into `CAL-008`, Calendar projection, reminders, outbound email, health interpretation, migration, or Android.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-020-backup-core` still targets PR #74 against `main`, and verify the live branch head before any merge. Provider proof is complete; do not repeat it against protected state. Do not expose proof spreadsheet identifiers/URLs publicly. Do not expand this packet into provider archive infrastructure, Event-history backup, encryption policy, scheduler automation, authority migration, legacy migration, Android, par, recipes or meal planning.
+Read this file first. Confirm branch `integration/m0-021-appointment-identity` and its remote head before any implementation. If the branch head differs from the recorded checkpoint, inspect the intervening commits instead of reconstructing from chat. `M2-M0-020` is complete and must not be reopened absent new integrity evidence. Protected legacy MIRA production state remains read-only and unavailable as a development fixture.
