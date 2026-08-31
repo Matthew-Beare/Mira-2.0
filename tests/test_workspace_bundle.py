@@ -40,6 +40,7 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("authority_binding/binding-identifier", protocol)
         self.assertIn("authority_binding/binding-location", protocol)
         self.assertIn("authority_binding/binding-inventory-state", protocol)
+        self.assertIn("authority_binding/binding-shopping-intent", protocol)
         self.assertIn("resource id: `google-sheets-personal`", protocol)
         self.assertIn("resource id: `minimum-useful-setup`", protocol)
         self.assertIn("`timezone`", protocol)
@@ -51,6 +52,12 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("integer minor units", protocol)
         self.assertIn("Exact source-fingerprint replay", protocol)
         self.assertIn("Receipt capture does **not** automatically create or mutate an asset", protocol)
+        self.assertIn("## Canonical shopping intent and receipt reconciliation", protocol)
+        self.assertIn("canonical resource type is `shopping_intent`", protocol)
+        self.assertIn("A canonical receipt merely existing never fulfills shopping intent.", protocol)
+        self.assertIn("shopping fulfillment requires a canonical receipt whose state is `captured`", protocol)
+        self.assertIn("A `needs_review` receipt cannot fulfill shopping intent.", protocol)
+        self.assertIn("Receipt reconciliation never mutates the canonical receipt", protocol)
         self.assertIn("## Canonical physical assets and receipt-linked acquisition", protocol)
         self.assertIn("canonical resource type is `asset`", protocol)
         self.assertIn("immutable RFC 4122 Entity UUID", protocol)
@@ -107,6 +114,15 @@ class WorkspaceBundleTests(unittest.TestCase):
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)
 
+    def test_bundle_rejects_missing_shopping_authority_binding(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace("authority_binding/binding-shopping-intent", "authority_binding/missing-shopping")
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
     def test_bundle_rejects_missing_receipt_safety_clause(self) -> None:
         bundle = load_workspace_bundle()
         files = dict(bundle.files)
@@ -115,6 +131,42 @@ class WorkspaceBundleTests(unittest.TestCase):
         ].replace(
             "Receipt capture does **not** automatically create or mutate an asset",
             "Receipt capture may create an asset",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_receipt_implies_shopping_fulfillment(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "A canonical receipt merely existing never fulfills shopping intent.",
+            "A canonical receipt automatically fulfills matching shopping intent.",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_review_only_shopping_fulfillment(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "A `needs_review` receipt cannot fulfill shopping intent.",
+            "Review-only evidence may fulfill shopping intent.",
+        )
+        with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
+            validate_workspace_bundle(files)
+
+    def test_bundle_rejects_shopping_receipt_side_effect_regression(self) -> None:
+        bundle = load_workspace_bundle()
+        files = dict(bundle.files)
+        files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
+            "MIRA_NO_APP_INSTRUCTIONS.md"
+        ].replace(
+            "Receipt reconciliation never mutates the canonical receipt",
+            "Receipt reconciliation rewrites the canonical receipt",
         )
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)
