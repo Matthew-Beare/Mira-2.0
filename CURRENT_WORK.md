@@ -12,26 +12,27 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ### `FEATURES.md`
 
-- `CAL-005` appointment/provider identity is now implementation/test/release verified and merged through PR #76; lifecycle evidence must be reconciled from its pre-merge `partial-test+requirement-refined` state.
-- `CAL-007` generic source-linked Calendar projection is required direction and remains specified/unimplemented.
-- `CAL-006` preferred-Calendar projection/provider readback builds on `CAL-005` and `RECOVERY-002`; provider-specific capability proof remains downstream of the provider-neutral core.
-- `CAL-008` appointment evidence intake depends on both durable identity and Calendar projection, so projection is the next hard prerequisite before the user-visible appointment intake slice.
+- `CAL-005` appointment/provider identity is merged through PR #76 with implementation/test/release evidence; final feature-ledger evidence reconciliation remains part of the post-merge lifecycle checkpoint rather than a reason to reopen that completed packet.
+- `CAL-007` generic source-linked Calendar projection is the primary feature for this packet.
+- `CAL-006` preferred-Calendar provider capability/readback remains downstream of this provider-neutral core.
+- `CAL-008` appointment evidence intake remains blocked on both durable identity and safe Calendar projection semantics.
 
 ### `BACKLOG.md`
 
-- `APPOINTMENT-IDENTITY-001` is merged through PR #76 and must be reconciled complete.
-- `APPOINTMENT-INTAKE-001` is the intended user-visible vertical but depends on `CALENDAR-PROJECTION-001`.
-- The existing `CALENDAR-PROJECTION-001` row is too broad for one bounded implementation packet because it combines provider-neutral projection semantics with Google, Microsoft/Outlook/M365 and Apple/iCloud provider capability/readback proof.
-- Split the umbrella rather than silently growing one packet. `CALENDAR-PROJECTION-001A` is the provider-neutral synthetic projection core selected now; provider-specific adapter/readback proof remains downstream.
+- `APPOINTMENT-IDENTITY-001` is reconciled complete through PR #76.
+- `CALENDAR-PROJECTION-001` is split rather than silently expanded.
+- `CALENDAR-PROJECTION-001A` is the single active provider-neutral synthetic core in `M2-M0-022`.
+- `CALENDAR-PROJECTION-001B` preserves real Google/Microsoft/Apple provider capability/write/readback proof as downstream work.
+- `APPOINTMENT-INTAKE-001` remains the intended user-visible vertical after projection prerequisites are satisfied.
 
 ### `ROADMAP.md`
 
 - M2-M0.5 prioritizes useful stock-ChatGPT + Personal Google verticals before Android.
-- Appointment capture/reminder usefulness is dependency-blocked by safe source-linked Calendar projection semantics, so the provider-neutral projection core is the highest-ranked bounded prerequisite after appointment identity.
+- Appointment capture/reminder usefulness is dependency-blocked by safe source-linked Calendar projection semantics, so this bounded core remains aligned with the active milestone.
 
 ### Direction result
 
-**ALIGNED.** Start the bounded provider-neutral Calendar projection core. Do not expand this packet into real Google/Microsoft/Apple Calendar mutation, appointment extraction, reminder delivery, outbound contact, medical interpretation, legacy migration, or Android.
+**ALIGNED.** Complete and merge the bounded provider-neutral Calendar projection core. Do not expand this packet into real Google/Microsoft/Apple Calendar mutation, appointment extraction, reminder delivery, outbound contact, medical interpretation, legacy migration, or Android.
 
 ## Completed predecessor
 
@@ -57,9 +58,12 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-022-calendar-projection-core`
 - **Base SHA:** `831a169918572174df13352c9aa993d955a3f5bb`
-- **PR:** none yet
+- **PR:** #77 open, non-draft
+- **Last verified green candidate head before this checkpoint:** `0037dd89099fee00458c9acda1afec60411d0395`
+- **Exact-head CI:** `33427126236` green on `0037dd89099fee00458c9acda1afec60411d0395`
+- **Current head rule:** this file is itself part of the final governance checkpoint, so resolve the live PR head from GitHub immediately before merge and require green CI on that exact live head. Do not reuse the pre-checkpoint SHA as the merge target.
 - **Dependencies:** merged `CAL-005` identity semantics; structured-state adapter contract; recovery/failure-isolation semantics.
-- **Blockers:** none known. `FEATURES.md`/`BACKLOG.md` lifecycle reconciliation is required before this packet can pass repository alignment gates.
+- **Current blockers:** none known beyond exact-head CI/readback on this governance checkpoint commit.
 
 ### Objective
 
@@ -93,19 +97,25 @@ Implement the smallest provider-neutral source-linked Calendar projection slice 
 
 ## Completed evidence for this packet
 
-- Packet selected from dependency-ranked accepted scope after verified merge of M2-M0-021.
-- Branch created from verified `main` merge SHA `831a169918572174df13352c9aa993d955a3f5bb`.
-- No legacy production Calendar data has been used or modified.
+- `mira/calendar_projection.py` implements provider-neutral projection identity, deterministic desired-event normalization/fingerprinting, capability checks, source-revision monotonicity, replay/idempotency conflict handling, provider-version conflict handling, and exact adapter readback verification.
+- `tests/test_calendar_projection.py` directly covers create, identical replay, newer-source update, stale/same-revision conflict, adapter idempotency conflict, unsupported capability, readback drift, missing provider event, provider-version conflict, canonical replay and zero canonical Event side effects.
+- `distribution/personal_google_starter.json`, `mira/personal_distribution.py`, and `tests/test_personal_distribution.py` now permit and verify the clean `calendar_projection` Resource type without activating a provider Calendar lane.
+- `project/code_ownership.json` registers `mira/calendar_projection.py` with direct verification at `tests/test_calendar_projection.py` under `CAL-007` / `CALENDAR-PROJECTION-001A`.
+- `BACKLOG.md` reconciles `APPOINTMENT-IDENTITY-001` complete and splits the Calendar projection umbrella into active provider-neutral `001A` plus downstream provider-specific `001B`.
+- CI `33427126236` passed compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, the full Python unit suite, and Workspace Apps Script tests on candidate head `0037dd89099fee00458c9acda1afec60411d0395`.
+- Protected legacy production Calendar state has not been used or modified.
+- No claim is made that Google Calendar, Microsoft/Outlook/M365, Apple/iCloud, appointment intake, reminder delivery, provider onboarding/OAuth, or appointment-service activation is live.
 
 ## Exact next action / resume point
 
-1. Reconcile `CAL-005` / `APPOINTMENT-IDENTITY-001` completion and split `CALENDAR-PROJECTION-001` into bounded provider-neutral core `CALENDAR-PROJECTION-001A` in `FEATURES.md` / `BACKLOG.md`.
-2. Implement `mira/calendar_projection.py` plus direct synthetic tests.
-3. Register code ownership/direct verification and add `calendar_projection` to the clean Personal starter/validator contract without activating any provider.
-4. Run repository gates, repair only packet/baseline blockers, then open a PR when the bounded implementation is green.
-5. Require exact-head CI, protected merge, remote-main readback and post-merge main CI before completion.
-6. Do not expand into real provider Calendar writes, appointment intake, reminders, contact, medical meaning, migration, or Android.
+1. Require green CI on the live PR #77 governance-checkpoint head.
+2. Update PR #77 description with exact verified evidence and the provider-neutral evidence ceiling; PR metadata changes must not alter the source head.
+3. Re-read exact PR #77 head and mergeability and verify the successful CI belongs to that exact head.
+4. Merge PR #77 using that exact live SHA as `expected_head_sha`.
+5. Verify remote `main` points to the returned merge SHA and require post-merge `main` CI success.
+6. Only after post-merge success, create the lifecycle checkpoint that marks `CAL-007` / `CALENDAR-PROJECTION-001A` merged/completed, reconciles the prior `CAL-005` feature evidence, and dynamically selects the next bounded packet.
+7. Do not expand into real provider Calendar writes, appointment intake, reminders, contact, medical meaning, migration, or Android.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-022-calendar-projection-core` still starts from verified main SHA `831a169918572174df13352c9aa993d955a3f5bb` and inspect any newer branch commits rather than reconstructing from chat. M2-M0-021 is merged and must not be reopened absent new integrity evidence. Protected legacy MIRA production state remains read-only and unavailable as a development fixture.
+Read this file first. Confirm branch `integration/m0-022-calendar-projection-core`, PR #77, and its remote head before any implementation or merge. If the branch head differs from the recorded last-green checkpoint, inspect the intervening commits and their CI rather than reconstructing from chat. `M2-M0-021` is complete and must not be reopened absent new integrity evidence. Protected legacy MIRA production state remains read-only and unavailable as a development fixture.
