@@ -22,6 +22,7 @@ class WorkspaceBundleError(Exception):
 _REQUIRED_FILES = (
     "Code.gs",
     "CommandWorker.gs",
+    "GoogleCalendarProjection.gs",
     "appsscript.json",
     "README.md",
     "MIRA_NO_APP_INSTRUCTIONS.md",
@@ -204,7 +205,9 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
         missing = sorted(set(_REQUIRED_FILES) - set(files))
         extra = sorted(set(files) - set(_REQUIRED_FILES))
         raise WorkspaceBundleError(
-            f"Workspace bundle files mismatch; missing={missing}, extra={extra}"
+            "Workspace bundle files mismatch; missing={missing}, extra={extra}".format(
+                missing=missing, extra=extra
+            )
         )
 
     combined = "\n".join(files[name] for name in _REQUIRED_FILES)
@@ -245,11 +248,50 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
             + ", ".join(missing_worker)
         )
 
+    calendar = files["GoogleCalendarProjection.gs"]
+    calendar_markers = (
+        "function miraGoogleCalendarCapability_()",
+        "function miraGoogleCalendarUpsertEvent_(",
+        "function miraGoogleCalendarReadEvent_(",
+        "privateExtendedProperty",
+        "'If-Match'",
+        "ScriptApp.getOAuthToken()",
+        "UrlFetchApp.fetch",
+        "sendUpdates=none",
+        "miraProjectionKey",
+        "miraIdempotencyKey",
+        "miraRequestHash",
+    )
+    missing_calendar = [marker for marker in calendar_markers if marker not in calendar]
+    if missing_calendar:
+        raise WorkspaceBundleError(
+            "Workspace GoogleCalendarProjection.gs is missing required contract markers: "
+            + ", ".join(missing_calendar)
+        )
+
     manifest = files["appsscript.json"]
     if "https://www.googleapis.com/auth/spreadsheets.currentonly" not in manifest:
         raise WorkspaceBundleError("Workspace manifest must remain current-Sheet scoped")
     if "https://www.googleapis.com/auth/script.scriptapp" not in manifest:
-        raise WorkspaceBundleError("Workspace queued worker requires bounded trigger-management scope")
+        raise WorkspaceBundleError(
+            "Workspace queued worker requires bounded trigger-management scope"
+        )
+    if "https://www.googleapis.com/auth/script.external_request" not in manifest:
+        raise WorkspaceBundleError(
+            "Workspace Google Calendar adapter requires external-request scope"
+        )
+    if "https://www.googleapis.com/auth/calendar.events" not in manifest:
+        raise WorkspaceBundleError(
+            "Workspace Google Calendar adapter requires event read/write scope"
+        )
+    if '"https://www.googleapis.com/auth/calendar"' in manifest:
+        raise WorkspaceBundleError(
+            "Workspace starter must not request broad Calendar-management scope for event projection"
+        )
+    if "https://www.googleapis.com/auth/calendar.calendars" in manifest:
+        raise WorkspaceBundleError(
+            "Workspace starter must not request Calendar-management scope merely to create test fixtures"
+        )
 
     if "MIRA_SPREADSHEET_ID" not in code or "PropertiesService" not in code:
         raise WorkspaceBundleError(
