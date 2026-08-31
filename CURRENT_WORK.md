@@ -10,11 +10,29 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ## Session-start alignment verification — 2026-08-31
 
+### `FEATURES.md`
+
 - `CAL-005` appointment/provider identity is merged/test-verified through PR #76.
 - `CAL-007` provider-neutral Calendar projection is merged/test-verified through PR #77 with synthetic provider readback only.
 - `CAL-006` still requires a real preferred-Calendar lane before MIRA may claim Calendar sync is live.
 - `CAL-008` remains the intended user-visible appointment-intake vertical after one default Personal Calendar lane is live-verified.
+
+### `BACKLOG.md`
+
+- `CALENDAR-PROJECTION-001A` is complete through PR #77.
+- `CALENDAR-PROJECTION-GOOGLE-001` is the single active provider-lane prerequisite in M2-M0-023.
+- Microsoft/Outlook/M365 and Apple/iCloud provider proofs remain separate downstream work and are not implied by this packet.
+- `APPOINTMENT-INTAKE-001` remains queued behind a live-verified preferred Calendar lane.
+
+### `ROADMAP.md`
+
 - M2-M0.5 continues to prioritize stock-ChatGPT + Personal Google usefulness before Android.
+- A safe Google Calendar provider lane remains the shortest hard prerequisite between the merged projection core and the appointment-intake vertical.
+- Protected personal/legacy provider state is not an acceptable substitute for isolated development evidence.
+
+### Direction result
+
+**ALIGNED.** Continue the bounded Google Calendar adapter/readback packet. Preserve the evidence ceiling: implemented/test-verified does not equal live-verified, and Primary/Family Calendars remain unavailable as development fixtures.
 
 ## Completed predecessor
 
@@ -98,7 +116,7 @@ Therefore an isolated synthetic Calendar cannot currently be created from this r
 ## Exact next action / resume point
 
 1. Re-read PR #78 live head after this governance commit and require CI green on that exact head.
-2. Update PR #78 description with the implemented/test-verified evidence and explicit live-proof blocker/evidence ceiling.
+2. Keep PR #78 description synchronized with the implemented/test-verified evidence and explicit live-proof blocker/evidence ceiling.
 3. Do **not** merge or claim `CAL-006` live/completed merely from synthetic CI.
 4. When an isolated writable Google Calendar becomes available through an authorized connector/runtime, run one bounded synthetic create → exact readback → guarded update → exact readback → replay proof. Record provider identifiers only in private/live evidence, never public Git.
 5. After live proof succeeds, reconcile `BACKLOG.md`/`FEATURES.md`, require fresh exact-head CI, merge PR #78 with expected-head protection, verify remote main and post-merge main CI.
