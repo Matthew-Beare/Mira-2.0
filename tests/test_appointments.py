@@ -64,6 +64,8 @@ class AppointmentIdentityServiceTests(unittest.TestCase):
             "evidence": evidence(label, observed_at="2026-08-31T08:05:00-04:00"),
             "provider_id": provider_id,
             "start_at": "2026-09-04T10:00:00-04:00",
+            "end_at": "2026-09-04T11:00:00-04:00",
+            "timezone": "America/New_York",
             "title": "Follow-up appointment",
             "location": "100 Synthetic Way",
             "appointment_type": "Cardiology appointment",
@@ -229,6 +231,7 @@ class AppointmentIdentityServiceTests(unittest.TestCase):
             provider_id,
             "a2",
             start_at="2026-10-02T10:00:00-04:00",
+            end_at="2026-10-02T11:00:00-04:00",
         )
         self.assertEqual(first.status, "created")
         self.assertEqual(second.status, "created")
@@ -265,12 +268,16 @@ class AppointmentIdentityServiceTests(unittest.TestCase):
                 canonical_appointment_id=original.appointment_id,
                 provider_id=provider_id,
                 start_at="2026-09-04T11:00:00-04:00",
+                end_at="2026-09-04T12:00:00-04:00",
+                timezone="America/New_York",
                 location="200 Verified Avenue",
             ),
             idempotency_key="appointment-owner-correction",
         )
         self.assertEqual(corrected.status, "updated")
         self.assertEqual(corrected.appointment.start_at, "2026-09-04T11:00:00-04:00")
+        self.assertEqual(corrected.appointment.end_at, "2026-09-04T12:00:00-04:00")
+        self.assertEqual(corrected.appointment.timezone, "America/New_York")
         self.assertEqual(corrected.appointment.location, "200 Verified Avenue")
         self.assertEqual(corrected.appointment.field_authority["start_at"], "user_confirmed")
         self.assertEqual(len(corrected.appointment.identity_keys), 2)
@@ -280,16 +287,67 @@ class AppointmentIdentityServiceTests(unittest.TestCase):
         with self.assertRaises(AppointmentIdentityValidationError):
             self.appointment("provider-does-not-exist")
         provider_id = self.provider().provider.provider_id
-        weak = self.appointment(provider_id, "weak-a", start_at=None)
+        weak = self.appointment(
+            provider_id,
+            "weak-a",
+            start_at=None,
+            end_at=None,
+            timezone=None,
+        )
         self.assertEqual(weak.status, "needs_review")
         explicit = self.appointment(
             provider_id,
             "external-a",
             start_at=None,
+            end_at=None,
+            timezone=None,
             identity_namespace="ehr",
             identity_value="visit-123",
         )
         self.assertEqual(explicit.status, "created")
+
+    def test_projection_timing_is_durable_and_validated(self) -> None:
+        provider_id = self.provider().provider.provider_id
+        created = self.appointment(provider_id).appointment
+        self.assertEqual(created.end_at, "2026-09-04T11:00:00-04:00")
+        self.assertEqual(created.timezone, "America/New_York")
+
+        with self.assertRaisesRegex(AppointmentIdentityValidationError, "later than"):
+            self.appointment(
+                provider_id,
+                "bad-end",
+                end_at="2026-09-04T09:00:00-04:00",
+            )
+        with self.assertRaisesRegex(AppointmentIdentityValidationError, "offset"):
+            self.appointment(
+                provider_id,
+                "bad-zone",
+                timezone="America/Phoenix",
+            )
+
+    def test_legacy_appointment_without_extended_timing_remains_readable(self) -> None:
+        provider_id = self.provider().provider.provider_id
+        created = self.appointment(provider_id).appointment
+        key = (APPOINTMENT_RESOURCE_TYPE, created.appointment_id)
+        record = self.adapter._records[key]
+        payload = dict(record.payload)
+        payload.pop("end_at")
+        payload.pop("timezone")
+        authority = dict(payload["field_authority"])
+        authority.pop("end_at")
+        authority.pop("timezone")
+        payload["field_authority"] = authority
+        self.adapter._records[key] = ResourceRecord(
+            resource_type=record.resource_type,
+            resource_id=record.resource_id,
+            payload=payload,
+            revision=record.revision,
+        )
+
+        legacy = self.service.get_appointment(created.appointment_id)
+        self.assertEqual(legacy.start_at, created.start_at)
+        self.assertIsNone(legacy.end_at)
+        self.assertIsNone(legacy.timezone)
 
     def test_no_calendar_reminder_or_event_side_effects(self) -> None:
         provider = self.provider().provider
