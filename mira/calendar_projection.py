@@ -29,7 +29,7 @@ from .structured_state import (
 
 
 CALENDAR_PROJECTION_RESOURCE_TYPE = "calendar_projection"
-CALENDAR_PROJECTION_SCHEMA_VERSION = 1
+CALENDAR_PROJECTION_SCHEMA_VERSION = 2
 _TOKEN_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _WS_RE = re.compile(r"\s+")
@@ -122,7 +122,7 @@ class ProviderCalendarEvent:
     provider_lane: str
     calendar_ref: str
     event_id: str
-    provider_version: int
+    provider_version: str
     projection_key: str
     event: CalendarEventMaterial
 
@@ -145,7 +145,7 @@ class CalendarProjectionAdapter(Protocol):
         event: CalendarEventMaterial,
         *,
         idempotency_key: str,
-        expected_provider_version: int | None,
+        expected_provider_version: str | None,
     ) -> ProviderCalendarMutationResult: ...
 
     def read_event(self, calendar_ref: str, event_id: str) -> ProviderCalendarEvent: ...
@@ -161,7 +161,7 @@ class CalendarProjectionView:
     provider_lane: str
     calendar_ref: str
     provider_event_id: str
-    provider_version: int
+    provider_version: str
     event: CalendarEventMaterial
     desired_sha256: str
     readback_sha256: str
@@ -420,7 +420,7 @@ class InMemoryCalendarProjectionAdapter:
         event: CalendarEventMaterial,
         *,
         idempotency_key: str,
-        expected_provider_version: int | None,
+        expected_provider_version: str | None,
     ) -> ProviderCalendarMutationResult:
         calendar = _text(calendar_ref, "calendar_ref", 500)
         projection = _token(projection_key, "projection_key")
@@ -465,7 +465,7 @@ class InMemoryCalendarProjectionAdapter:
                 provider_lane=self._provider_lane,
                 calendar_ref=calendar,
                 event_id=event_id,
-                provider_version=1,
+                provider_version="memory:1",
                 projection_key=projection,
                 event=normalized_event,
             )
@@ -491,7 +491,7 @@ class InMemoryCalendarProjectionAdapter:
                         provider_lane=self._provider_lane,
                         calendar_ref=calendar,
                         event_id=existing.event_id,
-                        provider_version=existing.provider_version + 1,
+                        provider_version=_next_memory_version(existing.provider_version),
                         projection_key=projection,
                         event=normalized_event,
                     )
@@ -526,7 +526,11 @@ class InMemoryCalendarProjectionAdapter:
             provider_lane=current.provider_lane,
             calendar_ref=current.calendar_ref,
             event_id=current.event_id,
-            provider_version=current.provider_version + (1 if bump_version else 0),
+            provider_version=(
+                _next_memory_version(current.provider_version)
+                if bump_version
+                else current.provider_version
+            ),
             projection_key=current.projection_key,
             event=_event_material(event),
         )
@@ -679,7 +683,7 @@ def _projection_view(record: ResourceRecord) -> CalendarProjectionView:
         provider_lane = _token(payload["provider_lane"], "provider_lane")
         calendar_ref = _text(payload["calendar_ref"], "calendar_ref", 500)
         provider_event_id = _token(payload["provider_event_id"], "provider_event_id")
-        provider_version = _positive_int(
+        provider_version = _provider_version_token(
             payload["provider_version"], "provider_version"
         )
         desired_sha256 = _sha256(payload["desired_sha256"], "desired_sha256")
@@ -761,13 +765,15 @@ def _verify_provider_event(
     request: CalendarProjectionRequest,
     projection_key: str,
     expected_event_id: str,
-    expected_provider_version: int,
+    expected_provider_version: str,
 ) -> None:
     try:
         lane = _token(provider.provider_lane, "provider.provider_lane")
         calendar_ref = _text(provider.calendar_ref, "provider.calendar_ref", 500)
         event_id = _token(provider.event_id, "provider.event_id")
-        version = _positive_int(provider.provider_version, "provider.provider_version")
+        version = _provider_version_token(
+            provider.provider_version, "provider.provider_version"
+        )
         provider_projection_key = _token(
             provider.projection_key, "provider.projection_key"
         )
@@ -857,13 +863,42 @@ def _positive_int(value: Any, field: str) -> int:
     return value
 
 
-def _expected_version(value: int | None) -> None:
+def _provider_version_token(value: Any, field: str) -> str:
+    if not isinstance(value, str):
+        raise CalendarProjectionValidationError(f"{field} must be text")
+    normalized = value.strip()
+    if not normalized:
+        raise CalendarProjectionValidationError(f"{field} must be non-empty")
+    if len(normalized) > 1024:
+        raise CalendarProjectionValidationError(
+            f"{field} must be at most 1024 characters"
+        )
+    return normalized
+
+
+def _expected_version(value: str | None) -> None:
     if value is None:
         return
-    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+    try:
+        _provider_version_token(value, "expected_provider_version")
+    except CalendarProjectionValidationError as exc:
+        raise CalendarProviderValidationError(str(exc)) from exc
+
+
+def _next_memory_version(value: str) -> str:
+    try:
+        normalized = _provider_version_token(value, "provider_version")
+        prefix, raw = normalized.split(":", 1)
+        number = int(raw)
+    except (CalendarProjectionValidationError, ValueError) as exc:
         raise CalendarProviderValidationError(
-            "expected_provider_version must be a positive integer or null"
+            "in-memory provider version is malformed"
+        ) from exc
+    if prefix != "memory" or number < 1:
+        raise CalendarProviderValidationError(
+            "in-memory provider version is malformed"
         )
+    return f"memory:{number + 1}"
 
 
 def _sha256(value: Any, field: str) -> str:
