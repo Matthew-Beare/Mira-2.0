@@ -184,13 +184,18 @@ function post(context, pathInfo, body) {
   );
 }
 
-test('browser initializer binds the copied sheet in Script Properties', () => {
+test('browser initializer binds the copied sheet and exposes one-click Calendar setup', () => {
   const app = runtime({initialized: false});
   app.context.onOpen();
-  assert.deepEqual(app.menu, [['MIRA', 'Initialize this copy', 'miraInitializeCopy']]);
+  assert.deepEqual(app.menu, [
+    ['MIRA', 'Initialize this copy', 'miraInitializeCopy'],
+    ['MIRA', 'Enable Calendar', 'miraEnableGoogleCalendar'],
+  ]);
   app.context.miraInitializeCopy();
   assert.equal(app.properties.get('MIRA_SPREADSHEET_ID'), 'sheet-test-copy');
   assert.equal(app.alerts.length, 1);
+  assert.equal(app.alerts[0][0], 'MIRA initialized');
+  assert.equal(app.alerts[0][1], 'This copy is now bound to its own MIRA spreadsheet state.');
 });
 
 test('health validates Workspace schema before reporting ready', () => {
