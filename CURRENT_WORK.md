@@ -27,7 +27,7 @@ Evidence:
 ### `M2-M0-020` — Provider-neutral backup / restore core
 
 - **Primary work:** `BACKUP-CORE-001`
-- **Primary feature:** `BACKUP-001`
+- **Primary features:** `BACKUP-001`
 - **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `AUTH-001`, `DATA-001`
 - **Downstream work unlocked by verified backup:** `AUTHORITY-MIGRATION-001`, `SERVICE-DEPS-009`
 - **Repository:** `Matthew-Beare/Mira-2.0`
@@ -129,13 +129,12 @@ Presentation-only header freezing/column sizing occurred only after functional p
 
 ## Exact next action
 
-1. Reconcile candidate evidence in `FEATURES.md` and `BACKLOG.md` without marking the packet merged early.
-2. Update PR #74 body with implementation, CI and provider evidence.
-3. Read the live PR #74 exact head and mergeability.
-4. Require CI success on that exact final head.
-5. Merge PR #74 only with expected-head protection.
-6. Verify remote `main` points to the merge SHA and require post-merge `main` CI success.
-7. Create a fresh post-merge lifecycle checkpoint marking `BACKUP-001` / `BACKUP-CORE-001` merged/completed and dynamically rank the next bounded packet.
+1. Update PR #74 body with implementation, CI and provider evidence.
+2. Read the live PR #74 exact head and mergeability.
+3. Require CI success on that exact final head.
+4. Merge PR #74 only with expected-head protection.
+5. Verify remote `main` points to the merge SHA and require post-merge `main` CI success.
+6. Create a fresh post-merge lifecycle checkpoint marking `BACKUP-001` / `BACKUP-CORE-001` merged/completed and dynamically rank the next bounded packet.
 
 ## Recovery protocol
 
