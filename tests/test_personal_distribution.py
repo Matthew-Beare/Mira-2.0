@@ -39,6 +39,7 @@ class PersonalDistributionTests(unittest.TestCase):
                 "ops_brief_run",
                 "receipt",
                 "service_state",
+                "shopping_intent",
                 "task",
             ],
         )
