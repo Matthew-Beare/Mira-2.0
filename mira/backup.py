@@ -18,7 +18,8 @@ from copy import deepcopy
 from dataclasses import dataclass
 import hashlib
 import json
-from typing import Any, Mapping, Sequence
+import re
+from typing import Any, Mapping
 
 from .structured_state import ResourceRecord, StructuredStateAdapter, StructuredStateError
 
@@ -28,6 +29,7 @@ RESOURCE_COVERAGE = "complete_current_resources_under_query_bound"
 EVENT_COVERAGE = "not_exported_interface_not_enumerable"
 IDEMPOTENCY_COVERAGE = "not_exported_interface_not_enumerable"
 _QUERY_LIMIT = 1000
+_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 
 
 class BackupError(Exception):
@@ -222,9 +224,18 @@ class BackupService:
                         f"restore failed for {row.resource_type}:{row.resource_id} "
                         f"at revision {wanted_revision}: {exc}"
                     ) from exc
-                if result.record.revision != wanted_revision:
+                if result.idempotent_replay:
                     raise BackupIntegrityError(
-                        "restore write returned unexpected Resource revision"
+                        "restore target is not fresh: restore idempotency key already exists"
+                    )
+                if (
+                    result.record.resource_type != row.resource_type
+                    or result.record.resource_id != row.resource_id
+                    or result.record.payload != row.payload
+                    or result.record.revision != wanted_revision
+                ):
+                    raise BackupIntegrityError(
+                        "restore write returned unexpected Resource material"
                     )
 
         verified = self.create(target)
@@ -275,15 +286,11 @@ def _artifact_from_mapping(value: object) -> BackupArtifact:
             raise BackupValidationError("backup Resource payload must be an object")
         row = BackupResource(
             resource_type=_text(raw["resource_type"], "resource_type"),
-            resource_id=_text(raw["resource_id"], "resource_id"),
+            resource_id=_resource_id(raw["resource_id"]),
             revision=revision,
             payload=_json_mapping(raw["payload"], "payload"),
         )
         rows.append(row)
-    if rows != sorted(rows, key=lambda row: (row.resource_type, row.resource_id)):
-        raise BackupValidationError("backup Resources must be deterministically sorted")
-    if len({(row.resource_type, row.resource_id) for row in rows}) != len(rows):
-        raise BackupValidationError("backup contains duplicate Resource identity")
 
     artifact = BackupArtifact(
         artifact_version=root["artifact_version"],
@@ -301,23 +308,51 @@ def _artifact_from_mapping(value: object) -> BackupArtifact:
 
 
 def _validate_artifact(artifact: BackupArtifact) -> None:
-    if artifact.artifact_version != BACKUP_ARTIFACT_VERSION:
+    if (
+        not isinstance(artifact.artifact_version, int)
+        or isinstance(artifact.artifact_version, bool)
+        or artifact.artifact_version != BACKUP_ARTIFACT_VERSION
+    ):
         raise BackupValidationError("unsupported backup artifact version")
+    _text(artifact.schema_version, "schema_version")
+    _validate_type_tuple(artifact.resource_types, "resource_types")
+    _validate_type_tuple(artifact.event_types, "event_types")
     if artifact.resource_coverage != RESOURCE_COVERAGE:
         raise BackupValidationError("unsupported Resource coverage declaration")
     if artifact.event_coverage != EVENT_COVERAGE:
         raise BackupValidationError("backup must declare Event history as not covered in v1")
     if artifact.idempotency_coverage != IDEMPOTENCY_COVERAGE:
         raise BackupValidationError("backup must declare original idempotency history as not covered in v1")
-    if artifact.resource_types != tuple(sorted(set(artifact.resource_types))):
-        raise BackupValidationError("backup resource_types must be unique and sorted")
-    if artifact.event_types != tuple(sorted(set(artifact.event_types))):
-        raise BackupValidationError("backup event_types must be unique and sorted")
+    if not isinstance(artifact.resources, tuple):
+        raise BackupValidationError("backup Resources must be an immutable tuple")
+
+    identities: set[tuple[str, str]] = set()
+    previous_identity: tuple[str, str] | None = None
     for row in artifact.resources:
-        if row.resource_type not in artifact.resource_types:
+        if not isinstance(row, BackupResource):
+            raise BackupValidationError("backup Resources must contain BackupResource values")
+        resource_type = _text(row.resource_type, "resource_type")
+        resource_id = _resource_id(row.resource_id)
+        if resource_type not in artifact.resource_types:
             raise BackupValidationError(
-                f"backup Resource uses undeclared type: {row.resource_type}"
+                f"backup Resource uses undeclared type: {resource_type}"
             )
+        if not isinstance(row.revision, int) or isinstance(row.revision, bool) or row.revision < 1:
+            raise BackupValidationError("backup Resource revision must be a positive integer")
+        if not isinstance(row.payload, dict):
+            raise BackupValidationError("backup Resource payload must be a JSON object")
+        normalized_payload = _json_mapping(row.payload, "payload")
+        if normalized_payload != row.payload:
+            raise BackupValidationError("backup Resource payload is not canonical JSON material")
+        identity = (resource_type, resource_id)
+        if identity in identities:
+            raise BackupValidationError("backup contains duplicate Resource identity")
+        if previous_identity is not None and identity < previous_identity:
+            raise BackupValidationError("backup Resources must be deterministically sorted")
+        identities.add(identity)
+        previous_identity = identity
+
+    _digest(artifact.material_sha256)
     expected = _sha256(artifact.unsigned_material())
     if artifact.material_sha256 != expected:
         raise BackupIntegrityError("backup artifact SHA-256 digest mismatch")
@@ -332,7 +367,7 @@ def _backup_resource(record: ResourceRecord, *, expected_type: str) -> BackupRes
         raise BackupIntegrityError("source Resource revision is invalid")
     return BackupResource(
         resource_type=_text(record.resource_type, "resource_type"),
-        resource_id=_text(record.resource_id, "resource_id"),
+        resource_id=_resource_id(record.resource_id),
         revision=record.revision,
         payload=_json_mapping(record.payload, "payload"),
     )
@@ -343,10 +378,9 @@ def _schema(adapter: StructuredStateAdapter):
         schema = adapter.schema()
     except StructuredStateError as exc:
         raise BackupIntegrityError(str(exc)) from exc
-    if tuple(schema.resource_types) != tuple(sorted(set(schema.resource_types))):
-        raise BackupIntegrityError("adapter resource_types must be unique and sorted")
-    if tuple(schema.event_types) != tuple(sorted(set(schema.event_types))):
-        raise BackupIntegrityError("adapter event_types must be unique and sorted")
+    _text(schema.schema_version, "schema_version")
+    _validate_type_tuple(schema.resource_types, "adapter resource_types", error_type=BackupIntegrityError)
+    _validate_type_tuple(schema.event_types, "adapter event_types", error_type=BackupIntegrityError)
     return schema
 
 
@@ -354,6 +388,23 @@ def _restore_key(digest: str, row: BackupResource, revision: int) -> str:
     material = f"{digest}:{row.resource_type}:{row.resource_id}:{revision}"
     suffix = hashlib.sha256(material.encode("utf-8")).hexdigest()[:40]
     return f"backup-restore-{suffix}"
+
+
+def _validate_type_tuple(
+    value: object,
+    field: str,
+    *,
+    error_type: type[BackupError] = BackupValidationError,
+) -> tuple[str, ...]:
+    if not isinstance(value, tuple) or not value:
+        raise error_type(f"{field} must be a non-empty tuple")
+    try:
+        rows = tuple(_text(item, field) for item in value)
+    except BackupValidationError as exc:
+        raise error_type(str(exc)) from exc
+    if rows != tuple(sorted(set(rows))):
+        raise error_type(f"{field} must be unique and deterministically sorted")
+    return rows
 
 
 def _string_tuple(value: object, field: str) -> tuple[str, ...]:
@@ -371,6 +422,15 @@ def _text(value: object, field: str) -> str:
     if len(value) > 128:
         raise BackupValidationError(f"{field} must be at most 128 characters")
     return value
+
+
+def _resource_id(value: object) -> str:
+    text = _text(value, "resource_id")
+    if not _ID_RE.fullmatch(text):
+        raise BackupValidationError(
+            f"resource_id must match {_ID_RE.pattern} for deterministic canonical identity"
+        )
+    return text
 
 
 def _digest(value: object) -> str:
