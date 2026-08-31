@@ -10,33 +10,32 @@ Ordinary-user setup follows `PRODUCT_INVARIANTS.md`: the MIRA-side choice is pla
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and applicable cross-feature product invariants.
 
-## Session-start alignment verification — 2026-08-31
+## Session alignment — 2026-08-31
 
 ### `FEATURES.md`
 
 - `CAL-005` appointment/provider identity is merged/test-verified through PR #76.
-- `CAL-007` provider-neutral Calendar projection is merged/test-verified through PR #77 with synthetic provider readback only.
-- `CAL-006` still requires one real preferred-Calendar lane before MIRA may claim Calendar sync is live.
-- `CAL-008` remains the next user-visible appointment-intake vertical after a default Personal Calendar lane is usable.
-- Existing `ONBOARD-006` / `PROVIDER-002` direction already requires browser-only nontechnical provider onboarding; `PRODUCT_INVARIANTS.md` now makes the plain-language-intent/no-developer-chores rule explicit across all features.
+- `CAL-007` provider-neutral Calendar projection is merged/test-verified through PR #77; this packet adds the default native Google implementation but does not turn CI into live-provider proof.
+- `CAL-006` still requires real preferred-Calendar provider evidence before MIRA may claim Calendar sync is live for a user.
+- `CAL-008` remains a separate downstream appointment-intake vertical.
+- `ONBOARD-006` / `PROVIDER-002` and `PRODUCT_INVARIANTS.md` require browser-only, plain-language, no-developer-chores provider activation.
 
 ### `BACKLOG.md`
 
 - `CALENDAR-PROJECTION-001A` is complete through PR #77.
-- `CALENDAR-PROJECTION-GOOGLE-001` remains the single active provider-lane prerequisite in M2-M0-023, but the default-Personal interpretation is corrected below.
-- The stronger Google ETag/Apps Script lane remains useful hardening for concurrent/shared-writer scenarios; it must not become ordinary-user setup merely because it offers stronger concurrency semantics.
-- Microsoft/Outlook/M365 and Apple/iCloud proofs remain separate downstream work.
+- `CALENDAR-PROJECTION-GOOGLE-001` is the active work item for `M2-M0-023` and now has native single-writer implementation/test/release evidence.
+- `CALENDAR-PROJECTION-GOOGLE-UPDATE-001` is stronger concurrent/shared-writer hardening, not a blocker for ordinary Personal single-writer use.
+- Microsoft/Outlook/M365 and Apple/iCloud provider proofs remain separate downstream work.
 
 ### `ROADMAP.md`
 
-- M2-M0.5 prioritizes an ordinary-user stock-ChatGPT + Personal Google product before Android.
-- The completed Personal Google Sheets baseline explicitly accepts a native same-user **single-writer** connector path without pretending it provides distributed compare-and-swap.
-- Calendar should follow the same product principle: simple native Personal behavior first, stronger concurrent/shared-writer execution later.
-- Browser-first means no terminal, copied Calendar IDs, manual API setup, hidden menu rituals, or protected production fixtures.
+- M2-M0.5 prioritizes ordinary-user stock-ChatGPT + Personal Google usefulness before Android.
+- The Personal Google baseline explicitly accepts native same-user single-writer behavior without pretending it is distributed compare-and-swap.
+- Calendar follows the same rule: native Personal lane first, stronger concurrency mechanisms later.
 
 ### Direction result
 
-**ALIGNED WITH USER ACCEPTANCE CORRECTION.** The earlier design that made **MIRA → Enable Calendar** a required ordinary-user activation step was too technical. Keep the already-built Apps Script managed-Calendar/ETag adapter as optional stronger-provider evidence, but do not require it for default Personal activation. Continue M2-M0-023 by implementing and verifying the native stock-ChatGPT Google Calendar **single-writer** lane and by codifying intent-first activation.
+**ALIGNED.** The rejected design required **MIRA → Enable Calendar** inside the copied Sheet. The corrected default flow is ordinary-language intent → Google's own authorization UI if needed → native connected Calendar behavior. The stronger Apps Script managed-Calendar/ETag adapter remains optional hardening and test evidence, not default setup.
 
 ## Completed predecessor
 
@@ -59,93 +58,100 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-023-google-calendar-projection`
 - **Base SHA:** `fcc81f0e9d9510d05406acd9068d9ca4ee016806`
-- **PR:** #78 open, non-draft, mergeable before this scope-correction commit
-- **Last exact fully green head before scope correction:** `3b1054cede74101723ec422352669bec98b6d3c6`
-- **CI on that head:** `33434223658` green
-- **Current head rule:** re-read the live PR head after each source change and require exact-head CI before merge. Do not create content-identical source commits merely to record their own SHA.
+- **PR:** #78 open
+- **Last exact fully green implementation head:** `d0a3c9a2d2b1ab2de59aa2fd8fe3419907b48903`
+- **CI on that head:** `33437591056` green; 351 Python tests + 30 Apps Script tests; compile, feature registry, product ledger, Personal distribution, work-session alignment, and code ownership all green.
+- **Current head rule:** documentation/lifecycle corrections after that green head require one final exact-head CI before merge. Do not manufacture content-identical commits merely to record their own SHA.
 
 ### Objective
 
-Provide the default Personal Google Calendar lane with the lowest-friction safe behavior supported by stock ChatGPT. The user expresses intent in normal conversation, for example **“Yes, use my calendar.”** If Google authorization is missing, MIRA surfaces Google's normal authorization/connection UI. After authorization, MIRA uses the connected Google Calendar capability directly, discovers the available calendar lane, binds the selected/default calendar according to policy, creates/updates only canonical MIRA-tracked projections, and performs exact provider readback.
+Provide the default Personal Google Calendar lane with the lowest-friction safe behavior supported by stock ChatGPT. The user expresses intent in normal conversation, for example **“Yes, use my calendar.”** If Google authorization is missing, MIRA surfaces Google's normal authorization/connection UI. After authorization, MIRA uses the connected Google Calendar capability directly, binds the selected/default authorized calendar according to policy, creates/updates only canonical MIRA-tracked projections, and performs exact provider readback.
 
-The stock connector lane is explicitly **single-writer**. It must perform exact preflight read before an update, refuse to overwrite provider drift it did not create/verify, target the exact persisted provider event ID, and perform exact post-write readback. Because the current generic update surface exposes no atomic ETag/If-Match precondition, this lane must not be represented as safe for concurrent Android/multi-client mutation. The already-built Apps Script adapter retains the stronger atomic ETag path for later shared-writer/hardening use and isolated provider proof.
+The native connector lane is explicitly **single-writer**. It performs exact provider preflight before update, refuses to overwrite provider drift it did not create/verify, targets the exact persisted provider event ID, and performs exact post-write readback. The generic native update surface has no atomic ETag/If-Match precondition, so this lane is not represented as safe for concurrent Android/multi-client mutation. The stronger Apps Script adapter retains atomic ETag semantics for later shared-writer/hardening use.
 
 ### User-facing activation invariant
 
-For Calendar and future provider-backed features:
-
 1. MIRA asks only for the user's actual intent/permission in ordinary language.
 2. Provider-native consent UI is allowed when the provider itself requires it.
-3. MIRA does the technical setup after consent.
-4. A hidden MIRA/Sheet menu, manually created secondary Calendar, copied provider ID, API console, Apps Script editor, OAuth-scope editing, terminal or pasted code is **not** acceptable default Personal setup.
-5. If a provider cannot support a safe simple lane, MIRA records the capability limitation and does not export engineering work to the user.
+3. MIRA performs technical setup after consent.
+4. A hidden Sheet menu, manually created secondary Calendar, copied provider ID, API console, Apps Script editor, OAuth-scope editing, terminal, or pasted code is **not** acceptable default Personal setup.
+5. If a provider/runtime cannot support a safe simple lane, MIRA records the capability limitation instead of exporting engineering work to the user.
 
-### Already implemented/test-verified evidence retained from this branch
+### Implemented and test-verified evidence
 
-- Provider versions are opaque tokens, allowing exact Google ETags rather than fake counters.
-- `GoogleCalendarProjection.gs` implements a stronger Calendar REST adapter through bound Apps Script user OAuth.
-- That stronger lane can create/recover one MIRA-owned secondary Calendar, recover lost create acknowledgement through an installation marker, use private projection/idempotency properties, exact independent GET readback, and exact prior ETag through `If-Match`.
-- Its manifest uses `calendar.app.created` + `calendar.calendarlist.readonly` + `script.external_request` and release validation rejects broad Calendar scopes.
-- No attendees, attendee notifications, Meet links, reminders, appointment extraction, Microsoft/Apple behavior, medical behavior, or legacy Calendar mutation are introduced.
-- Deterministic Personal packaging includes the adapter and its tests.
-- A private isolated Drive copy exists for later stronger-lane/provider-template evidence, but ordinary users are not required to open it or invoke a Calendar menu.
-- The last pre-correction branch head `3b1054cede74101723ec422352669bec98b6d3c6` passed every repository gate in CI `33434223658`.
-
-### New implementation required by acceptance feedback
-
-- Define native stock-ChatGPT Google Calendar capability semantics for the Personal single-writer lane.
-- Preserve stable canonical projection identity even when the native provider surface does not expose private extended-property/idempotency tokens directly.
-- Persist provider calendar ID/event ID and verified provider material/version evidence in canonical MIRA state; provider event identity is not inferred from title/time searches after creation.
-- Create only after explicit service/calendar intent and provider capability verification.
-- On identical replay, read the exact persisted provider event and return unchanged; never create a second event merely because the provider has no idempotency parameter.
-- Before update, read the exact persisted event and require it still matches MIRA's last verified provider state. Provider/manual drift fails closed to Needs Review/conflict instead of being overwritten.
-- Update the exact provider event ID, then independently read it back and require exact normalized material before canonical success.
-- Label the lane honestly as native/single-writer/non-atomic-update. Android/shared-writer Calendar mutation remains blocked until the stronger guarded provider lane is live-verified.
-- Update no-app operating instructions and release validation so **plain-language intent + provider authorization** is the default user flow and the Sheet menu is not presented as required activation.
+- `mira/google_calendar_native.py` implements the native same-user/single-writer Google Calendar adapter.
+- Capability evidence labels update protection `single_writer_preflight_non_atomic`; it does not fake atomic CAS.
+- New event creation writes safe material only, with no attendees, Meet link, or self-attendance side effects.
+- A stable `MIRA-PROJECTION-ID:` marker supports recovery when provider creation succeeds but acknowledgement is lost.
+- Identical replay reuses/re-reads the exact provider event and creates no duplicate.
+- Duplicate projection markers fail closed rather than selecting one arbitrarily.
+- Canonical provider event identity is preserved across updates.
+- Before update, the exact persisted provider event is re-read and must match MIRA's last verified state; manual/provider drift fails closed before mutation.
+- Updates target the exact event ID and require exact independent post-write readback.
+- Removing the stable projection marker fails readback verification rather than silently adopting provider drift.
+- The complete no-app operating instructions now encode intent-first provider activation and native Calendar semantics.
+- The default Personal starter no longer requests Calendar/external-request OAuth scopes during unrelated Sheet setup.
+- The default Personal release now contains five Workspace artifacts and intentionally excludes `GoogleCalendarProjection.gs`.
+- `Code.gs` no longer exposes `MIRA → Enable Calendar` or `miraEnableGoogleCalendar`.
+- Release validation and regression tests fail if hidden-menu Calendar activation or optional Calendar permissions creep back into the default package.
+- The stronger `GoogleCalendarProjection.gs` ETag/managed-secondary-Calendar adapter remains source-controlled and its isolated Apps Script tests still pass, but it is not part of the default Personal release package.
+- Exact implementation head `d0a3c9a2d2b1ab2de59aa2fd8fe3419907b48903` passed CI `33437591056` with 351 Python and 30 Apps Script tests.
 
 ### Live-provider evidence boundary
 
-The connected Google Calendar surface is already authorized enough to list calendars and exposes create/update/read operations, but its generic update action does not accept an atomic ETag/If-Match precondition. Existing Primary/Family calendars remain protected production state and are not development fixtures.
+A fresh read-only Google Calendar inventory on 2026-08-31 found only:
 
-Therefore this packet can complete native-lane implementation/test/release evidence without forcing a manual user click. Live write proof still requires an isolated provider target or an explicitly approved bounded test target. If that live target is unavailable, record the exact live-verification ceiling rather than weakening the ordinary-user UX or writing synthetic test events into protected calendars.
+- one read-only US holidays calendar;
+- the user's Family calendar, writable but protected production state;
+- the user's Primary calendar, writable but protected production state.
 
-## Acceptance criteria
+No isolated synthetic writable Calendar is currently available through the connected Calendar surface. The connector exposes event create/read/update actions but no secondary-Calendar creation action. Primary/Family calendars are therefore **not** used as development fixtures.
 
-1. `PRODUCT_INVARIANTS.md` intent-first activation rule is preserved across the current Calendar release surface.
-2. Default Personal Calendar activation requires only plain-language user consent plus Google's own unavoidable authorization UI when needed.
-3. No required normal-user step involves manual Calendar creation, Sheet-menu hunting, provider IDs, OAuth-scope editing, Apps Script/developer consoles, code pasting or terminal use.
-4. Native Google Calendar lane is explicitly same-user/single-writer and never advertised as distributed-CAS/concurrent-writer safe.
-5. Create targets the selected/default authorized Calendar, records the exact returned provider calendar/event identity, and requires exact independent readback before canonical success.
-6. Identical logical replay uses the persisted exact provider event identity and cannot create a duplicate event.
-7. Before native update, exact provider preflight must match the last verified canonical provider state; provider/manual drift fails closed rather than being overwritten.
-8. Native update targets the exact persisted provider event and requires exact post-write readback. Lack of atomic ETag precondition remains visible evidence, not hidden.
-9. The stronger Apps Script `If-Match` adapter remains available as optional/shared-writer hardening and is not required for ordinary Personal setup.
-10. Primary/Family/legacy Calendars are not used as unapproved development fixtures.
-11. Direct tests cover create, replay, preflight drift rejection, update/readback and capability/evidence labeling.
-12. No-app instructions/release validation lock the intent-first flow and prevent reintroduction of mandatory developer-style Calendar setup.
-13. Exact final PR-head CI, expected-head merge protection, remote-main readback and post-merge CI are required before packet completion.
-14. Live-provider completion is claimed only at the evidence level actually proven; synthetic/CI success does not imply real provider write verification.
+Consequently:
+
+- native Google implementation: **implemented**;
+- direct/release/CI verification: **verified**;
+- live Calendar provider write/readback: **not verified**;
+- reason: no isolated writable Calendar target is available through current authorized tools;
+- response: preserve the evidence ceiling and do not degrade ordinary-user setup or write test events into protected calendars merely to manufacture a live checkbox.
+
+### Acceptance criteria status
+
+1. `PRODUCT_INVARIANTS.md` intent-first activation rule preserved: **met**.
+2. Default Personal activation requires only plain-language consent + provider UI when needed: **met in product/release contract; live consent ceremony not re-enacted**.
+3. No mandatory manual Calendar/developer setup: **met**.
+4. Native lane explicitly same-user/single-writer/non-CAS: **met**.
+5. Create records exact provider identity and requires exact readback: **implemented/test-verified; live provider proof pending isolated target**.
+6. Replay cannot duplicate provider event: **implemented/test-verified**.
+7. Update preflight rejects provider/manual drift: **implemented/test-verified**.
+8. Update targets exact event and requires exact post-write readback; no atomic ETag claim: **implemented/test-verified**.
+9. Strong Apps Script `If-Match` lane preserved as optional hardening: **met**.
+10. Primary/Family/legacy Calendars not used as dev fixtures: **met**.
+11. Direct tests cover create/replay/drift/update/readback/capability labeling: **met**.
+12. No-app/release guards prevent hidden-menu/developer-style regression: **met**.
+13. Exact final PR-head CI, expected-head merge, remote-main readback, post-merge CI: **pending final lifecycle-doc commit(s)**.
+14. Live-provider completion claimed only at proven level: **met; live write remains unverified**.
 
 ### Evidence state
 
 - **Desired:** yes
 - **Specified:** yes, corrected by explicit user acceptance feedback on 2026-08-31
-- **Strong Apps Script lane implemented:** yes
-- **Strong Apps Script lane test/release verified:** yes
-- **Default native Personal lane implemented:** not yet
-- **Default native Personal lane test-verified:** not yet
-- **Live-verified:** no
+- **Default native Personal lane implemented:** yes
+- **Default native Personal lane test-verified:** yes
+- **Default Personal release contract verified:** yes
+- **Strong Apps Script lane implemented/test-verified:** yes, optional hardening only
+- **Live-provider write verified:** no; isolated writable Calendar unavailable
 
 ## Exact next action / resume point
 
-1. Implement the native stock-ChatGPT Google Calendar single-writer capability/projection contract and direct tests without mutating live provider state.
-2. Update the complete no-app operating contract and release validator so the default user flow is ordinary-language intent → provider consent if required → MIRA-managed setup/readback, not a Sheet menu.
-3. Re-rank `CALENDAR-PROJECTION-GOOGLE-UPDATE-001` as stronger concurrent/shared-writer hardening rather than a blocker for the default Personal lane.
-4. Run exact-head CI and fix only packet-related failures.
-5. Seek isolated live provider proof through available authorized tools without requiring technical user setup or touching protected Primary/Family state.
-6. If live proof remains externally unavailable, preserve that evidence ceiling explicitly; do not make ordinary-user setup worse merely to manufacture a live checkbox.
-7. Do not expand into Microsoft/Apple Calendar, appointment intake, reminders, outbound contact, medical meaning, migration or Android during this packet.
+1. Reconcile `BACKLOG.md` so `CALENDAR-PROJECTION-GOOGLE-001` records native implementation/test/release evidence and `CALENDAR-PROJECTION-GOOGLE-UPDATE-001` is HARDENING rather than a default-Personal blocker.
+2. Rewrite PR #78 description/title to the corrected native intent-first architecture and explicit live-evidence ceiling.
+3. Re-read PR head and run one exact-final-head CI after lifecycle/documentation commits.
+4. Merge PR #78 with `expected_head_sha` protection only if exact-head CI is green.
+5. Verify remote `main` contains the merged changes and inspect post-merge CI.
+6. Preserve live Google write/readback as pending evidence until an isolated writable Calendar can be provisioned through supported software/provider flow; do not use Primary/Family as test fixtures.
+7. Do not expand into Microsoft/Apple Calendar, appointment intake, reminders, outbound contact, medical meaning, migration, or Android during this packet.
 
 ## Recovery protocol
 
-Read this file and `PRODUCT_INVARIANTS.md` first. Confirm PR #78 and branch `integration/m0-023-google-calendar-projection`, inspect any commit newer than the recorded last-green head, and treat the intent-first ordinary-user correction as highest-authority acceptance feedback. M2-M0-022 remains complete. Protected personal/legacy Calendar state remains unavailable as a development fixture.
+Read this file and `PRODUCT_INVARIANTS.md` first. Confirm PR #78 and branch `integration/m0-023-google-calendar-projection`. Treat intent-first ordinary-user activation as highest-authority product acceptance feedback. M2-M0-022 remains complete. The native default Personal Google lane is implemented/test-verified, but real provider Calendar write/readback is not yet live-verified because no isolated writable Calendar is visible. Protected Primary/Family/legacy Calendar state remains unavailable as a development fixture.
