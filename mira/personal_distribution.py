@@ -112,6 +112,7 @@ _EXPECTED_ARTIFACTS = frozenset(
     {
         "workspace/apps_script/Code.gs",
         "workspace/apps_script/CommandWorker.gs",
+        "workspace/apps_script/GoogleCalendarProjection.gs",
         "workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md",
         "workspace/apps_script/README.md",
         "workspace/apps_script/appsscript.json",
