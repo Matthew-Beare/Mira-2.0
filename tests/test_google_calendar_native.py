@@ -10,6 +10,7 @@ from mira.calendar_projection import (
     CalendarProjectionReadbackError,
     CalendarProjectionRequest,
     CalendarProjectionService,
+    CalendarProviderConflictError,
 )
 from mira.google_calendar_native import (
     GOOGLE_NATIVE_PROTECTION_MODE,
@@ -277,10 +278,7 @@ class GoogleCalendarNativeSingleWriterTests(unittest.TestCase):
         self.connector.create_event("primary", write)
         self.connector.create_event("primary", write)
 
-        with self.assertRaises(CalendarProjectionConflictError):
-            # Directly use the same deterministic source material by selecting a
-            # projection key through the adapter would require the service hash;
-            # instead prove the adapter boundary itself refuses duplicate markers.
+        with self.assertRaises(CalendarProviderConflictError):
             self.adapter.upsert_event(
                 "primary",
                 projection,
