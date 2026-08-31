@@ -84,7 +84,7 @@ class CalendarProjectionTests(unittest.TestCase):
         self.assertEqual(result.projection.source_revision, 1)
         self.assertEqual(result.projection.provider_lane, "google")
         self.assertEqual(result.projection.calendar_ref, "primary")
-        self.assertEqual(result.projection.provider_version, 1)
+        self.assertEqual(result.projection.provider_version, "memory:1")
         self.assertEqual(result.projection.status, "verified")
         self.assertEqual(
             result.projection.desired_sha256,
@@ -111,7 +111,7 @@ class CalendarProjectionTests(unittest.TestCase):
         self.assertEqual(second.projection.projection_id, first.projection.projection_id)
         self.assertEqual(second.projection.provider_event_id, first.projection.provider_event_id)
         self.assertEqual(second.projection.revision, 1)
-        self.assertEqual(second.projection.provider_version, 1)
+        self.assertEqual(second.projection.provider_version, "memory:1")
         self.assertEqual(self.provider.write_count, 1)
         self.assertEqual(
             self.state.get(
@@ -137,7 +137,7 @@ class CalendarProjectionTests(unittest.TestCase):
         self.assertEqual(second.projection.revision, 2)
         self.assertEqual(second.projection.source_revision, 2)
         self.assertEqual(second.projection.provider_event_id, first.projection.provider_event_id)
-        self.assertEqual(second.projection.provider_version, 2)
+        self.assertEqual(second.projection.provider_version, "memory:2")
         self.assertEqual(second.projection.event.title, "Cardiology follow-up")
         self.assertEqual(self.provider.write_count, 2)
 
@@ -182,7 +182,7 @@ class CalendarProjectionTests(unittest.TestCase):
             idempotency_key="provider-key-001",
             expected_provider_version=None,
         )
-        self.assertEqual(first.event.provider_version, 1)
+        self.assertEqual(first.event.provider_version, "memory:1")
 
         with self.assertRaises(CalendarProviderIdempotencyConflictError):
             self.provider.upsert_event(
@@ -190,7 +190,7 @@ class CalendarProjectionTests(unittest.TestCase):
                 "projection-one",
                 self.event(title="Different"),
                 idempotency_key="provider-key-001",
-                expected_provider_version=1,
+                expected_provider_version="memory:1",
             )
 
     def test_unsupported_provider_capability_fails_before_mutation(self) -> None:
