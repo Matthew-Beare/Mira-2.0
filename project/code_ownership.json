@@ -226,12 +226,21 @@
     },
     {
       "id": "canonical-appointment-identity",
-      "responsibility": "Provider-neutral durable provider identity and separate appointment-occurrence identity reconciliation from already-normalized evidence, with exact deterministic keys, immutable provenance, explicit ambiguity, and user-confirmed correction precedence.",
+      "responsibility": "Provider-neutral durable provider identity and separate appointment-occurrence identity reconciliation from already-normalized evidence, including exact durable occurrence timing needed by downstream projections, immutable provenance, explicit ambiguity, and user-confirmed correction precedence.",
       "why_separate": "Appointment/provider truth must exist before intake extraction, Calendar projection, reminders, outbound contact, or administrative-health composition; keeping this core separate prevents those downstream surfaces from becoming identity authorities or implying medical meaning.",
       "owned_paths": ["mira/appointments.py"],
-      "feature_ids": ["CAL-005", "STORE-001", "RECOVERY-002"],
-      "work_ids": ["APPOINTMENT-IDENTITY-001"],
-      "verification": ["tests/test_appointments.py"]
+      "feature_ids": ["CAL-005", "CAL-008", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["APPOINTMENT-IDENTITY-001", "APPOINTMENT-INTAKE-001"],
+      "verification": ["tests/test_appointments.py", "tests/test_appointment_intake.py"]
+    },
+    {
+      "id": "appointment-evidence-intake",
+      "responsibility": "Provider-neutral appointment evidence intake preflight over authorized email/image/text observations, deterministic confidence/ambiguity handling, CAL-005 reconciliation orchestration, and capability-gated Calendar handoff without raw-source storage or outbound side effects.",
+      "why_separate": "Evidence extraction and orchestration must not duplicate canonical provider/appointment identity, service activation, or Calendar-provider authority. A separate intake boundary can reject weak/ambiguous evidence before mutation and preserve canonical appointments even when downstream projection is unavailable.",
+      "owned_paths": ["mira/appointment_intake.py"],
+      "feature_ids": ["CAL-008", "CAL-005", "CAL-006", "CAL-007", "SERVICE-001", "RECOVERY-002"],
+      "work_ids": ["APPOINTMENT-INTAKE-001"],
+      "verification": ["tests/test_appointment_intake.py"]
     },
     {
       "id": "calendar-projection-core",
