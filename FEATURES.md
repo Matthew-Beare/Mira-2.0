@@ -85,7 +85,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `INV-002` | Queryable household, loft and shop inventory projection | required | test_verified+merged-provider-readback | INV-001,LOC-001,IDENT-001,ASSET-003
 - `PAR-001` | Target/par quantity with opt-in under-level notification | accepted | specified | INV-001
 - `PAR-002` | Optional scale-based passive stock sensing | optional/proposed | not_present | PAR-001
-- `GROCERY-001` | Grocery list, pantry and freezer stock reconciliation | accepted | specified | SHOP-001,INV-001,LOC-001,RECEIPT-001
+- `GROCERY-001` | Grocery list, pantry and freezer stock reconciliation | accepted | test_verified+provider_verified+candidate_unmerged | SHOP-001,INV-001,LOC-001,RECEIPT-001
 - `RECIPE-001` | Durable recipe library with structured ingredients and provenance | required | specified | KNOW-001
 - `MEAL-001` | Dated meal planning with pantry-aware ingredient-gap and shopping reconciliation | required | specified | RECIPE-001,GROCERY-001,SHOP-001
 - `ONBOARD-002` | Sanitized generic starter with no inherited personal production state | required/privacy | test_verified | DATA-001
