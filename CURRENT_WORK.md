@@ -10,7 +10,7 @@ Ordinary-user setup follows `PRODUCT_INVARIANTS.md`: the MIRA-side choice is pla
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and applicable cross-feature product invariants.
 
-## Session alignment — 2026-08-31
+## Session-start alignment verification — 2026-08-31
 
 ### `FEATURES.md`
 
