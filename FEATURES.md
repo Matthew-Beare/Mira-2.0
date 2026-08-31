@@ -103,7 +103,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `PROFILE-008` | Student role with explicit HOME/CAMPUS context option | accepted | implemented/partial-test | SERVICE-001,CTX-001,CTX-002,PROFILE-005
 - `PROFILE-009` | Mixed/custom role composition preserves underlying roles and explicit primary routing | required | test_verified | SERVICE-001
 - `PROFILE-010` | Preference-driven usability and accessibility without demographic inference | accepted-direction | partial-test/specified | SERVICE-001
-- `PROFILE-011` | Public “Boomer mode” is rejected; private user-chosen alias remains presentation-only | rejected/public; private-alias accepted | PROFILE-010,ONBOARD-002
+- `PROFILE-011` | Public “Boomer mode” is rejected; private user-chosen alias remains presentation-only | rejected/public; private-alias accepted | rejected+alias-partial-test | PROFILE-010,ONBOARD-002
 - `PROFILE-012` | Canonical per-person identity and explicit relationship graph | accepted | specified | -
 - `PROFILE-013` | Explicit permission and sharing scopes separate from relationship labels | required/privacy-critical | specified | PROFILE-012
 - `DIST-001` | Private deployment lineage and controlled upstream feature sharing | required | partial-test/specified | ONBOARD-002
@@ -119,7 +119,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `PROVIDER-003` | Deterministic Personal Google bootstrap adapter with strict drift/readback verification | required | test_verified | ONBOARD-007,PROVIDER-002,SOURCE-001,ONBOARD-005,OPS-003
 - `ENTERPRISE-001` | Policy-compliant managed and regulated deployment lane with synthetic-first evaluation, exact organization approval/data-classification gates, managed source/provider resources and no personal-account workarounds | required-direction | specified+legacy-test-supported-boundary | ONBOARD-006,PROVIDER-001,PROVIDER-002,SOURCE-002,DIST-002,PROFILE-013
 - `SERVICE-002` | Activatable service bundles over canonical behaviors with dependency-derived readiness | required | test_verified | SERVICE-001,RECOVERY-002,PROVIDER-001
-- `CAL-005` | Evidence-safe appointment and provider identity reconciliation, including durable provider identity plus normalized organization/contact and specialty/type attributes such as cardiologist for human-friendly reminders | required | partial-test+requirement-refined | -
+- `CAL-005` | Evidence-safe appointment and provider identity reconciliation, including durable provider identity plus normalized organization/contact and specialty/type metadata such as cardiologist for human-friendly reminders | required | partial-test+requirement-refined | -
 - `CAL-008` | Multi-source appointment evidence intake from inbound email, user-supplied image/photo or user text with provenance-bound extraction of date/time/timezone/location/provider/provider specialty-or-type/contact details, confidence/ambiguity handling, dedupe and canonical appointment/provider reconciliation | required | specified | CAL-005,RECOVERY-002
 - `CAL-006` | Idempotent preferred-Calendar projection/sync/update with exact provider readback; the product must support the user's selected Google, Microsoft/Outlook/M365 or Apple/iCloud Calendar lane through verified provider capability rather than silently substituting another Calendar | required | specified+requirement-refined | CAL-005,RECOVERY-002
 - `HEALTH-001` | Non-clinical administrative health organization | accepted-direction | specified | PROFILE-013,CAL-005,REMIND-001,REMIND-002
