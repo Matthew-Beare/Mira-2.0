@@ -25,6 +25,8 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("/v1/query", code)
         self.assertIn("/v1/commands", code)
         self.assertIn("not_implemented", code)
+        self.assertNotIn("Enable Calendar", code)
+        self.assertNotIn("miraEnableGoogleCalendar", code)
 
     def test_repository_bundle_contains_complete_no_app_protocol(self) -> None:
         bundle = load_workspace_bundle()
@@ -47,6 +49,12 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("`life_pattern`", protocol)
         self.assertIn("`goals`", protocol)
         self.assertIn("`appointment_help`", protocol)
+        self.assertIn("## Intent-first provider activation", protocol)
+        self.assertIn("Yes, use my calendar", protocol)
+        self.assertIn("provider's own unavoidable authorization", protocol)
+        self.assertIn("Do not ask a normal user to create a Calendar", protocol)
+        self.assertIn("single_writer_preflight_non_atomic", protocol)
+        self.assertIn("MIRA-PROJECTION-ID:", protocol)
         self.assertIn("## Canonical receipts and purchase history", protocol)
         self.assertIn("canonical resource type is `receipt`", protocol)
         self.assertIn("integer minor units", protocol)
@@ -96,7 +104,7 @@ class WorkspaceBundleTests(unittest.TestCase):
         self.assertIn("`calendar_capability_verified`: false", protocol)
         self.assertIn("service_state/appointments_calendar", protocol)
         self.assertIn("`activation_state` to `requested`", protocol)
-        self.assertIn("Do **not** mark the service active.", protocol)
+        self.assertIn("Do **not** mark the service active merely from the onboarding answer.", protocol)
         self.assertIn("SHA-256", protocol)
         self.assertIn("expected_revision", protocol)
         self.assertIn("exact provider readback", protocol)
@@ -109,7 +117,7 @@ class WorkspaceBundleTests(unittest.TestCase):
         files = dict(bundle.files)
         files["MIRA_NO_APP_INSTRUCTIONS.md"] = files[
             "MIRA_NO_APP_INSTRUCTIONS.md"
-        ].replace("Do **not** mark the service active.", "")
+        ].replace("Do **not** mark the service active merely from the onboarding answer.", "")
         with self.assertRaisesRegex(WorkspaceBundleError, "contract clauses"):
             validate_workspace_bundle(files)
 
