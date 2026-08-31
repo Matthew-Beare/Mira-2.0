@@ -282,7 +282,7 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
     readme = files["README.md"]
     readme_markers = (
         "Calendar is not authorized during unrelated MIRA Sheet setup.",
-        "ordinary-language intent",
+        "ordinary-language user intent",
         "provider's own authorization",
         "MIRA-PROJECTION-ID:",
         "single_writer_preflight_non_atomic",
