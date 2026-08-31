@@ -38,9 +38,32 @@ Evidence:
 - **CI:** `33367710706` green on `141a66e9372ab2d5bd3daf1e78d3026682b7b2f3`
 - **Objective:** implement the smallest provider-neutral backup/restore integrity slice that deterministically exports canonical current structured Resource state, hashes and verifies the artifact, restores into a fresh isolated compatible authority, and proves material parity without claiming provider archive durability, Event-history recovery, original idempotency-history recovery, encryption, incrementality, scheduling, migration cutover, or disaster-recovery guarantees that are not actually verified.
 
-## Alignment result
+## Session-start alignment verification — 2026-08-31
 
-**ALIGNED.** `BACKUP-001` is required data-integrity work, depends semantically on test-verified `RECOVERY-002`, and unlocks future protected authority migration. It outranks optional par/recipe/meal enhancements. This packet remains bounded to current-Resource snapshot and isolated restore parity rather than expanding into provider archive infrastructure or migration.
+### `FEATURES.md`
+
+- `BACKUP-001` is required data-integrity work and depends semantically only on `RECOVERY-002`.
+- `RECOVERY-002` is test-verified.
+- `AUTHORITY-MIGRATION-001` is downstream of verified backup/restore rather than part of this packet.
+- `GROCERY-001` is already merged/provider-readback verified and is not active work.
+
+### `BACKLOG.md`
+
+- `BACKUP-CORE-001` is the sole active work row.
+- `GROCERY-CORE-001` is complete in PR #73.
+- `PAR-CORE-001` is an optional enhancement, while recipe/meal work remains later.
+- Data-integrity work outranks those convenience enhancements under the canonical backlog ranking policy.
+
+### `ROADMAP.md`
+
+- M2-M0.5 explicitly includes backup/restore as release/onboarding hardening around the no-app Personal path.
+- The default baseline remains stock ChatGPT + Personal Google Workspace with no Linux/SQL/Cloud Run prerequisite.
+- Future Linux/SQL/managed authority migration must preserve the same product semantics rather than become part of this backup packet.
+- Android remains paused behind no-app usefulness/integrity work.
+
+### Direction result
+
+**ALIGNED.** `BACKUP-001` is dependency-ready, required data-integrity infrastructure and unlocks protected future authority migration. This packet remains bounded to current-Resource snapshot and isolated restore parity rather than expanding into provider archive infrastructure, Event-history backup, scheduling, encryption policy or migration.
 
 ## Implemented contract
 
@@ -129,12 +152,11 @@ Presentation-only header freezing/column sizing occurred only after functional p
 
 ## Exact next action
 
-1. Update PR #74 body with implementation, CI and provider evidence.
-2. Read the live PR #74 exact head and mergeability.
-3. Require CI success on that exact final head.
-4. Merge PR #74 only with expected-head protection.
-5. Verify remote `main` points to the merge SHA and require post-merge `main` CI success.
-6. Create a fresh post-merge lifecycle checkpoint marking `BACKUP-001` / `BACKUP-CORE-001` merged/completed and dynamically rank the next bounded packet.
+1. Read the live PR #74 exact head and mergeability.
+2. Require CI success on that exact final head.
+3. Merge PR #74 only with expected-head protection.
+4. Verify remote `main` points to the merge SHA and require post-merge `main` CI success.
+5. Create a fresh post-merge lifecycle checkpoint marking `BACKUP-001` / `BACKUP-CORE-001` merged/completed and dynamically rank the next bounded packet.
 
 ## Recovery protocol
 
