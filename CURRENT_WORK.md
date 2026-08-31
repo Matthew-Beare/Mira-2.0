@@ -15,12 +15,9 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 PR #73 merged to `main` as `a906fdd0e64dc661774fc7530007030dd1249522` from exact verified head `83914c9d5d2074c611547dcdedd786300f8463f2`.
 
 Evidence:
-- core CI `33348876359` green;
-- release-wired CI `33349090500` green;
-- final exact-head CI `33355952138` green on `83914c9d5d2074c611547dcdedd786300f8463f2`;
-- post-merge `main` CI `33355975328` green on `a906fdd0e64dc661774fc7530007030dd1249522`;
+- exact-head CI `33355952138` green;
+- post-merge `main` CI `33355975328` green;
 - fresh isolated synthetic Google proof verified exact active-grocery selection, observed-descendant stock truth, honest unknown remaining quantity despite acquisition quantity 12, and zero canonical writes;
-- complete no-app/release guards are merged;
 - protected legacy production state was not used or modified.
 
 `GROCERY-001` / `GROCERY-CORE-001` are reconciled to merged/completed evidence in `FEATURES.md` and `BACKLOG.md`.
@@ -30,80 +27,116 @@ Evidence:
 ### `M2-M0-020` — Provider-neutral backup / restore core
 
 - **Primary work:** `BACKUP-CORE-001`
-- **Primary features:** `BACKUP-001`
+- **Primary feature:** `BACKUP-001`
 - **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `AUTH-001`, `DATA-001`
-- **Related downstream work:** `AUTHORITY-MIGRATION-001`, `SERVICE-DEPS-009`
+- **Downstream work unlocked by verified backup:** `AUTHORITY-MIGRATION-001`, `SERVICE-DEPS-009`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-020-backup-core`
 - **Base SHA:** `a906fdd0e64dc661774fc7530007030dd1249522`
-- **PR:** `#74`
-- **Objective:** implement the smallest provider-neutral backup/restore integrity slice that deterministically exports canonical structured state, hashes and verifies the artifact, restores into a fresh isolated compatible authority, and proves material parity without claiming provider archive durability, encryption, incrementality, scheduling, migration cutover, or disaster-recovery guarantees that are not actually verified.
+- **PR:** #74
+- **Last green implementation/release head before provider-evidence checkpoint:** `141a66e9372ab2d5bd3daf1e78d3026682b7b2f3`
+- **CI:** `33367710706` green on `141a66e9372ab2d5bd3daf1e78d3026682b7b2f3`
+- **Objective:** implement the smallest provider-neutral backup/restore integrity slice that deterministically exports canonical current structured Resource state, hashes and verifies the artifact, restores into a fresh isolated compatible authority, and proves material parity without claiming provider archive durability, Event-history recovery, original idempotency-history recovery, encryption, incrementality, scheduling, migration cutover, or disaster-recovery guarantees that are not actually verified.
 
-## Session-start alignment verification — 2026-08-30
+## Alignment result
 
-### `FEATURES.md`
-- `BACKUP-001` is `required/data-integrity` and depends only on `RECOVERY-002` semantically.
-- `RECOVERY-002` is test-verified.
-- `AUTHORITY-MIGRATION-001` depends on verified backup/restore, so this unlocks protected future backend cutover.
-- `GROCERY-001` is merged in PR #73 and reconciled to merged/provider-readback evidence.
+**ALIGNED.** `BACKUP-001` is required data-integrity work, depends semantically on test-verified `RECOVERY-002`, and unlocks future protected authority migration. It outranks optional par/recipe/meal enhancements. This packet remains bounded to current-Resource snapshot and isolated restore parity rather than expanding into provider archive infrastructure or migration.
 
-### `BACKLOG.md`
-- `BACKUP-CORE-001` is the sole active work row and depends on `BACKUP-001`, `RECOVERY-002`, and completed `STORE-ADAPTER-001A`.
-- `GROCERY-CORE-001` is complete in PR #73.
-- `PAR-CORE-001` is an optional ENHANCEMENT; recipe/meal work is LATER.
-- data-integrity work outranks convenience enhancements.
+## Implemented contract
 
-### `ROADMAP.md`
-- M2-M0.5 explicitly includes backup/restore under release/onboarding hardening around no-app verticals.
-- future Linux/SQL/managed migration must preserve the same canonical semantics rather than invent a new product model.
-- backup core does not require Android or advanced managed infrastructure.
+`mira/backup.py` implements backup artifact v1 and `BackupService` with these invariants:
 
-### Legacy salvage finding
-- PR #31 is historical audit/specification evidence, not implementation authority.
-- its older backup design bundled provider routing, scheduling, encryption/rotation/RPO/RTO and other concerns into one oversized packet; selective semantic salvage only.
+1. Backup artifacts are nonauthoritative snapshots, never writable masters.
+2. Artifact v1 captures exact schema identity plus complete current Resource state under the public STORE query bound.
+3. Resource material is sorted deterministically by `(resource_type, resource_id)` and canonical JSON is SHA-256 digested.
+4. Coverage is explicit:
+   - Resources: `complete_current_resources_under_query_bound`;
+   - Events: `not_exported_interface_not_enumerable`;
+   - original persisted idempotency history: `not_exported_interface_not_enumerable`.
+5. The public `StructuredStateAdapter` cannot globally enumerate all Event streams or persisted idempotency rows, so v1 does not fabricate completeness for either.
+6. If a Resource query returns exactly the 1,000-row public bound, export fails closed because completeness cannot be proven without pagination.
+7. Backup creation is read-only and performs no source Resource/Event/idempotency mutation.
+8. Restore requires an exact schema match, caller/provider-proven fresh isolated authority, and programmatic Resource emptiness.
+9. Current Resource IDs, payloads and revision numbers are reproduced using deterministic restore-only idempotency keys and repeated final-payload upserts.
+10. A restore-key replay on the supposedly fresh target is evidence that the target is not fresh and fails closed.
+11. Independent target re-export must reproduce the exact unsigned material and SHA-256 digest before restore is marked verified.
+12. No Event history is synthesized; original source idempotency history is not copied.
+13. Provider-generated timestamps, request hashes and restore-only idempotency records are target execution evidence, not backup material.
+14. No claim is made for provider archive durability, offsite redundancy, encryption, incremental backup, retention/rotation, scheduler firing, RPO/RTO, automatic disaster recovery, authority cutover, or legacy migration.
 
-### Direction result
+## Direct and release evidence
 
-**ALIGNED.** Backup/restore outranks par and other optional enhancements because it is required data-integrity infrastructure, is dependency-ready, and unlocks safe authority migration/recovery while preserving the easy Google-first Personal baseline.
+- `tests/test_backup.py` covers deterministic export/digest, explicit coverage, source zero-write, fresh-target restore, multi-revision parity, malformed/tampered artifact rejection, duplicate/sort validation, incompatible and non-empty target rejection, independent readback drift failure, hidden restore-key replay failure, 1,000-row completeness failure, and canonical parser roundtrip.
+- `project/code_ownership.json` registers `backup-restore-core`, owning `mira/backup.py` and directly verified by `tests/test_backup.py`.
+- `workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md` contains the complete no-app backup/restore integrity contract.
+- `mira/workspace_bundle.py` plus `tests/test_backup_release_protocol.py` guard nonauthoritative snapshot semantics, source read-only behavior, fresh-target requirement, explicit Event/idempotency coverage limits, restore replay failure, exact restore verification, and separation from authority migration.
+- CI `33367710706` is green on implementation/release head `141a66e9372ab2d5bd3daf1e78d3026682b7b2f3`.
 
-## Acceptance criteria
+## Fresh isolated Google provider proof
 
-1. Reconcile `GROCERY-001` / `GROCERY-CORE-001` to merged/completed evidence and make `BACKUP-CORE-001` the sole active work row before implementation grows.
-2. Define one provider-neutral backup artifact contract for canonical structured state; a backup is a nonauthoritative snapshot, never a writable master.
-3. Capture declared schema identity and every Resource record in the selected full structured-state scope in deterministic order.
-4. Preserve Event history only where the public source contract can enumerate it deterministically; otherwise document the exact limitation rather than fabricate completeness.
-5. Use deterministic canonical serialization and SHA-256 over the exact artifact material.
-6. Backup creation is read-only and performs zero source Resource/Event/idempotency mutation.
-7. Restore targets a fresh isolated compatible adapter only; reject non-empty mutable targets in this first slice.
-8. Preserve canonical resource type, stable Resource ID, payload, and revision meaning. Invent no new domain identity.
-9. Because normal STORE upsert increments revisions, reproduce source revisions deterministically through replay-safe writes or fail closed when exact revision parity cannot be achieved.
-10. Independently read back restored state and compare it to backup material before marking restore verified.
-11. Digest mismatch, malformed artifact, duplicate identity, unsupported schema/type, partial restore, target drift, or readback mismatch fails closed.
-12. Backup creation and restore verification are separate facts; successful serialization alone does not prove restorability.
-13. First slice is full snapshot only. Do not claim incremental/delta semantics.
-14. Do not claim encryption-at-rest, provider archive durability, retention/rotation, RPO/RTO, scheduler firing, offsite redundancy, or automatic disaster recovery.
-15. Never commit real private backup material to the public repo; tests use synthetic fixtures only.
-16. Direct tests cover deterministic export/digest, source zero-write, empty-target restore, multi-revision parity, tamper/malformed/incompatible rejection, non-empty target rejection, and independent readback parity.
-17. Record component ownership and direct verification for the backup core.
-18. No-app instructions state that snapshots are nonauthoritative, require digest/readback verification, and do not equal offsite/disaster-recovery guarantees; release guards protect those boundaries.
-19. After CI, perform the strongest faithful fresh isolated synthetic Google proof the native contract supports. If connector limits prevent faithful restore, record the limitation instead of claiming provider restore verification.
-20. Exact-head CI and post-merge `main` CI are required.
-21. Leave provider archive adapters, encryption/retention policy, automatic scheduling, service activation, authority cutover, legacy migration, Android, par, recipes and meals unfinished.
+Two brand-new native Google Sheets authorities, both clearly marked `NOT A STARTER`, were created solely for this synthetic proof. Their provider identifiers/URLs are intentionally excluded from public Git. Protected legacy MIRA production state was not opened, copied as state, modified, or used as a fixture.
 
-## Implementation finding
+Both authorities used STORE-001-shaped `Metadata`, `Resources`, `Events`, and `Idempotency` tabs with schema version `1`, resource types `entity`/`task`, event types `created`/`updated`, `writer_model=single_writer`, and synthetic-only proof metadata.
 
-The public `StructuredStateAdapter` can deterministically enumerate current Resources by declared type, but it cannot globally enumerate every Event stream or persisted idempotency row. Backup artifact v1 therefore covers complete current Resource state only under the public 1,000-row query bound and explicitly declares Event/original-idempotency history as not exported. If exactly 1,000 rows are returned for a resource type, completeness cannot be proven without pagination and backup creation fails closed.
+### Source authority
 
-Restore requires a caller/provider-proven fresh authority plus programmatic Resource-emptiness verification. It reproduces current Resource revision numbers using deterministic restore-only idempotency keys and repeated final-payload upserts, then independently re-exports the target and requires exact material/digest parity. A hidden replay of a restore key is treated as evidence that the target is not fresh and fails closed.
+The source contained:
+- one canonical Entity at revision 2 with final payload `Synthetic Alpha / verified`;
+- one canonical Task at revision 1 with final payload `Synthetic restore proof task / open`;
+- one deliberate canonical `created` Event for the Entity;
+- four original source idempotency rows covering Entity revision 1, Entity revision 2, Task revision 1, and the Event append.
+
+A complete canonical source snapshot was read before backup/restore work. The exact same canonical source cells were read again afterward and were unchanged: same two Resources, same revisions/payloads/request hashes, same Event, and same four original idempotency rows. Provider backup/export therefore performed zero canonical source writes.
+
+### Backup material
+
+The v1 snapshot contained only the two current Resources, exact schema and explicit coverage declarations. Canonical material SHA-256 was:
+
+`7d99f927d3d5cec73a0c06abd13db06fc707b8f517090f2c6cd195db5ebd4c45`
+
+The deliberate source Event and four original idempotency-history rows were not part of artifact material, exactly as v1 declares.
+
+### Fresh target and restore
+
+Before restore, the independent target had metadata/headers only and zero Resources, zero Events and zero idempotency rows.
+
+Restore replayed exactly the v1 service semantics:
+1. final Entity payload -> revision 1;
+2. same final Entity payload -> revision 2;
+3. final Task payload -> revision 1.
+
+Each revision used a deterministic restore-only idempotency key and an atomic Google batch containing the Resource mutation plus its restore Idempotency record. Exact readback after Entity revisions confirmed the expected state.
+
+Final target state:
+- Entity: exact source identity/payload at revision 2;
+- Task: exact source identity/payload at revision 1;
+- Events: header-only, proving the source Event was **not** silently restored;
+- Idempotency: exactly three restore-generated upsert records, not the four original source-history records.
+
+Independent target re-export reproduced the same backup unsigned material and exact SHA-256:
+
+`7d99f927d3d5cec73a0c06abd13db06fc707b8f517090f2c6cd195db5ebd4c45`
+
+This proves the stock-ChatGPT/native Google current-Resource export/fresh-target restore/readback protocol faithfully. It does **not** claim that the Python `BackupService` executed inside Google connector runtime, and it does not upgrade v1 into Event-history, archive, encryption, scheduler, RPO/RTO, or disaster-recovery proof.
+
+Presentation-only header freezing/column sizing occurred only after functional proof and did not alter canonical Resource/Event/Idempotency material.
+
+## Candidate lifecycle state
+
+- `BACKUP-001`: implementation, direct tests, release guards and fresh provider restore/readback evidence complete; must remain **candidate-unmerged** until PR #74 merges and post-merge `main` verification passes.
+- `BACKUP-CORE-001`: sole active work row; not complete until exact-head CI, protected merge and post-merge `main` CI are green.
+- `AUTHORITY-MIGRATION-001`, provider archive adapters, encryption/retention policy, automatic scheduling, service activation, legacy migration, Android, par, recipes and meals remain unfinished.
 
 ## Exact next action
 
-1. Finish direct backup tests and component ownership registration.
-2. Wire complete no-app backup/recovery boundaries and release guards.
-3. Run CI to green before provider writes.
-4. Perform the strongest faithful fresh isolated Google source-export plus fresh-target restore/readback proof supported by the native connector contract.
-5. Reconcile candidate lifecycle evidence, run final exact-head CI, merge PR #74 with expected-head protection, and verify remote `main` plus post-merge CI.
+1. Reconcile candidate evidence in `FEATURES.md` and `BACKLOG.md` without marking the packet merged early.
+2. Update PR #74 body with implementation, CI and provider evidence.
+3. Read the live PR #74 exact head and mergeability.
+4. Require CI success on that exact final head.
+5. Merge PR #74 only with expected-head protection.
+6. Verify remote `main` points to the merge SHA and require post-merge `main` CI success.
+7. Create a fresh post-merge lifecycle checkpoint marking `BACKUP-001` / `BACKUP-CORE-001` merged/completed and dynamically rank the next bounded packet.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-020-backup-core` descends exactly from verified-green `main` SHA `a906fdd0e64dc661774fc7530007030dd1249522`, PR #74 still targets `main`, and the active work row remains only `BACKUP-CORE-001`. Do not touch protected legacy production state. Do not expand this packet into provider archive infrastructure, encryption policy, scheduler automation, authority migration, legacy migration, Android, par, recipes or meal planning.
+Read this file first. Confirm branch `integration/m0-020-backup-core` still targets PR #74 against `main`, and verify the live branch head before any merge. Provider proof is complete; do not repeat it against protected state. Do not expose proof spreadsheet identifiers/URLs publicly. Do not expand this packet into provider archive infrastructure, Event-history backup, encryption policy, scheduler automation, authority migration, legacy migration, Android, par, recipes or meal planning.
