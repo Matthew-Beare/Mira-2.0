@@ -23,7 +23,7 @@ Evidence:
 - complete no-app/release guards are merged;
 - protected legacy production state was not used or modified.
 
-`GROCERY-001` / `GROCERY-CORE-001` must be reconciled from candidate/active to merged/completed evidence before implementation grows.
+`GROCERY-001` / `GROCERY-CORE-001` are reconciled to merged/completed evidence in `FEATURES.md` and `BACKLOG.md`.
 
 ## Active packet
 
@@ -31,11 +31,12 @@ Evidence:
 
 - **Primary work:** `BACKUP-CORE-001`
 - **Primary features:** `BACKUP-001`
-- **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `AUTH-001`, `AUTHORITY-MIGRATION-001`, `SERVICE-DEPS-009`, `DATA-001`
+- **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `AUTH-001`, `DATA-001`
+- **Related downstream work:** `AUTHORITY-MIGRATION-001`, `SERVICE-DEPS-009`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-020-backup-core`
 - **Base SHA:** `a906fdd0e64dc661774fc7530007030dd1249522`
-- **PR:** not yet opened
+- **PR:** `#74`
 - **Objective:** implement the smallest provider-neutral backup/restore integrity slice that deterministically exports canonical structured state, hashes and verifies the artifact, restores into a fresh isolated compatible authority, and proves material parity without claiming provider archive durability, encryption, incrementality, scheduling, migration cutover, or disaster-recovery guarantees that are not actually verified.
 
 ## Session-start alignment verification — 2026-08-30
@@ -44,10 +45,11 @@ Evidence:
 - `BACKUP-001` is `required/data-integrity` and depends only on `RECOVERY-002` semantically.
 - `RECOVERY-002` is test-verified.
 - `AUTHORITY-MIGRATION-001` depends on verified backup/restore, so this unlocks protected future backend cutover.
-- `GROCERY-001` is merged in PR #73 and requires lifecycle evidence reconciliation only.
+- `GROCERY-001` is merged in PR #73 and reconciled to merged/provider-readback evidence.
 
 ### `BACKLOG.md`
-- `BACKUP-CORE-001` is a PREREQUISITE with dependencies `BACKUP-001`, `RECOVERY-002`, and completed `STORE-ADAPTER-001A`.
+- `BACKUP-CORE-001` is the sole active work row and depends on `BACKUP-001`, `RECOVERY-002`, and completed `STORE-ADAPTER-001A`.
+- `GROCERY-CORE-001` is complete in PR #73.
 - `PAR-CORE-001` is an optional ENHANCEMENT; recipe/meal work is LATER.
 - data-integrity work outranks convenience enhancements.
 
@@ -88,16 +90,20 @@ Evidence:
 20. Exact-head CI and post-merge `main` CI are required.
 21. Leave provider archive adapters, encryption/retention policy, automatic scheduling, service activation, authority cutover, legacy migration, Android, par, recipes and meals unfinished.
 
+## Implementation finding
+
+The public `StructuredStateAdapter` can deterministically enumerate current Resources by declared type, but it cannot globally enumerate every Event stream or persisted idempotency row. Backup artifact v1 therefore covers complete current Resource state only under the public 1,000-row query bound and explicitly declares Event/original-idempotency history as not exported. If exactly 1,000 rows are returned for a resource type, completeness cannot be proven without pagination and backup creation fails closed.
+
+Restore requires a caller/provider-proven fresh authority plus programmatic Resource-emptiness verification. It reproduces current Resource revision numbers using deterministic restore-only idempotency keys and repeated final-payload upserts, then independently re-exports the target and requires exact material/digest parity. A hidden replay of a restore key is treated as evidence that the target is not fresh and fails closed.
+
 ## Exact next action
 
-1. Reconcile grocery merge evidence and mark only `BACKUP-CORE-001` active.
-2. Inspect `StructuredStateAdapter` and provider adapters for deterministic export/restore and Event-enumeration limits.
-3. Define minimal versioned artifact/digest/parity semantics.
-4. Implement provider-neutral backup/restore core and synthetic tests.
-5. Wire ownership and no-app/release guards.
-6. Run CI before provider writes.
-7. Perform the strongest faithful isolated Google proof, then candidate lifecycle, exact-head CI, protected merge and remote `main` verification.
+1. Finish direct backup tests and component ownership registration.
+2. Wire complete no-app backup/recovery boundaries and release guards.
+3. Run CI to green before provider writes.
+4. Perform the strongest faithful fresh isolated Google source-export plus fresh-target restore/readback proof supported by the native connector contract.
+5. Reconcile candidate lifecycle evidence, run final exact-head CI, merge PR #74 with expected-head protection, and verify remote `main` plus post-merge CI.
 
 ## Recovery protocol
 
-Read this file first. Confirm branch `integration/m0-020-backup-core` descends exactly from verified-green `main` SHA `a906fdd0e64dc661774fc7530007030dd1249522`. Do not touch protected legacy production state. Do not expand this packet into provider archive infrastructure, encryption policy, scheduler automation, authority migration, legacy migration, Android, par, recipes or meal planning.
+Read this file first. Confirm branch `integration/m0-020-backup-core` descends exactly from verified-green `main` SHA `a906fdd0e64dc661774fc7530007030dd1249522`, PR #74 still targets `main`, and the active work row remains only `BACKUP-CORE-001`. Do not touch protected legacy production state. Do not expand this packet into provider archive infrastructure, encryption policy, scheduler automation, authority migration, legacy migration, Android, par, recipes or meal planning.
