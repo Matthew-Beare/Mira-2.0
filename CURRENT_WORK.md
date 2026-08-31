@@ -8,6 +8,24 @@ Default Personal MIRA is stock ChatGPT + Google Workspace with no external infra
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md`.
 
+## Session-start alignment verification — 2026-08-31
+
+### `FEATURES.md`
+
+Reviewed the canonical feature index. `CAL-005` is the required provider/appointment identity reconciliation feature; downstream intake, Calendar projection, reminders, outbound contact, and administrative-health composition remain separate feature boundaries.
+
+### `BACKLOG.md`
+
+Reviewed the dynamically ranked backlog. `APPOINTMENT-IDENTITY-001` is the single active work item in `M2-M0-021`; the completed backup predecessor remains closed and no higher-priority integrity blocker is recorded.
+
+### `ROADMAP.md`
+
+Reviewed the active milestone direction. The packet remains aligned with the stock-ChatGPT + Personal Google no-app path and stays ahead of Android/mobile expansion.
+
+### Direction result
+
+**ALIGNED.** Continue the bounded provider-neutral appointment identity core. Do not expand into extraction, Calendar writes, reminders, outbound email, medical interpretation, legacy migration, or Android.
+
 ## Completed predecessor
 
 ### `M2-M0-020` — Provider-neutral backup / restore core
@@ -29,15 +47,15 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 ### `M2-M0-021` — Appointment identity reconciliation core
 
 - **Primary work:** `APPOINTMENT-IDENTITY-001`
-- **Primary feature:** `CAL-005`
-- **Related features/invariants:** `RECOVERY-002`, `PROFILE-012`, `PROFILE-013`, `CAL-008`, `CAL-006`, `CAL-007`, `MAIL-002`, `HEALTH-001`
+- **Primary features:** `CAL-005`
+- **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `PROFILE-012`, `PROFILE-013`, `CAL-008`, `CAL-006`, `CAL-007`, `MAIL-002`, `HEALTH-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-021-appointment-identity`
 - **Base SHA:** `10a8c43084ae75703a197ce7ea2f0cda734fca04`
 - **Lifecycle checkpoint commits:** `83faeed82c43eb970926290abd8b30f4d67d3156`, `70c36b758895d32bbf662d365da999b028653f4c`
-- **Current head before this checkpoint:** `70c36b758895d32bbf662d365da999b028653f4c`
-- **PR:** not opened yet
-- **Blockers:** none known; implementation must remain provider-neutral and synthetic-first.
+- **Implementation/ownership head before this checkpoint:** `9702da81571275b2b9ba18ccb35cfa820384b6eb`
+- **PR:** #75 draft
+- **Blockers:** first PR CI run `33372617001` failed only at the work-session-alignment gate because this file used noncanonical field labels and omitted the required session-start authority review; compile, feature registry, product ledger, and Personal starter distribution passed before that gate stopped the job.
 
 ### Objective
 
@@ -70,16 +88,19 @@ Implement the smallest provider-neutral canonical appointment/provider identity 
 
 - `FEATURES.md` defines `CAL-005` as required appointment/provider identity reconciliation with normalized organization/contact and specialty/type attributes.
 - `BACKLOG.md` ranks `APPOINTMENT-IDENTITY-001` active in `M2-M0-021` and records the explicit provider-neutral identity-only scope.
-- Branch `integration/m0-021-appointment-identity` is based on the verified PR #74 merge checkpoint and contains only lifecycle activation changes so far.
+- `mira/appointments.py` now implements separate provider and appointment resources, exact identity-key reconciliation, immutable source fingerprints, field-authority precedence, explicit Needs Review outcomes, and no downstream Calendar/reminder/contact behavior.
+- `tests/test_appointments.py` provides 12 direct synthetic tests covering the acceptance boundary; the same matrix passed against a local contract-compatible in-memory adapter before push.
+- `project/code_ownership.json` registers `mira/appointments.py` under `APPOINTMENT-IDENTITY-001` / `CAL-005` with direct verification at `tests/test_appointments.py`.
+- Draft PR #75 exists solely to run the required PR CI gates before release wiring or merge consideration.
 - Protected legacy production state has not been used or modified for this packet.
 
 ## Exact next action / resume point
 
-1. Inspect existing canonical identity/resource models and appointment/provider-related tests/contracts before adding code.
-2. Draft the minimal data/service contract for provider identity, appointment occurrence identity, reconciliation result, provenance/confidence, and ambiguity handling.
-3. Implement the smallest synthetic provider-neutral slice with direct tests.
-4. Run baseline repository gates before adding release/no-app wiring.
-5. Keep `CURRENT_WORK`, `FEATURES`, `BACKLOG`, and `ROADMAP` aligned at every checkpoint; do not expand into `CAL-008`, Calendar projection, reminders, outbound email, health interpretation, migration, or Android.
+1. Verify the new PR CI run after this alignment repair.
+2. If any gate fails, repair only the reported packet/baseline blocker before adding further feature work.
+3. Once direct core and repository gates are green, inspect the no-app/release contract and add only the minimum provider-neutral wiring/evidence required by acceptance criterion 9.
+4. Re-run exact-head CI, update `CURRENT_WORK`, `FEATURES`, `BACKLOG`, and `ROADMAP` with evidence, then remove draft status only when the packet is actually merge-ready.
+5. Do not expand into `CAL-008`, Calendar projection, reminders, outbound email, health interpretation, migration, or Android.
 
 ## Recovery protocol
 
