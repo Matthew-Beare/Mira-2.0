@@ -45,7 +45,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `TASK-002` | Evidence-grounded next actions and honest completion state | accepted/integrity rule | specified | -
 - `RECOVERY-001` | Phase-aware Run Log, durable checkpoints and circuit-breaker recovery | required | test_verified | -
 - `RECOVERY-002` | Explicit module dependency boundaries and failure isolation | required | test_verified | -
-- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | specified+candidate_unmerged | RECOVERY-002
+- `BACKUP-001` | Verified provider-neutral backup and restore lifecycle | required/data-integrity | test_verified+provider_verified+candidate_unmerged | RECOVERY-002
 - `CAL-001` | Saturday AM seven-day appointment lookahead | required | test_verified | -
 - `CAL-002` | Day-before and morning-of appointment reminders | required | test_verified | -
 - `CAL-003` | Configurable relative appointment reminder, default one hour before | required | test_verified | -
@@ -161,7 +161,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - G2 Google Workspace and Microsoft 365 state/evidence portability | STORE-001,PROVIDER-001,PROVIDER-002,SOURCE-002,CAL-007,g-02 | covered-by-provider-adapters
 - G3 Apple/iCloud and portable-file manual bridge | PROVIDER-002,SOURCE-002,STORE-001,CAL-007,g-03 | manual-lane-no-fabricated-automation
 - G4 Locked-down and regulated enterprise/VA deployment lane | ENTERPRISE-001,ONBOARD-006,PROVIDER-001,PROVIDER-002,SOURCE-002,DIST-002,PROFILE-013,g-04 | managed-regulated-boundary
-- G5 Deterministic Personal/Public/Institutional release channels | DIST-001,DIST-002,SOURCE-001,g-05 | confirmed-distribution-boundary
+- G5 Deterministic sanitized Personal/Public/Institutional release channels | DIST-001,DIST-002,SOURCE-001,g-05 | confirmed-distribution-boundary
 - G6 Eventual PostgreSQL/private SQL canonical service | STORE-001,AUTH-001,API-001,g-06 | backend-adapter-choice-not-product-authority
 - G7 Policy/data API foundation | API-001,AUTH-001,STORE-001,RECOVERY-002,g-07 | shared-client-prerequisite; PROFILE-013 conditional for cross-person/shared resources
 - G8 Operational observability/Grafana dashboards | OBS-001,AUTH-001,RECOVERY-002,g-08 | optional-read-only-projection
