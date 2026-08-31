@@ -1,10 +1,10 @@
 """Google Workspace first-run bundle contract for MIRA.
 
 The default Personal MIRA deployment begins with a copied Google Sheet and its
-bound Apps Script. This module treats the Apps Script files and complete no-app
-operating instructions as one release artifact: it validates package shape and
-rejects provider identifiers or secrets from the public source tree without
-importing Google-specific runtime behavior into provider-neutral core modules.
+bound Apps Script. This module treats the default Apps Script files and complete
+no-app operating instructions as one release artifact: it validates package
+shape and rejects provider identifiers, secrets, or optional-provider permission
+creep from the public default starter.
 """
 
 from __future__ import annotations
@@ -73,6 +73,12 @@ _PROTOCOL_MARKERS = (
     "Silence is never an answer.",
     "at most one new unanswered discovery topic",
     "After seven distinct topic-days",
+    "## Intent-first provider activation",
+    "Yes, use my calendar",
+    "provider's own unavoidable authorization",
+    "Do not ask a normal user to create a Calendar",
+    "single_writer_preflight_non_atomic",
+    "MIRA-PROJECTION-ID:",
     "## Canonical tasks",
     "`state`: `open`, `completed`, or `cancelled`",
     "## Canonical receipts and purchase history",
@@ -145,7 +151,7 @@ _PROTOCOL_MARKERS = (
     "`appointment_service_activated`: false",
     "service_state/appointments_calendar",
     "`activation_state` to `requested`",
-    "Do **not** mark the service active.",
+    "Do **not** mark the service active",
     "## Canonical current-Resource backup and isolated restore",
     "A MIRA backup artifact is a **nonauthoritative snapshot**",
     "complete_current_resources_under_query_bound",
@@ -180,7 +186,7 @@ class WorkspaceBundle:
 
 
 def load_workspace_bundle(root: str | Path = "workspace/apps_script") -> WorkspaceBundle:
-    """Load and validate the public Google Workspace starter artifact."""
+    """Load and validate the public default Google Workspace starter artifact."""
 
     base = Path(root)
     files: dict[str, str] = {}
@@ -204,7 +210,9 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
         missing = sorted(set(_REQUIRED_FILES) - set(files))
         extra = sorted(set(files) - set(_REQUIRED_FILES))
         raise WorkspaceBundleError(
-            f"Workspace bundle files mismatch; missing={missing}, extra={extra}"
+            "Workspace bundle files mismatch; missing={missing}, extra={extra}".format(
+                missing=missing, extra=extra
+            )
         )
 
     combined = "\n".join(files[name] for name in _REQUIRED_FILES)
@@ -229,6 +237,10 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
         raise WorkspaceBundleError(
             "Workspace Code.gs is missing required symbols: " + ", ".join(missing_symbols)
         )
+    if ".addItem('Enable Calendar', 'miraEnableGoogleCalendar')" in code:
+        raise WorkspaceBundleError(
+            "default Personal starter must not require a hidden Sheet menu for Calendar activation"
+        )
 
     worker = files["CommandWorker.gs"]
     worker_symbols = (
@@ -249,7 +261,39 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
     if "https://www.googleapis.com/auth/spreadsheets.currentonly" not in manifest:
         raise WorkspaceBundleError("Workspace manifest must remain current-Sheet scoped")
     if "https://www.googleapis.com/auth/script.scriptapp" not in manifest:
-        raise WorkspaceBundleError("Workspace queued worker requires bounded trigger-management scope")
+        raise WorkspaceBundleError(
+            "Workspace queued worker requires bounded trigger-management scope"
+        )
+    forbidden_default_scopes = (
+        "https://www.googleapis.com/auth/script.external_request",
+        "https://www.googleapis.com/auth/calendar.app.created",
+        "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/calendar.events",
+        "https://www.googleapis.com/auth/calendar.calendars",
+    )
+    leaked_scopes = [scope for scope in forbidden_default_scopes if scope in manifest]
+    if leaked_scopes:
+        raise WorkspaceBundleError(
+            "default Personal starter must not pre-authorize optional Calendar/provider scopes: "
+            + ", ".join(leaked_scopes)
+        )
+
+    readme = files["README.md"]
+    readme_markers = (
+        "Calendar is not authorized during unrelated MIRA Sheet setup.",
+        "ordinary-language user intent",
+        "provider's own authorization",
+        "MIRA-PROJECTION-ID:",
+        "single_writer_preflight_non_atomic",
+        "The stronger Apps Script Calendar adapter is not part of the default Personal starter.",
+    )
+    missing_readme = [marker for marker in readme_markers if marker not in readme]
+    if missing_readme:
+        raise WorkspaceBundleError(
+            "Workspace README is missing intent-first provider activation markers: "
+            + ", ".join(missing_readme)
+        )
 
     if "MIRA_SPREADSHEET_ID" not in code or "PropertiesService" not in code:
         raise WorkspaceBundleError(

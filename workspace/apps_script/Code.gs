@@ -5,6 +5,10 @@
  * perform canonical read queries through persisted Authority state. Writes and
  * external client authentication are intentionally not implemented in this
  * slice; they remain fail-closed until the next packet checkpoint.
+ *
+ * Optional provider activation such as Calendar is intentionally not exposed
+ * as a Sheet menu ritual. Personal users express that intent in normal MIRA
+ * conversation and provider-native consent is surfaced only when required.
  */
 
 const MIRA_SPREADSHEET_PROPERTY_ = 'MIRA_SPREADSHEET_ID';
@@ -33,7 +37,7 @@ function miraInitializeCopy() {
   );
   SpreadsheetApp.getUi().alert(
     'MIRA initialized',
-    'This copy is now bound to its own MIRROR spreadsheet state.',
+    'This copy is now bound to its own MIRA spreadsheet state.',
     SpreadsheetApp.getUi().ButtonSet.OK,
   );
 }

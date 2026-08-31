@@ -243,6 +243,15 @@
       "verification": ["tests/test_calendar_projection.py"]
     },
     {
+      "id": "google-calendar-native-personal",
+      "responsibility": "Stock-ChatGPT Google Calendar same-user single-writer projection adapter with intent-first activation, stable MIRA event identity, lost-create-ack recovery, exact preflight drift detection and exact post-write readback.",
+      "why_separate": "The native Personal connector is the ordinary-user Google Calendar lane and has a weaker concurrency boundary than the provider-neutral projection core or stronger ETag-guarded Apps Script adapter. Keeping it separate makes its non-atomic update evidence explicit instead of exporting technical setup to the user or pretending shared-writer safety.",
+      "owned_paths": ["mira/google_calendar_native.py"],
+      "feature_ids": ["CAL-006", "CAL-007", "ONBOARD-006", "PROVIDER-002", "RECOVERY-002"],
+      "work_ids": ["CALENDAR-PROJECTION-GOOGLE-001"],
+      "verification": ["tests/test_google_calendar_native.py"]
+    },
+    {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
