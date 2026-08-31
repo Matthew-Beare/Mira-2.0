@@ -308,6 +308,23 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
             "Workspace starter must use app-created Calendar scope instead of broad Calendar property management"
         )
 
+    readme = files["README.md"]
+    readme_markers = (
+        "Copying the official Google Sheet also copies its container-bound Apps Script.",
+        "**MIRA → Enable Calendar**",
+        "The user does **not** manually create a secondary calendar",
+        "`calendar.app.created`",
+        "`calendar.calendarlist.readonly`",
+        "The release validator rejects broad `calendar`, blanket `calendar.events`, and `calendar.calendars` scopes.",
+        "Maintainer/template publication evidence is separate from ordinary-user installation evidence.",
+    )
+    missing_readme = [marker for marker in readme_markers if marker not in readme]
+    if missing_readme:
+        raise WorkspaceBundleError(
+            "Workspace README is missing ordinary-user Calendar/install contract markers: "
+            + ", ".join(missing_readme)
+        )
+
     if "MIRA_SPREADSHEET_ID" not in code or "PropertiesService" not in code:
         raise WorkspaceBundleError(
             "Workspace starter must bind each copied Sheet through Script Properties"
