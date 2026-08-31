@@ -184,13 +184,13 @@ function post(context, pathInfo, body) {
   );
 }
 
-test('browser initializer binds the copied sheet and exposes one-click Calendar setup', () => {
+test('browser initializer binds the copied sheet without optional Calendar setup ceremony', () => {
   const app = runtime({initialized: false});
   app.context.onOpen();
   assert.deepEqual(app.menu, [
     ['MIRA', 'Initialize this copy', 'miraInitializeCopy'],
-    ['MIRA', 'Enable Calendar', 'miraEnableGoogleCalendar'],
   ]);
+  assert.equal(typeof app.context.miraEnableGoogleCalendar, 'undefined');
   app.context.miraInitializeCopy();
   assert.equal(app.properties.get('MIRA_SPREADSHEET_ID'), 'sheet-test-copy');
   assert.equal(app.alerts.length, 1);
