@@ -14,6 +14,7 @@ from datetime import datetime
 import hashlib
 import re
 from typing import Any, Mapping, Sequence
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .structured_state import (
     IdempotencyConflictError,
@@ -93,6 +94,8 @@ class AppointmentCandidate:
     evidence: EvidenceRef
     provider_id: str
     start_at: str | None = None
+    end_at: str | None = None
+    timezone: str | None = None
     title: str | None = None
     location: str | None = None
     appointment_type: str | None = None
@@ -122,6 +125,8 @@ class AppointmentView:
     identity_keys: tuple[str, ...]
     provider_id: str
     start_at: str | None
+    end_at: str | None
+    timezone: str | None
     title: str | None
     location: str | None
     appointment_type: str | None
@@ -299,10 +304,13 @@ class AppointmentIdentityService:
         incoming = {
             "provider_id": provider_id,
             "start_at": _optional_timestamp(candidate.start_at, "start_at"),
+            "end_at": _optional_timestamp(candidate.end_at, "end_at"),
+            "timezone": _optional_timezone(candidate.timezone),
             "title": _optional_text(candidate.title, "title", 1000),
             "location": _optional_text(candidate.location, "location", 1000),
             "appointment_type": _optional_text(candidate.appointment_type, "appointment_type", 500),
         }
+        _validate_appointment_timing(incoming)
         keys = _appointment_identity_keys(candidate, incoming)
         appointments = self.appointments(limit=1000)
 
@@ -377,6 +385,7 @@ class AppointmentIdentityService:
             return AppointmentReconciliationResult(
                 status="needs_review", appointment=current, reason=field_conflict
             )
+        _validate_appointment_timing(updated_fields)
         merged_keys = tuple(sorted(set(current.identity_keys).union(keys)))
         new_evidence = _append_evidence(current.evidence, evidence)
         if (
@@ -552,7 +561,9 @@ def _matching_views(views, keys: tuple[str, ...], exclude_id: str | None = None)
         return []
     matches = []
     for row in views:
-        row_id = getattr(row, "provider_id", getattr(row, "appointment_id", None))
+        row_id = getattr(row, "appointment_id", None)
+        if row_id is None:
+            row_id = getattr(row, "provider_id", None)
         if exclude_id is not None and row_id == exclude_id:
             continue
         if wanted.intersection(row.identity_keys):
@@ -643,6 +654,8 @@ def _appointment_fields(view: AppointmentView) -> dict[str, str | None]:
     return {
         "provider_id": view.provider_id,
         "start_at": view.start_at,
+        "end_at": view.end_at,
+        "timezone": view.timezone,
         "title": view.title,
         "location": view.location,
         "appointment_type": view.appointment_type,
@@ -755,19 +768,30 @@ def _appointment_view(record: ResourceRecord) -> AppointmentView:
     appointment_id, keys, authorities, evidence = _parse_common(
         record, payload, "appointment_id"
     )
+    extended_timing = "end_at" in payload or "timezone" in payload
     fields = {
         "provider_id": _token(payload.get("provider_id"), "provider_id"),
         "start_at": _optional_timestamp(payload.get("start_at"), "start_at"),
+        "end_at": _optional_timestamp(payload.get("end_at"), "end_at"),
+        "timezone": _optional_timezone(payload.get("timezone")),
         "title": _optional_text(payload.get("title"), "title", 1000),
         "location": _optional_text(payload.get("location"), "location", 1000),
         "appointment_type": _optional_text(
             payload.get("appointment_type"), "appointment_type", 500
         ),
     }
+    _validate_appointment_timing(fields)
+    normalized_fields = fields
+    if not extended_timing:
+        normalized_fields = {
+            key: value
+            for key, value in fields.items()
+            if key not in {"end_at", "timezone"}
+        }
     normalized = _appointment_payload(
         appointment_id=appointment_id,
         identity_keys=keys,
-        fields=fields,
+        fields=normalized_fields,
         field_authority=authorities,
         evidence=evidence,
     )
@@ -934,6 +958,46 @@ def _timestamp(value: object, field: str) -> str:
 
 def _optional_timestamp(value: object, field: str) -> str | None:
     return None if value is None else _timestamp(value, field)
+
+
+def _optional_timezone(value: object) -> str | None:
+    if value is None:
+        return None
+    name = _text(value, "timezone", 100)
+    try:
+        ZoneInfo(name)
+    except ZoneInfoNotFoundError as exc:
+        raise AppointmentIdentityValidationError(
+            f"timezone is not a known IANA timezone: {name}"
+        ) from exc
+    return name
+
+
+def _validate_appointment_timing(fields: Mapping[str, str | None]) -> None:
+    start_at = fields.get("start_at")
+    end_at = fields.get("end_at")
+    timezone = fields.get("timezone")
+    if end_at is not None and start_at is None:
+        raise AppointmentIdentityValidationError(
+            "end_at cannot be supplied without start_at"
+        )
+    start = None if start_at is None else datetime.fromisoformat(start_at)
+    end = None if end_at is None else datetime.fromisoformat(end_at)
+    if start is not None and end is not None and end <= start:
+        raise AppointmentIdentityValidationError(
+            "end_at must be later than start_at"
+        )
+    if timezone is None:
+        return
+    zone = ZoneInfo(timezone)
+    if start is not None and start.astimezone(zone).utcoffset() != start.utcoffset():
+        raise AppointmentIdentityValidationError(
+            "start_at offset does not match timezone"
+        )
+    if end is not None and end.astimezone(zone).utcoffset() != end.utcoffset():
+        raise AppointmentIdentityValidationError(
+            "end_at offset does not match timezone"
+        )
 
 
 def _limit(value: object) -> int:
