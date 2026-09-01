@@ -13,6 +13,7 @@ its own required capability gates and every candidate is evaluated independently
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Iterable
 
@@ -138,11 +139,6 @@ class RouteRequest:
             self.preferred_provider_ids,
             "preferred_provider_ids",
         )
-        if self.required_provider_id is not None and preferences:
-            if self.required_provider_id not in preferences:
-                raise RuntimeRouterValidationError(
-                    "required_provider_id must appear in preferred_provider_ids when preferences are supplied"
-                )
         object.__setattr__(self, "preferred_provider_ids", preferences)
 
 
@@ -154,6 +150,7 @@ class CandidateRouteDecision:
     runtime_id: str
     provider_id: str
     service_id: str
+    policy_id: str
     eligible: bool
     reason_codes: tuple[str, ...]
     capability_evaluation: CapabilityEvaluation | None
@@ -191,6 +188,16 @@ def route_runtime(
 
     if not isinstance(request, RouteRequest):
         raise RuntimeRouterValidationError("request must be a RouteRequest")
+    if (
+        not isinstance(max_age_seconds, int)
+        or isinstance(max_age_seconds, bool)
+        or max_age_seconds < 1
+    ):
+        raise RuntimeRouterValidationError(
+            "max_age_seconds must be a positive integer"
+        )
+    _utc_timestamp(now, "now")
+
     material = _candidates(candidates)
     if not material:
         return RuntimeRouteResult(
@@ -201,17 +208,8 @@ def route_runtime(
             selected_provider_id=None,
             candidate_decisions=(),
         )
-    if (
-        not isinstance(max_age_seconds, int)
-        or isinstance(max_age_seconds, bool)
-        or max_age_seconds < 1
-    ):
-        raise RuntimeRouterValidationError(
-            "max_age_seconds must be a positive integer"
-        )
-    if not isinstance(now, str) or not now.strip() or now != now.strip():
-        raise RuntimeRouterValidationError("now must be a non-empty trimmed timestamp")
 
+    ordered_candidates = tuple(sorted(material, key=lambda item: item.lane_id))
     decisions = tuple(
         _evaluate_candidate(
             request,
@@ -219,14 +217,12 @@ def route_runtime(
             now=now,
             max_age_seconds=max_age_seconds,
         )
-        for candidate in sorted(material, key=lambda item: item.lane_id)
+        for candidate in ordered_candidates
     )
 
     eligible = [
         (candidate, decision)
-        for candidate, decision in zip(
-            sorted(material, key=lambda item: item.lane_id), decisions
-        )
+        for candidate, decision in zip(ordered_candidates, decisions)
         if decision.eligible
     ]
     if eligible:
@@ -337,12 +333,15 @@ def _candidate_decision(
     reasons: Iterable[str],
     evaluation: CapabilityEvaluation | None,
 ) -> CandidateRouteDecision:
-    normalized_reasons = tuple(sorted({_token(reason, "reason_code") for reason in reasons}))
+    normalized_reasons = tuple(
+        sorted({_token(reason, "reason_code") for reason in reasons})
+    )
     return CandidateRouteDecision(
         lane_id=candidate.lane_id,
         runtime_id=candidate.runtime_id,
         provider_id=candidate.capability.provider_id,
         service_id=candidate.capability.service_id,
+        policy_id=candidate.policy.policy_id,
         eligible=not normalized_reasons,
         reason_codes=normalized_reasons,
         capability_evaluation=evaluation,
@@ -453,6 +452,22 @@ def _ordered_unique_tokens(values: tuple[str, ...], field: str) -> tuple[str, ..
         seen.add(token)
         result.append(token)
     return tuple(result)
+
+
+def _utc_timestamp(value: object, field: str) -> datetime:
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise RuntimeRouterValidationError(
+            f"{field} must be a UTC ISO-8601 timestamp"
+        )
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise RuntimeRouterValidationError(
+            f"{field} must be a UTC ISO-8601 timestamp"
+        ) from exc
+    if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(parsed):
+        raise RuntimeRouterValidationError(f"{field} must use UTC")
+    return parsed.astimezone(timezone.utc)
 
 
 def _token(value: object, field: str) -> str:
