@@ -10,6 +10,31 @@ Authorization, plugin/app installation, verified provider capability, runtime ro
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and applicable product invariants.
 
+## Session-start alignment verification — 2026-09-01 closure
+
+### `FEATURES.md`
+
+- `PROVIDER-002` remains the ordinary-user provider onboarding feature and M2-M0-028 has implemented its provider-neutral connection-planning slice.
+- `PROVIDER-001` and `SOURCE-001` remain the canonical routing/capability truth consumed by that slice.
+- `ONBOARD-006`, `SERVICE-001`, and `RECOVERY-002` remain preserved invariants for browser-only ordinary-user setup, activation separation, and failure isolation.
+
+### `BACKLOG.md`
+
+- `PROVIDER-ONBOARD-001` still requires lifecycle reconciliation from queued to the verified PR #88 implementation evidence; this closure packet performs that governance work and must not overclaim live plugin/provider execution.
+- `ANDROID-COMMAND-BOUNDARY-001` remains partial with only its live isolated Google worker proof outstanding.
+- `ANDROID-CLIENT-CORE-001` remains queued behind that proof.
+- No unrelated queued feature outranks the bounded stock-ChatGPT host-execution proof plus live writer proof before Android.
+
+### `ROADMAP.md`
+
+- M2-M0.5 has already delivered a usable no-app foundation and multiple canonical verticals; provider connection hardening is now at closure.
+- M2-M1 remains paused only until the live isolated Google queued-writer proof is complete.
+- Apple/iCloud support is required direction but explicitly not a blocker for the current Google-first Personal path.
+
+### Direction result
+
+**ALIGNED.** Close M2-M0-028 at its demonstrated provider-neutral evidence ceiling, then prove the stock-ChatGPT native host connection executor seam, then finish the existing live queued-writer proof and start Android client core. Do not insert unrelated feature growth ahead of Android.
+
 ## Active packet
 
 ### `M2-M0-028` — Ordinary-user provider connection orchestration — closure checkpoint
