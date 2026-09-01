@@ -4,9 +4,9 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Repeated useful no-app verticals and integrity/recovery hardening remain ahead of Android. Normal user-facing branding is **MIRA**. `MIRROR` remains an internal database/reality-layer term only when a technical database-specific context requires it.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Repeated useful no-app verticals and ordinary-user onboarding/integration hardening remain ahead of Android. Normal user-facing branding is **MIRA**. `MIRROR` remains an internal database/reality-layer term only when a technical database-specific context requires it.
 
-Ordinary-user setup follows `PRODUCT_INVARIANTS.md`: users state intent in ordinary language, provider-native authorization is the only unavoidable provider ceremony, and MIRA performs technical setup when software can safely do it. Provider capability/readback evidence, service activation, source evidence, and canonical state remain separate truths.
+Ordinary-user setup follows `PRODUCT_INVARIANTS.md`: users state intent in ordinary language, provider-native authorization is the only unavoidable provider ceremony, and MIRA performs technical setup when software can safely do it. The connection-surface refinement under `PROVIDER-002` / `PROVIDER-ONBOARD-001` now requires obvious Connect/Connected/Reconnect/Needs-attention/Disconnect behavior wherever the client controls UI, with the closest supported native host/provider connection flow when stock ChatGPT controls the UI. Manual provider resource creation, copied IDs, scope editing, Apps Script/developer-console work, pasted code and terminal setup are prohibited for the default Personal path whenever software can route around them.
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and applicable cross-feature product invariants.
 
@@ -14,142 +14,114 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ### `FEATURES.md`
 
-- `CAL-005` canonical provider/appointment identity is merged/test-verified.
-- `CAL-008` requires multi-source appointment evidence intake with provenance, confidence, ambiguity handling, dedupe and canonical reconciliation; this packet implements the direct stock-ChatGPT text/image seam without pretending Gmail or Calendar-provider proof exists.
-- `CAL-006`/`CAL-007` projection remains capability-gated; successful appointment capture does not imply a Calendar event exists.
-- `SERVICE-001` keeps explicit user intent/readiness/activation separate from source evidence.
-- `MAIL-002` remains a hard outbound-contact boundary; direct appointment capture sends no mail.
+- `CAL-008` remains the primary feature for the closing direct no-app appointment slice.
+- `CAL-005`, `CAL-006`, `CAL-007`, `SERVICE-001`, `RECOVERY-002`, `ONBOARD-006`, `PROVIDER-002`, and `MAIL-002` remain preserved related product boundaries.
+- `PROVIDER-002` now explicitly carries the ordinary-user connection-surface refinement instead of creating a duplicate integration feature ID.
 
 ### `BACKLOG.md`
 
-- `APPOINTMENT-INTAKE-CORE-001` is complete through `M2-M0-024` / PR #79.
-- `APPOINTMENT-INTAKE-NOAPP-001` is the active direct text/image slice. Its implementation, release contract, and isolated Google Workspace persistence/readback are now verified; actual live stock-ChatGPT model extraction/vision remains a separate evidence ceiling.
-- `APPOINTMENT-INTAKE-GMAIL-001` remains separate downstream work because Gmail source capability/readback must not be smuggled into this packet.
-- `APPOINTMENT-INTAKE-001` remains a split/partial umbrella until remaining source lanes/evidence are verified.
+- `APPOINTMENT-INTAKE-NOAPP-001` remains the canonical work ID for M2-M0-025 and remains partial only at the live stock-ChatGPT source/model and live Calendar evidence layers.
+- `PROVIDER-ONBOARD-001` already exists as the canonical queued provider-onboarding work item; the new connection UX requirement refines that work rather than expanding this appointment implementation packet.
+- Android work remains separately preserved under `ANDROID-COMMAND-BOUNDARY-001`, `ANDROID-CLIENT-CORE-001`, and `ANDROID-SYNC`.
 
 ### `ROADMAP.md`
 
-- M2-M0.5 prioritizes repeated useful no-app Personal vertical progress before Android.
-- The direct appointment seam now composes existing canonical identity/intake and native Workspace foundations rather than introducing another authority.
-- Live Calendar projection, Gmail source integration and model/vision quality remain independently evidenced capabilities.
+- M2-M0.5 still prioritizes useful no-app Personal MIRA before Android becomes the development focus.
+- M2-M1 remains paused with the live isolated Google queued-writer proof as the first Android resume step.
+- The seamless-connection refinement strengthens ordinary-user onboarding but does not change the provider-neutral migration or shared-state architecture.
 
 ### Direction result
 
-**ALIGNED.** Complete `M2-M0-025` at the evidence level actually demonstrated: implementation/test verified plus isolated Google Workspace provider readback for appointment bindings/provider/appointment state. Do not claim live stock-ChatGPT extraction/vision or Calendar mutation from this evidence.
-
-## Completed predecessor
-
-### `M2-M0-024` — Appointment evidence intake/reconciliation core
-
-- **Work:** `APPOINTMENT-INTAKE-CORE-001` (split from umbrella `APPOINTMENT-INTAKE-001`)
-- **Feature:** `CAL-008`
-- **PR #79 merge/main SHA:** `d3ef80e1d9de8ddd610db4dbe2eea8ffd4f489c3`
-- **PR #79 final exact-head CI:** `33457428093` green
-- **PR #79 post-merge main CI:** `33457482126` green
-- **Closure PR #80 merge/main SHA:** `e400593af676ecbdf3c08d2eda2b8ab2eab0b87a`
-- **Closure post-merge main CI:** `33457864873` green
-- **Durable evidence:** provider-neutral intake/reconciliation, confidence/provenance gates, legacy-compatible end/timezone persistence, synthetic service-gated Calendar handoff, and CAL-005 same-start self-collision repair.
-- **Evidence ceiling:** no source-to-extraction orchestration, Gmail fetching, live Calendar mutation, reminder delivery, outbound provider contact, medical interpretation, or Android behavior was claimed.
+**ALIGNED.** Close M2-M0-025 at the evidence actually demonstrated, durably preserve the seamless provider-connection requirement under the existing provider-onboarding feature/work IDs, and do not silently expand this closure packet into Android, Gmail, live Calendar mutation, or a new provider runtime.
 
 ## Active packet
 
-### `M2-M0-025` — Direct no-app appointment text/image flow
+### `M2-M0-025` — Direct no-app appointment text/image flow — closure checkpoint
 
 - **Primary work:** `APPOINTMENT-INTAKE-NOAPP-001`
 - **Primary features:** `CAL-008`
 - **Related invariants/features:** `CAL-005`, `CAL-006`, `CAL-007`, `SERVICE-001`, `RECOVERY-002`, `ONBOARD-006`, `PROVIDER-002`, `MAIL-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-025-appointment-noapp`
-- **Base SHA:** `e400593af676ecbdf3c08d2eda2b8ab2eab0b87a`
-- **PR:** #81 open
-- **Green release-contract implementation head before lifecycle checkpoint:** `ba84b4883dced7ce032590a879a25183b49b2c69`
-- **CI on that head:** `33459111450` green
-- **Verification count:** 376 Python tests + 30 Workspace Apps Script tests passed; compile, feature registry, product lifecycle ledger, Personal distribution, work-session alignment and code ownership all green.
-- **Dependencies:** merged `APPOINTMENT-INTAKE-CORE-001`, `CHATGPT-API-CLIENT-001`, `API-DEPLOYMENT-001A`, `SERVICE-STATE-001`
-- **Blockers:** no implementation blocker. Live stock-ChatGPT text/image extraction/vision and live Calendar event projection remain unverified external evidence layers and must not be inferred from Workspace proof.
+- **Implementation branch:** `integration/m0-025-appointment-noapp`
+- **Closure branch:** `governance/m0-025-closure`
+- **Implementation base SHA:** `e400593af676ecbdf3c08d2eda2b8ab2eab0b87a`
+- **PR:** #81 merged
+- **Final PR head:** `249947fcde31435c24adeef5d6d39aa9da893d74`
+- **Final exact-head CI:** `33460001756` green
+- **Merge/main SHA:** `92ba63a9a7c5404309dd2f76231aed30fec76c4f`
+- **Post-merge main CI:** `33464770421` green
+- **Remote main readback:** `mira/appointment_noapp.py` present on `main`
+- **Closure PR:** #82 open
 
-### Objective
+### Completed objective
 
-Make direct appointment capture useful in stock ChatGPT without requiring Gmail or a custom app. When a user supplies appointment details as text or uploads an appointment image, MIRA has a deterministic runtime/release contract that converts structured model extraction into provenance-bound canonical provider/appointment reconciliation, asks only for materially blocking ambiguity, and persists/read backs the resulting canonical state through the native Personal Google Workspace path. Calendar projection remains optional downstream behavior only when the appointment service and provider lane are actually active/verified.
+M2-M0-025 provides the deterministic stock-ChatGPT Personal planning seam for direct appointment text/image evidence over the merged appointment identity/intake core and native Google Workspace persistence contract. It preserves provenance, fails closed on material ambiguity, asks only materially blocking clarification, reuses canonical reconciliation instead of inventing another identity engine, performs zero-write replay where appropriate, and keeps Calendar projection behind independently verified service/capability state.
 
-The stock ChatGPT model remains the semantic extractor for direct user text/image. Repository code owns deterministic provenance, confidence/identity gates, canonical mutation/readback planning, replay/correction semantics and the complete no-app operating contract. Unit/provider tests do not pretend to measure model vision quality.
+### Durable implementation evidence
 
-### Implemented and test-verified behavior
+- `mira/appointment_noapp.py` is merged to `main` and independently read back.
+- Direct `text` and `image` evidence contracts are deterministic and provenance-bound.
+- Text uses exact UTF-8 SHA-256 material identity without copying whole raw chat messages into canonical payloads.
+- Image evidence never fabricates a raw-file hash; when raw bytes are unavailable, deterministic normalized extraction material is explicitly identified as derived evidence.
+- Provider and appointment reconciliation reuse `AppointmentIdentityService` and `AppointmentIntakeService`.
+- Google Workspace appointment-provider/appointment authority bindings and exact Resource+Idempotency persistence/readback were verified in a fresh isolated synthetic Google namespace.
+- Protected Primary/Family Calendar and legacy Personal production state were not used as fixtures.
+- Final exact-head CI `33460001756` passed.
+- Expected-head protected PR #81 merge succeeded at `92ba63a9a7c5404309dd2f76231aed30fec76c4f`.
+- Post-merge `main` CI `33464770421` passed.
 
-- `mira/appointment_noapp.py` implements the direct no-app planning boundary without provider I/O inside the module.
-- Accepted direct source classes are exactly `text` and `image`.
-- Direct text uses SHA-256 of the exact UTF-8 user material with basis `exact_text_sha256` and does not copy the raw message wholesale into canonical payloads.
-- Image evidence uses `raw_file_sha256` only when a real raw-file digest is supplied; otherwise it uses explicitly labelled `normalized_extraction_sha256_v1` over deterministic structured extraction material. The fallback is never represented as an image-byte hash.
-- Stable source identity includes the fingerprint basis; conflicting material for one stable source fails closed to Needs Review.
-- A backward-compatible Personal enrichment planner validates the existing verified Google Sheets authority and adds only missing exact bindings for `appointment_provider`, `appointment`, and `calendar_projection`. Historical entity bootstrap is not rewritten. Duplicate/conflicting routing fails closed.
-- Fresh provider/appointment Resource readback is loaded into a planning snapshot and the real `AppointmentIdentityService` + `AppointmentIntakeService` execute the canonical CAL-005/CAL-008 rules. No second identity engine was created.
-- Only actual canonical provider/appointment changes become native `WorkspaceUpsertPlan` mutations; planned native records must exactly equal the canonical reconciliation result.
-- Native Workspace revision, idempotency, atomic Resource+Idempotency request material and exact readback semantics are reused unchanged.
-- Exact replay is zero-write; user-confirmed correction precedence is preserved.
-- Low-confidence/missing essential identity yields one concise materially blocking clarification; optional weak metadata remains omitted.
-- Calendar handoff remains service/capability-gated and was tested only with synthetic projection infrastructure.
-- Complete `MIRA_NO_APP_INSTRUCTIONS.md` and Workspace release guards now include direct appointment text/image provenance, binding enrichment, clarification, canonical write/readback and Calendar-downstream rules. Normal user-facing language is MIRA.
-- No Gmail fetching, OCR/model service, reminder scheduling, outbound provider contact, medical inference, Microsoft/Apple Calendar, Android or paid OpenAI API dependency was introduced.
+### Evidence ceiling
 
-### Fresh isolated Google Workspace provider evidence
+`APPOINTMENT-INTAKE-NOAPP-001` remains partial at the live source/model evidence layer. This packet does **not** claim:
 
-A fresh copy of a clean **synthetic** MIRA 2.0 proof spreadsheet was used. Its provider identifier is intentionally not stored in public Git. Legacy/personal production state and protected Calendars were not used.
+- independently verified live stock-ChatGPT text interpretation or image/vision extraction quality;
+- a live connector-runtime invocation of the Python planner;
+- Gmail appointment-source integration;
+- real Google/Microsoft/Apple Calendar event mutation/readback;
+- reminder delivery;
+- outbound provider contact;
+- medical interpretation;
+- Android behavior.
 
-Provider proof established:
+The umbrella `APPOINTMENT-INTAKE-001` therefore remains split/partial.
 
-1. mutable `Resources`, `Events`, and `Idempotency` state began empty apart from headers;
-2. the proof copy was upgraded only within the isolated synthetic namespace to the current appointment-capable Resource-type metadata;
-3. one synthetic `google-sheets-personal` authority was written with matching native Idempotency material and independently read back exactly;
-4. the three appointment-related authority bindings were written as one bounded batch and independently read back exactly;
-5. synthetic direct-text evidence using `exact_text_sha256` produced one deterministic provider and one deterministic appointment at revision 1;
-6. provider + appointment Resource and Idempotency rows were written through the native Workspace material contract and independently read back with exact stable identities, revisions, payloads, request hashes and resource references;
-7. no Calendar event was created and no source-provider or protected production state was mutated.
+## Product refinement captured during closure
 
-This proves the native Google Workspace binding/persistence/readback integration for direct appointment canonical material. It does **not** prove live stock-ChatGPT text interpretation, image vision/extraction quality, a complete connector-orchestration invocation of the new Python module, or live Calendar event projection.
+The customer reiterated a cross-product ordinary-user requirement: connecting apps must be as close to one-click as the host/provider permits. This does **not** expand the appointment implementation packet. It refines existing `PROVIDER-002` / `PROVIDER-ONBOARD-001` scope for later implementation.
 
-### Acceptance criteria status
+Durable rule now recorded in `PRODUCT_INVARIANTS.md` and `FEATURES.md`:
 
-1. Deterministic direct `text`/`image` evidence contract: **met/test-verified**.
-2. Source class/ref/time/authority/confidence/fingerprint basis without raw source copies: **met/test-verified**.
-3. Exact-text hash and no fake image raw hash: **met/test-verified**.
-4. Explicit derived image fingerprint fallback and source-conflict failure: **met/test-verified**.
-5. Concise materially blocking clarification; optional weak metadata omitted: **met/test-verified**.
-6. Provider then appointment reconciliation through merged core with correction precedence: **met/test-verified**.
-7. Identical direct evidence replay zero canonical revision/write: **met/test-verified**.
-8. Deterministic native Workspace mutation/readback plan: **met/test-verified**.
-9. Exact native Resource identity/revision/idempotency/readback; no model-local authority: **met/test-verified and isolated-Google readback verified**.
-10. Calendar only when effectively active/verified: **met in code/tests; synthetic projection only, no live Calendar write claimed**.
-11. No protected Primary/Family Calendar or legacy production fixture: **met**.
-12. No Gmail/outbound/reminder/medical/Microsoft/Apple/Android/paid-API expansion: **met**.
-13. Complete no-app operating/release contract updated: **met/test-verified**.
-14. Direct provenance/replay/conflict/correction/binding/readback/Calendar-gating tests: **met**.
-15. Production ownership/release/work-session gates: **met on `ba84b488...`**.
-16. Final exact-head CI, expected-head merge, remote-main readback and post-merge CI: **pending lifecycle checkpoint head**.
-17. Evidence honesty: **met**; Workspace provider readback is verified, live stock-ChatGPT model/vision and Calendar projection are explicitly unverified.
+- product-owned clients expose an obvious Connections/Integrations surface with actions such as **Connect Google Calendar**, **Connect Google Drive**, and **Connect Gmail**;
+- user-facing states include Connect, Connected, Reconnect, Needs attention, Unavailable and Disconnect;
+- selecting Connect launches the host/provider-native authorization flow directly;
+- MIRA performs post-consent capability discovery, binding and exact verification automatically;
+- provider authorization does not silently activate unrelated services or grant unrelated scope;
+- if stock ChatGPT cannot render MIRA-owned buttons, plain-language intent routes to the closest supported native ChatGPT/provider connection flow rather than exporting technical setup to the user;
+- future Android uses the same provider/service semantics through a native Connections surface rather than creating a second activation model.
 
-### Evidence state
+## Android status / preserved resume point
 
-- **Desired:** yes
-- **Specified:** yes
-- **Implemented:** yes
-- **Test-verified:** yes, head `ba84b4883dced7ce032590a879a25183b49b2c69`, CI `33459111450`, 376 Python + 30 Apps Script tests
-- **Integration-verified:** yes for isolated native Google Workspace appointment authority-binding, provider Resource, appointment Resource, Idempotency and exact readback material; synthetic-only source facts
-- **Live-verified:** no for actual stock-ChatGPT text/image extraction/vision or live Calendar projection
+Android remains M2-M1 and is **paused, not discarded** while usable no-app Personal MIRA is prioritized.
 
-### Lifecycle interpretation
+Current evidence:
 
-`M2-M0-025` can merge at implementation/test + bounded Workspace integration evidence once final exact-head CI is green. `APPOINTMENT-INTAKE-NOAPP-001` must remain **partial at the live source/model evidence layer** after merge unless a real stock-ChatGPT direct text/image extraction run is separately demonstrated. `APPOINTMENT-INTAKE-001` remains split/partial because Gmail and other source/provider evidence are separate child work.
+1. `ANDROID-COMMAND-BOUNDARY-001`: provider-neutral sequencing plus synthetic Google Workspace queued-writer implementation/test proof is complete from PRs #54/#55.
+2. The immediate Android prerequisite still pending is the **live isolated Google worker proof** for that stronger shared-writer boundary.
+3. `ANDROID-CLIENT-CORE-001` is queued immediately after that proof. It will own scoped/revocable enrollment/session identity, OS-protected credentials, bounded reads/commands, replay-safe offline queue, reconnect/cursor sync, conflict handling and exact server readback.
+4. `ANDROID-SYNC` then proves Android mutation of the same canonical state and stock ChatGPT readback from that same authority.
+5. Native notification/TTS delivery, camera/barcode/QR/NFC/BLE capture, release signing and broader UI polish follow the shared-state proof unless required by the core proof itself.
+
+There is therefore meaningful backend/client-boundary work already done, but **no current MIRA 2.0 Android UI implementation yet**.
 
 ## Exact next action / resume point
 
-1. Reconcile `BACKLOG.md` and PR #81 with the exact test/provider evidence above without committing any proof-spreadsheet/provider identifier.
-2. Require one final exact-head CI after lifecycle documentation changes.
-3. Fix only packet-local failures if any final gate regresses.
-4. Merge PR #81 only with `expected_head_sha` when final exact-head CI is green.
-5. Verify remote `main` contains the new runtime/release contract and verify post-merge `main` CI.
-6. Create a bounded closure checkpoint if required so Git records the actual merge SHA/post-merge CI before selecting new implementation scope.
-7. Do not expand this packet into Gmail fetching, OCR/model infrastructure, live Calendar mutation, reminders, outbound contact, medical meaning, Microsoft/Apple Calendar or Android.
+1. Reconcile `BACKLOG.md` with PR #81 merge/main/post-merge evidence and the refined `PROVIDER-ONBOARD-001` ordinary-user connection requirement without creating a duplicate feature ID.
+2. Keep `APPOINTMENT-INTAKE-NOAPP-001` partial at the live source/model evidence layer and the umbrella intake work split/partial.
+3. Re-run closure-branch lifecycle/CI gates after governance reconciliation.
+4. Merge closure PR #82 only with final exact-head green CI and expected-head protection, then verify remote `main` readback and push-event CI.
+5. Re-rank unfinished accepted M2-M0.5 work from canonical Git after closure. Seamless provider onboarding may rank highly because it unlocks multiple user-visible provider lanes, but it does not silently preempt dependency/integrity blockers.
+6. Do not resume Android merely because its status was discussed; if it becomes next work, first create the next bounded packet from the preserved live-worker proof resume point.
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Confirm PR #81 and branch `integration/m0-025-appointment-noapp`. The implementation/release contract is green at `ba84b4883dced7ce032590a879a25183b49b2c69` / CI `33459111450`, and bounded isolated Google Workspace provider readback has succeeded without protected production state. Continue only from the exact next action above and preserve the live-evidence ceiling.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. M2-M0-025 implementation is merged at `92ba63a9a7c5404309dd2f76231aed30fec76c4f`; final PR-head CI `33460001756` and post-merge `main` CI `33464770421` are green; `mira/appointment_noapp.py` is present on remote `main`. Continue only with closure/backlog reconciliation on `governance/m0-025-closure`; do not reconstruct Android or provider-onboarding work from conversational memory.
