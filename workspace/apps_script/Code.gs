@@ -23,6 +23,8 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('MIRA')
     .addItem('Initialize this copy', 'miraInitializeCopy')
+    .addSeparator()
+    .addItem('Enable Android / shared access', 'miraEnableQueuedWriterFromMenu')
     .addToUi();
 }
 
@@ -40,6 +42,16 @@ function miraInitializeCopy() {
     'This copy is now bound to its own MIRA spreadsheet state.',
     SpreadsheetApp.getUi().ButtonSet.OK,
   );
+}
+
+function miraEnableQueuedWriterFromMenu() {
+  const result = miraEnableQueuedWriter();
+  SpreadsheetApp.getUi().alert(
+    'MIRA shared access enabled',
+    'Android / shared access is enabled for this MIRA copy. Software changes now use MIRA’s serialized shared command path.',
+    SpreadsheetApp.getUi().ButtonSet.OK,
+  );
+  return result;
 }
 
 function doGet(e) {
