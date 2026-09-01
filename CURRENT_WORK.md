@@ -28,7 +28,7 @@ Pre-Android feature growth remains frozen except for this hard shared-writer pro
 
 ### Direction result
 
-**ALIGNED.** Resume the existing `M2-M1-001` packet. Fix the newly discovered ordinary-user activation blocker, publish that verified bound-script release into an isolated starter/proof substrate, then prove one real Google worker command end-to-end. Do not touch legacy production state.
+**ALIGNED.** Resume the existing `M2-M1-001` packet. The ordinary-user activation defect is now merged; next prove a maintainer-only Apps Script publication seam, then use a fresh isolated published Sheet to execute one real queued-worker command end-to-end. Do not touch legacy production state.
 
 ## Active packet
 
@@ -38,34 +38,41 @@ Pre-Android feature growth remains frozen except for this hard shared-writer pro
 - **Primary features:** `CLIENT-ANDROID-001`, `API-001`
 - **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `ONBOARD-006`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m1-001-live-worker-proof`
-- **Base/main SHA:** `2be8ccefd8ada72dc31bfd2f4df1c560ca22f483`
-- **Prior implementation:** PR #54 provider-neutral sequencer; PR #55 Workspace `Commands` inbox + `ScriptLock` worker, both merged/test-verified.
-- **Current branch evidence:** `Code.gs` now exposes `MIRA → Enable Android / shared access` through a wrapper around the existing `miraEnableQueuedWriter()`; direct tests guard the ordinary-user surface.
-- **Dependencies:** isolated synthetic Google Workspace substrate; verified bound Apps Script release containing the current branch changes.
-- **Current blocker:** Git source changes do not automatically update an already-copied bound Apps Script project. The current Google connector can copy/read/write Sheet cells but cannot publish bound Apps Script source or invoke custom Apps Script functions. Live proof therefore requires a release/publication seam before the one-click user activation can be exercised against the corrected bundle.
+- **Branch:** `integration/m1-001-apps-script-publication`
+- **Base/main SHA:** `b6b7455422608dc0308f1e8634c33c2e7291e7d0`
+- **Prior implementation:** PR #54 provider-neutral sequencer; PR #55 Workspace `Commands` inbox + `ScriptLock` worker; PR #91 ordinary-user shared-access activation surface.
+- **Dependencies:** isolated synthetic Google Workspace substrate; verified bound Apps Script publication containing current repository runtime.
+- **Current blocker:** this ChatGPT host's connected Google Drive/Sheets surface does not expose Apps Script project publication or arbitrary custom-function invocation. A maintainer-only Apps Script API publisher is being implemented so the release process can bind verified Git content to a disposable/official starter without exporting developer work to the Personal user.
 
 ## Objective
 
-Prove the existing queued-writer architecture against a fresh isolated Google Workspace copy using an ordinary-user activation path: enable Android/shared access without Apps Script-editor work, enqueue a synthetic API-001 command, observe the real time-driven worker serialize and commit it, and verify exact canonical/idempotency/result readback.
+Prove the existing queued-writer architecture against a fresh isolated Google Workspace copy using an ordinary-user activation path: publish the verified bound runtime, enable Android/shared access without Apps Script-editor work, enqueue a synthetic API-001 command, observe the real time-driven worker serialize and commit it, and verify exact canonical/idempotency/result readback.
 
 ## Acceptance criteria
 
 1. Use only a fresh isolated synthetic Sheet; legacy MIRA production Sheets, briefs, Calendars, automations, and user operational data are not fixtures.
 2. The verified bound Apps Script release exposes `MIRA → Enable Android / shared access`; no normal user opens Apps Script or manually runs `miraEnableQueuedWriter()`.
-3. Activation creates/validates exactly one one-minute worker trigger before persisted `mutation_mode=queued_writer` becomes authoritative.
-4. Activation creates the canonical `Commands` transport tab and persists queued-writer mode.
-5. Submit one synthetic same-user API-001 `entity` upsert command through the authenticated Google Sheet surface with stable command/idempotency IDs and expected revision 0.
-6. The actual Google time-driven worker processes the pending command under `ScriptLock`.
-7. Success is recorded only after exact Resource + Idempotency readback; the new entity is revision 1 and matches submitted payload/material.
-8. Re-reading the command shows a durable succeeded result rather than assuming scheduler execution.
-9. No independent direct-native canonical mutation path remains active after queued mode is authoritative.
-10. Record only generic/synthetic provider evidence in public Git.
-11. Exact-head CI, expected-head merge, remote readback, and post-merge CI are required for source changes.
-12. Reconcile the stale M2-M0-029 `HOST-CONNECT-EXEC-001` BACKLOG row before packet closure.
-13. After live proof, mark `ANDROID-COMMAND-BOUNDARY-001` only to the evidence actually demonstrated and start `ANDROID-CLIENT-CORE-001`.
+3. Maintainer publication uses an explicit Google Apps Script API boundary with credentials external to Git, binds the project to the exact intended Sheet, replaces complete HEAD runtime content, and exact-reads it back before success.
+4. Publication must not persist or log access tokens, provider IDs, or user/private state into the public repository.
+5. Activation creates/validates exactly one one-minute worker trigger before persisted `mutation_mode=queued_writer` becomes authoritative.
+6. Activation creates the canonical `Commands` transport tab and persists queued-writer mode.
+7. Submit one synthetic same-user API-001 `entity` upsert command through the authenticated Google Sheet surface with stable command/idempotency IDs and expected revision 0.
+8. The actual Google time-driven worker processes the pending command under `ScriptLock`.
+9. Success is recorded only after exact Resource + Idempotency readback; the new entity is revision 1 and matches submitted payload/material.
+10. Re-reading the command shows a durable succeeded result rather than assuming scheduler execution.
+11. No independent direct-native canonical mutation path remains active after queued mode is authoritative.
+12. Record only generic/synthetic provider evidence in public Git.
+13. Exact-head CI, expected-head merge, remote readback, and post-merge CI are required for source changes.
+14. Reconcile the stale M2-M0-029 `HOST-CONNECT-EXEC-001` BACKLOG row before packet closure.
+15. After live proof, mark `ANDROID-COMMAND-BOUNDARY-001` only to the evidence actually demonstrated and start `ANDROID-CLIENT-CORE-001`.
 
-## Live isolated substrate prepared
+## Completed evidence in this resumed packet
+
+### Ordinary-user activation surface
+
+PR #91 merged at `b6b7455422608dc0308f1e8634c33c2e7291e7d0` after exact-head CI `33547638096` passed. Post-merge main CI `33547715540` passed. `Code.gs` now exposes `MIRA → Enable Android / shared access` through `miraEnableQueuedWriterFromMenu()`, delegating to the already-tested worker activation while keeping internal queued-writer jargon out of the menu. Regression coverage is durable in both Python and Apps Script tests.
+
+### Live isolated substrate prepared
 
 A fresh copy was created from a post-PR-55 Personal proof Sheet:
 
@@ -75,31 +82,39 @@ A fresh copy was created from a post-PR-55 Personal proof Sheet:
 - canonical Authority is verified/enabled and owned by synthetic subject `synthetic-no-app-user`; `entity` binding exists.
 - before activation the copy has Metadata, Resources, Events, and Idempotency tabs and no Commands tab, as expected.
 
-## Newly discovered blocker and fix
+This copy still contains the older bound script and therefore is evidence/substrate only; it is not the corrected live-worker proof target.
 
-`CommandWorker.gs` already implemented `miraEnableQueuedWriter()`, but `Code.gs` exposed only `MIRA → Initialize this copy`. That meant a live activation required opening the Apps Script editor and running an internal function manually, violating the ordinary-user Personal contract.
+## Apps Script publication seam
 
-The branch now adds a user-facing `MIRA → Enable Android / shared access` menu action through `miraEnableQueuedWriterFromMenu()`, which delegates to the already-tested worker activation and keeps internal queued-writer terminology out of the menu. `tests/test_shared_access_menu_contract.py` prevents regression.
+Current Google documentation confirms the Apps Script API can create a script project bound to a Drive parent via `projects.create(parentId=...)`, replace HEAD content with `projects.updateContent`, and retrieve project content for exact readback. The release seam is maintainer-only and does not change ordinary-user onboarding.
 
-The remaining issue is release publication: changing Git cannot mutate an existing bound Apps Script project, and the connected Google Drive/Sheets surface currently lacks an Apps Script source/publication action. Do not export this maintainer problem to an ordinary user by asking them to paste or run script code.
+Current branch work:
+
+- `ops/publish_apps_script.py` loads only the default shared runtime (`Code.gs`, `CommandWorker.gs`, `appsscript.json`), canonicalizes the manifest, validates provider IDs, creates a bound project for the explicitly supplied Sheet, replaces HEAD content, and exact-compares provider content readback before reporting success.
+- a short-lived Apps Script OAuth access token is accepted only from process environment, never as a CLI argument or repository material;
+- provider error bodies are bounded and the tool emits no success identifiers;
+- `tests/test_apps_script_publication.py` covers exact create/update/readback sequencing, wrong-parent rejection, provider drift, invalid runtime material, and pre-provider input rejection.
+
+Live Apps Script API publication remains unverified until an authorized maintainer execution surface is available. The current ChatGPT Google connector intentionally does not expose its OAuth token to this publisher.
 
 ## Evidence ceiling so far
 
 - Provider-neutral serialized command semantics: test-verified.
 - Workspace worker implementation and fake-Apps-Script execution: test-verified in PR #55.
+- Ordinary-user shared-access activation surface: merged/test-verified in PR #91; post-merge main green.
 - Fresh isolated Google Sheet substrate and canonical metadata/Authority readback: live provider-readback verified.
-- Ordinary-user activation UI fix: implemented on current branch; CI/merge pending.
-- Actual Google Apps Script trigger creation/firing and queued command execution: **not yet live-verified**.
+- Maintainer Apps Script publication protocol: implemented on current branch; CI/merge pending.
+- Actual Apps Script API publication, trigger creation/firing, and queued command execution: **not yet live-verified**.
 
 ## Exact next action / resume point
 
-1. Run CI for the shared-access menu/regression changes and merge only when green.
-2. Identify or implement the bounded maintainer/template publication seam needed to place the verified bound Apps Script release into an isolated Google starter without ordinary-user script editing; reuse an existing stable work ID if present, otherwise record the hard dependency explicitly before adding one.
-3. Create/copy a fresh isolated proof Sheet from that verified published release.
+1. Run exact-head CI for the Apps Script publisher and merge only if green; verify post-merge main.
+2. Resolve an authorized maintainer execution surface for the Apps Script API without exposing a user/provider token to Git or ordinary-user setup. Prefer a product/release-owned authorization flow over manual developer-console work.
+3. Create a fresh isolated Google Sheet and publish the verified bound runtime to it using the new publisher; exact-read back the provider script content.
 4. Surface the one unavoidable user action only if the host cannot invoke the custom Sheet menu itself: **MIRA → Enable Android / shared access**.
 5. Read back Commands + Metadata, submit one synthetic entity command, and verify actual worker result/Resource/Idempotency state.
 6. Reconcile BACKLOG lifecycle evidence, close `ANDROID-COMMAND-BOUNDARY-001`, then start `ANDROID-CLIENT-CORE-001`.
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is resumed `M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` on `integration/m1-001-live-worker-proof`, based on main `2be8ccefd8ada72dc31bfd2f4df1c560ca22f483`. The immediate code defect is the missing ordinary-user shared-access activation control; its fix and regression test are on this branch. The hard remaining live-proof dependency is publishing the corrected bound Apps Script release into an isolated Google proof substrate without making the ordinary user do developer work.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is `M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` on `integration/m1-001-apps-script-publication`, based on green main `b6b7455422608dc0308f1e8634c33c2e7291e7d0`. PR #91 already fixed and merged the missing Personal activation control. Resume at exact-head CI for the maintainer-only Apps Script publication seam, then obtain a safe authorized execution surface and perform the fresh isolated live worker proof. Do not make an ordinary user open Apps Script or paste/run code.
