@@ -23,7 +23,6 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('MIRA')
     .addItem('Initialize this copy', 'miraInitializeCopy')
-    .addSeparator()
     .addItem('Enable Android / shared access', 'miraEnableQueuedWriterFromMenu')
     .addToUi();
 }
