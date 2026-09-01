@@ -55,13 +55,13 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 ### `M2-M0-024` — Appointment evidence intake/reconciliation core
 
 - **Primary work:** `APPOINTMENT-INTAKE-001`
-- **Primary feature:** `CAL-008`
+- **Primary features:** `CAL-008`
 - **Related features/invariants:** `CAL-005`, `RECOVERY-002`, `CAL-006`, `CAL-007`, `SERVICE-001`, `MAIL-002`, `PROFILE-013`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-024-appointment-intake`
 - **Base SHA:** `b1d7a4f20ebad3503a3c518ec568c47498e85d42`
-- **Current head before packet checkpoint commit:** `b1d7a4f20ebad3503a3c518ec568c47498e85d42`
-- **PR:** not opened yet
+- **Last implementation head before alignment fix:** `592d31aa9b7f5903c374b3e40cc9073ccdc47072`
+- **PR:** #79 open; first CI run `33439445912` failed only at work-session alignment because this file used singular `Primary feature`; compile, feature registry, product lifecycle ledger, and Personal distribution passed before the job stopped.
 
 ### Objective
 
@@ -93,20 +93,20 @@ The packet does **not** implement Gmail search/fetch, OCR/image understanding, a
 
 - **Desired:** yes
 - **Specified:** yes in `CAL-008` / `APPOINTMENT-INTAKE-001`
-- **Implemented:** no
+- **Implemented:** yes, candidate code and direct tests are present on PR #79 but not yet test-verified
 - **Test-verified:** no
 - **Integration-verified:** no
 - **Live-verified:** no
 
 ## Exact next action / resume point
 
-1. Inspect `mira/appointments.py`, `mira/service_state.py`, `mira/calendar_projection.py`, receipt/evidence patterns, package exports, and code-ownership rules.
-2. Implement the smallest `mira/appointment_intake.py` orchestration contract satisfying the acceptance criteria without duplicating `CAL-005` identity logic.
-3. Add direct synthetic tests before any provider connector work.
-4. Register production ownership/test evidence and run all repository gates.
-5. Open a bounded PR only after local/source gates are green.
+1. Re-run PR CI after the `Primary features` alignment fix.
+2. Fix only packet-local failures until compile, registries, distribution, work-session alignment, code ownership, full Python tests, and Workspace Apps Script tests are green on the exact PR head.
+3. Reconcile `BACKLOG.md`, `CURRENT_WORK.md`, and PR #79 with actual test evidence.
+4. Require one final exact-head CI after lifecycle documentation updates.
+5. Merge with `expected_head_sha` protection only if exact-head CI is green; verify remote `main` and post-merge CI.
 6. Do not expand into Gmail provider fetching, OCR/model infrastructure, Microsoft/Apple Calendar, reminders, outbound contact, medical meaning, migration, or Android during this packet.
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Confirm branch `integration/m0-024-appointment-intake` is based on merged `main` SHA `b1d7a4f20ebad3503a3c518ec568c47498e85d42`. Treat `CAL-005` as the canonical identity/reconciliation authority and keep source extraction, service activation, Calendar projection, reminders, and outbound contact as separate capability/evidence boundaries.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Confirm PR #79 and branch `integration/m0-024-appointment-intake` are based on merged `main` SHA `b1d7a4f20ebad3503a3c518ec568c47498e85d42`. Treat `CAL-005` as the canonical identity/reconciliation authority and keep source extraction, service activation, Calendar projection, reminders, and outbound contact as separate capability/evidence boundaries.
