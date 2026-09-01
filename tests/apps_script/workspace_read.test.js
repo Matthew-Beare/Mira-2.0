@@ -184,11 +184,12 @@ function post(context, pathInfo, body) {
   );
 }
 
-test('browser initializer binds the copied sheet without optional Calendar setup ceremony', () => {
+test('browser initializer exposes only ordinary-user MIRA setup controls', () => {
   const app = runtime({initialized: false});
   app.context.onOpen();
   assert.deepEqual(app.menu, [
     ['MIRA', 'Initialize this copy', 'miraInitializeCopy'],
+    ['MIRA', 'Enable Android / shared access', 'miraEnableQueuedWriterFromMenu'],
   ]);
   assert.equal(typeof app.context.miraEnableGoogleCalendar, 'undefined');
   app.context.miraInitializeCopy();
