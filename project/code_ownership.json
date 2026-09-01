@@ -243,6 +243,15 @@
       "verification": ["tests/test_appointment_intake.py"]
     },
     {
+      "id": "appointment-noapp-personal",
+      "responsibility": "Direct stock-ChatGPT text/image appointment provenance, Personal authority-binding reconciliation, canonical intake dry-run planning, native Workspace mutation/readback material, and concise fail-closed clarification.",
+      "why_separate": "The no-app Personal orchestration layer composes the existing appointment identity/intake and Workspace contracts without making the model, chat memory, attachment extraction, or provider connector into a second canonical authority.",
+      "owned_paths": ["mira/appointment_noapp.py"],
+      "feature_ids": ["CAL-008", "CAL-005", "CAL-006", "CAL-007", "AUTH-001", "STORE-001", "SERVICE-001", "ONBOARD-006", "RECOVERY-002"],
+      "work_ids": ["APPOINTMENT-INTAKE-NOAPP-001"],
+      "verification": ["tests/test_appointment_noapp.py"]
+    },
+    {
       "id": "calendar-projection-core",
       "responsibility": "Provider-neutral source-linked Calendar projection identity, deterministic timed-event normalization, replay/conflict semantics, adapter capability boundary, and exact synthetic provider readback verification.",
       "why_separate": "Calendar projection is a boundary between canonical source truth and external provider events. Keeping provider-neutral projection semantics separate from Google, Microsoft, or Apple adapters prevents provider state from becoming canonical authority and prevents synthetic proof from masquerading as live capability.",
