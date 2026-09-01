@@ -22,7 +22,7 @@ Pre-Android feature growth is frozen except for hard proof dependencies: this ho
 ### `BACKLOG.md`
 
 - `PROVIDER-ONBOARD-001` is complete in M2-M0-028 / PR #88 at the provider-neutral/test-verified evidence ceiling.
-- `HOST-CONNECT-EXEC-001` is queued next and is the bounded host executor proof selected for this packet.
+- `HOST-CONNECT-EXEC-001` is the bounded host executor proof selected for this packet.
 - `ANDROID-COMMAND-BOUNDARY-001` remains partial with its live isolated Google queued-writer proof pending immediately after this packet.
 - `ANDROID-CLIENT-CORE-001` remains queued immediately after that live proof.
 
@@ -34,7 +34,7 @@ Pre-Android feature growth is frozen except for hard proof dependencies: this ho
 
 ### Direction result
 
-**ALIGNED.** Prove the stock-ChatGPT host executor seam without provider mutation or silent authorization. If successful, close this packet and immediately resume the existing live queued-writer proof before Android. Do not add unrelated feature work.
+**ALIGNED.** Close the stock-ChatGPT host executor seam, then immediately resume the existing live queued-writer proof before Android. Do not add unrelated feature work.
 
 ## Active packet
 
@@ -47,8 +47,9 @@ Pre-Android feature growth is frozen except for hard proof dependencies: this ho
 - **Branch:** `integration/m0-029-host-connect-exec`
 - **Base/main SHA:** `604ec697d7566640aa9333da18d1f60dd4a66036`
 - **Starting branch head:** `604ec697d7566640aa9333da18d1f60dd4a66036`
+- **Current implementation head:** updated by the commits recorded below; verify exact remote head before merge
 - **Dependencies:** `PROVIDER-ONBOARD-001` complete; current ChatGPT Plugin Management capability available in this host session
-- **Blockers:** none identified for non-destructive discovery/surface proof; actual account connection may require explicit user consent and is not required to prove discovery/surfacing
+- **Blockers:** none for packet closure; CI/merge/readback remain
 
 ## Objective
 
@@ -59,30 +60,46 @@ Prove that stock ChatGPT can execute the host-controlled side of MIRA’s connec
 1. Verify current host capability through live Plugin Management discovery rather than relying only on documentation or repository assumptions.
 2. Use a user-recognizable supported service, initially Google Calendar, as the bounded proof target.
 3. Resolve the exact current ChatGPT plugin/app through host discovery from service intent; do not hard-code a stale catalog identifier as product truth.
-4. Surface the host-native install/connect action through ChatGPT’s supported plugin UI. The proof must not silently install, connect, or authorize an account.
-5. If an explicit user tap/provider consent is required, that is recorded as unavoidable host/provider ceremony rather than a MIRA failure or completed authorization.
+4. Surface the host-native install/connect action through ChatGPT’s supported plugin UI without silently authorizing on the user's behalf.
+5. Record explicit user tap/provider consent as unavoidable host/provider ceremony rather than a MIRA failure or automatic authorization.
 6. Do not mutate Calendar, Gmail, Drive, MIRROR canonical state, or legacy production data during this proof.
-7. Do not claim provider authorization, capability verification, Connected state, or service activation merely because the host can surface the plugin/app action.
-8. Verify that the existing `mira/provider_onboarding.py` host plan maps coherently to the live host action: discover/install/connect when authorization is required, then separate capability verification.
-9. Capture current host evidence durably in Git using generic/nonpersonal information only; no account identifiers, private provider state, tokens, or user-specific plugin data.
-10. Encode the host-execution behavior in MIRA’s source-backed operating instructions/protocol if the current instruction artifact does not already require it.
-11. Direct tests/CI must prevent future instruction/protocol regression into settings treasure hunts or fake authorization success.
+7. Do not claim capability verification, Connected state, or service activation merely because the host surfaced or completed the app authorization flow.
+8. Verify that `mira/provider_onboarding.py` host planning maps coherently to the live host action: discover/install/connect when authorization is required, then separate capability verification.
+9. Capture only generic/nonpersonal host evidence in Git.
+10. Encode host-execution behavior in source-backed operating instructions/protocol.
+11. Direct tests/CI prevent regression into settings treasure hunts, fake authorization success, or local-checkout-dependent scheduled runtime behavior.
 12. Exact-head CI, expected-head merge, remote readback, and post-merge CI are required.
-13. On closure, `HOST-CONNECT-EXEC-001` must be marked only to the evidence actually demonstrated. Actual provider authorization/write/readback remains separate unless explicitly and safely proven.
+13. Mark `HOST-CONNECT-EXEC-001` only to the evidence actually demonstrated. Provider resource/capability readback and provider mutation remain separate.
+
+## Completed evidence in this packet
+
+- Live Plugin Management discovery from ordinary Google Calendar service intent resolved the current supported Google Calendar integration.
+- The host-native install/connect control was surfaced directly in ChatGPT.
+- The human user completed the native host/provider connection ceremony. MIRA did not click through consent on the user's behalf.
+- No Calendar event, Gmail message, Drive file, MIRROR canonical entity, or protected legacy production state was mutated by this proof.
+- `docs/host_connect_execution_evidence.md` records the generic evidence ceiling without account identifiers, tokens, scope details, or private provider state.
+- `PROJECT_INSTRUCTIONS.md` now requires current host discovery, direct native connect surfacing, service isolation, honest unsupported-provider failure, and separation of authorization from verified `Connected` state.
+- `tests/test_project_instructions_contract.py` adds regression coverage for the connection contract and scheduled-runtime portability rule.
+
+## Production incident captured during packet
+
+The enabled MIRA AM/PM brief automations fired but failed because their prompts incorrectly required a local repository/skill script (`skill/ops-brief-policy/scripts/ops_policy.py`) to exist inside the scheduled ChatGPT runtime. The scheduler itself worked; the deployment assumption was invalid.
+
+Both enabled AM and PM automation prompts were corrected live so the exact-schedule trigger is authoritative for slot entry, the platform runtime/system clock is used when needed, local policy scripts are optional verification rather than mandatory deployment dependencies, and independent modules fail closed independently when their own canonical access/integrity/readback fails.
+
+This durable rule is now also encoded in `PROJECT_INSTRUCTIONS.md` and regression-tested. Do not restore a mandatory local-checkout/local-skill precondition in scheduled ChatGPT automations.
+
+## Evidence ceiling
+
+`HOST-CONNECT-EXEC-001` has live host discovery + native connection-surface execution evidence for Google Calendar. User-driven authorization through the surfaced host flow occurred, but this packet does not claim operation-specific Calendar capability/resource verification, verified `Connected` presentation, MIRA service activation, Calendar reads/writes, or provider mutation/readback.
 
 ## Explicitly deferred
 
-- clicking the install/connect action on the user’s behalf;
-- provider OAuth consent or account authorization without explicit user action;
+- live Calendar capability/resource/scope readback after consent;
 - Calendar/Gmail/Drive reads or writes;
-- live provider capability/readback verification after consent;
 - Microsoft/Apple adapters;
 - Android implementation;
 - legacy production migration.
-
-## Previous packet evidence
-
-M2-M0-028 / `PROVIDER-ONBOARD-001` is fully closed. PR #88 merged implementation at `a45dcea4247ff4df2588601277af6f65adb02be8`; final head `ce58d0591213cca616c55a32b713d402385fe3e1` passed exact-head CI `33474543309`; post-merge main CI `33474573636` is green. Closure PR #89 merged at `604ec697d7566640aa9333da18d1f60dd4a66036`; post-merge main CI `33475870224` is green. BACKLOG now records `PROVIDER-ONBOARD-001` complete at its provider-neutral evidence ceiling and `HOST-CONNECT-EXEC-001` as the next bounded proof.
 
 ## Android preserved resume point
 
@@ -92,13 +109,13 @@ M2-M0-028 / `PROVIDER-ONBOARD-001` is fully closed. PR #88 merged implementation
 
 ## Exact next action / resume point
 
-1. Inspect the current source-backed stock-ChatGPT operating instructions/protocol for connection-intent behavior.
-2. Perform live non-destructive Plugin Management discovery for Google Calendar from the current host.
-3. Surface the native install/connect action using the supported host plugin mechanism without clicking/authorizing it for the user.
-4. Record only generic host capability/evidence in Git and add regression coverage if the instruction/protocol artifact requires changes.
-5. Run exact-head CI and close this packet.
-6. Immediately resume the live isolated Google queued-writer proof; then start Android client core.
+1. Verify the current branch remote head and run exact-head CI for the instruction/evidence/regression changes.
+2. Open/merge the bounded M2-M0-029 PR only after required CI is green.
+3. Remotely read back the merge and post-merge main CI.
+4. Reconcile `HOST-CONNECT-EXEC-001` in BACKLOG to the live-host evidence ceiling during closure.
+5. Immediately resume `ANDROID-COMMAND-BOUNDARY-001` live isolated Google queued-writer proof.
+6. Then start `ANDROID-CLIENT-CORE-001`.
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is `M2-M0-029` / `HOST-CONNECT-EXEC-001` on `integration/m0-029-host-connect-exec`, based on green main SHA `604ec697d7566640aa9333da18d1f60dd4a66036`. Resume with source instruction inspection and live non-destructive ChatGPT Plugin Management discovery. Do not expand into provider mutation, Apple implementation, or Android until this bounded proof closes.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is `M2-M0-029` / `HOST-CONNECT-EXEC-001` on `integration/m0-029-host-connect-exec`, based on green main SHA `604ec697d7566640aa9333da18d1f60dd4a66036`. Live stock-ChatGPT Google Calendar host discovery and native connection surfacing have been proven; source instruction/evidence/test changes are committed. Resume with exact-head CI and PR closure, then return immediately to the live Android command-boundary prerequisite. Do not expand into provider mutation, Apple implementation, or Android client code until this bounded packet closes.
