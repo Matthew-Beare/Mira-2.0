@@ -3,11 +3,246 @@ from __future__ import annotations
 import unittest
 
 from mira.service_state import (
+    AuthorizationState,
+    CapabilityEvidenceState,
+    CapabilityGate,
+    ConnectionState,
+    GateObservation,
+    ProviderCapabilitySnapshot,
     ServiceIntentRequiredError,
     ServiceNotReadyError,
     ServiceStateService,
+    ServiceStateValidationError,
+    evaluate_provider_capability,
 )
 from mira.structured_state import InMemoryStructuredStateAdapter
+
+
+NOW = "2026-08-31T22:00:00Z"
+RECENT = "2026-08-31T21:55:00Z"
+STALE = "2026-08-31T20:00:00Z"
+
+
+class ProviderCapabilityGateTests(unittest.TestCase):
+    def snapshot(
+        self,
+        *,
+        authorization: AuthorizationState = AuthorizationState.AUTHORIZED,
+        authorization_observed_at: str = RECENT,
+        gates: tuple[GateObservation, ...] = (),
+    ) -> ProviderCapabilitySnapshot:
+        return ProviderCapabilitySnapshot(
+            provider_id="google",
+            service_id="appointments_calendar",
+            authorization_state=authorization,
+            authorization_observed_at=authorization_observed_at,
+            gates=gates,
+            resource_ref="calendar:synthetic-test",
+            scopes=("calendar.events",),
+        )
+
+    def gate(
+        self,
+        gate: CapabilityGate,
+        state: CapabilityEvidenceState,
+        *,
+        observed_at: str = RECENT,
+        reason_code: str | None = None,
+    ) -> GateObservation:
+        return GateObservation(
+            gate=gate,
+            state=state,
+            observed_at=observed_at,
+            reason_code=reason_code,
+        )
+
+    def evaluate(
+        self,
+        snapshot: ProviderCapabilitySnapshot,
+        *gates: CapabilityGate,
+    ):
+        return evaluate_provider_capability(
+            snapshot,
+            required_gates=gates,
+            now=NOW,
+            max_age_seconds=3600,
+        )
+
+    def test_authorization_required_routes_to_connect_without_claiming_capability(self) -> None:
+        result = self.evaluate(
+            self.snapshot(authorization=AuthorizationState.REQUIRED),
+            CapabilityGate.READ,
+        )
+        self.assertEqual(result.connection_state, ConnectionState.CONNECT)
+        self.assertFalse(result.ready)
+        self.assertEqual(result.decisions[0].reason_code, "authorization_required")
+
+    def test_authorized_but_declared_only_is_not_connected(self) -> None:
+        result = self.evaluate(
+            self.snapshot(
+                gates=(
+                    self.gate(
+                        CapabilityGate.READ,
+                        CapabilityEvidenceState.DECLARED,
+                    ),
+                )
+            ),
+            CapabilityGate.READ,
+        )
+        self.assertEqual(result.connection_state, ConnectionState.NEEDS_ATTENTION)
+        self.assertFalse(result.ready)
+        self.assertEqual(result.decisions[0].reason_code, "not_verified")
+
+    def test_read_write_and_readback_are_independent_gates(self) -> None:
+        result = self.evaluate(
+            self.snapshot(
+                gates=(
+                    self.gate(CapabilityGate.READ, CapabilityEvidenceState.VERIFIED),
+                    self.gate(CapabilityGate.WRITE, CapabilityEvidenceState.DECLARED),
+                    self.gate(
+                        CapabilityGate.REMOTE_READBACK,
+                        CapabilityEvidenceState.VERIFIED,
+                    ),
+                )
+            ),
+            CapabilityGate.READ,
+            CapabilityGate.WRITE,
+            CapabilityGate.REMOTE_READBACK,
+        )
+        decisions = {decision.gate: decision for decision in result.decisions}
+        self.assertTrue(decisions[CapabilityGate.READ].allowed)
+        self.assertFalse(decisions[CapabilityGate.WRITE].allowed)
+        self.assertTrue(decisions[CapabilityGate.REMOTE_READBACK].allowed)
+        self.assertFalse(result.ready)
+
+    def test_verified_required_gates_produce_connected(self) -> None:
+        result = self.evaluate(
+            self.snapshot(
+                gates=(
+                    self.gate(CapabilityGate.READ, CapabilityEvidenceState.VERIFIED),
+                    self.gate(
+                        CapabilityGate.REMOTE_READBACK,
+                        CapabilityEvidenceState.VERIFIED,
+                    ),
+                )
+            ),
+            CapabilityGate.READ,
+            CapabilityGate.REMOTE_READBACK,
+        )
+        self.assertEqual(result.connection_state, ConnectionState.CONNECTED)
+        self.assertTrue(result.ready)
+        self.assertEqual(result.blockers, ())
+
+    def test_write_verified_but_readback_failed_is_not_ready(self) -> None:
+        result = self.evaluate(
+            self.snapshot(
+                gates=(
+                    self.gate(CapabilityGate.WRITE, CapabilityEvidenceState.VERIFIED),
+                    self.gate(
+                        CapabilityGate.REMOTE_READBACK,
+                        CapabilityEvidenceState.FAILED,
+                        reason_code="provider_readback_mismatch",
+                    ),
+                )
+            ),
+            CapabilityGate.WRITE,
+            CapabilityGate.REMOTE_READBACK,
+        )
+        self.assertEqual(result.connection_state, ConnectionState.NEEDS_ATTENTION)
+        self.assertFalse(result.ready)
+        self.assertIn(
+            "provider:remote_readback:provider_readback_mismatch",
+            result.blockers,
+        )
+
+    def test_revoked_and_expired_authorization_route_to_reconnect(self) -> None:
+        for authorization in (AuthorizationState.REVOKED, AuthorizationState.EXPIRED):
+            with self.subTest(authorization=authorization):
+                result = self.evaluate(
+                    self.snapshot(authorization=authorization),
+                    CapabilityGate.READ,
+                )
+                self.assertEqual(result.connection_state, ConnectionState.RECONNECT)
+                self.assertFalse(result.ready)
+
+    def test_permission_denied_needs_attention_and_unsupported_is_unavailable(self) -> None:
+        denied = self.evaluate(
+            self.snapshot(
+                gates=(
+                    self.gate(
+                        CapabilityGate.READ,
+                        CapabilityEvidenceState.PERMISSION_DENIED,
+                    ),
+                )
+            ),
+            CapabilityGate.READ,
+        )
+        self.assertEqual(denied.connection_state, ConnectionState.NEEDS_ATTENTION)
+        self.assertEqual(denied.decisions[0].reason_code, "permission_denied")
+
+        unsupported = self.evaluate(
+            self.snapshot(
+                gates=(
+                    self.gate(
+                        CapabilityGate.WRITE,
+                        CapabilityEvidenceState.UNSUPPORTED,
+                    ),
+                )
+            ),
+            CapabilityGate.WRITE,
+        )
+        self.assertEqual(unsupported.connection_state, ConnectionState.UNAVAILABLE)
+        self.assertEqual(unsupported.decisions[0].reason_code, "unsupported")
+
+    def test_stale_authorization_and_gate_evidence_fail_closed(self) -> None:
+        stale_auth = self.evaluate(
+            self.snapshot(authorization_observed_at=STALE),
+            CapabilityGate.READ,
+        )
+        self.assertEqual(stale_auth.connection_state, ConnectionState.NEEDS_ATTENTION)
+        self.assertEqual(stale_auth.decisions[0].reason_code, "authorization_stale")
+
+        stale_gate = self.evaluate(
+            self.snapshot(
+                gates=(
+                    self.gate(
+                        CapabilityGate.READ,
+                        CapabilityEvidenceState.VERIFIED,
+                        observed_at=STALE,
+                    ),
+                )
+            ),
+            CapabilityGate.READ,
+        )
+        self.assertEqual(stale_gate.connection_state, ConnectionState.NEEDS_ATTENTION)
+        self.assertEqual(stale_gate.decisions[0].reason_code, "evidence_stale")
+
+    def test_duplicate_gate_evidence_and_future_evidence_are_rejected(self) -> None:
+        with self.assertRaises(ServiceStateValidationError):
+            self.snapshot(
+                gates=(
+                    self.gate(CapabilityGate.READ, CapabilityEvidenceState.VERIFIED),
+                    self.gate(CapabilityGate.READ, CapabilityEvidenceState.VERIFIED),
+                )
+            )
+
+        future = self.snapshot(
+            gates=(
+                self.gate(
+                    CapabilityGate.READ,
+                    CapabilityEvidenceState.VERIFIED,
+                    observed_at="2026-08-31T22:05:00Z",
+                ),
+            )
+        )
+        with self.assertRaises(ServiceStateValidationError):
+            self.evaluate(future, CapabilityGate.READ)
+
+    def test_snapshot_contains_no_credential_or_token_payload_field(self) -> None:
+        snapshot = self.snapshot()
+        self.assertFalse(hasattr(snapshot, "token"))
+        self.assertFalse(hasattr(snapshot, "credentials"))
+        self.assertFalse(hasattr(snapshot, "secret"))
 
 
 class ServiceStateTests(unittest.TestCase):
@@ -147,6 +382,62 @@ class ServiceStateTests(unittest.TestCase):
         self.assertEqual(view.activation_state, "disabled")
         self.assertFalse(view.requested_by_user)
         self.assertFalse(view.effective_active)
+
+    def test_capability_evaluation_updates_readiness_but_not_user_intent(self) -> None:
+        snapshot = ProviderCapabilitySnapshot(
+            provider_id="google",
+            service_id="appointments_calendar",
+            authorization_state=AuthorizationState.AUTHORIZED,
+            authorization_observed_at=RECENT,
+            gates=(
+                GateObservation(
+                    gate=CapabilityGate.READ,
+                    state=CapabilityEvidenceState.VERIFIED,
+                    observed_at=RECENT,
+                ),
+                GateObservation(
+                    gate=CapabilityGate.REMOTE_READBACK,
+                    state=CapabilityEvidenceState.VERIFIED,
+                    observed_at=RECENT,
+                ),
+            ),
+        )
+        evaluation = evaluate_provider_capability(
+            snapshot,
+            required_gates=(CapabilityGate.READ, CapabilityGate.REMOTE_READBACK),
+            now=NOW,
+            max_age_seconds=3600,
+        )
+        view = self.service.apply_capability_evaluation(
+            "appointments_calendar",
+            evaluation=evaluation,
+            idempotency_key="capability-ready",
+        )
+        self.assertEqual(view.capability_state, "available")
+        self.assertEqual(view.activation_state, "disabled")
+        self.assertTrue(view.ready)
+        self.assertFalse(view.effective_active)
+
+    def test_capability_evaluation_service_identity_mismatch_fails_closed(self) -> None:
+        snapshot = ProviderCapabilitySnapshot(
+            provider_id="google",
+            service_id="appointments_calendar",
+            authorization_state=AuthorizationState.REQUIRED,
+            authorization_observed_at=RECENT,
+            gates=(),
+        )
+        evaluation = evaluate_provider_capability(
+            snapshot,
+            required_gates=(CapabilityGate.READ,),
+            now=NOW,
+            max_age_seconds=3600,
+        )
+        with self.assertRaises(ServiceStateValidationError):
+            self.service.apply_capability_evaluation(
+                "email_triage",
+                evaluation=evaluation,
+                idempotency_key="wrong-service",
+            )
 
 
 if __name__ == "__main__":
