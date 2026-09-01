@@ -5,10 +5,11 @@ capability evidence and PROVIDER-001 runtime routing truth, then determines the
 honest connection presentation and next step for either a product-owned client or
 a host-controlled client such as stock ChatGPT.
 
-It performs no provider authorization, provider discovery, provider I/O, durable
-state mutation, or MIRA service activation. In particular, a successful consent
-screen is never treated as Connected until required capability gates are freshly
-verified and the runtime router selects an eligible lane.
+It performs no provider authorization, plugin installation, provider discovery,
+provider I/O, durable state mutation, or MIRA service activation. In particular,
+a successful install or consent screen is never treated as Connected until the
+required capability gates are freshly verified and the runtime router selects an
+eligible lane.
 """
 
 from __future__ import annotations
@@ -49,7 +50,7 @@ class ConnectionSurfaceKind(str, Enum):
 
 
 class NativeFlowChannel(str, Enum):
-    """Supported native route for unavoidable provider/account ceremony."""
+    """Supported native route for unavoidable connection/account ceremony."""
 
     PROVIDER_NATIVE = "provider_native"
     HOST_NATIVE = "host_native"
@@ -69,8 +70,8 @@ class ConnectionNextAction(str, Enum):
     """Bounded next action emitted by the planner."""
 
     NONE = "none"
-    START_NATIVE_AUTHORIZATION = "start_native_authorization"
-    START_NATIVE_REAUTHORIZATION = "start_native_reauthorization"
+    START_NATIVE_CONNECTION_FLOW = "start_native_connection_flow"
+    START_NATIVE_RECONNECTION_FLOW = "start_native_reconnection_flow"
     VERIFY_CAPABILITIES = "verify_capabilities"
     START_NATIVE_DISCONNECT = "start_native_disconnect"
     REPORT_BLOCKER = "report_blocker"
@@ -85,7 +86,13 @@ class ConnectionEffectScope(str, Enum):
 
 @dataclass(frozen=True)
 class ConnectionSurface:
-    """Client/host ability to launch native connection-management flows."""
+    """Client/host ability to launch native connection-management flows.
+
+    For a host-controlled surface such as stock ChatGPT, ``HOST_NATIVE`` means the
+    host owns the supported discovery/install/enable/connect/account-consent flow.
+    The planner intentionally does not split those host implementation details
+    into user-visible manual steps.
+    """
 
     kind: ConnectionSurfaceKind
     authorization_flow: NativeFlowChannel
@@ -242,14 +249,14 @@ def plan_provider_connection(
         candidate.capability.authorization_state for candidate in relevant_candidates
     )
 
-    # A client that cannot launch the required unavoidable authorization ceremony
-    # must not advertise a dead Connect/Reconnect control as a usable default path.
+    # A client that cannot launch the required unavoidable native connection
+    # ceremony must not advertise a dead Connect/Reconnect control as usable.
     if state in {ConnectionState.CONNECT, ConnectionState.RECONNECT}:
         if surface.authorization_flow == NativeFlowChannel.UNAVAILABLE:
             state = ConnectionState.UNAVAILABLE
             reason_codes = _merge_reasons(
                 reason_codes,
-                ("surface_native_authorization_unavailable",),
+                ("surface_native_connection_unavailable",),
             )
 
     available = _available_commands(
@@ -282,11 +289,19 @@ def plan_provider_connection(
                 state = ConnectionState.UNAVAILABLE
                 reason_codes = _merge_reasons(
                     reason_codes,
-                    ("surface_native_authorization_unavailable",),
+                    ("surface_native_connection_unavailable",),
                 )
             else:
-                next_action = ConnectionNextAction.START_NATIVE_AUTHORIZATION
+                next_action = ConnectionNextAction.START_NATIVE_CONNECTION_FLOW
                 flow_channel = surface.authorization_flow
+                reason_codes = _merge_reasons(
+                    reason_codes,
+                    (
+                        "host_native_discover_install_connect"
+                        if surface.authorization_flow == NativeFlowChannel.HOST_NATIVE
+                        else "provider_native_connect"
+                    ,),
+                )
         else:
             next_action = ConnectionNextAction.REPORT_BLOCKER
             reason_codes = _merge_reasons(reason_codes, ("connect_not_applicable",))
@@ -300,11 +315,19 @@ def plan_provider_connection(
                 state = ConnectionState.UNAVAILABLE
                 reason_codes = _merge_reasons(
                     reason_codes,
-                    ("surface_native_authorization_unavailable",),
+                    ("surface_native_connection_unavailable",),
                 )
             else:
-                next_action = ConnectionNextAction.START_NATIVE_REAUTHORIZATION
+                next_action = ConnectionNextAction.START_NATIVE_RECONNECTION_FLOW
                 flow_channel = surface.authorization_flow
+                reason_codes = _merge_reasons(
+                    reason_codes,
+                    (
+                        "host_native_reconnect"
+                        if surface.authorization_flow == NativeFlowChannel.HOST_NATIVE
+                        else "provider_native_reconnect"
+                    ,),
+                )
         else:
             next_action = ConnectionNextAction.REPORT_BLOCKER
             reason_codes = _merge_reasons(reason_codes, ("reconnect_not_applicable",))
@@ -447,7 +470,9 @@ def _merge_reasons(
     existing: tuple[str, ...],
     additional: Iterable[str],
 ) -> tuple[str, ...]:
-    return tuple(sorted(set(existing).union(_token(value, "reason_code") for value in additional)))
+    return tuple(
+        sorted(set(existing).union(_token(value, "reason_code") for value in additional))
+    )
 
 
 def _candidate_tuple(
