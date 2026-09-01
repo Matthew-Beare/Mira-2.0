@@ -6,7 +6,7 @@ This directory is the copyable Google Workspace execution artifact for the defau
 
 `MIRA_NO_APP_INSTRUCTIONS.md` is the complete source-backed Personal no-app operating-instruction block. It is part of the validated release bundle, not an optional example or a fragment to splice into older instructions.
 
-For a stock-ChatGPT Personal deployment, the entire current Personal MIRA operating-instruction block is replaced with that file's complete contents. The protocol defines canonical Workspace preflight/readback, safe direct-single-writer mutation, the four-question resumable Interview Ledger, intent-first optional-provider activation, and fail-closed behavior when a provider capability or shared-writer path has not actually been verified.
+For a stock-ChatGPT Personal deployment, the entire current Personal MIRA operating-instruction block is replaced with that file's complete contents. The protocol defines canonical Workspace preflight/readback, safe direct-single-writer mutation, the four-question resumable Interview Ledger, intent-first optional-provider activation, direct appointment text/image capture, and fail-closed behavior when a provider capability or shared-writer path has not actually been verified.
 
 Bundle validation fails if safety-critical protocol clauses disappear, so the copyable Workspace artifact and the instructions that operate it cannot silently drift apart.
 
@@ -45,6 +45,22 @@ The native update surface currently does not expose an atomic ETag/`If-Match` ar
 The stronger Apps Script Calendar adapter is not part of the default Personal starter. Its MIRA-owned secondary-Calendar bootstrap, private extended properties and atomic ETag `If-Match` path remain source-controlled optional hardening for a later shared-writer/provider profile. It must not make ordinary Personal users perform extra setup or grant Calendar permissions before they ask to use Calendar.
 
 This intent-first rule applies across optional providers and features: ordinary-language yes/no first, provider-native consent when unavoidable, then MIRA performs the technical setup it can safely automate.
+
+## Direct appointment text/image capture
+
+A normal user may give MIRA appointment details directly as chat text or upload an appointment image. Stock ChatGPT may extract structured appointment/provider facts, but the model output is evidence, not canonical state. The runtime must preserve a stable chat-turn or attachment reference, observation time, source class, extraction authority/confidence, and honest fingerprint basis before canonical reconciliation.
+
+For direct text, MIRA may compute SHA-256 over the exact user-provided text and label the basis `exact_text_sha256`. The raw message is not copied wholesale into canonical structured state.
+
+For an uploaded image, use `raw_file_sha256` only when the runtime actually exposes or verifies a hash of the original file bytes. If no raw-file fingerprint exists, use the explicitly labelled `normalized_extraction_sha256_v1` fallback over deterministic normalized extraction material plus the stable attachment reference. Never describe that fallback as a hash of image bytes. Do not ask the user to calculate or paste a hash.
+
+Before any appointment/provider write, MIRA must ensure the Personal Google authority is valid and that canonical bindings exist for `appointment_provider`, `appointment`, and `calendar_projection`. Exact existing bindings are reused. Missing bindings may be added through the existing native Workspace revision/idempotency/readback contract. Conflicting or duplicate routing fails closed.
+
+Direct intake then runs the canonical appointment identity/intake rules over freshly read provider/appointment Resources. Low-confidence optional metadata is omitted. Missing or ambiguous provider/occurrence identity gets one concise clarification question instead of a guessed mutation. Exact evidence replay produces zero new canonical revision. The same stable source with conflicting material fails closed until reconciled. Explicit user-confirmed corrections retain higher authority than lower-confidence source/derived facts.
+
+Only actual canonical provider/appointment changes are translated into native Google Workspace upsert plans. Resource identity, expected revision, idempotency, atomic Resource+Idempotency batch material, and exact provider readback remain mandatory. Chat memory or model-local state never becomes a second appointment authority.
+
+Calendar projection remains downstream from canonical appointment capture. Intake may succeed even when Calendar is disabled, unavailable, unverified, or not requested. A Calendar write is attempted only when the appointment service is effectively active and the requested provider capability/target is actually verified. No attendee invitations, reminder scheduling, outbound provider email, medical inference, or Gmail source fetching is implied by direct appointment capture.
 
 ## Shared / Android queued-writer mode
 
