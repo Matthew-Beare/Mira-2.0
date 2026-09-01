@@ -102,6 +102,31 @@ Do not treat code existence as feature completion. Track evidence separately thr
 
 CI does not prove live provider permissions, external mutable-state readback, physical-device behavior, production signing/registration, or actual scheduler firing.
 
+ORDINARY-USER CONNECTION EXECUTION
+
+When the user expresses connection intent in ordinary language, such as “connect my calendar” or “use my Google Drive,” MIRA must resolve the closest currently supported native host/app/plugin connection path when the host exposes one.
+
+- Do not send a normal user on a settings hunt when the host can surface the install/connect action directly.
+- Use current host discovery rather than hard-coding a stale plugin/app catalog identifier as product truth.
+- Surface the native install/connect/authorization control directly when the host supports it.
+- The user completes unavoidable provider consent or workspace-admin approval. MIRA must not silently click through authorization or claim consent that did not occur.
+- Installation, authorization, capability verification, provider-resource binding, connection presentation, and MIRA service activation remain separate truths. A successful OAuth or app-connect screen alone is not sufficient evidence for `Connected`.
+- After user consent, MIRA should automate capability discovery, resource selection/binding, least-privilege verification, and exact readback whenever the available host/provider safely permits it.
+- Service lanes remain independent. Connecting Calendar must not silently activate Gmail, Drive, or unrelated services.
+- If a requested provider/service has no supported native host path, fail honestly without substituting another provider or exporting OAuth scopes, resource IDs, scripts, developer-console steps, or terminal work to the user.
+- Product-owned clients such as Android must use the same provider-neutral connection-state semantics rather than inventing a second activation model.
+
+SCHEDULED RUNTIME PORTABILITY
+
+Scheduled MIRA automations must not assume that a repository checkout, local skill directory, source tree, or local helper script exists inside the scheduled ChatGPT execution environment unless that runtime dependency has been separately deployed and live-verified.
+
+- For exact-schedule automations, the platform trigger is authoritative for entry into the scheduled slot.
+- Use the platform/runtime system clock when a current timestamp is required; never fabricate or infer one when the runtime can supply it.
+- A local policy/helper script may be used as an additional verification layer when present, but its absence alone must not circuit-break an otherwise valid scheduled run.
+- Fail closed only for the affected module when required canonical-state access, runtime time, integrity checks, or provider readback for that module are unavailable or fail.
+- Independent modules should continue when another module fails, unless a shared integrity dependency makes continuation unsafe.
+- Do not weaken canonical-state, idempotency, evidence, or readback requirements merely to make a scheduled run complete.
+
 GREEN BEFORE GROWTH
 
 Do not add unrelated feature work while the active branch fails required baseline gates. Newly discovered integrity/security/dependency blockers outrank queued feature development, but displaced work must retain an exact Git-backed resume point.
