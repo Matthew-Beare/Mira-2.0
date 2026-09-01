@@ -283,6 +283,31 @@ class AppointmentIdentityServiceTests(unittest.TestCase):
         self.assertEqual(len(corrected.appointment.identity_keys), 2)
         self.assertEqual(len(corrected.appointment.evidence), 2)
 
+    def test_user_confirmed_same_start_correction_does_not_collide_with_itself(self) -> None:
+        provider_id = self.provider().provider.provider_id
+        original = self.appointment(provider_id).appointment
+        corrected = self.service.reconcile_appointment(
+            AppointmentCandidate(
+                evidence=evidence(
+                    "same-start-correction",
+                    authority="user_confirmed",
+                    observed_at="2026-08-31T10:30:00-04:00",
+                ),
+                canonical_appointment_id=original.appointment_id,
+                provider_id=provider_id,
+                start_at=original.start_at,
+                end_at=original.end_at,
+                timezone=original.timezone,
+                title="Owner confirmed follow-up",
+            ),
+            idempotency_key="same-start-correction",
+        )
+        self.assertEqual(corrected.status, "updated")
+        self.assertEqual(corrected.appointment.appointment_id, original.appointment_id)
+        self.assertEqual(corrected.appointment.start_at, original.start_at)
+        self.assertEqual(corrected.appointment.title, "Owner confirmed follow-up")
+        self.assertEqual(corrected.appointment.revision, 2)
+
     def test_appointment_requires_known_provider_and_strong_occurrence_identity(self) -> None:
         with self.assertRaises(AppointmentIdentityValidationError):
             self.appointment("provider-does-not-exist")
