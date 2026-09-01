@@ -279,6 +279,15 @@
       "verification": ["tests/test_service_state.py"]
     },
     {
+      "id": "runtime-capability-router",
+      "responsibility": "Provider-neutral read-only selection of one eligible provider/runtime lane from operation-specific verified capability evidence plus explicit approval and data-classification policy.",
+      "why_separate": "Provider routing is a policy/evidence decision boundary distinct from durable service activation state, canonical Authority routing, managed API runtime assembly, provider authorization, and user-facing connection orchestration. Keeping it separate prevents runtime selection from silently becoming authorization, activation, or provider I/O.",
+      "owned_paths": ["mira/runtime_router.py"],
+      "feature_ids": ["PROVIDER-001", "SOURCE-001", "RECOVERY-002"],
+      "work_ids": ["RUNTIME-ROUTER-001"],
+      "verification": ["tests/test_runtime_router.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
