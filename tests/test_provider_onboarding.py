@@ -153,7 +153,8 @@ class ProviderOnboardingTests(unittest.TestCase):
             policy=policy,
         )
         return plan_provider_connection(
-            intent or self.intent(
+            intent
+            or self.intent(
                 provider=snapshot.provider_id,
                 service=snapshot.service_id,
             ),
@@ -164,7 +165,7 @@ class ProviderOnboardingTests(unittest.TestCase):
             max_age_seconds=3600,
         )
 
-    def test_fresh_product_owned_connection_exposes_connect_and_native_auth(self) -> None:
+    def test_fresh_product_owned_connection_exposes_connect_and_native_flow(self) -> None:
         snapshot = self.snapshot(
             authorization=AuthorizationState.REQUIRED,
             gates=(),
@@ -177,13 +178,14 @@ class ProviderOnboardingTests(unittest.TestCase):
         connect = self.plan(snapshot, command=ConnectionCommand.CONNECT)
         self.assertEqual(
             connect.next_action,
-            ConnectionNextAction.START_NATIVE_AUTHORIZATION,
+            ConnectionNextAction.START_NATIVE_CONNECTION_FLOW,
         )
         self.assertEqual(connect.flow_channel, NativeFlowChannel.PROVIDER_NATIVE)
         self.assertEqual(connect.effect_scope, ConnectionEffectScope.NONE)
+        self.assertIn("provider_native_connect", connect.reason_codes)
         self.assertNotIn(ConnectionCommand.DISCONNECT, connect.available_commands)
 
-    def test_host_controlled_connection_uses_host_native_flow_not_custom_ui_promise(self) -> None:
+    def test_host_controlled_connection_requests_discover_install_connect_flow(self) -> None:
         snapshot = self.snapshot(
             authorization=AuthorizationState.REQUIRED,
             gates=(),
@@ -197,8 +199,10 @@ class ProviderOnboardingTests(unittest.TestCase):
         self.assertEqual(connect.flow_channel, NativeFlowChannel.HOST_NATIVE)
         self.assertEqual(
             connect.next_action,
-            ConnectionNextAction.START_NATIVE_AUTHORIZATION,
+            ConnectionNextAction.START_NATIVE_CONNECTION_FLOW,
         )
+        self.assertIn("host_native_discover_install_connect", connect.reason_codes)
+        self.assertFalse(connect.connected)
 
     def test_authorized_but_unverified_runs_automatic_verification_before_connected(self) -> None:
         snapshot = self.snapshot(
@@ -254,12 +258,30 @@ class ProviderOnboardingTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     reconnect.next_action,
-                    ConnectionNextAction.START_NATIVE_REAUTHORIZATION,
+                    ConnectionNextAction.START_NATIVE_RECONNECTION_FLOW,
                 )
                 self.assertEqual(
                     reconnect.flow_channel,
                     NativeFlowChannel.PROVIDER_NATIVE,
                 )
+                self.assertIn("provider_native_reconnect", reconnect.reason_codes)
+
+    def test_host_reconnect_uses_native_host_flow(self) -> None:
+        snapshot = self.snapshot(
+            authorization=AuthorizationState.EXPIRED,
+            gates=(),
+        )
+        reconnect = self.plan(
+            snapshot,
+            surface=self.host_surface(),
+            command=ConnectionCommand.RECONNECT,
+        )
+        self.assertEqual(
+            reconnect.next_action,
+            ConnectionNextAction.START_NATIVE_RECONNECTION_FLOW,
+        )
+        self.assertEqual(reconnect.flow_channel, NativeFlowChannel.HOST_NATIVE)
+        self.assertIn("host_native_reconnect", reconnect.reason_codes)
 
     def test_permission_or_verification_failure_needs_attention_without_fake_retry_success(self) -> None:
         snapshot = self.snapshot(
@@ -344,7 +366,7 @@ class ProviderOnboardingTests(unittest.TestCase):
         retry = self.plan(snapshot, command=ConnectionCommand.CONNECT)
         self.assertEqual(
             retry.next_action,
-            ConnectionNextAction.START_NATIVE_AUTHORIZATION,
+            ConnectionNextAction.START_NATIVE_CONNECTION_FLOW,
         )
         self.assertFalse(retry.connected)
 
@@ -375,7 +397,7 @@ class ProviderOnboardingTests(unittest.TestCase):
         self.assertEqual(plan.flow_channel, NativeFlowChannel.HOST_NATIVE)
         self.assertEqual(plan.effect_scope, ConnectionEffectScope.CONNECTION_ONLY)
 
-    def test_no_native_authorization_flow_is_honestly_unavailable_not_manual_setup(self) -> None:
+    def test_no_native_connection_flow_is_honestly_unavailable_not_manual_setup(self) -> None:
         unavailable_surface = ConnectionSurface(
             kind=ConnectionSurfaceKind.HOST_CONTROLLED,
             authorization_flow=NativeFlowChannel.UNAVAILABLE,
@@ -389,7 +411,7 @@ class ProviderOnboardingTests(unittest.TestCase):
         self.assertEqual(plan.connection_state, ConnectionState.UNAVAILABLE)
         self.assertEqual(plan.next_action, ConnectionNextAction.REPORT_BLOCKER)
         self.assertIn(
-            "surface_native_authorization_unavailable",
+            "surface_native_connection_unavailable",
             plan.reason_codes,
         )
         self.assertEqual(plan.available_commands, ())
@@ -454,6 +476,54 @@ class ProviderOnboardingTests(unittest.TestCase):
         plan = self.plan(stale)
         self.assertEqual(plan.connection_state, ConnectionState.NEEDS_ATTENTION)
         self.assertEqual(plan.next_action, ConnectionNextAction.VERIFY_CAPABILITIES)
+
+    def test_provider_neutral_contract_accepts_apple_without_google_special_case(self) -> None:
+        apple = self.snapshot(
+            provider="apple",
+            service="calendar",
+            authorization=AuthorizationState.REQUIRED,
+            gates=(),
+        )
+        plan = self.plan(
+            apple,
+            surface=self.product_surface(),
+            command=ConnectionCommand.CONNECT,
+            intent=self.intent(provider="apple", service="calendar"),
+            lane="apple-native-calendar",
+        )
+        self.assertEqual(plan.provider_id, "apple")
+        self.assertEqual(plan.connection_state, ConnectionState.CONNECT)
+        self.assertEqual(
+            plan.next_action,
+            ConnectionNextAction.START_NATIVE_CONNECTION_FLOW,
+        )
+        self.assertEqual(plan.flow_channel, NativeFlowChannel.PROVIDER_NATIVE)
+        self.assertNotIn("google", " ".join(plan.reason_codes))
+
+    def test_host_without_apple_connector_reports_unavailable_without_substitution(self) -> None:
+        apple = self.snapshot(
+            provider="apple",
+            service="calendar",
+            authorization=AuthorizationState.REQUIRED,
+            gates=(),
+        )
+        unavailable_host = ConnectionSurface(
+            kind=ConnectionSurfaceKind.HOST_CONTROLLED,
+            authorization_flow=NativeFlowChannel.UNAVAILABLE,
+            disconnect_flow=NativeFlowChannel.UNAVAILABLE,
+        )
+        plan = self.plan(
+            apple,
+            surface=unavailable_host,
+            command=ConnectionCommand.CONNECT,
+            intent=self.intent(provider="apple", service="calendar"),
+            lane="apple-calendar",
+        )
+        self.assertEqual(plan.provider_id, "apple")
+        self.assertEqual(plan.connection_state, ConnectionState.UNAVAILABLE)
+        self.assertEqual(plan.next_action, ConnectionNextAction.REPORT_BLOCKER)
+        self.assertIsNone(plan.selected_lane_id)
+        self.assertIn("surface_native_connection_unavailable", plan.reason_codes)
 
     def test_surface_channel_must_match_surface_kind(self) -> None:
         with self.assertRaises(ProviderOnboardingValidationError):
