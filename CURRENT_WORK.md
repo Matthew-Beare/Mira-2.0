@@ -35,7 +35,7 @@ Pre-Android feature growth remains frozen except for this hard shared-writer pro
 ### `M2-M1-001` — Concurrent canonical command boundary, live Google proof
 
 - **Primary work:** `ANDROID-COMMAND-BOUNDARY-001`
-- **Related features:** `CLIENT-ANDROID-001`, `API-001`, `AUTH-001`, `STORE-001`, `RECOVERY-002`
+- **Primary features:** `CLIENT-ANDROID-001`, `API-001`, `AUTH-001`, `STORE-001`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m1-001-live-worker-proof`
 - **Base/main SHA:** `2be8ccefd8ada72dc31bfd2f4df1c560ca22f483`
