@@ -24,19 +24,21 @@ This invariant applies across Calendar, Gmail/mail, Drive/files, Contacts, recei
 
 1. Whenever the host/client supports product-owned controls, MIRA exposes a simple Connections/Integrations surface with service-level actions such as **Connect Google Calendar**, **Connect Google Drive**, and **Connect Gmail**. Equivalent Microsoft, Apple and future provider lanes use the same interaction model when supported.
 2. Each connection must expose honest user-facing state such as **Connect**, **Connected**, **Reconnect**, **Needs attention**, **Unavailable**, and **Disconnect**. Capability evidence, authorization state and MIRA service activation remain separate internally even when the presentation is simple.
-3. Selecting **Connect** starts the host/provider-native authorization flow directly. After the provider returns control, MIRA performs capability discovery, binding and exact verification automatically. A successful OAuth screen alone is not treated as verified readiness.
+3. Selecting **Connect** starts the host/provider-native connection and authorization flow directly. After the provider returns control, MIRA performs capability discovery, binding and exact verification automatically. A successful OAuth screen alone is not treated as verified readiness.
 4. Connection labels describe what the user recognizes, not implementation plumbing. For example, Google Drive is the user-facing connection for supported Drive/Docs/Sheets/Slides access rather than asking the user to understand separate internal adapters.
-5. If stock ChatGPT or another host does not permit MIRA to render its own connection buttons, ordinary-language intent must route into the closest supported native app/plugin connection flow or one concise unavoidable host action. MIRA must not compensate for missing host UI by asking the user to manually create provider resources, copy IDs, edit scopes, run scripts or perform developer-console setup.
-6. Optional providers are connected independently and with least privilege. Enabling one service must not silently pre-authorize unrelated services.
-7. Onboarding may recommend a connection because of a user-selected goal, but must not silently connect or activate it. Declining or postponing a connection does not block unrelated MIRA use.
-8. The future Android client must implement the same connection semantics through a native Connections surface and shared capability/service state. Android must not invent a second provider-activation model or require technical setup merely because it owns more of the UI.
+5. If stock ChatGPT or another host does not permit MIRA to render its own connection buttons, ordinary-language connection intent must route into the closest supported native app/plugin flow. When the host exposes plugin/app discovery or installation, MIRA should resolve the relevant supported integration and surface the native install/connect prompt directly from the conversation instead of instructing the user to hunt through settings. The user still completes any unavoidable provider consent or workspace-admin approval.
+6. If the host cannot directly surface that install/connect flow, MIRA may require at most one concise unavoidable host action. It must not compensate for missing host UI by asking the user to manually create provider resources, copy IDs, edit scopes, run scripts, open developer consoles, or perform terminal setup.
+7. Optional providers are connected independently and with least privilege. Enabling one service must not silently pre-authorize unrelated services.
+8. Onboarding may recommend a connection because of a user-selected goal, but must not silently connect or activate it. Declining or postponing a connection does not block unrelated MIRA use.
+9. Provider-neutral connection contracts must not hard-code Google-only assumptions. Microsoft, Apple/iCloud and future provider lanes must fit the same state/action contract even when a particular host currently lacks a native connector for that provider.
+10. The future Android client must implement the same connection semantics through a native Connections surface and shared capability/service state. Android must not invent a second provider-activation model or require technical setup merely because it owns more of the UI.
 
 ## Calendar application
 
 For the default Personal Google Calendar lane, the intended user flow is:
 
 **User:** “Yes, use my calendar.”  
-**MIRA:** surfaces Google's authorization UI if authorization is not already granted.  
+**MIRA:** resolves and surfaces the supported native ChatGPT/Google connection flow if connection is required, then the user completes unavoidable Google authorization.  
 **Then:** MIRA discovers the usable Calendar capability, selects/binds the safe default according to policy, and performs its own verification. No MIRA menu hunting or manual Calendar creation is part of the normal product flow.
 
 A dedicated MIRA-created secondary Calendar or stronger ETag-guarded Apps Script adapter may remain available as an optional organization/concurrency/hardening lane, but it is not a prerequisite for ordinary single-writer Personal activation unless provider evidence proves no safe simpler lane exists.
