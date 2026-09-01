@@ -18,6 +18,19 @@ For any optional MIRA capability or connected provider:
 
 This invariant applies across Calendar, Gmail/mail, Drive/files, Contacts, receipts, finance, automations, devices, local integrations, and future provider-backed features.
 
+## Connection surface application
+
+`PROVIDER-002` / `PROVIDER-ONBOARD-001` must apply the intent-first rule through an obvious ordinary-user connection surface rather than treating provider authorization as documentation work for the user.
+
+1. Whenever the host/client supports product-owned controls, MIRA exposes a simple Connections/Integrations surface with service-level actions such as **Connect Google Calendar**, **Connect Google Drive**, and **Connect Gmail**. Equivalent Microsoft, Apple and future provider lanes use the same interaction model when supported.
+2. Each connection must expose honest user-facing state such as **Connect**, **Connected**, **Reconnect**, **Needs attention**, **Unavailable**, and **Disconnect**. Capability evidence, authorization state and MIRA service activation remain separate internally even when the presentation is simple.
+3. Selecting **Connect** starts the host/provider-native authorization flow directly. After the provider returns control, MIRA performs capability discovery, binding and exact verification automatically. A successful OAuth screen alone is not treated as verified readiness.
+4. Connection labels describe what the user recognizes, not implementation plumbing. For example, Google Drive is the user-facing connection for supported Drive/Docs/Sheets/Slides access rather than asking the user to understand separate internal adapters.
+5. If stock ChatGPT or another host does not permit MIRA to render its own connection buttons, ordinary-language intent must route into the closest supported native app/plugin connection flow or one concise unavoidable host action. MIRA must not compensate for missing host UI by asking the user to manually create provider resources, copy IDs, edit scopes, run scripts or perform developer-console setup.
+6. Optional providers are connected independently and with least privilege. Enabling one service must not silently pre-authorize unrelated services.
+7. Onboarding may recommend a connection because of a user-selected goal, but must not silently connect or activate it. Declining or postponing a connection does not block unrelated MIRA use.
+8. The future Android client must implement the same connection semantics through a native Connections surface and shared capability/service state. Android must not invent a second provider-activation model or require technical setup merely because it owns more of the UI.
+
 ## Calendar application
 
 For the default Personal Google Calendar lane, the intended user flow is:
