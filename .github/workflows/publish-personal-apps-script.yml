@@ -1,7 +1,13 @@
-name: Publish Personal Apps Script
+name: Publish Fresh Personal Apps Script
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm_fresh_sheet:
+        description: "Confirm the private target Sheet is fresh and disposable for this release"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -11,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      CLASP_VERSION: "3.3.0"
       MIRA_CLASPRC_JSON: ${{ secrets.MIRA_CLASPRC_JSON }}
       MIRA_PERSONAL_STARTER_SHEET_ID: ${{ secrets.MIRA_PERSONAL_STARTER_SHEET_ID }}
 
@@ -19,177 +24,64 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: "22"
+          python-version: "3.12"
 
-      - name: Validate private release inputs
+      - name: Validate fresh private release inputs
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${MIRA_CLASPRC_JSON:-}" || { printf '%s\n' 'Missing MIRA_CLASPRC_JSON secret' >&2; exit 1; }
-          test -n "${MIRA_PERSONAL_STARTER_SHEET_ID:-}" || { printf '%s\n' 'Missing MIRA_PERSONAL_STARTER_SHEET_ID secret' >&2; exit 1; }
-          [[ "$MIRA_PERSONAL_STARTER_SHEET_ID" =~ ^[A-Za-z0-9_-]{10,256}$ ]] || { printf '%s\n' 'Starter Sheet secret is malformed' >&2; exit 1; }
+          test "${{ inputs.confirm_fresh_sheet }}" = "true" || {
+            printf '%s\n' 'Fresh disposable Sheet confirmation is required' >&2
+            exit 1
+          }
+          test -n "${MIRA_CLASPRC_JSON:-}" || {
+            printf '%s\n' 'Missing MIRA_CLASPRC_JSON secret' >&2
+            exit 1
+          }
+          test -n "${MIRA_PERSONAL_STARTER_SHEET_ID:-}" || {
+            printf '%s\n' 'Missing MIRA_PERSONAL_STARTER_SHEET_ID secret' >&2
+            exit 1
+          }
+          [[ "$MIRA_PERSONAL_STARTER_SHEET_ID" =~ ^[A-Za-z0-9_-]{10,256}$ ]] || {
+            printf '%s\n' 'Starter Sheet secret is malformed' >&2
+            exit 1
+          }
 
-      - name: Install private clasp credential
+      - name: Install private maintainer credential
         shell: bash
         run: |
           set -euo pipefail
           umask 077
-          printf '%s' "$MIRA_CLASPRC_JSON" > "$HOME/.clasprc.json"
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          path = Path.home() / ".clasprc.json"
-          material = json.loads(path.read_text(encoding="utf-8"))
-          if not isinstance(material, dict) or not material:
-              raise SystemExit("clasp credential secret is not a non-empty JSON object")
+          printf '%s' "$MIRA_CLASPRC_JSON" > "$RUNNER_TEMP/mira-clasprc.json"
+          python - "$RUNNER_TEMP/mira-clasprc.json" <<'PY'
+          import sys
+          from ops.publish_apps_script import load_clasp_credential
+          load_clasp_credential(sys.argv[1])
+          print("Private maintainer credential shape verified")
           PY
 
-      - name: Prepare minimal verified runtime
+      - name: Validate repository runtime
         shell: bash
         run: |
           set -euo pipefail
-          runtime="$RUNNER_TEMP/mira-runtime"
-          mkdir -p "$runtime"
-          cp workspace/apps_script/Code.gs "$runtime/Code.gs"
-          cp workspace/apps_script/CommandWorker.gs "$runtime/CommandWorker.gs"
-          cp workspace/apps_script/appsscript.json "$runtime/appsscript.json"
-          python ops/publish_apps_script.py --sheet-id "$MIRA_PERSONAL_STARTER_SHEET_ID" --validate-only
+          python ops/publish_apps_script.py \
+            --sheet-id "$MIRA_PERSONAL_STARTER_SHEET_ID" \
+            --validate-only
 
-      - name: Resolve or create bound project
-        id: project
+      - name: Create, bind, publish, and exact-readback provider HEAD
         shell: bash
         run: |
           set -euo pipefail
           project_hash="$(printf '%s' "$MIRA_PERSONAL_STARTER_SHEET_ID" | sha256sum | cut -c1-12)"
-          project_title="MIRA Personal Runtime ${project_hash}"
-          list_json="$RUNNER_TEMP/clasp-list.json"
-          npx --yes "@google/clasp@${CLASP_VERSION}" --json list-scripts > "$list_json"
+          python ops/publish_apps_script.py \
+            --sheet-id "$MIRA_PERSONAL_STARTER_SHEET_ID" \
+            --title "MIRA Personal Runtime ${project_hash}" \
+            --credential-file "$RUNNER_TEMP/mira-clasprc.json"
 
-          script_id="$({ PROJECT_TITLE="$project_title" python - "$list_json" <<'PY'
-          import json
-          import os
-          import sys
-          from pathlib import Path
-          rows = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-          if not isinstance(rows, list):
-              raise SystemExit("clasp list-scripts JSON was not a list")
-          title = os.environ["PROJECT_TITLE"]
-          matches = [row.get("id") for row in rows if isinstance(row, dict) and row.get("name") == title]
-          if len(matches) > 1:
-              raise SystemExit("multiple Apps Script projects match the private starter release identity")
-          if matches:
-              value = matches[0]
-              if not isinstance(value, str) or not value:
-                  raise SystemExit("matching Apps Script project has no id")
-              print(value)
-          PY
-          } || exit 1)"
-
-          if [ -z "$script_id" ]; then
-            bootstrap="$RUNNER_TEMP/clasp-bootstrap"
-            mkdir -p "$bootstrap"
-            create_json="$RUNNER_TEMP/clasp-create.json"
-            (
-              cd "$bootstrap"
-              npx --yes "@google/clasp@${CLASP_VERSION}" --json create-script \
-                --title "$project_title" \
-                --parentId "$MIRA_PERSONAL_STARTER_SHEET_ID" \
-                --rootDir "$bootstrap/runtime" > "$create_json"
-            )
-            script_id="$({ EXPECTED_PARENT="$MIRA_PERSONAL_STARTER_SHEET_ID" python - "$create_json" <<'PY'
-          import json
-          import os
-          import sys
-          from pathlib import Path
-          material = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-          if material.get("parentId") != os.environ["EXPECTED_PARENT"]:
-              raise SystemExit("new Apps Script project is not bound to the intended private Sheet")
-          script_id = material.get("scriptId")
-          if not isinstance(script_id, str) or not script_id:
-              raise SystemExit("new Apps Script project has no scriptId")
-          print(script_id)
-          PY
-          } || exit 1)"
-          fi
-
-          [[ "$script_id" =~ ^[A-Za-z0-9_-]{10,256}$ ]] || { printf '%s\n' 'Resolved Apps Script ID is malformed' >&2; exit 1; }
-          printf 'script_id=%s\n' "$script_id" >> "$GITHUB_OUTPUT"
-
-      - name: Push complete runtime to bound project
-        shell: bash
-        env:
-          MIRA_SCRIPT_ID: ${{ steps.project.outputs.script_id }}
-        run: |
-          set -euo pipefail
-          project_file="$RUNNER_TEMP/.clasp.json"
-          SCRIPT_ID="$MIRA_SCRIPT_ID" python - "$project_file" <<'PY'
-          import json
-          import os
-          import sys
-          from pathlib import Path
-          Path(sys.argv[1]).write_text(
-              json.dumps({
-                  "scriptId": os.environ["SCRIPT_ID"],
-                  "rootDir": "mira-runtime",
-                  "fileExtension": "gs",
-              }, separators=(",", ":")),
-              encoding="utf-8",
-          )
-          PY
-          npx --yes "@google/clasp@${CLASP_VERSION}" --project "$project_file" push --force
-
-      - name: Pull and exact-verify provider HEAD
-        shell: bash
-        env:
-          MIRA_SCRIPT_ID: ${{ steps.project.outputs.script_id }}
-        run: |
-          set -euo pipefail
-          verify_root="$RUNNER_TEMP/verify"
-          mkdir -p "$verify_root"
-          project_file="$verify_root/.clasp.json"
-          SCRIPT_ID="$MIRA_SCRIPT_ID" python - "$project_file" <<'PY'
-          import json
-          import os
-          import sys
-          from pathlib import Path
-          Path(sys.argv[1]).write_text(
-              json.dumps({
-                  "scriptId": os.environ["SCRIPT_ID"],
-                  "rootDir": ".",
-                  "fileExtension": "gs",
-              }, separators=(",", ":")),
-              encoding="utf-8",
-          )
-          PY
-          npx --yes "@google/clasp@${CLASP_VERSION}" --project "$project_file" pull
-          VERIFY_ROOT="$verify_root" python - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          expected_root = Path("workspace/apps_script")
-          actual_root = Path(os.environ["VERIFY_ROOT"])
-          expected_names = {"Code.gs", "CommandWorker.gs", "appsscript.json"}
-          actual_names = {
-              path.name for path in actual_root.iterdir()
-              if path.is_file() and not path.name.startswith(".")
-          }
-          if actual_names != expected_names:
-              raise SystemExit(f"provider HEAD file set drift: {sorted(actual_names)}")
-          for name in ("Code.gs", "CommandWorker.gs"):
-              if (expected_root / name).read_text(encoding="utf-8") != (actual_root / name).read_text(encoding="utf-8"):
-                  raise SystemExit(f"provider HEAD source drift: {name}")
-          expected_manifest = json.loads((expected_root / "appsscript.json").read_text(encoding="utf-8"))
-          actual_manifest = json.loads((actual_root / "appsscript.json").read_text(encoding="utf-8"))
-          if actual_manifest != expected_manifest:
-              raise SystemExit("provider HEAD manifest drift")
-          print("Bound Apps Script provider HEAD exact-readback verified")
-          PY
-
-      - name: Remove private credential
+      - name: Remove private maintainer credential
         if: always()
         shell: bash
-        run: rm -f "$HOME/.clasprc.json"
+        run: rm -f "$RUNNER_TEMP/mira-clasprc.json"
