@@ -561,7 +561,9 @@ def _matching_views(views, keys: tuple[str, ...], exclude_id: str | None = None)
         return []
     matches = []
     for row in views:
-        row_id = getattr(row, "provider_id", getattr(row, "appointment_id", None))
+        row_id = getattr(row, "appointment_id", None)
+        if row_id is None:
+            row_id = getattr(row, "provider_id", None)
         if exclude_id is not None and row_id == exclude_id:
             continue
         if wanted.intersection(row.identity_keys):
