@@ -288,6 +288,15 @@
       "verification": ["tests/test_runtime_router.py"]
     },
     {
+      "id": "provider-onboarding-orchestration",
+      "responsibility": "Provider-neutral ordinary-user connection presentation and next-action planning for product-owned and host-controlled surfaces, including native host discovery/install/connect handoff without manual technical setup.",
+      "why_separate": "Connection UX orchestration composes capability and runtime-routing truth but must not become provider authorization, plugin installation, provider I/O, durable service activation, or a second connection-state authority. Keeping it separate lets stock ChatGPT and future Android render the same semantics through different native connection surfaces.",
+      "owned_paths": ["mira/provider_onboarding.py"],
+      "feature_ids": ["PROVIDER-002", "PROVIDER-001", "SOURCE-001", "ONBOARD-006", "SERVICE-001", "RECOVERY-002"],
+      "work_ids": ["PROVIDER-ONBOARD-001"],
+      "verification": ["tests/test_provider_onboarding.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
