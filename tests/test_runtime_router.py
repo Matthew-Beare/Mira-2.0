@@ -138,6 +138,10 @@ class RuntimeRouterTests(unittest.TestCase):
         self.assertEqual(result.selected_lane_id, "google-native")
         self.assertEqual(result.selected_provider_id, "google")
         self.assertTrue(result.candidate_decisions[0].eligible)
+        self.assertEqual(
+            result.candidate_decisions[0].policy_id,
+            "personal-default",
+        )
 
     def test_read_only_lane_is_rejected_for_write_request(self) -> None:
         read_only = self.snapshot(
@@ -293,6 +297,20 @@ class RuntimeRouterTests(unittest.TestCase):
             result.candidate_decisions[0].reason_codes,
         )
 
+    def test_required_provider_is_hard_constraint_even_when_soft_preference_differs(self) -> None:
+        result = self.route(
+            self.request(
+                CapabilityGate.READ,
+                required_provider="microsoft",
+                preferred=("google",),
+            ),
+            self.candidate("google", "google", priority=1),
+            self.candidate("microsoft", "microsoft", priority=100),
+        )
+        self.assertTrue(result.selected)
+        self.assertEqual(result.selected_provider_id, "microsoft")
+        self.assertEqual(result.selected_lane_id, "microsoft")
+
     def test_explicit_provider_present_but_unusable_reports_capability_block(self) -> None:
         revoked = self.snapshot(
             "microsoft",
@@ -356,6 +374,23 @@ class RuntimeRouterTests(unittest.TestCase):
         self.assertEqual(result.outcome, RouteOutcome.BLOCKED)
         self.assertEqual(result.reason, RouteReason.NO_CANDIDATES)
         self.assertEqual(result.candidate_decisions, ())
+
+    def test_invalid_router_timestamp_is_validation_error_not_provider_failure(self) -> None:
+        with self.assertRaises(RuntimeRouterValidationError):
+            route_runtime(
+                self.request(CapabilityGate.READ),
+                (self.candidate("google", "google"),),
+                now="not-a-timestamp",
+                max_age_seconds=3600,
+            )
+
+        with self.assertRaises(RuntimeRouterValidationError):
+            route_runtime(
+                self.request(CapabilityGate.READ),
+                (self.candidate("google", "google"),),
+                now="2026-09-01T00:00:00-04:00",
+                max_age_seconds=3600,
+            )
 
     def test_duplicate_lane_ids_and_duplicate_provider_preferences_are_rejected(self) -> None:
         candidate = self.candidate("same", "google")
