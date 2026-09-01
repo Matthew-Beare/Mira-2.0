@@ -1,0 +1,87 @@
+name: Publish Fresh Personal Apps Script
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_fresh_sheet:
+        description: "Confirm the private target Sheet is fresh and disposable for this release"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MIRA_CLASPRC_JSON: ${{ secrets.MIRA_CLASPRC_JSON }}
+      MIRA_PERSONAL_STARTER_SHEET_ID: ${{ secrets.MIRA_PERSONAL_STARTER_SHEET_ID }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate fresh private release inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ inputs.confirm_fresh_sheet }}" = "true" || {
+            printf '%s\n' 'Fresh disposable Sheet confirmation is required' >&2
+            exit 1
+          }
+          test -n "${MIRA_CLASPRC_JSON:-}" || {
+            printf '%s\n' 'Missing MIRA_CLASPRC_JSON secret' >&2
+            exit 1
+          }
+          test -n "${MIRA_PERSONAL_STARTER_SHEET_ID:-}" || {
+            printf '%s\n' 'Missing MIRA_PERSONAL_STARTER_SHEET_ID secret' >&2
+            exit 1
+          }
+          [[ "$MIRA_PERSONAL_STARTER_SHEET_ID" =~ ^[A-Za-z0-9_-]{10,256}$ ]] || {
+            printf '%s\n' 'Starter Sheet secret is malformed' >&2
+            exit 1
+          }
+
+      - name: Install private maintainer credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$MIRA_CLASPRC_JSON" > "$RUNNER_TEMP/mira-clasprc.json"
+          python - "$RUNNER_TEMP/mira-clasprc.json" <<'PY'
+          import sys
+          from ops.publish_apps_script import load_clasp_credential
+          load_clasp_credential(sys.argv[1])
+          print("Private maintainer credential shape verified")
+          PY
+
+      - name: Validate repository runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python ops/publish_apps_script.py \
+            --sheet-id "$MIRA_PERSONAL_STARTER_SHEET_ID" \
+            --validate-only
+
+      - name: Create, bind, publish, and exact-readback provider HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_hash="$(printf '%s' "$MIRA_PERSONAL_STARTER_SHEET_ID" | sha256sum | cut -c1-12)"
+          python ops/publish_apps_script.py \
+            --sheet-id "$MIRA_PERSONAL_STARTER_SHEET_ID" \
+            --title "MIRA Personal Runtime ${project_hash}" \
+            --credential-file "$RUNNER_TEMP/mira-clasprc.json"
+
+      - name: Remove private maintainer credential
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/mira-clasprc.json"
