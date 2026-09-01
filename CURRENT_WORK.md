@@ -10,13 +10,37 @@ Ordinary-user setup follows `PRODUCT_INVARIANTS.md`: users state intent in ordin
 
 Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and applicable cross-feature product invariants.
 
+## Session-start alignment verification — 2026-08-31
+
+### `FEATURES.md`
+
+- `CAL-008` remains the primary feature for the closing direct no-app appointment slice.
+- `CAL-005`, `CAL-006`, `CAL-007`, `SERVICE-001`, `RECOVERY-002`, `ONBOARD-006`, `PROVIDER-002`, and `MAIL-002` remain preserved related product boundaries.
+- `PROVIDER-002` now explicitly carries the ordinary-user connection-surface refinement instead of creating a duplicate integration feature ID.
+
+### `BACKLOG.md`
+
+- `APPOINTMENT-INTAKE-NOAPP-001` remains the canonical work ID for M2-M0-025 and remains partial only at the live stock-ChatGPT source/model and live Calendar evidence layers.
+- `PROVIDER-ONBOARD-001` already exists as the canonical queued provider-onboarding work item; the new connection UX requirement refines that work rather than expanding this appointment implementation packet.
+- Android work remains separately preserved under `ANDROID-COMMAND-BOUNDARY-001`, `ANDROID-CLIENT-CORE-001`, and `ANDROID-SYNC`.
+
+### `ROADMAP.md`
+
+- M2-M0.5 still prioritizes useful no-app Personal MIRA before Android becomes the development focus.
+- M2-M1 remains paused with the live isolated Google queued-writer proof as the first Android resume step.
+- The seamless-connection refinement strengthens ordinary-user onboarding but does not change the provider-neutral migration or shared-state architecture.
+
+### Direction result
+
+**ALIGNED.** Close M2-M0-025 at the evidence actually demonstrated, durably preserve the seamless provider-connection requirement under the existing provider-onboarding feature/work IDs, and do not silently expand this closure packet into Android, Gmail, live Calendar mutation, or a new provider runtime.
+
 ## Active packet
 
 ### `M2-M0-025` — Direct no-app appointment text/image flow — closure checkpoint
 
 - **Primary work:** `APPOINTMENT-INTAKE-NOAPP-001`
-- **Primary feature:** `CAL-008`
-- **Related features/invariants:** `CAL-005`, `CAL-006`, `CAL-007`, `SERVICE-001`, `RECOVERY-002`, `ONBOARD-006`, `PROVIDER-002`, `MAIL-002`
+- **Primary features:** `CAL-008`
+- **Related invariants/features:** `CAL-005`, `CAL-006`, `CAL-007`, `SERVICE-001`, `RECOVERY-002`, `ONBOARD-006`, `PROVIDER-002`, `MAIL-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Implementation branch:** `integration/m0-025-appointment-noapp`
 - **Closure branch:** `governance/m0-025-closure`
@@ -27,7 +51,7 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 - **Merge/main SHA:** `92ba63a9a7c5404309dd2f76231aed30fec76c4f`
 - **Post-merge main CI:** `33464770421` green
 - **Remote main readback:** `mira/appointment_noapp.py` present on `main`
-- **Closure governance refinement head:** `c20853cdc097933575f4da8147808c3fd32d1176` after durable seamless-provider-connection requirement updates
+- **Closure PR:** #82 open
 
 ### Completed objective
 
@@ -93,8 +117,8 @@ There is therefore meaningful backend/client-boundary work already done, but **n
 
 1. Reconcile `BACKLOG.md` with PR #81 merge/main/post-merge evidence and the refined `PROVIDER-ONBOARD-001` ordinary-user connection requirement without creating a duplicate feature ID.
 2. Keep `APPOINTMENT-INTAKE-NOAPP-001` partial at the live source/model evidence layer and the umbrella intake work split/partial.
-3. Run closure-branch lifecycle/CI gates after governance reconciliation.
-4. Open the bounded closure PR, require exact-head green CI, merge with expected-head protection, then verify remote `main` readback and push-event CI.
+3. Re-run closure-branch lifecycle/CI gates after governance reconciliation.
+4. Merge closure PR #82 only with final exact-head green CI and expected-head protection, then verify remote `main` readback and push-event CI.
 5. Re-rank unfinished accepted M2-M0.5 work from canonical Git after closure. Seamless provider onboarding may rank highly because it unlocks multiple user-visible provider lanes, but it does not silently preempt dependency/integrity blockers.
 6. Do not resume Android merely because its status was discussed; if it becomes next work, first create the next bounded packet from the preserved live-worker proof resume point.
 
