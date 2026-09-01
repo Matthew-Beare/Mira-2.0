@@ -56,12 +56,12 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 - **Primary work:** `APPOINTMENT-INTAKE-001`
 - **Primary features:** `CAL-008`
-- **Related features/invariants:** `CAL-005`, `RECOVERY-002`, `CAL-006`, `CAL-007`, `SERVICE-001`, `MAIL-002`, `PROFILE-013`
+- **Related invariants/features:** `CAL-005`, `RECOVERY-002`, `CAL-006`, `CAL-007`, `SERVICE-001`, `MAIL-002`, `PROFILE-013`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `integration/m0-024-appointment-intake`
 - **Base SHA:** `b1d7a4f20ebad3503a3c518ec568c47498e85d42`
-- **Last implementation head before alignment fix:** `592d31aa9b7f5903c374b3e40cc9073ccdc47072`
-- **PR:** #79 open; first CI run `33439445912` failed only at work-session alignment because this file used singular `Primary feature`; compile, feature registry, product lifecycle ledger, and Personal distribution passed before the job stopped.
+- **Last implementation head before alignment fixes:** `592d31aa9b7f5903c374b3e40cc9073ccdc47072`
+- **PR:** #79 open; CI runs `33439445912` and `33456620546` reached only work-session-alignment label errors after compile, feature registry, lifecycle ledger, and Personal distribution passed.
 
 ### Objective
 
@@ -100,7 +100,7 @@ The packet does **not** implement Gmail search/fetch, OCR/image understanding, a
 
 ## Exact next action / resume point
 
-1. Re-run PR CI after the `Primary features` alignment fix.
+1. Run PR CI after the exact work-session field-label corrections.
 2. Fix only packet-local failures until compile, registries, distribution, work-session alignment, code ownership, full Python tests, and Workspace Apps Script tests are green on the exact PR head.
 3. Reconcile `BACKLOG.md`, `CURRENT_WORK.md`, and PR #79 with actual test evidence.
 4. Require one final exact-head CI after lifecycle documentation updates.
