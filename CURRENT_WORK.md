@@ -4,118 +4,102 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. A normal user should be able to express provider intent in plain language, such as “connect my calendar,” and have MIRA use the closest supported native ChatGPT app/plugin/provider flow. Manual settings treasure hunts, copied IDs, OAuth-scope editing, developer consoles, Apps Script, pasted code, terminals, Linux, SQL, Cloud Run, or paid OpenAI API usage are not default Personal setup when software can route around them.
+Default Personal MIRA remains stock ChatGPT + Google Workspace with no external infrastructure prerequisite. When Android or another software writer is enabled, direct independent Google Sheets mutation must stop; commands use the serialized shared command boundary. Ordinary users must not open Apps Script, paste code, manage triggers, copy provider IDs, or understand queued-writer internals merely to enable Android/shared access.
 
-Authorization, plugin/app installation, provider capability verification, runtime routing, connection presentation, and MIRA service activation remain separate truths. Host-native UI may require an explicit user tap for install/connect/consent; MIRA must surface that unavoidable action directly rather than disguising it as completed work.
+Pre-Android feature growth remains frozen except for this hard shared-writer proof. After this packet reaches its live Google evidence ceiling, start `ANDROID-CLIENT-CORE-001`.
 
-Pre-Android feature growth is frozen except for hard proof dependencies: this host-execution proof, then the live isolated Google queued-writer proof, then Android client core. Apple remains a required provider-neutral lane but full Apple adapter implementation is not a pre-Android blocker.
-
-## Session-start alignment verification — 2026-09-01 M2-M0-029
+## Session-start alignment verification — 2026-09-01 M2-M1-001 resume
 
 ### `FEATURES.md`
 
-- `PROVIDER-002` requires ordinary-user connection UX and native provider/host authorization routing without avoidable technical setup.
-- `PROVIDER-001` and `SOURCE-001` remain the existing runtime-routing/capability truth; this packet does not create another provider state model.
-- `ONBOARD-006` requires browser-only nontechnical Personal operation with no terminal fallback.
-- `RECOVERY-002` requires provider failures to remain isolated and fail closed.
+- `CLIENT-ANDROID-001`, `API-001`, `AUTH-001`, `STORE-001`, and `RECOVERY-002` require one safe shared canonical mutation boundary rather than independent read-then-write clients.
+- Default Personal setup remains no-terminal/no-developer-console when software can provide an ordinary-user control.
 
 ### `BACKLOG.md`
 
-- `PROVIDER-ONBOARD-001` is complete in M2-M0-028 / PR #88 at the provider-neutral/test-verified evidence ceiling.
-- `HOST-CONNECT-EXEC-001` is the bounded host executor proof selected for this packet.
-- `ANDROID-COMMAND-BOUNDARY-001` remains partial with its live isolated Google queued-writer proof pending immediately after this packet.
-- `ANDROID-CLIENT-CORE-001` remains queued immediately after that live proof.
+- `ANDROID-COMMAND-BOUNDARY-001` is partial: provider-neutral sequencer and synthetic Workspace worker proof are complete in PRs #54/#55; live isolated Google worker proof remains pending.
+- `ANDROID-CLIENT-CORE-001` is queued immediately after this live proof.
+- `HOST-CONNECT-EXEC-001` was implemented/live-host-proven in M2-M0-029 / PR #90, but its BACKLOG status row still requires closure reconciliation. That bookkeeping does not change the technical critical path and must be corrected before this packet closes.
 
 ### `ROADMAP.md`
 
-- M2-M0.5 has already delivered the no-app Personal foundation and multiple canonical verticals.
-- M2-M1 remains paused only for the remaining hard shared-writer proof before Android mutation begins.
-- Provider expansion including Apple/iCloud remains later unless it becomes a hard dependency.
+- M2-M1 is blocked on live shared-writer proof, not on inventing another concurrency architecture.
+- Android client implementation follows this packet; unrelated provider expansion remains deferred.
 
 ### Direction result
 
-**ALIGNED.** Close the stock-ChatGPT host executor seam, then immediately resume the existing live queued-writer proof before Android. Do not add unrelated feature work.
+**ALIGNED.** Resume the existing `M2-M1-001` packet. Fix the newly discovered ordinary-user activation blocker, publish that verified bound-script release into an isolated starter/proof substrate, then prove one real Google worker command end-to-end. Do not touch legacy production state.
 
 ## Active packet
 
-### `M2-M0-029` — Stock ChatGPT native connection execution proof
+### `M2-M1-001` — Concurrent canonical command boundary, live Google proof
 
-- **Primary work:** `HOST-CONNECT-EXEC-001`
-- **Primary features:** `PROVIDER-002`, `ONBOARD-006`
-- **Related invariants/features:** `PROVIDER-001`, `SOURCE-001`, `RECOVERY-002`
+- **Primary work:** `ANDROID-COMMAND-BOUNDARY-001`
+- **Primary features:** `CLIENT-ANDROID-001`, `API-001`
+- **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `ONBOARD-006`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-029-host-connect-exec`
-- **Base/main SHA:** `604ec697d7566640aa9333da18d1f60dd4a66036`
-- **Starting branch head:** `604ec697d7566640aa9333da18d1f60dd4a66036`
-- **Current implementation head:** updated by the commits recorded below; verify exact remote head before merge
-- **Dependencies:** `PROVIDER-ONBOARD-001` complete; current ChatGPT Plugin Management capability available in this host session
-- **Blockers:** none for packet closure; CI/merge/readback remain
+- **Branch:** `integration/m1-001-live-worker-proof`
+- **Base/main SHA:** `2be8ccefd8ada72dc31bfd2f4df1c560ca22f483`
+- **Prior implementation:** PR #54 provider-neutral sequencer; PR #55 Workspace `Commands` inbox + `ScriptLock` worker, both merged/test-verified.
+- **Current branch evidence:** `Code.gs` now exposes `MIRA → Enable Android / shared access` through a wrapper around the existing `miraEnableQueuedWriter()`; direct tests guard the ordinary-user surface.
+- **Dependencies:** isolated synthetic Google Workspace substrate; verified bound Apps Script release containing the current branch changes.
+- **Current blocker:** Git source changes do not automatically update an already-copied bound Apps Script project. The current Google connector can copy/read/write Sheet cells but cannot publish bound Apps Script source or invoke custom Apps Script functions. Live proof therefore requires a release/publication seam before the one-click user activation can be exercised against the corrected bundle.
 
 ## Objective
 
-Prove that stock ChatGPT can execute the host-controlled side of MIRA’s connection contract: ordinary-language intent for a supported service can resolve the relevant current ChatGPT app/plugin and surface the host-native install/connect action directly, without manual settings navigation or technical provider setup.
+Prove the existing queued-writer architecture against a fresh isolated Google Workspace copy using an ordinary-user activation path: enable Android/shared access without Apps Script-editor work, enqueue a synthetic API-001 command, observe the real time-driven worker serialize and commit it, and verify exact canonical/idempotency/result readback.
 
 ## Acceptance criteria
 
-1. Verify current host capability through live Plugin Management discovery rather than relying only on documentation or repository assumptions.
-2. Use a user-recognizable supported service, initially Google Calendar, as the bounded proof target.
-3. Resolve the exact current ChatGPT plugin/app through host discovery from service intent; do not hard-code a stale catalog identifier as product truth.
-4. Surface the host-native install/connect action through ChatGPT’s supported plugin UI without silently authorizing on the user's behalf.
-5. Record explicit user tap/provider consent as unavoidable host/provider ceremony rather than a MIRA failure or automatic authorization.
-6. Do not mutate Calendar, Gmail, Drive, MIRROR canonical state, or legacy production data during this proof.
-7. Do not claim capability verification, Connected state, or service activation merely because the host surfaced or completed the app authorization flow.
-8. Verify that `mira/provider_onboarding.py` host planning maps coherently to the live host action: discover/install/connect when authorization is required, then separate capability verification.
-9. Capture only generic/nonpersonal host evidence in Git.
-10. Encode host-execution behavior in source-backed operating instructions/protocol.
-11. Direct tests/CI prevent regression into settings treasure hunts, fake authorization success, or local-checkout-dependent scheduled runtime behavior.
-12. Exact-head CI, expected-head merge, remote readback, and post-merge CI are required.
-13. Mark `HOST-CONNECT-EXEC-001` only to the evidence actually demonstrated. Provider resource/capability readback and provider mutation remain separate.
+1. Use only a fresh isolated synthetic Sheet; legacy MIRA production Sheets, briefs, Calendars, automations, and user operational data are not fixtures.
+2. The verified bound Apps Script release exposes `MIRA → Enable Android / shared access`; no normal user opens Apps Script or manually runs `miraEnableQueuedWriter()`.
+3. Activation creates/validates exactly one one-minute worker trigger before persisted `mutation_mode=queued_writer` becomes authoritative.
+4. Activation creates the canonical `Commands` transport tab and persists queued-writer mode.
+5. Submit one synthetic same-user API-001 `entity` upsert command through the authenticated Google Sheet surface with stable command/idempotency IDs and expected revision 0.
+6. The actual Google time-driven worker processes the pending command under `ScriptLock`.
+7. Success is recorded only after exact Resource + Idempotency readback; the new entity is revision 1 and matches submitted payload/material.
+8. Re-reading the command shows a durable succeeded result rather than assuming scheduler execution.
+9. No independent direct-native canonical mutation path remains active after queued mode is authoritative.
+10. Record only generic/synthetic provider evidence in public Git.
+11. Exact-head CI, expected-head merge, remote readback, and post-merge CI are required for source changes.
+12. Reconcile the stale M2-M0-029 `HOST-CONNECT-EXEC-001` BACKLOG row before packet closure.
+13. After live proof, mark `ANDROID-COMMAND-BOUNDARY-001` only to the evidence actually demonstrated and start `ANDROID-CLIENT-CORE-001`.
 
-## Completed evidence in this packet
+## Live isolated substrate prepared
 
-- Live Plugin Management discovery from ordinary Google Calendar service intent resolved the current supported Google Calendar integration.
-- The host-native install/connect control was surfaced directly in ChatGPT.
-- The human user completed the native host/provider connection ceremony. MIRA did not click through consent on the user's behalf.
-- No Calendar event, Gmail message, Drive file, MIRROR canonical entity, or protected legacy production state was mutated by this proof.
-- `docs/host_connect_execution_evidence.md` records the generic evidence ceiling without account identifiers, tokens, scope details, or private provider state.
-- `PROJECT_INSTRUCTIONS.md` now requires current host discovery, direct native connect surfacing, service isolation, honest unsupported-provider failure, and separation of authorization from verified `Connected` state.
-- `tests/test_project_instructions_contract.py` adds regression coverage for the connection contract and scheduled-runtime portability rule.
+A fresh copy was created from a post-PR-55 Personal proof Sheet:
 
-## Production incident captured during packet
+- title: `MIRA M2-M1-001 Live Queued Writer Proof - 2026-09-01 - NOT A STARTER`
+- Google Sheet ID is intentionally not committed to public Git; it remains session/provider evidence only.
+- metadata readback proves `environment=mira_2_sandbox`, `data_policy=synthetic_only`, `adapter_contract=STORE-001`, `writer_model=single_writer`.
+- canonical Authority is verified/enabled and owned by synthetic subject `synthetic-no-app-user`; `entity` binding exists.
+- before activation the copy has Metadata, Resources, Events, and Idempotency tabs and no Commands tab, as expected.
 
-The enabled MIRA AM/PM brief automations fired but failed because their prompts incorrectly required a local repository/skill script (`skill/ops-brief-policy/scripts/ops_policy.py`) to exist inside the scheduled ChatGPT runtime. The scheduler itself worked; the deployment assumption was invalid.
+## Newly discovered blocker and fix
 
-Both enabled AM and PM automation prompts were corrected live so the exact-schedule trigger is authoritative for slot entry, the platform runtime/system clock is used when needed, local policy scripts are optional verification rather than mandatory deployment dependencies, and independent modules fail closed independently when their own canonical access/integrity/readback fails.
+`CommandWorker.gs` already implemented `miraEnableQueuedWriter()`, but `Code.gs` exposed only `MIRA → Initialize this copy`. That meant a live activation required opening the Apps Script editor and running an internal function manually, violating the ordinary-user Personal contract.
 
-This durable rule is now also encoded in `PROJECT_INSTRUCTIONS.md` and regression-tested. Do not restore a mandatory local-checkout/local-skill precondition in scheduled ChatGPT automations.
+The branch now adds a user-facing `MIRA → Enable Android / shared access` menu action through `miraEnableQueuedWriterFromMenu()`, which delegates to the already-tested worker activation and keeps internal queued-writer terminology out of the menu. `tests/test_shared_access_menu_contract.py` prevents regression.
 
-## Evidence ceiling
+The remaining issue is release publication: changing Git cannot mutate an existing bound Apps Script project, and the connected Google Drive/Sheets surface currently lacks an Apps Script source/publication action. Do not export this maintainer problem to an ordinary user by asking them to paste or run script code.
 
-`HOST-CONNECT-EXEC-001` has live host discovery + native connection-surface execution evidence for Google Calendar. User-driven authorization through the surfaced host flow occurred, but this packet does not claim operation-specific Calendar capability/resource verification, verified `Connected` presentation, MIRA service activation, Calendar reads/writes, or provider mutation/readback.
+## Evidence ceiling so far
 
-## Explicitly deferred
-
-- live Calendar capability/resource/scope readback after consent;
-- Calendar/Gmail/Drive reads or writes;
-- Microsoft/Apple adapters;
-- Android implementation;
-- legacy production migration.
-
-## Android preserved resume point
-
-- `ANDROID-COMMAND-BOUNDARY-001`: provider-neutral sequencer plus synthetic Google Workspace queued-worker proof complete in PRs #54/#55; live isolated Google worker proof pending.
-- `ANDROID-CLIENT-CORE-001`: follows that proof and owns scoped/revocable identity, OS-protected credentials, bounded reads/commands, replay-safe offline queue, reconnect/cursor sync, conflict handling, exact server readback and the product-owned Connections surface.
-- `ANDROID-SYNC`: then proves Android mutation and stock ChatGPT readback from the same canonical authority.
+- Provider-neutral serialized command semantics: test-verified.
+- Workspace worker implementation and fake-Apps-Script execution: test-verified in PR #55.
+- Fresh isolated Google Sheet substrate and canonical metadata/Authority readback: live provider-readback verified.
+- Ordinary-user activation UI fix: implemented on current branch; CI/merge pending.
+- Actual Google Apps Script trigger creation/firing and queued command execution: **not yet live-verified**.
 
 ## Exact next action / resume point
 
-1. Verify the current branch remote head and run exact-head CI for the instruction/evidence/regression changes.
-2. Open/merge the bounded M2-M0-029 PR only after required CI is green.
-3. Remotely read back the merge and post-merge main CI.
-4. Reconcile `HOST-CONNECT-EXEC-001` in BACKLOG to the live-host evidence ceiling during closure.
-5. Immediately resume `ANDROID-COMMAND-BOUNDARY-001` live isolated Google queued-writer proof.
-6. Then start `ANDROID-CLIENT-CORE-001`.
+1. Run CI for the shared-access menu/regression changes and merge only when green.
+2. Identify or implement the bounded maintainer/template publication seam needed to place the verified bound Apps Script release into an isolated Google starter without ordinary-user script editing; reuse an existing stable work ID if present, otherwise record the hard dependency explicitly before adding one.
+3. Create/copy a fresh isolated proof Sheet from that verified published release.
+4. Surface the one unavoidable user action only if the host cannot invoke the custom Sheet menu itself: **MIRA → Enable Android / shared access**.
+5. Read back Commands + Metadata, submit one synthetic entity command, and verify actual worker result/Resource/Idempotency state.
+6. Reconcile BACKLOG lifecycle evidence, close `ANDROID-COMMAND-BOUNDARY-001`, then start `ANDROID-CLIENT-CORE-001`.
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is `M2-M0-029` / `HOST-CONNECT-EXEC-001` on `integration/m0-029-host-connect-exec`, based on green main SHA `604ec697d7566640aa9333da18d1f60dd4a66036`. Live stock-ChatGPT Google Calendar host discovery and native connection surfacing have been proven; source instruction/evidence/test changes are committed. Resume with exact-head CI and PR closure, then return immediately to the live Android command-boundary prerequisite. Do not expand into provider mutation, Apple implementation, or Android client code until this bounded packet closes.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is resumed `M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` on `integration/m1-001-live-worker-proof`, based on main `2be8ccefd8ada72dc31bfd2f4df1c560ca22f483`. The immediate code defect is the missing ordinary-user shared-access activation control; its fix and regression test are on this branch. The hard remaining live-proof dependency is publishing the corrected bound Apps Script release into an isolated Google proof substrate without making the ordinary user do developer work.
