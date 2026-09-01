@@ -4,129 +4,113 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Repeated useful no-app verticals and ordinary-user onboarding/integration hardening remain ahead of Android. Normal user-facing branding is **MIRA**. `MIRROR` remains an internal database/reality-layer term only when a technical database-specific context requires it.
+Default Personal MIRA is stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Ordinary-user provider setup must be intent-first and as close to one-click as the host/provider safely permits. Product-owned clients expose obvious connection controls; stock ChatGPT uses the closest supported native host/provider flow. Manual resource creation, copied IDs, OAuth-scope editing, Apps Script/developer-console work, pasted code, terminal setup, Linux, SQL, Cloud Run, or paid OpenAI API usage are not prerequisites for the default Personal path when software can route around them.
 
-Ordinary-user setup follows `PRODUCT_INVARIANTS.md`: users state intent in ordinary language, provider-native authorization is the only unavoidable provider ceremony, and MIRA performs technical setup when software can safely do it. The connection-surface rule under `PROVIDER-002` / `PROVIDER-ONBOARD-001` requires obvious Connect/Connected/Reconnect/Needs-attention/Unavailable/Disconnect behavior wherever the client controls UI, with the closest supported native host/provider connection flow when stock ChatGPT controls the UI. Manual provider resource creation, copied IDs, scope editing, Apps Script/developer-console work, pasted code and terminal setup are prohibited for the default Personal path whenever software can route around them.
+Android remains a later companion extension over the same canonical state and provider/service semantics. It is paused while no-app Personal MIRA becomes genuinely usable.
 
-Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and applicable cross-feature product invariants.
+Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and applicable product invariants.
 
-## Session-start alignment verification — 2026-08-31
+## Session-start alignment verification — 2026-09-01
 
 ### `FEATURES.md`
 
-- `SOURCE-001` requires independent source read, source write and remote-readback capability gates rather than treating provider authorization as proof that an operation works.
-- `PROVIDER-001` requires runtime capability routing from observed evidence.
-- `PROVIDER-002` requires browser-only ordinary-user provider onboarding with native Connect flow, automatic post-consent discovery/binding/verification and no avoidable technical setup.
-- `ONBOARD-006` preserves the browser-only nontechnical Personal path with no terminal fallback.
-- `RECOVERY-002` requires failure isolation so one broken provider capability cannot fabricate readiness or break unrelated services.
+- `SOURCE-001` requires independent read, write, and remote-readback capability truth.
+- `PROVIDER-001` requires provider-neutral runtime routing from observed capability evidence.
+- `PROVIDER-002` requires ordinary-user provider onboarding with native consent, automatic discovery/binding/verification, and no avoidable technical setup.
+- `ONBOARD-006` preserves browser-only nontechnical Personal setup.
+- `RECOVERY-002` preserves failure isolation and fail-closed behavior.
 
 ### `BACKLOG.md`
 
-- `SOURCE-GATES-001` is the canonical work item implemented by M2-M0-026; backlog lifecycle reconciliation is the remaining closure edit.
-- `RUNTIME-ROUTER-001` depends on `SOURCE-GATES-001` and is the next architectural prerequisite for converting verified evidence into provider/runtime routing decisions.
-- `PROVIDER-ONBOARD-001` follows that router and will consume the same connection truth for the seamless Connections experience rather than inventing a parallel UI state model.
-- `APPOINTMENT-INTAKE-NOAPP-001` remains partial only at live stock-ChatGPT source/model and live Calendar evidence layers after PR #81.
-- Android remains separately preserved under `ANDROID-COMMAND-BOUNDARY-001`, `ANDROID-CLIENT-CORE-001`, and `ANDROID-SYNC`; this closure does not resume Android.
+- `SOURCE-GATES-001` is implemented by M2-M0-026 / PR #83 and is being reconciled from stale `queued` lifecycle text to its demonstrated completion evidence on this branch.
+- `RUNTIME-ROUTER-001` remains the next prerequisite after this closure because `PROVIDER-ONBOARD-001` depends on verified routing truth.
+- `PROVIDER-ONBOARD-001` remains the canonical work item for the seamless Connections experience and must reuse the capability/router state rather than inventing UI-only truth.
+- Android remains separately preserved under `ANDROID-COMMAND-BOUNDARY-001`, `ANDROID-CLIENT-CORE-001`, and `ANDROID-SYNC`.
 
 ### `ROADMAP.md`
 
-- M2-M0.5 still prioritizes a useful ordinary-user no-app Personal product before Android becomes the active development focus.
-- Provider/onboarding hardening belongs in that no-app path when it removes user setup burden across multiple services.
-- M2-M1 remains paused with the live isolated Google queued-writer proof as the first Android resume step.
+- M2-M0.5 continues to prioritize ordinary-user no-app Personal usefulness before Android.
+- Provider/onboarding hardening belongs in M2-M0.5 because it removes setup burden across multiple user-visible services.
+- M2-M1 remains paused at the live isolated Google queued-writer proof resume point.
 
 ### Direction result
 
-**ALIGNED.** Close M2-M0-026 at the evidence actually demonstrated, reconcile `SOURCE-GATES-001`, then select `RUNTIME-ROUTER-001` before implementing provider connection UI. Do not expand this closure into provider OAuth, Calendar/Gmail/Drive writes, Android, Microsoft/Apple adapters, or legacy production mutation.
+**ALIGNED.** Finish the lifecycle reconciliation for M2-M0-026, verify the closure branch, merge it cleanly, then create a bounded `RUNTIME-ROUTER-001` packet. Do not expand this closure into provider OAuth, live Calendar/Gmail/Drive mutation, Android, Microsoft/Apple adapters, or legacy production writes.
 
 ## Active packet
 
-### `M2-M0-026` — Personal provider capability-gate foundation — closure checkpoint
+### `M2-M0-026` — Personal provider capability-gate foundation — final lifecycle closure
 
 - **Primary work:** `SOURCE-GATES-001`
 - **Primary features:** `SOURCE-001`, `PROVIDER-001`, `PROVIDER-002`
 - **Related invariants/features:** `ONBOARD-006`, `RECOVERY-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Implementation branch:** `integration/m0-026-provider-capability-gates`
-- **Closure branch:** `governance/m0-026-closure`
-- **Base/main SHA:** `6e424e70e167ce69ae7cbf0064880ad2909beb45`
-- **PR:** #83 merged
-- **Final PR head:** `b2a28113fd049227ce95250043a9c17c230ad632`
-- **Final exact-head CI:** `33465768620` green
-- **Merge/main SHA:** `89b6e2d1f26679af247a6cc10af4e1d6fffd958f`
-- **Post-merge main CI:** `33465833635` green
-- **Remote main readback:** provider capability evidence/gate implementation is present in `mira/service_state.py`
-- **Dependencies:** provider adapters later supply observations; canonical service activation remains separate
-- **Blockers:** none for closure; backlog lifecycle reconciliation remains
+- **Closure checkpoint branch:** `governance/m0-026-closure`
+- **Final lifecycle branch:** `governance/m0-026-final-close`
+- **Original implementation base SHA:** `6e424e70e167ce69ae7cbf0064880ad2909beb45`
+- **Current lifecycle base/main SHA:** `59dd2a20241e153ff31b5678e80e19425cfae0f4`
+- **Implementation PR:** #83 merged
+- **Implementation final head:** `b2a28113fd049227ce95250043a9c17c230ad632`
+- **Implementation exact-head CI:** `33465768620` green
+- **Implementation merge SHA:** `89b6e2d1f26679af247a6cc10af4e1d6fffd958f`
+- **Implementation post-merge CI:** `33465833635` green
+- **Closure checkpoint PR:** #84 merged
+- **Closure checkpoint merge SHA:** `59dd2a20241e153ff31b5678e80e19425cfae0f4`
+- **Closure checkpoint post-merge CI:** `33466001974` green
+- **Blockers:** none; only canonical backlog lifecycle reconciliation remains on this branch
 
 ### Completed objective
 
-M2-M0-026 implements the provider-neutral capability evidence/gating foundation required for honest seamless Connections UX. It gives later runtime routing and onboarding code deterministic machine-readable truth instead of allowing a successful provider consent screen or declared connector feature to masquerade as verified readiness.
+M2-M0-026 established provider-neutral, secret-free capability evidence that keeps authorization, read capability, write capability, exact remote readback, freshness, connection presentation, and MIRA service activation as separate truths.
 
-### Durable implementation evidence
+### Durable evidence
 
-- Existing `mira/service_state.py` was extended rather than creating a duplicate capability model or new unowned runtime component.
-- Typed authorization states distinguish unknown, authorization-required, authorized, denied, expired, revoked and unavailable.
-- Independent SOURCE-001 gates distinguish read, write and exact remote readback; passing one never implies another.
-- Evidence states distinguish unknown, unsupported, merely declared, verified, failed and permission-denied behavior.
-- Provider-neutral connection decisions distinguish Connect, Connected, Reconnect, Needs attention and Unavailable.
-- Authorization success alone never produces Connected state unless every required operation has fresh verified evidence.
+- `mira/service_state.py` on remote `main` contains typed authorization, capability-gate, evidence-state, connection-state, snapshot, and evaluation semantics.
+- Authorization states distinguish unknown, required, authorized, denied, expired, revoked, and unavailable.
+- Read, write, and exact remote-readback gates are independent.
+- Evidence distinguishes unknown, unsupported, declared, verified, failed, and permission denied.
+- Deterministic presentation state distinguishes Connect, Connected, Reconnect, Needs attention, and Unavailable.
+- Authorization alone cannot produce Connected unless every required operation has fresh verified evidence.
 - Stale evidence fails closed; future-dated evidence is rejected.
-- Revoked/expired authorization deterministically routes to Reconnect; unsupported required capability routes to Unavailable; permission/verification failures route to Needs attention.
-- Capability snapshots retain provider/service/resource/scope/time provenance without credential, token, secret or private provider-payload fields.
-- Capability evaluation can update service readiness but does not alter explicit user activation intent. A capable provider therefore cannot silently activate a MIRA service.
-- Synthetic direct tests cover authorization-required, authorized-but-unverified, read-only/independent gates, exact readback, write-with-readback-failure, revoked/expired, permission-denied, unsupported and stale/future evidence cases.
-- Final PR-head CI `33465768620` passed compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Python tests and Workspace Apps Script tests.
-- Expected-head protected PR #83 merge succeeded at `89b6e2d1f26679af247a6cc10af4e1d6fffd958f`.
-- Remote `main` readback independently confirmed the merged capability implementation.
-- Post-merge `main` CI `33465833635` passed every gate/test.
-- No live Personal Calendar, Drive, Gmail or other provider resource was mutated by this packet.
+- Capability evaluation may update readiness but cannot silently create user activation intent.
+- Synthetic tests cover authorized-but-unverified, read-only, exact-readback, write/readback failure, revoked/expired, permission denied, unsupported, stale, and future evidence.
+- PR #83 exact-head CI and post-merge `main` CI are green.
+- PR #84 closure checkpoint is merged and post-merge CI `33466001974` is green.
+- No live Personal Calendar, Drive, Gmail, or other provider resource was mutated.
+- On `governance/m0-026-final-close`, `BACKLOG.md` now records the PR #83 completion evidence for `SOURCE-GATES-001` instead of stale `queued` text.
 
 ### Evidence ceiling
 
-This packet does **not** claim:
+This packet does not claim live provider authorization/discovery, provider-specific OAuth orchestration, actual Google Calendar/Drive/Gmail connection observation, runtime routing, MIRA-owned connection UI, provider mutation/readback, Microsoft/Apple proof, or Android behavior.
 
-- live stock-ChatGPT provider authorization or capability discovery;
-- actual Google Calendar/Drive/Gmail connection-state observation;
-- provider-specific OAuth/consent orchestration;
-- `RUNTIME-ROUTER-001` routing behavior;
-- MIRA-owned Connections cards/buttons;
-- real Calendar/Gmail/Drive mutation/readback;
-- Microsoft/Apple provider capability proof;
-- Android behavior or UI.
+## Seamless connection dependency path
 
-## Seamless connection path
+1. `SOURCE-GATES-001` establishes honest capability truth. Implementation and CI evidence are complete; lifecycle text is being finalized here.
+2. `RUNTIME-ROUTER-001` consumes those observations and selects or blocks provider/runtime lanes without assuming capability.
+3. `PROVIDER-ONBOARD-001` consumes the same router/capability truth for Connect, Connected, Reconnect, Needs attention, Unavailable, and Disconnect behavior.
+4. Product-owned clients use obvious service-level controls such as **Connect Google Calendar**, **Connect Google Drive**, and **Connect Gmail**.
+5. Stock ChatGPT routes ordinary-language intent to the closest supported native host/provider authorization flow rather than exporting technical setup to the user.
+6. Future Android renders the same semantics through a native Connections surface rather than creating a second activation model.
 
-The intended dependency path is now explicit rather than hand-waved:
+## Android preserved resume point
 
-1. `SOURCE-GATES-001` / M2-M0-026 establishes honest provider capability truth. **Implementation merged and green; backlog lifecycle reconciliation remains.**
-2. `RUNTIME-ROUTER-001` consumes that evidence and selects/blocks provider lanes without assuming capability.
-3. `PROVIDER-ONBOARD-001` presents the ordinary-user Connections experience. Product-owned clients use obvious actions such as **Connect Google Calendar**, **Connect Google Drive**, and **Connect Gmail** with Connected/Reconnect/Needs-attention/Unavailable/Disconnect states.
-4. Where stock ChatGPT controls the host UI, MIRA routes plain-language intent into the closest supported native ChatGPT/provider connection flow rather than sending the user into provider settings, Calendar creation, copied IDs, scope editing, Apps Script/developer consoles, pasted code or terminal work.
-5. Future Android uses the same evidence/router/service state through a native Connections surface instead of inventing a second activation model.
+Android remains M2-M1 and is paused, not discarded.
 
-## Android status / preserved resume point
-
-Android remains M2-M1 and is **paused, not discarded** while usable no-app Personal MIRA is prioritized.
-
-Current evidence:
-
-1. `ANDROID-COMMAND-BOUNDARY-001`: provider-neutral sequencing plus synthetic Google Workspace queued-writer implementation/test proof is complete from PRs #54/#55.
-2. The immediate Android prerequisite still pending is the **live isolated Google worker proof** for that stronger shared-writer boundary.
-3. `ANDROID-CLIENT-CORE-001` is queued immediately after that proof. It owns scoped/revocable enrollment/session identity, OS-protected credentials, bounded reads/commands, replay-safe offline queue, reconnect/cursor sync, conflict handling and exact server readback.
-4. `ANDROID-SYNC` then proves Android mutation of the same canonical state and stock ChatGPT readback from that same authority.
-5. Native notification/TTS delivery, camera/barcode/QR/NFC/BLE capture, release signing and broader UI polish follow the shared-state proof unless required by the core proof itself.
-
-There is meaningful backend/client-boundary work already completed, but **no current MIRA 2.0 Android UI implementation yet**.
+- `ANDROID-COMMAND-BOUNDARY-001`: provider-neutral sequencing plus synthetic Google Workspace queued-writer proof is complete from PRs #54/#55; live isolated Google worker proof remains pending.
+- `ANDROID-CLIENT-CORE-001` follows that live proof and owns scoped/revocable identity, OS-protected credentials, bounded reads/commands, replay-safe offline queue, reconnect/cursor sync, conflict handling, and exact server readback.
+- `ANDROID-SYNC` then proves Android mutation and stock-ChatGPT readback against the same canonical authority.
+- There is still no MIRA 2.0 Android UI implementation.
 
 ## Exact next action / resume point
 
-1. Reconcile `BACKLOG.md` so `SOURCE-GATES-001` records PR #83 merge/main/readback/CI evidence rather than remaining queued.
-2. Run closure-branch lifecycle/alignment CI after that canonical backlog reconciliation.
-3. Open/merge the bounded closure PR with exact-head green CI and expected-head protection; verify remote `main` readback and post-merge CI.
-4. Create the next bounded packet for `RUNTIME-ROUTER-001`, reusing the merged capability evaluation rather than creating another capability model.
-5. Only after router truth is verified should `PROVIDER-ONBOARD-001` implement the actual seamless Connections orchestration/UI.
-6. Do not resume Android merely because its status was discussed. Its exact Git-backed resume point remains the live isolated Google queued-writer proof.
+1. Open a bounded PR from `governance/m0-026-final-close` containing only the `SOURCE-GATES-001` lifecycle reconciliation and this corrected checkpoint.
+2. Require exact-head green CI, merge with expected-head protection, then verify remote `main` readback and push-event CI.
+3. Create the next bounded packet `M2-M0-027` for `RUNTIME-ROUTER-001` from that clean main SHA.
+4. Reuse the merged capability evaluation; do not create another capability model.
+5. Keep actual provider onboarding/connection UI under `PROVIDER-ONBOARD-001` after router truth is verified.
+6. Do not resume Android unless explicitly reprioritized; its Git-backed resume point remains the live isolated Google queued-writer proof.
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. M2-M0-026 implementation is merged at `89b6e2d1f26679af247a6cc10af4e1d6fffd958f`; final PR-head CI `33465768620` and post-merge `main` CI `33465833635` are green; merged capability code is independently visible on remote `main`. Continue only with `SOURCE-GATES-001` backlog/lifecycle reconciliation on `governance/m0-026-closure`, then close the packet and select `RUNTIME-ROUTER-001`. Do not reconstruct Android or provider state from conversational memory.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. M2-M0-026 implementation is merged through PR #83 at `89b6e2d1f26679af247a6cc10af4e1d6fffd958f`; PR #84 checkpoint is merged at `59dd2a20241e153ff31b5678e80e19425cfae0f4`; all recorded implementation/checkpoint CI is green. Active work is only the final lifecycle reconciliation on `governance/m0-026-final-close`. After it merges, select `RUNTIME-ROUTER-001`; do not reconstruct Android or provider state from conversation history.
