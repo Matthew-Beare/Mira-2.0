@@ -14,26 +14,26 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 
 ### `FEATURES.md`
 
-- `CAL-005` appointment/provider identity reconciliation is merged/test-verified and remains the canonical identity authority.
-- `CAL-008` requires multi-source appointment evidence intake from email, image/photo, or text with provenance, confidence/ambiguity handling, dedupe, and canonical reconciliation.
-- `CAL-006`/`CAL-007` provide projection semantics, but real Google Calendar event write/readback remains a separate live-evidence boundary.
+- `CAL-005` appointment/provider identity reconciliation remains the canonical identity authority and now includes a regression-fixed same-start correction path.
+- `CAL-008` remains broader than the completed provider-neutral core: actual source-to-extraction integration is still required before the full appointment-intake feature may be called end-to-end complete.
+- `CAL-006`/`CAL-007` provide projection semantics, but real provider Calendar event write/readback remains a separate live-evidence boundary.
 - `MAIL-002` continues to prohibit outbound provider contact without explicit per-message approval.
 
 ### `BACKLOG.md`
 
-- `APPOINTMENT-INTAKE-001` is active in this packet and its provider-neutral implementation is now test-verified.
+- `APPOINTMENT-INTAKE-001` must be reconciled as an umbrella/partial user-visible vertical rather than falsely marked complete merely because its provider-neutral core is merged.
 - `CALENDAR-PROJECTION-GOOGLE-001` is merged/test-verified at the native implementation layer but remains partial at live provider-write evidence.
-- Gmail fetching, image/model extraction infrastructure, reminders, Microsoft/Apple Calendar, outbound contact, and Android remain separate work.
+- Gmail fetching, user-text/image extraction integration, reminders, Microsoft/Apple Calendar, outbound contact, and Android remain separate unfinished work.
 
 ### `ROADMAP.md`
 
-- M2-M0.5 prioritizes useful ordinary-user Personal MIRA verticals before Android.
-- Appointment intake composes existing identity and projection foundations without making source extraction or provider state into new authorities.
-- CI/synthetic proof must not be presented as real provider/source integration proof.
+- M2-M0.5 prioritizes repeated useful no-app Personal vertical progress before Android.
+- The merged intake core is prerequisite plumbing for an actual no-app appointment flow, not the whole user experience.
+- The next implementation packet must be selected from unfinished accepted work after this closure checkpoint is durable.
 
 ### Direction result
 
-**ALIGNED.** Complete the provider-neutral appointment evidence intake/reconciliation core at its actual evidence level, then merge only after final exact-head CI. Do not expand into provider-specific source ingestion or live Calendar mutation during this packet.
+**ALIGNED FOR PACKET CLOSURE.** `M2-M0-024` delivered and merged the bounded provider-neutral appointment intake/reconciliation core at the evidence level actually proved. This closure checkpoint records merge/main evidence and preserves the remaining user-visible intake work instead of overstating feature completion.
 
 ## Completed predecessor
 
@@ -42,99 +42,99 @@ Every work session begins and ends by checking `CURRENT_WORK.md`, `FEATURES.md`,
 - **Work:** `CALENDAR-PROJECTION-GOOGLE-001`
 - **Features:** `CAL-006`, `CAL-007`
 - **PR:** #78
-- **Final PR head:** `9f553fe9dee62a1692b703739b0679bae05cc689`
-- **Final exact-head CI:** `33438175307` green
 - **Merge/main SHA:** `b1d7a4f20ebad3503a3c518ec568c47498e85d42`
 - **Post-merge main CI:** `33438237335` green
 - **Evidence ceiling:** native Personal Calendar implementation/release contract test-verified; live event write/readback not verified because no isolated writable Calendar was available and protected Primary/Family state was not used as a fixture.
 
 ## Active packet
 
-### `M2-M0-024` — Appointment evidence intake/reconciliation core
+### `M2-M0-024` — Appointment evidence intake/reconciliation core — closure checkpoint
 
 - **Primary work:** `APPOINTMENT-INTAKE-001`
 - **Primary features:** `CAL-008`
 - **Related invariants/features:** `CAL-005`, `RECOVERY-002`, `CAL-006`, `CAL-007`, `SERVICE-001`, `MAIL-002`, `PROFILE-013`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `integration/m0-024-appointment-intake`
+- **Implementation branch:** `integration/m0-024-appointment-intake`
+- **Closure branch:** `governance/m0-024-closure`
 - **Base SHA:** `b1d7a4f20ebad3503a3c518ec568c47498e85d42`
-- **PR:** #79 open
-- **Exact green implementation head:** `5992a57db91697decc5e95d20ecd76df3adc3eec`
-- **CI on that head:** `33457016348` green
-- **Verification count:** 366 Python tests + 30 Workspace Apps Script tests passed; compile, feature registry, product lifecycle ledger, Personal distribution, work-session alignment, and code ownership all green.
-- **Current head rule:** lifecycle/documentation commits after `5992a57d...` require one final exact-head CI before merge. Merge must use expected-head protection.
+- **PR:** #79 merged
+- **Final PR head:** `461b4ae30991a26a276030b50283b87b3e3c7cb9`
+- **Final exact-head CI:** `33457428093` green
+- **Merge/main SHA:** `d3ef80e1d9de8ddd610db4dbe2eea8ffd4f489c3`
+- **Post-merge main CI:** `33457482126` green
+- **Remote main readback:** `mira/appointment_intake.py` present at merge `main`.
 
-### Objective
+### Completed objective
 
-Implement the bounded provider-neutral intake core that turns authorized appointment evidence into deterministic canonical provider/appointment reconciliation without making source ingestion, model extraction, or Calendar projection into new authorities.
+The bounded provider-neutral core now accepts authorized evidence references from the `email`, `image`, and `text` source classes plus structured extracted facts; validates provenance, immutable material fingerprint, offset-aware observation time, authority and confidence; fails closed on weak or ambiguous identity; reconciles provider then appointment through canonical `CAL-005`; preserves exact optional end/timezone material needed for later projection; and gates synthetic Calendar handoff behind explicit active service/capability state.
 
-The packet accepts evidence observations from the three `CAL-008` source classes (`email`, `image`, `text`) plus a structured extraction result. It validates provenance, immutable material fingerprint, offset-aware observation time, normalized facts and field confidence; refuses low-confidence or materially incomplete occurrence identity; reconciles through `AppointmentIdentityService`; surfaces explicit Needs Review reasons; and optionally hands an already-canonical appointment to Calendar projection only when explicit service/capability state permits it.
+### Durable implementation evidence
 
-### Implemented and test-verified evidence
-
-- `mira/appointment_intake.py` implements provider-neutral email/image/text evidence intake over structured extracted facts.
-- Accepted source classes are explicit; source reference, SHA-256 material fingerprint, observation timestamp, authority, and per-field confidence are validated.
-- Deterministic confidence thresholds are 0.90 for identity/timing and 0.80 for optional descriptive metadata; explicit user-confirmed evidence remains highest authority through `CAL-005`.
-- Provider exact identity is preflighted before mutation; provider ambiguity blocks appointment mutation.
-- Appointment occurrence identity is preflighted before mutation; ambiguity becomes Needs Review rather than guessed state.
-- Exact replay does not grow canonical revisions; same source identity with different material fails closed.
-- Canonical appointments now optionally preserve exact `end_at` and IANA `timezone`, because Calendar projection requires a bounded interval. Existing legacy appointment payloads without those fields remain readable.
-- Timing validation rejects end-before-start and timezone/offset mismatch.
-- Calendar projection is downstream only when appointment service state is effectively active and a verified projection dependency is supplied. Missing/inactive/failed projection never discards reconciled canonical appointment truth.
-- Synthetic projection tests prove exact canonical timing handoff without claiming live Calendar provider verification.
-- No attendees, Meet creation, reminders, medication/medical inference, or outbound contact is introduced.
-
-### Integrity defect discovered and fixed
-
-The packet exposed an existing `CAL-005` self-collision defect in appointment identity matching. `_matching_views` previously preferred `provider_id` when an `AppointmentView` contains both `provider_id` and `appointment_id`; user-confirmed correction of an existing appointment at the same start time therefore failed to exclude the appointment itself and falsely returned Needs Review.
-
-The matcher now uses `appointment_id` for appointment rows and falls back to `provider_id` only for provider rows. Direct regression test `test_user_confirmed_same_start_correction_does_not_collide_with_itself` passed in CI `33457016348` together with the intake correction test that originally exposed the bug.
+- `mira/appointment_intake.py` implements the provider-neutral intake/reconciliation service.
+- Deterministic confidence thresholds: 0.90 identity/timing, 0.80 optional descriptive metadata.
+- User-confirmed evidence remains highest authority through canonical reconciliation.
+- Exact evidence replay is zero-revision-growth; conflicting material for one source identity fails closed.
+- Provider ambiguity blocks appointment mutation; appointment ambiguity becomes Needs Review.
+- Canonical appointments optionally persist exact `end_at` and IANA `timezone`; legacy payloads lacking those fields remain readable.
+- Calendar projection is downstream and non-destructive to canonical appointment truth.
+- Existing `CAL-005` self-collision defect was fixed so a canonical appointment correction at the same start time excludes itself by `appointment_id` rather than comparing against `provider_id`.
+- Direct regression `test_user_confirmed_same_start_correction_does_not_collide_with_itself` locks the integrity repair.
+- Implementation CI `33457016348`: 366 Python + 30 Workspace Apps Script tests green and every repository gate passed.
+- Final lifecycle head CI `33457428093`: green.
+- Expected-head merge protection used successfully.
+- Post-merge `main` CI `33457482126`: green.
 
 ### Acceptance criteria status
 
-1. Email/image/text source classes + provenance fingerprint/time without copying raw source bodies: **met/test-verified**.
-2. Structured extraction contract for provider/appointment fields + confidence/authority: **met/test-verified**.
-3. Deterministic essential identity before mutation; missing/low-confidence essentials -> Needs Review: **met/test-verified**.
-4. Explicit confidence thresholds; low-confidence optional fields omitted: **met/test-verified**.
-5. Provider-first reconciliation and ambiguity stop: **met/test-verified**.
-6. Appointment reconciliation only after provider success; ambiguity fail-closed: **met/test-verified**.
-7. Exact replay zero revision growth; conflicting source material fail-closed: **met/test-verified**.
-8. User-confirmed correction precedence: **met/test-verified**, including self-collision regression repair.
-9. Intake result separates canonical/Needs Review/projection state: **met/test-verified**.
-10. Calendar projection only for effectively active service + verified dependency: **met/test-verified with synthetic adapter**.
-11. Projection absence/failure preserves canonical appointment: **met/test-verified**.
-12. No attendee/Meet/reminder/medical/outbound-contact expansion: **met**.
-13. Direct source/replay/confidence/ambiguity/conflict/correction/service/projection tests: **met**.
-14. Production ownership and repository alignment gates: **met on implementation head**.
-15. Final exact-head CI, expected-head merge, remote-main readback, post-merge CI: **pending lifecycle-doc final head**.
+1. Email/image/text source class contract + provenance/fingerprint/time: **met/test-verified**.
+2. Structured extraction result contract with confidence/authority: **met/test-verified**.
+3. Deterministic essential identity before mutation: **met/test-verified**.
+4. Explicit confidence thresholds and omission of weak optional facts: **met/test-verified**.
+5. Provider-first ambiguity gate: **met/test-verified**.
+6. Appointment ambiguity gate: **met/test-verified**.
+7. Replay/conflicting-source behavior: **met/test-verified**.
+8. User-confirmed precedence: **met/test-verified**, including same-start self-collision repair.
+9. Canonical/Needs Review/projection state separation: **met/test-verified**.
+10. Active-service-only synthetic projection handoff: **met/test-verified**.
+11. Projection failure preserves canonical truth: **met/test-verified**.
+12. No attendees/Meet/reminders/medical/outbound-contact expansion: **met**.
+13. Direct source/replay/confidence/ambiguity/correction/service/projection coverage: **met**.
+14. Ownership/repository alignment gates: **met**.
+15. Final exact-head CI, expected-head merge, remote-main readback and post-merge CI: **met**.
 
 ### Evidence state
 
 - **Desired:** yes
 - **Specified:** yes
 - **Implemented:** yes
-- **Test-verified:** yes, PR #79 implementation head `5992a57db91697decc5e95d20ecd76df3adc3eec`, CI `33457016348`
-- **Integration-verified:** limited to provider-neutral canonical identity + service-state + synthetic Calendar projection composition in the repository test harness; no Gmail/image-model/live provider integration is claimed
+- **Test-verified:** yes
+- **Integration-verified:** provider-neutral canonical identity + service-state + synthetic Calendar projection composition only
 - **Live-verified:** no
 
-### Explicit evidence ceiling / deferred related work
+### Explicit evidence ceiling / unfinished umbrella work
 
-- No Gmail search/fetch or mailbox-to-extraction provider integration was implemented or verified.
-- No OCR/image-understanding/model extraction runtime was implemented or verified.
-- No real Google/Microsoft/Apple Calendar event mutation was performed in this packet.
-- No reminder delivery, outbound provider contact, medical interpretation, migration, or Android behavior is included.
-- Protected Primary/Family/legacy Calendar state remains unavailable as development fixtures.
+`APPOINTMENT-INTAKE-001` is not end-to-end complete. The following remain outside the proved packet:
+
+- source-to-extraction orchestration for ordinary user text and user-supplied images;
+- Gmail search/fetch and mailbox evidence intake;
+- OCR/model/provider extraction infrastructure where needed;
+- real Google/Microsoft/Apple Calendar event mutation/readback;
+- reminder delivery;
+- outbound provider contact;
+- medical interpretation;
+- Android capture/client behavior.
+
+Protected Primary/Family/legacy Calendar state remains unavailable as a development fixture.
 
 ## Exact next action / resume point
 
-1. Update PR #79 description with the green implementation evidence, `CAL-005` self-collision repair, and explicit provider/source evidence ceiling.
-2. Re-read the exact PR head after this lifecycle checkpoint and require one final exact-head CI.
-3. Fix only packet-local failures if any final gate regresses.
-4. Merge PR #79 with `expected_head_sha` only when final exact-head CI is green.
-5. Verify remote `main` contains the merged source and verify post-merge `main` CI.
-6. After merge evidence exists, create a bounded Git-backed packet-closure checkpoint so `CURRENT_WORK` records the actual merge SHA/post-merge CI before selecting new implementation scope.
-7. Do not expand into Gmail fetching, image/model infrastructure, Microsoft/Apple Calendar, reminders, outbound contact, medical meaning, migration, or Android during this packet.
+1. Reconcile `BACKLOG.md` so the merged provider-neutral core is durable evidence while `APPOINTMENT-INTAKE-001` remains partial/split until actual source-to-extraction user flow exists.
+2. Run closure-branch CI and merge the closure checkpoint to `main` with expected-head protection.
+3. Verify closure `main` readback/CI.
+4. Re-rank unfinished accepted work against `ROADMAP.md`; prefer the shortest high-value no-app vertical that consumes the merged intake core without inventing provider capability.
+5. Create exactly one next implementation packet and update `CURRENT_WORK.md` before code changes.
+6. Do not resume Android or expand into unrelated feature families merely because this packet is closed.
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Confirm PR #79 and branch `integration/m0-024-appointment-intake`. Treat `CAL-005` as canonical appointment/provider identity authority. The provider-neutral intake implementation is test-verified; source-provider ingestion and real Calendar provider mutation remain unverified external integration layers. Continue only from the exact next action above.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. `M2-M0-024` implementation is merged and post-merge green at `d3ef80e1d9de8ddd610db4dbe2eea8ffd4f489c3` / CI `33457482126`. The only remaining action in this packet is durable lifecycle closure and next-work selection. Do not reconstruct unfinished source-integration work from chat memory; Git backlog decomposition is authoritative once the closure checkpoint merges.
