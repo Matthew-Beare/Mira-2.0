@@ -41,7 +41,7 @@ Pre-Android feature growth remains frozen except for this hard shared-writer pro
 - **Branch:** `governance/m1-001-live-auth-checkpoint`
 - **Base/main SHA:** `f40e4801634a4da0450e3c94a7bbaad97137e14f`
 - **Dependencies:** fresh isolated synthetic Google Sheet; one private maintainer Google authorization credential; Apps Script API availability.
-- **Current blocker:** live Google authorization has not yet been granted to the maintainer release identity. This ChatGPT host's Google connector does not expose its OAuth token or Apps Script project actions, and the local execution container has no outbound DNS/network. No legitimate automatic path remains inside this surface to grant Google Apps Script scopes without provider consent.
+- **Current blocker:** live Google authorization has not yet been granted to the maintainer release identity. The connected Google plugin exposes Sheets/Drive but not OAuth tokens or Apps Script project actions. A 2026-09-02 ChatGPT Work Cloud Browser attempt loaded Google OAuth Playground and staged the minimal `script.projects` scope, but `accounts.google.com` returned `502 Bad Gateway`; the requested manual handoff surfaced only a non-interactive live-view video whose controls opened Picture-in-Picture, not an actionable browser. No legitimate automatic authorization path is currently available in this host.
 
 ## Objective
 
@@ -97,6 +97,15 @@ Independent provider readback currently proves:
 - Authority owner is the synthetic same-user subject `m1-live-synthetic-user`;
 - no legacy production data is present.
 
+### Work-mode provider authorization attempt — 2026-09-02
+
+- The disposable target was rediscovered through the connected Google Drive authority and its title, timezone, and four pre-activation tabs were independently read back again.
+- Google OAuth Playground loaded in the Work Cloud Browser and accepted the minimal Apps Script project-management scope.
+- Google account authorization did not become actionable: the provider account endpoint returned `502 Bad Gateway` on both the OAuth redirect and a direct open of the disposable Sheet.
+- Two explicit manual-handoff requests produced no usable takeover control. The user-visible surface remained a live-view video; its apparent controls only opened Picture-in-Picture.
+- Plugin discovery confirmed that the installed Google Drive/Sheets connector does not expose Apps Script project creation, content publication, runtime authorization, or its OAuth token.
+- No OAuth code, refresh token, access token, provider ID, or private account material was copied into chat or committed to Git.
+
 ## Evidence ceiling
 
 - Provider-neutral serialized command semantics: test-verified.
@@ -109,7 +118,7 @@ Independent provider readback currently proves:
 
 ## Exact next action / resume point
 
-1. Establish the one-time private maintainer Google authorization for Apps Script project scopes without exposing OAuth material to Git or ordinary-user setup. Prefer ChatGPT Work Cloud Browser/provider-native browser consent if available; only use a serverless clasp redirect handoff as the last-resort maintainer ceremony.
+1. Retry the one-time private maintainer Google Apps Script authorization only when the Work Cloud Browser exposes a real interactive handoff and the Google account endpoint is reachable. If that host capability remains unavailable, use a separately bounded maintainer-local/serverless clasp authorization ceremony that keeps OAuth material out of chat and Git; do not export this ceremony to ordinary Personal users.
 2. Feed the private authorization and fresh Sheet provider ID into the private release path and execute one publication; require exact parent + provider HEAD readback.
 3. Open the fresh Sheet and invoke the only unavoidable ordinary-user-style action if the host cannot invoke the custom menu itself: `MIRA → Enable Android / shared access`.
 4. Read back Commands + Metadata, submit one synthetic entity command, and verify actual worker result/Resource/Idempotency state.
@@ -117,4 +126,4 @@ Independent provider readback currently proves:
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is `M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` on `governance/m1-001-live-auth-checkpoint`, based on green main `f40e4801634a4da0450e3c94a7bbaad97137e14f`. Source and release plumbing are merged and green; a fresh synthetic Google proof target is already prepared and read back. Resume at the one-time private Google Apps Script authorization boundary, then publish, activate shared access, and prove one real queued worker command. Never export Apps Script editing, trigger setup, copied provider IDs, or release credentials to ordinary Personal users.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is `M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` on `governance/m1-001-live-auth-checkpoint`, based on green main `f40e4801634a4da0450e3c94a7bbaad97137e14f`. Source and release plumbing are merged and green; a fresh synthetic Google proof target is already prepared and read back. Resume at the one-time private Google Apps Script authorization boundary. The 2026-09-02 Work Cloud Browser attempt is blocked by a non-interactive handoff surface plus a Google account-endpoint 502; do not repeat the Picture-in-Picture dead end or request OAuth material in chat. Once legitimate authorization is available, publish, activate shared access, and prove one real queued worker command. Never export Apps Script editing, trigger setup, copied provider IDs, or release credentials to ordinary Personal users.
