@@ -88,11 +88,11 @@ A packet in M2-M0.5 must not expand into the entire product. The objective is re
 
 Goal: Android reads and mutates the same canonical reality as the no-app Personal product without becoming a second authority.
 
-**Current status:** paused after synthetic command-boundary implementation because the customer explicitly reprioritized usable no-app MIRA first. The exact live proof resume point remains in `CURRENT_WORK.md`; no Android work is discarded.
+**Current status:** the shared command-boundary prerequisite is complete in M2-M1-001 at implemented, test, exact existing-project integration and live isolated Google-provider evidence levels. Android client core is next and unblocked; no Android client/UI/device evidence is claimed yet.
 
 Ordered proof when resumed:
-1. complete the live isolated Google queued-writer proof for the already-built stronger shared execution boundary;
-2. Android client core with scoped/revocable client identity and OS-protected durable credentials;
+1. ~~complete the live isolated Google queued-writer proof for the already-built stronger shared execution boundary~~ — complete in M2-M1-001 on 2026-09-02;
+2. Android client core with scoped/revocable client identity and OS-protected durable credentials — next;
 3. replay-safe offline queue and reconnect/cursor synchronization;
 4. Android read of canonical Personal state;
 5. Android mutation through the shared execution boundary;
@@ -113,6 +113,7 @@ These items are dependency-ranked around the no-app verticals rather than automa
 
 - evidence-first prior-history discovery and no-silent-activation onboarding continuation;
 - deterministic sanitized Workspace starter/distribution and browser-only upgrade/recovery flow;
+- replace the M2-M1-001 maintainer-only updater, Apps Script project recovery and unverified developer-consent ceremony with an obvious product connection action and clearly identified, appropriately verified provider consent before ordinary-user shared access ships;
 - Personal Google bootstrap expansion only as selected services require it;
 - service composition/readiness normalization;
 - backup/restore and observability hardening;

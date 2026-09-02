@@ -1,7 +1,7 @@
 # M2-M1 Concurrent Canonical Command Boundary
 
 **Packet:** `M2-M1-001`  
-**Status:** selected architecture for deterministic implementation proof; live provider activation not yet claimed.
+**Status:** implementation/test proof and live isolated Google-provider proof complete in `M2-M1-001` on 2026-09-02; Android client implementation is not yet claimed.
 
 ## Decision
 
@@ -105,9 +105,17 @@ If later acceptance criteria require consistently synchronous sub-minute canonic
 - sequential expected revisions progress correctly;
 - same-user authorization failure is terminal and provider state remains unchanged.
 
-## Next implementation slice
+## Live isolated Google proof
 
-Implement the Google Workspace transport that maps this contract onto a `Commands` inbox and `LockService.getScriptLock()` worker. The first Apps Script slice must:
+M2-M1-001 updated only the already-bound Apps Script project for one disposable synthetic Sheet after exact project identity and `parentId` verification. Existing-project provider-head readback matched the repository runtime; no replacement Sheet/project or legacy production data was used.
+
+Menu activation created the canonical `Commands` tab and persisted `mutation_mode=queued_writer`. Because activation validates/creates the single matching one-minute worker trigger before it writes queued mode, and fails closed if duplicates exist, authoritative queued-mode readback plus subsequent autonomous scheduler executions established the live trigger path.
+
+The first synthetic row deliberately remains as honest fail-closed evidence after a client supplied the store schema token where the API schema token was required: it reached terminal `compatibility_error` with no canonical Resource or Idempotency mutation. A corrected same-user `entity` upsert with expected revision 0 then reached `succeeded` through the real time-driven worker. Exact provider readback showed `readback_verified=true`, one revision-1 Resource with the exact synthetic payload, and one matching Idempotency result/request hash. This completes the command-boundary prerequisite without claiming Android, cross-person authorization, production-data migration, or release-grade end-user Google consent UX.
+
+## Completed Workspace transport
+
+The Google Workspace transport maps this contract onto a `Commands` inbox and `LockService.getScriptLock()` worker. The completed Apps Script slice:
 
 1. add/validate a dedicated command inbox schema without weakening canonical state tabs;
 2. add queued-writer activation state so native ChatGPT direct mutation fails closed once Android/shared mode is enabled;
@@ -116,4 +124,8 @@ Implement the Google Workspace transport that maps this contract onto a `Command
 5. preserve API-001 compatibility, expected revision and idempotency behavior;
 6. persist terminal command results only after exact canonical readback;
 7. prove crash/retry recovery in executable fake-Apps-Script tests;
-8. stay synthetic until all tests are green.
+8. stayed synthetic through green tests and the bounded live provider proof.
+
+## Next implementation slice
+
+Start `ANDROID-CLIENT-CORE-001`: scoped/revocable same-user enrollment, OS-protected durable credentials, bounded reads and canonical command submission, replay-safe offline queue, reconnect/cursor synchronization, conflict handling and exact server readback. The Android product connection flow must not expose the maintainer-only Apps Script publication/project-recovery ceremony or an alarming unverified developer consent screen as ordinary-user onboarding.
