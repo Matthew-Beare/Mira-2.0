@@ -8,7 +8,7 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace with no external 
 
 Ordinary users must never be required to open Apps Script, paste code, manage triggers, copy provider IDs, run a terminal, or accept maintainer/developer setup ceremony merely to enable Android/shared access. Release-grade shared access must use an obvious MIRA connection action and a clearly identified, appropriately verified provider consent surface.
 
-`M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` is complete and must not be rerun. This packet begins the Android client core without touching Google provider proof resources or legacy production data.
+`M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` is complete and must not be rerun. This packet advances only the first bounded Android client-core trust slice.
 
 ## Session-start alignment verification — 2026-09-02 M2-M1-002
 
@@ -22,12 +22,12 @@ Ordinary users must never be required to open Apps Script, paste code, manage tr
 
 - `ANDROID-COMMAND-BOUNDARY-001` is complete at its bounded live Google evidence ceiling.
 - `ANDROID-CLIENT-CORE-001` is the exact next unblocked prerequisite before `ANDROID-SYNC`.
-- The full work item includes enrollment/session identity, revocation, OS-protected credentials, bounded reads/commands, replay-safe offline queue, reconnect/cursor sync, conflict handling, and exact server readback. One packet must not attempt that entire surface.
+- The umbrella work includes enrollment/session identity, revocation, OS-protected credentials, bounded reads/commands, replay-safe offline queue, reconnect/cursor sync, conflict handling, and exact server readback. This packet implements only the first trust-boundary slice.
 
 ### `ROADMAP.md`
 
-- M2-M1 explicitly orders scoped/revocable client identity and protected durable credentials before offline queue/reconnect synchronization and before the Android shared-state vertical.
-- Notifications/TTS, capture, release signing, and broader UI remain later evidence layers unless required by this core boundary.
+- M2-M1 orders scoped/revocable client identity and protected durable credentials before offline queue/reconnect synchronization and before the Android shared-state vertical.
+- Notifications/TTS, capture, release signing, and broader UI remain later evidence layers.
 
 ### `PRODUCT_INVARIANTS.md`
 
@@ -37,7 +37,7 @@ Ordinary users must never be required to open Apps Script, paste code, manage tr
 
 ### Direction result
 
-**ALIGNED.** The smallest dependency-correct first slice is the same-user client enrollment/session trust boundary: stable client identity, least-privilege grants, revocable session state, opaque credential material, and reconstruction of an `AuthenticatedPrincipal` only while the session is active. Offline queue/cursor sync and Android Keystore integration are intentionally deferred to later bounded slices of `ANDROID-CLIENT-CORE-001`.
+**ALIGNED.** The smallest dependency-correct first slice is the same-user client enrollment/session trust boundary: stable client identity, least-privilege grants, revocable session state, opaque credential material, and reconstruction of an `AuthenticatedPrincipal` only while the session is active. Android OS-protected storage and offline synchronization remain later bounded slices.
 
 ## Active packet
 
@@ -49,34 +49,34 @@ Ordinary users must never be required to open Apps Script, paste code, manage tr
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `work/m2-m1-002-android-client-core`
 - **Base SHA:** `acb690e66f42bdf02d9030dc0ead0d3d42195e57`
-- **Current head SHA:** `928a730a6daa383a98129ae1ee3a85e1a9ad7dae` before this metadata-fix commit
-- **Status:** active; implementation and tests are present, exact-head green CI still required
+- **Verified implementation head:** `fd5bb8d8da454a51b3f7ae264315600112e217d9`
+- **Status:** bounded implementation/test slice complete; final documentation checkpoint, merge, main readback, and post-merge CI remain
 
-## Objective
+## Objective result
 
-Implement the first Android-client prerequisite below UI and transport: a provider-neutral same-user enrollment/session registry that issues one opaque client credential, stores only its verifier, binds least-privilege API grants to a stable client identity, reconstructs the existing `AuthenticatedPrincipal` only for an active matching credential, and revokes sessions fail-closed.
+**IMPLEMENTED AND TEST-VERIFIED FOR THIS BOUNDED SLICE.** The provider-neutral client session trust seam now issues a one-time opaque credential, stores only a verifier, binds explicit least-privilege API grants to a stable client identity, reconstructs the existing `AuthenticatedPrincipal` only for an active exact credential, and revokes the client session fail-closed and idempotently.
 
-This slice deliberately does **not** implement Android UI, Android Keystore calls, offline queue persistence, reconnect/cursor sync, command transport, provider connection UI, notifications/TTS, hardware capture, or release packaging. It creates the server/client trust seam those later slices depend on.
+This does **not** complete the full `ANDROID-CLIENT-CORE-001` umbrella. Android Keystore integration, offline queue, reconnect/cursor synchronization, transport, bounded client reads/commands, conflict/readback presentation, and device evidence remain unimplemented.
 
 ## Feature alignment
 
 ### User-visible behavior enabled downstream
 
-- A MIRA Android installation can eventually enroll as a distinct revocable client instead of embedding provider/database credentials or inheriting blanket authority.
-- Revoking one client session can disable that client without changing canonical user data or provider resources.
-- Least-privilege grants can be carried into the already-verified API authorization path.
+- A MIRA Android installation can be represented as a distinct revocable same-user client rather than embedding provider/database credentials or receiving blanket authority.
+- Revoking one client session can disable that client without mutating canonical user data or provider resources.
+- Least-privilege grants flow into the existing API authorization semantics instead of creating Android-specific policy.
 
-### Must preserve
+### Preserved invariants
 
-- `API-001` remains the only policy/data service boundary for Android reads and commands.
-- The queued-writer boundary remains authoritative for concurrent canonical mutation.
-- Same-user scope remains fail-closed; no cross-person authorization is introduced.
-- No provider credentials, OAuth tokens, Google IDs, private account data, or legacy production data enter public Git or synthetic tests.
-- Ordinary-user connection/onboarding requirements remain unchanged and are not falsely claimed complete by this developer-facing trust primitive.
+- `API-001` remains the policy/data service boundary for Android reads and commands.
+- The verified queued-writer boundary remains authoritative for concurrent canonical mutation.
+- Same-user scope remains fail-closed; no cross-person authorization was introduced.
+- No provider credentials, OAuth tokens, Google IDs, private account data, or legacy production data entered public Git or tests.
+- Ordinary-user connection/onboarding requirements remain unchanged and are not falsely claimed complete by this developer trust primitive.
 
 ### Explicitly deferred
 
-- Android Keystore/EncryptedSharedPreferences adapter and device-backed proof.
+- Android Keystore/OS-protected credential adapter and representative-device proof.
 - Replay-safe offline command queue.
 - Reconnect/cursor synchronization.
 - Android network transport for bounded reads and queued commands.
@@ -84,38 +84,56 @@ This slice deliberately does **not** implement Android UI, Android Keystore call
 - Native Connections UI and verified provider-consent experience.
 - `ANDROID-SYNC`, native delivery, capture, and release evidence.
 
-## Acceptance criteria
+## Acceptance criteria result
 
-1. A deterministic provider-neutral enrollment registry creates a stable `client_id` for one actor and a session bound to explicit `Grant` values.
-2. Enrollment returns opaque credential material only at creation; stored session state retains only a cryptographic verifier, never the raw credential.
-3. Authentication with the correct active credential reconstructs an `AuthenticatedPrincipal` containing the exact actor/client/grants; an incorrect credential fails closed.
-4. Revocation immediately prevents subsequent authentication and is idempotent/readback-verifiable.
-5. Invalid/overbroad grants continue to use existing `API-001` grant validation; no new bypass around `_validate_principal` or `ApiService._authorize` is introduced.
-6. Same-user identity remains explicit: the session actor is the principal actor and does not grant cross-person access.
-7. Tests prove successful enrollment/authentication, wrong-secret denial, revocation denial/idempotency, exact grant reconstruction, and absence of raw credential material from stored session snapshots.
-8. Existing API, command-sequencer, Workspace, and repository integrity tests remain green.
-9. `CURRENT_WORK.md` records implementation/test evidence and exact next slice; `BACKLOG.md` / `ROADMAP.md` are changed only if lifecycle or milestone wording actually requires it.
-10. Branch is pushed, remote head is read back, CI succeeds on that exact pushed head, and no provider/browser proof is invoked.
+1. Stable actor/client enrollment with explicit grants — **satisfied**.
+2. One-time opaque credential with verifier-only stored state — **satisfied**.
+3. Correct active credential reconstructs exact principal; wrong credential fails closed — **satisfied**.
+4. Revocation immediately blocks authentication and is idempotent/readback-verifiable — **satisfied**.
+5. Existing `API-001` grant validation remains authoritative with no bypass — **satisfied**.
+6. Same-user actor identity remains explicit and no cross-person grant is implied — **satisfied**.
+7. Deterministic tests cover issuance, non-retention, authentication, denial, revocation, exact grants, and duplicate identity — **satisfied**.
+8. Existing repository/API/command/Workspace regressions remain green — **satisfied at verified implementation head**.
+9. Lifecycle documentation remains honest; no semantic `FEATURES.md`, `BACKLOG.md`, or `ROADMAP.md` change is required because the umbrella work remains incomplete — **satisfied**.
+10. Branch push/exact-head CI succeeded; merge/main readback/post-merge CI remain — **partially satisfied pending closeout**.
 
 ## Completed evidence
 
-- Session-start Git authority review is complete and direction is `ALIGNED`.
-- Remote `main` was verified at `acb690e66f42bdf02d9030dc0ead0d3d42195e57`.
-- Prior exact-main CI run `33681423055` was verified `success`.
-- `mira/api_core.py` now contains the provider-neutral `ClientSessionRegistry`, one-time `ClientEnrollment`, verifier-only `ClientSessionSnapshot`, and explicit `ApiAuthenticationError`.
-- `tests/test_client_sessions.py` covers credential non-retention, exact principal reconstruction, wrong-credential denial, immediate/idempotent revocation, duplicate client conflict, grant validation, and explicit same-user identity.
-- PR #97 contains exactly `CURRENT_WORK.md`, `mira/api_core.py`, and `tests/test_client_sessions.py` at the first implementation head.
-- CI run `33682369413` reached the work-session alignment gate and failed only because this packet record used `Primary feature` instead of the mechanically required `Primary features`; compile, feature registry, product ledger, and Personal distribution gates were already green. Code/unit tests were not reached in that run.
-- No Google provider resource, Apps Script project, disposable proof Sheet, or legacy production state has been accessed or modified in this packet.
+- Remote starting `main` was verified at `acb690e66f42bdf02d9030dc0ead0d3d42195e57`; prior CI `33681423055` was `success` on that exact SHA.
+- `mira/api_core.py` contains `ClientSessionRegistry`, `ClientEnrollment`, verifier-only `ClientSessionSnapshot`, and `ApiAuthenticationError`.
+- `tests/test_client_sessions.py` covers credential non-retention, exact principal reconstruction, wrong-credential denial, immediate/idempotent revocation, duplicate client conflict, existing grant validation, and explicit same-user identity.
+- PR #97 contains only `CURRENT_WORK.md`, `mira/api_core.py`, and `tests/test_client_sessions.py` through the verified implementation head.
+- Initial CI `33682369413` correctly failed the mechanical work-session gate because the packet record used `Primary feature` instead of required `Primary features`; the gate was fixed by correcting metadata, not weakened.
+- Exact implementation-head CI `33682452491` completed successfully on `fd5bb8d8da454a51b3f7ae264315600112e217d9`. Compile, feature registry, product lifecycle ledger, Personal distribution, work-session alignment, code ownership, Python unit tests, and Workspace Apps Script tests all passed.
+- No Google provider resource, Apps Script project, disposable proof Sheet, or legacy production state was accessed or modified in this packet.
+
+## Session-end alignment verification — 2026-09-02 M2-M1-002
+
+### `FEATURES.md`
+
+`CLIENT-ANDROID-001` remains only partially implemented. This trust primitive strengthens its scoped/revocable credential boundary without claiming Android storage, sync, UI, transport, or device evidence. `API-001`, `AUTH-001`, `STORE-001`, and `RECOVERY-002` semantics remain preserved.
+
+### `BACKLOG.md`
+
+`ANDROID-CLIENT-CORE-001` remains the active umbrella work item because later slices are still unfinished. No completed-work status change is warranted. The next dependency-correct slice is OS-protected Android credential storage wired to the trust contract implemented here; replay-safe offline synchronization remains after that.
+
+### `ROADMAP.md`
+
+M2-M1 ordering remains correct. This slice advances step 2 without skipping into step 3 or the `ANDROID-SYNC` vertical. Provider onboarding hardening remains a release requirement, not part of this trust primitive.
+
+### Direction result
+
+**ALIGNED.** The implementation preserves the canonical shared-writer/API boundary, does not expand scope into the Android app, and leaves downstream Android work structurally possible.
 
 ## Exact next action / resume point
 
-1. Push this packet-record fix and require a new exact-head CI run.
-2. If any code/test gate fails, fix only the bounded trust-slice defect and rerun.
-3. When exact-head CI is green, record final evidence and session-end alignment without expanding scope.
-4. Merge the bounded PR using the verified head, read back `main`, and verify post-merge CI.
-5. The next packet/slice after closure is Android OS-protected credential storage wired to this trust contract; offline queue/cursor sync remains after that.
+1. Commit this final packet evidence checkpoint on PR #97 and require exact-head CI.
+2. Verify PR #97 still changes only `CURRENT_WORK.md`, `mira/api_core.py`, and `tests/test_client_sessions.py` and is mergeable at the exact green head.
+3. Merge PR #97 using the exact verified head SHA.
+4. Read back remote `main` and verify post-merge CI on that exact main head.
+5. Persist final merge/main/CI evidence in Git before calling `M2-M1-002` fully closed.
+6. Do not begin the next Android slice until this closeout is durable.
 
 ## Recovery protocol
 
-Read this file first, then verify the branch/head from remote Git. Do not rerun `M2-M1-001`, Google authorization, Apps Script publication, or provider proof. Continue only the bounded enrollment/session trust slice until its acceptance criteria are satisfied or a hard dependency is discovered.
+Read this file first, then verify PR #97 / branch / remote `main`. Do not rerun `M2-M1-001`, Google authorization, Apps Script publication, or provider proof. If the final evidence checkpoint is not yet merged, continue from the exact next action above.
