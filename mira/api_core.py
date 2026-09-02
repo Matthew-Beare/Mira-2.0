@@ -1,17 +1,21 @@
 """Transport-independent MIRA API service semantics.
 
-This layer trusts an AuthenticatedPrincipal supplied by a future transport/auth
+This layer trusts an AuthenticatedPrincipal supplied by a transport/auth
 boundary. It performs compatibility checks, same-user authorization, Authority
 Registry routing, canonical state operations, exact readback, error mapping and
-synthetic audit recording. It contains no HTTP, token issuance or provider code.
+synthetic audit recording. It also defines the provider-neutral same-user client
+session trust seam used by native clients before transport-specific auth exists.
 """
 
 from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
+import hashlib
+import hmac
 import re
-from typing import Any, Mapping, Protocol
+import secrets
+from typing import Any, Callable, Mapping, Protocol
 
 from .authority import (
     AuthorityRegistry,
@@ -54,6 +58,10 @@ class ApiCompatibilityError(ApiServiceError):
     code = "compatibility_error"
 
 
+class ApiAuthenticationError(ApiServiceError):
+    code = "authentication_error"
+
+
 class ApiAuthorizationError(ApiServiceError):
     code = "authorization_error"
 
@@ -83,11 +91,129 @@ class Grant:
 
 @dataclass(frozen=True)
 class AuthenticatedPrincipal:
-    """Identity context already authenticated by the future transport boundary."""
+    """Identity context already authenticated by the transport boundary."""
 
     actor_id: str
     client_id: str
     grants: tuple[Grant, ...]
+
+
+@dataclass(frozen=True)
+class ClientEnrollment:
+    """One-time enrollment response containing the raw opaque credential."""
+
+    actor_id: str
+    client_id: str
+    credential: str
+    grants: tuple[Grant, ...]
+
+
+@dataclass(frozen=True)
+class ClientSessionSnapshot:
+    """Stored session state. Raw credential material is deliberately absent."""
+
+    actor_id: str
+    client_id: str
+    credential_verifier: str
+    grants: tuple[Grant, ...]
+    revoked: bool
+
+
+class ClientSessionRegistry:
+    """Provider-neutral same-user enrollment and revocation trust seam.
+
+    The registry never stores provider/database credentials. Enrollment returns
+    one opaque client credential, stores only a SHA-256 verifier, and reconstructs
+    an existing AuthenticatedPrincipal only while the exact credential remains
+    active. Transport persistence and Android OS-protected storage are separate
+    adapters layered around this contract.
+    """
+
+    def __init__(self, credential_factory: Callable[[], str] | None = None) -> None:
+        self._credential_factory = credential_factory or (
+            lambda: secrets.token_urlsafe(32)
+        )
+        self._sessions: dict[str, ClientSessionSnapshot] = {}
+
+    def enroll(
+        self,
+        *,
+        actor_id: str,
+        client_id: str,
+        grants: tuple[Grant, ...],
+    ) -> ClientEnrollment:
+        principal = _validate_principal(
+            AuthenticatedPrincipal(
+                actor_id=actor_id,
+                client_id=client_id,
+                grants=grants,
+            )
+        )
+        if principal.client_id in self._sessions:
+            raise ApiConflictError("client_id is already enrolled")
+
+        credential = self._credential_factory()
+        _validate_client_credential(credential)
+        verifier = _credential_verifier(credential)
+        snapshot = ClientSessionSnapshot(
+            actor_id=principal.actor_id,
+            client_id=principal.client_id,
+            credential_verifier=verifier,
+            grants=principal.grants,
+            revoked=False,
+        )
+        self._sessions[principal.client_id] = snapshot
+        return ClientEnrollment(
+            actor_id=principal.actor_id,
+            client_id=principal.client_id,
+            credential=credential,
+            grants=principal.grants,
+        )
+
+    def authenticate(self, *, client_id: str, credential: str) -> AuthenticatedPrincipal:
+        client_id = _validate_id(client_id, "client_id")
+        _validate_client_credential(credential)
+        snapshot = self._sessions.get(client_id)
+        if snapshot is None:
+            raise ApiAuthenticationError("client session is not enrolled")
+        if snapshot.revoked:
+            raise ApiAuthenticationError("client session is revoked")
+        if not hmac.compare_digest(
+            snapshot.credential_verifier,
+            _credential_verifier(credential),
+        ):
+            raise ApiAuthenticationError("client credential is invalid")
+        return _validate_principal(
+            AuthenticatedPrincipal(
+                actor_id=snapshot.actor_id,
+                client_id=snapshot.client_id,
+                grants=snapshot.grants,
+            )
+        )
+
+    def revoke(self, client_id: str) -> ClientSessionSnapshot:
+        client_id = _validate_id(client_id, "client_id")
+        snapshot = self._sessions.get(client_id)
+        if snapshot is None:
+            raise ApiNotFoundError("client session is not enrolled")
+        if snapshot.revoked:
+            return deepcopy(snapshot)
+        revoked = ClientSessionSnapshot(
+            actor_id=snapshot.actor_id,
+            client_id=snapshot.client_id,
+            credential_verifier=snapshot.credential_verifier,
+            grants=snapshot.grants,
+            revoked=True,
+        )
+        self._sessions[client_id] = revoked
+        return deepcopy(revoked)
+
+    def snapshot(self, client_id: str) -> ClientSessionSnapshot:
+        client_id = _validate_id(client_id, "client_id")
+        snapshot = self._sessions.get(client_id)
+        if snapshot is None:
+            raise ApiNotFoundError("client session is not enrolled")
+        return deepcopy(snapshot)
 
 
 @dataclass(frozen=True)
@@ -572,3 +698,17 @@ def _validate_token(value: str, field: str) -> str:
     if len(value) > 128:
         raise ApiValidationError(f"{field} must be at most 128 characters")
     return value
+
+
+def _validate_client_credential(value: str) -> str:
+    if not isinstance(value, str) or len(value) < 32 or len(value) > 256:
+        raise ApiAuthenticationError(
+            "client credential must be opaque text from 32 through 256 characters"
+        )
+    if value != value.strip():
+        raise ApiAuthenticationError("client credential must not contain edge whitespace")
+    return value
+
+
+def _credential_verifier(credential: str) -> str:
+    return hashlib.sha256(credential.encode("utf-8")).hexdigest()
