@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "production_root": "android-client/core/src/main/java",
+  "suffixes": [".java"],
+  "components": [
+    {
+      "id": "android-client-credential-security",
+      "responsibility": "Android OS-protected storage of the opaque same-user MIRA client credential using Android Keystore and authenticated no-backup ciphertext.",
+      "why_separate": "Native credential protection is a client security boundary below transport and UI; it must not absorb provider credentials, canonical state, offline synchronization, or server-side revocation authority.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/security/ProtectedCredentialStore.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/security/ProtectedCredentialStoreTest.java"
+      ]
+    }
+  ]
+}
