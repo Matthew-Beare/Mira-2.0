@@ -27,7 +27,7 @@ jobs:
           node-version: "22"
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "17"
@@ -67,7 +67,7 @@ jobs:
       - name: Code ownership
         run: |
           python -m mira.code_ownership check
-          python project/android_code_ownership.py check
+          python -m project.android_code_ownership check
 
       - name: Android client core unit tests
         run: gradle -p android-client :core:testDebugUnitTest --stacktrace
