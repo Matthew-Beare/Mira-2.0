@@ -39,7 +39,7 @@ Ordinary users must never be required to open Apps Script, paste code, manage tr
 
 **ALIGNED.** The smallest dependency-correct first slice is the same-user client enrollment/session trust boundary. Android OS-protected storage and offline synchronization remain later bounded slices.
 
-## Recovery packet
+## Active packet
 
 ### `M2-M1-002` — Android client core, enrollment/session trust slice
 
@@ -52,7 +52,7 @@ Ordinary users must never be required to open Apps Script, paste code, manage tr
 - **Final PR head:** `6b7f8f5d9334143b3d92b0b53c31d168ec06ae57`
 - **Merge:** PR #97
 - **Merge/main SHA:** `0bcde9955d80222b5ae6973148c4f8349bb4a2e3`
-- **Status:** complete for this bounded trust slice; this closeout commit records exact merge/main/CI evidence
+- **Status:** complete for this bounded trust slice; closeout CI on the final documentation checkpoint remains the only incomplete action
 
 ## Objective result
 
@@ -71,7 +71,7 @@ This does **not** complete the full `ANDROID-CLIENT-CORE-001` umbrella. Android 
 7. Deterministic tests cover issuance, non-retention, authentication, denial, revocation, exact grants, and duplicate identity — **satisfied**.
 8. Existing repository/API/command/Workspace regressions remain green — **satisfied**.
 9. No semantic `FEATURES.md`, `BACKLOG.md`, or `ROADMAP.md` status change is required because the umbrella work remains incomplete — **satisfied**.
-10. Exact PR head, merge/main readback, and post-merge CI are verified — **satisfied**; this documentation-only closeout commit requires its own final exact-head CI before the packet is considered durably closed.
+10. Exact PR head, merge/main readback, and post-merge CI are verified — **satisfied**; final documentation-only exact-head CI remains pending.
 
 ## Completed evidence
 
@@ -84,6 +84,7 @@ This does **not** complete the full `ANDROID-CLIENT-CORE-001` umbrella. Android 
 - PR #97 was verified mergeable with exactly three changed files: `CURRENT_WORK.md`, `mira/api_core.py`, and `tests/test_client_sessions.py`.
 - PR #97 merged successfully. Remote `main` read back exactly `0bcde9955d80222b5ae6973148c4f8349bb4a2e3`.
 - Post-merge CI `33682666624` succeeded on exact merge/main SHA `0bcde9955d80222b5ae6973148c4f8349bb4a2e3`; every repository gate passed.
+- Documentation closeout commit `1d0e9d02ffb2f2e332b731339bd7f99dd236ec3f` failed only the work-session alignment gate because this file renamed the required heading `## Active packet` to `## Recovery packet`. Compile, feature registry, product ledger, and Personal distribution passed before that gate. The parser contract is preserved; this checkpoint restores the required heading.
 - No Google provider resource, Apps Script project, disposable proof Sheet, provider authorization flow, or legacy MIRA production state was accessed or modified in this packet.
 
 ## Session-end alignment verification — 2026-09-02 M2-M1-002
@@ -106,7 +107,7 @@ M2-M1 ordering remains correct. This packet advances step 2 without skipping int
 
 ## Exact next action / resume point
 
-1. Verify this documentation-only closeout commit as the new remote `main` head and require its exact-head CI to succeed.
+1. Verify this corrected documentation-only closeout commit as the new remote `main` head and require exact-head CI to succeed.
 2. After that CI is green, `M2-M1-002` is durably closed. Do not reopen it or rerun any Google proof.
 3. In the next development session, open exactly one new bounded Android client-core packet for Android OS-protected credential storage wired to `ClientSessionRegistry` / enrollment material, with no offline queue or UI scope unless required by its acceptance criteria.
 4. Preserve the ordinary-user requirement: normal Android/provider enablement eventually uses an obvious MIRA Connect/Enable action and appropriately verified provider consent; maintainer scripts, Apps Script recovery, copied IDs, terminals, and scary developer consent are never the shipped default flow.
