@@ -88,6 +88,26 @@ class AppsScriptPublicationTests(unittest.TestCase):
         self.assertNotIn("MIRA_NO_APP_INSTRUCTIONS", "\n".join(item.name for item in files))
         self.assertNotIn("GoogleCalendarProjection", "\n".join(item.name for item in files))
 
+    def test_runtime_manifest_authorizes_background_sheet_reopen(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        code = (root / "workspace" / "apps_script" / "Code.gs").read_text(
+            encoding="utf-8"
+        )
+        manifest = json.loads(
+            (root / "workspace" / "apps_script" / "appsscript.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        scopes = set(manifest.get("oauthScopes", []))
+
+        self.assertIn("SpreadsheetApp.openById", code)
+        self.assertIn("https://www.googleapis.com/auth/spreadsheets", scopes)
+        self.assertNotIn(
+            "https://www.googleapis.com/auth/spreadsheets.currentonly",
+            scopes,
+        )
+        self.assertIn("https://www.googleapis.com/auth/script.scriptapp", scopes)
+
     def test_publish_creates_reads_binding_updates_head_and_exact_reads_back(self) -> None:
         transport = FakeTransport()
         result = publish_bound_runtime(
