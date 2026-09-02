@@ -26,8 +26,25 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.5.0"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK platform
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
       - name: Compile
-        run: python -m compileall -q mira tests
+        run: python -m compileall -q mira tests project/android_code_ownership.py
 
       - name: Feature registry
         run: python -m mira.feature_registry check FEATURES.md
@@ -48,7 +65,12 @@ jobs:
         run: python -m mira.work_session_alignment check
 
       - name: Code ownership
-        run: python -m mira.code_ownership check
+        run: |
+          python -m mira.code_ownership check
+          python -m project.android_code_ownership check
+
+      - name: Android client core unit tests
+        run: gradle -p android-client :core:testDebugUnitTest --stacktrace
 
       - name: Python unit tests
         run: python -m unittest discover -s tests -v
