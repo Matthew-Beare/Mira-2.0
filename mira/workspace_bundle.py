@@ -268,8 +268,14 @@ def validate_workspace_bundle(files: Mapping[str, str]) -> None:
         )
 
     manifest = files["appsscript.json"]
-    if "https://www.googleapis.com/auth/spreadsheets.currentonly" not in manifest:
-        raise WorkspaceBundleError("Workspace manifest must remain current-Sheet scoped")
+    if "SpreadsheetApp.openById" in code and "https://www.googleapis.com/auth/spreadsheets" not in manifest:
+        raise WorkspaceBundleError(
+            "Workspace background sheet reopen requires full spreadsheets scope"
+        )
+    if "https://www.googleapis.com/auth/spreadsheets.currentonly" in manifest:
+        raise WorkspaceBundleError(
+            "Workspace manifest current-only scope cannot authorize background openById access"
+        )
     if "https://www.googleapis.com/auth/script.scriptapp" not in manifest:
         raise WorkspaceBundleError(
             "Workspace queued worker requires bounded trigger-management scope"
