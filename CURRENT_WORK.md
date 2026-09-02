@@ -8,6 +8,28 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace with no external 
 
 Pre-Android feature growth remains frozen except for this hard shared-writer proof. After this packet reaches its live Google evidence ceiling, start `ANDROID-CLIENT-CORE-001`.
 
+## Session-start alignment verification — 2026-09-02 M2-M1-001 scope-fix recovery
+
+### `FEATURES.md`
+
+- `CLIENT-ANDROID-001`, `API-001`, `AUTH-001`, `STORE-001`, and `RECOVERY-002` still require one safe shared canonical mutation boundary rather than independent read-then-write clients.
+- Default Personal remains stock ChatGPT + Personal Google Workspace first; this scope correction authorizes only the spreadsheet access already required by the shipped canonical background runtime and does not activate Calendar or unrelated providers.
+
+### `BACKLOG.md`
+
+- `ANDROID-COMMAND-BOUNDARY-001` remains the active hard prerequisite and is not complete until the real Google scheduler worker processes a synthetic command and exact canonical/idempotency/result state is read back.
+- `ANDROID-CLIENT-CORE-001` remains queued immediately after this proof.
+- `HOST-CONNECT-EXEC-001` was completed in M2-M0-029 / PR #90 but its stale backlog row still requires closure reconciliation before this packet closes.
+
+### `ROADMAP.md`
+
+- M2-M1 remains blocked on live shared-writer proof, not new concurrency architecture or unrelated feature growth.
+- Personal Google remains the default baseline and Android follows this packet once live evidence is complete.
+
+### Direction result
+
+**ALIGNED.** Continue `M2-M1-001`. The newly observed provider failure is a hard acceptance blocker inside the active packet: the bound background runtime uses `SpreadsheetApp.openById`, so its manifest must authorize the full Sheets scope required by that API. Fix, verify, republish only to the existing disposable proof target, then finish the live queue proof.
+
 ## Active packet
 
 ### `M2-M1-001` — Concurrent canonical command boundary, live Google proof
@@ -35,7 +57,7 @@ The subsequent ordinary-user shared-access activation failed with the provider e
 Source inspection confirms the failure is a runtime/manifest contract mismatch rather than an authorization or binding failure:
 
 - `workspace/apps_script/Code.gs` persists the bound spreadsheet ID in script properties during `miraInitializeCopy()` and `miraSpreadsheet_()` later reopens that exact spreadsheet with `SpreadsheetApp.openById(id)` so background/time-driven executions remain bound to the canonical Sheet.
-- `workspace/apps_script/appsscript.json` currently declares only `https://www.googleapis.com/auth/spreadsheets.currentonly` plus `https://www.googleapis.com/auth/script.scriptapp`.
+- `workspace/apps_script/appsscript.json` on the failed release declared only `https://www.googleapis.com/auth/spreadsheets.currentonly` plus `https://www.googleapis.com/auth/script.scriptapp`.
 - `spreadsheets.currentonly` is insufficient for `SpreadsheetApp.openById`; the runtime therefore requires `https://www.googleapis.com/auth/spreadsheets`.
 - The earlier Apps Script publication proof remains valid: publication, exact bound-project parent verification, and exact provider HEAD readback succeeded before activation reached this runtime permission boundary.
 
@@ -49,7 +71,7 @@ This is the current active acceptance blocker and outranks unrelated feature wor
 4. Publication replaces the complete approved runtime and exact-reads provider HEAD before success.
 5. OAuth refresh material and ephemeral access tokens are never committed, emitted as workflow outputs, or printed by release tooling.
 6. Republish for this defect fix targets only the already-created disposable proof Sheet; do not create or bind a second proof target.
-7. Manifest scopes must authorize the APIs actually used by the runtime, including `SpreadsheetApp.openById`, while remaining no broader than required by this implementation.
+7. Manifest scopes must authorize the APIs actually used by the runtime, including `SpreadsheetApp.openById`, while optional Calendar/provider scopes remain absent.
 8. Activation creates/validates exactly one one-minute worker trigger before persisted `mutation_mode=queued_writer` becomes authoritative.
 9. Activation creates the canonical `Commands` transport tab and persists queued-writer mode.
 10. Submit one synthetic same-user API-001 `entity` upsert command with stable command/idempotency IDs and expected revision 0.
@@ -76,6 +98,14 @@ This is the current active acceptance blocker and outranks unrelated feature wor
 - PR #93 merged at `f40e4801634a4da0450e3c94a7bbaad97137e14f`; exact-head CI `33550835232` green and post-merge CI `33550883206` green.
 - PR #94 merged into green main at `019b205fb2c3c405e8c5ba33f1c81d43dcf44e60`; it checkpointed the fresh disposable live Google proof target without exposing provider IDs.
 - 2026-09-02 Work-mode execution established the private Google authorization, published the runtime to that existing disposable proof target, independently verified the bound project/provider content, and then exposed the `openById` scope mismatch during activation.
+
+### Scope-fix branch
+
+- Branch `fix/m1-001-apps-script-spreadsheet-scope` checkpoint commit `e3a09f3ea758e8e8c5ab7c99ebcc6f0920bb0d93` durably recorded the new live provider evidence before implementation changes.
+- `workspace/apps_script/appsscript.json` now grants `https://www.googleapis.com/auth/spreadsheets` instead of the insufficient `spreadsheets.currentonly`, while retaining `script.scriptapp` and no Calendar/provider scopes.
+- `tests/test_apps_script_publication.py` now explicitly verifies that the shipped `SpreadsheetApp.openById` runtime has full Sheets authorization and rejects regression to `spreadsheets.currentonly`.
+- `mira/workspace_bundle.py` starter validation now enforces the same runtime/manifest contract instead of incorrectly requiring the insufficient current-only scope.
+- PR #95 is the active source-fix PR. CI run `33595772517` correctly exposed the stale starter-scope invariant; CI run `33595908558` then passed Personal starter distribution and exposed the missing session-start alignment section in this checkpoint, which this commit repairs.
 
 ### Fresh live Google proof target
 
@@ -104,14 +134,13 @@ Previously verified substrate remains:
 
 ## Exact next action / resume point
 
-1. On `fix/m1-001-apps-script-spreadsheet-scope`, replace `spreadsheets.currentonly` with the full `https://www.googleapis.com/auth/spreadsheets` scope because the shipped runtime explicitly requires `SpreadsheetApp.openById` for background canonical access.
-2. Add/adjust tests so the manifest contract fails if `openById` is present without full spreadsheet scope, while continuing to require the trigger-management scope.
-3. Run the repository test gates and exact-head CI; merge only expected head after green.
-4. Republish the corrected approved runtime only to the existing disposable proof target and exact-read provider HEAD again. Do not create a new Sheet/project target.
-5. Re-run ordinary-user initialization if the script property was not already persisted, then `MIRA → Enable Android / shared access`; verify exactly one one-minute trigger, `Commands`, and `mutation_mode=queued_writer`.
-6. Submit the stable synthetic same-user entity upsert, observe the actual scheduler worker, and exact-read `Commands`, `Resources`, and `Idempotency` proving durable succeeded result, revision 1, exact payload, and idempotency material.
-7. Reconcile stale `HOST-CONNECT-EXEC-001` BACKLOG state, close this packet to the actual evidence ceiling, and immediately start `ANDROID-CLIENT-CORE-001`.
+1. Re-run PR #95 CI after the session-start alignment repair; all repository gates, Python unit tests, and Workspace Apps Script tests must pass at the exact PR head.
+2. Merge only the expected green head, remotely read back main, and require post-merge CI green.
+3. Republish the corrected approved runtime only to the existing disposable proof target and exact-read provider HEAD again. Do not create a new Sheet/project target.
+4. Re-run ordinary-user initialization if the script property was not already persisted, then `MIRA → Enable Android / shared access`; verify exactly one one-minute trigger, `Commands`, and `mutation_mode=queued_writer`.
+5. Submit the stable synthetic same-user entity upsert, observe the actual scheduler worker, and exact-read `Commands`, `Resources`, and `Idempotency` proving durable succeeded result, revision 1, exact payload, and idempotency material.
+6. Reconcile stale `HOST-CONNECT-EXEC-001` BACKLOG state, close this packet to the actual evidence ceiling, and immediately start `ANDROID-CLIENT-CORE-001`.
 
 ## Recovery protocol
 
-Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is `M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` on `fix/m1-001-apps-script-spreadsheet-scope`, based on green main `019b205fb2c3c405e8c5ba33f1c81d43dcf44e60`. Private authorization and Apps Script publication to the one existing disposable proof target are live-verified. Resume at the manifest/runtime scope fix for `SpreadsheetApp.openById`, then CI/merge, republish only to that target, activate queued writer, and prove one real scheduler-processed command. Never touch legacy MIRA data or expose provider IDs/OAuth material in public Git.
+Read this file first, then `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md`. Active work is `M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` on `fix/m1-001-apps-script-spreadsheet-scope`, based on green main `019b205fb2c3c405e8c5ba33f1c81d43dcf44e60`. Private authorization and Apps Script publication to the one existing disposable proof target are live-verified. Resume at PR #95 exact-head CI for the manifest/runtime scope fix, then expected-head merge/post-merge verification, republish only to that target, activate queued writer, and prove one real scheduler-processed command. Never touch legacy MIRA data or expose provider IDs/OAuth material in public Git.
