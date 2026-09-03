@@ -117,7 +117,6 @@ public final class OfflineSyncStateStore {
         byte[] fingerprint = commandFingerprint(validated);
         synchronized (clientLock) {
             LocalState state = loadState();
-
             QueuedCommand pending = findPending(state, validated.commandId());
             if (pending != null) {
                 if (Arrays.equals(commandFingerprint(pending.command()), fingerprint)) {
@@ -128,8 +127,7 @@ public final class OfflineSyncStateStore {
                 );
             }
 
-            AcknowledgedCommand acknowledged =
-                    findAcknowledged(state, validated.commandId());
+            AcknowledgedCommand acknowledged = findAcknowledged(state, validated.commandId());
             if (acknowledged != null) {
                 if (Arrays.equals(acknowledged.fingerprint, fingerprint)) {
                     return EnqueueResult.ALREADY_ACKNOWLEDGED;
@@ -236,15 +234,17 @@ public final class OfflineSyncStateStore {
         }
     }
 
-    /**
-     * Stores one nonauthoritative canonical snapshot while enforcing monotonic revision rules.
-     */
+    /** Stores one nonauthoritative canonical snapshot while enforcing monotonic revision rules. */
     public SnapshotResult putSnapshot(ResourceSnapshot snapshot) {
         ResourceSnapshot validated =
                 new ResourceSnapshot(Objects.requireNonNull(snapshot, "snapshot"));
         synchronized (clientLock) {
             LocalState state = loadState();
-            int existingIndex = indexOfSnapshot(state, validated.resourceId());
+            int existingIndex = indexOfSnapshot(
+                    state,
+                    validated.dataClass(),
+                    validated.resourceId()
+            );
             if (existingIndex >= 0) {
                 ResourceSnapshot existing = state.snapshots.get(existingIndex);
                 if (validated.revision() < existing.revision()) {
@@ -276,12 +276,13 @@ public final class OfflineSyncStateStore {
         }
     }
 
-    /** Returns a defensive copy of one cached canonical snapshot, or {@code null} if absent. */
-    public ResourceSnapshot snapshot(String resourceId) {
+    /** Returns one cached canonical snapshot, or {@code null} if that exact class/ID is absent. */
+    public ResourceSnapshot snapshot(String dataClass, String resourceId) {
+        String validatedClass = validateDataClass(dataClass);
         String validatedId = validateId(resourceId, "resource_id");
         synchronized (clientLock) {
             LocalState state = loadState();
-            int index = indexOfSnapshot(state, validatedId);
+            int index = indexOfSnapshot(state, validatedClass, validatedId);
             return index < 0 ? null : new ResourceSnapshot(state.snapshots.get(index));
         }
     }
@@ -388,6 +389,7 @@ public final class OfflineSyncStateStore {
 
                 output.writeInt(state.snapshots.size());
                 for (ResourceSnapshot snapshot : state.snapshots) {
+                    writeString(output, snapshot.dataClass());
                     writeString(output, snapshot.resourceId());
                     output.writeLong(snapshot.revision());
                     writeBytes(output, snapshot.payload());
@@ -417,8 +419,7 @@ public final class OfflineSyncStateStore {
             int pendingCount = readCount(input, MAX_PENDING_COMMANDS, "pending command");
             ArrayList<QueuedCommand> pending = new ArrayList<>(pendingCount);
             for (int index = 0; index < pendingCount; index++) {
-                long sequence = input.readLong();
-                pending.add(new QueuedCommand(sequence, readCommand(input)));
+                pending.add(new QueuedCommand(input.readLong(), readCommand(input)));
             }
 
             int acknowledgedCount =
@@ -451,11 +452,13 @@ public final class OfflineSyncStateStore {
             int snapshotCount = readCount(input, MAX_SNAPSHOTS, "snapshot");
             ArrayList<ResourceSnapshot> snapshots = new ArrayList<>(snapshotCount);
             for (int index = 0; index < snapshotCount; index++) {
+                String dataClass =
+                        readString(input, MAX_DATA_CLASS_UTF8_BYTES, "data_class");
                 String resourceId = readString(input, MAX_ID_UTF8_BYTES, "resource_id");
                 long revision = input.readLong();
                 byte[] payload =
                         readBytes(input, MAX_SNAPSHOT_PAYLOAD_BYTES, "snapshot payload");
-                snapshots.add(new ResourceSnapshot(resourceId, revision, payload));
+                snapshots.add(new ResourceSnapshot(dataClass, resourceId, revision, payload));
             }
 
             if (input.read() != -1) {
@@ -562,34 +565,19 @@ public final class OfflineSyncStateStore {
     }
 
     private static CommandIntent readCommand(DataInputStream input) throws IOException {
-        String commandId = readString(input, MAX_ID_UTF8_BYTES, "command_id");
-        String subjectId = readString(input, MAX_ID_UTF8_BYTES, "subject_id");
-        String dataClass = readString(input, MAX_DATA_CLASS_UTF8_BYTES, "data_class");
-        String action = readString(input, MAX_TOKEN_UTF8_BYTES, "action");
-        int apiMajor = input.readInt();
-        String schemaVersion =
-                readString(input, MAX_TOKEN_UTF8_BYTES, "schema_version");
-        String resourceId = readString(input, MAX_ID_UTF8_BYTES, "resource_id");
-        byte[] payload = readBytes(input, MAX_COMMAND_PAYLOAD_BYTES, "command payload");
-        String idempotencyKey =
-                readString(input, MAX_TOKEN_UTF8_BYTES, "idempotency_key");
-        Long expectedRevision = readNullableLong(input);
-        String eventId = readNullableString(input, MAX_ID_UTF8_BYTES, "event_id");
-        String eventType =
-                readNullableString(input, MAX_TOKEN_UTF8_BYTES, "event_type");
         return new CommandIntent(
-                commandId,
-                subjectId,
-                dataClass,
-                action,
-                apiMajor,
-                schemaVersion,
-                resourceId,
-                payload,
-                idempotencyKey,
-                expectedRevision,
-                eventId,
-                eventType
+                readString(input, MAX_ID_UTF8_BYTES, "command_id"),
+                readString(input, MAX_ID_UTF8_BYTES, "subject_id"),
+                readString(input, MAX_DATA_CLASS_UTF8_BYTES, "data_class"),
+                readString(input, MAX_TOKEN_UTF8_BYTES, "action"),
+                input.readInt(),
+                readString(input, MAX_TOKEN_UTF8_BYTES, "schema_version"),
+                readString(input, MAX_ID_UTF8_BYTES, "resource_id"),
+                readBytes(input, MAX_COMMAND_PAYLOAD_BYTES, "command payload"),
+                readString(input, MAX_TOKEN_UTF8_BYTES, "idempotency_key"),
+                readNullableLong(input),
+                readNullableString(input, MAX_ID_UTF8_BYTES, "event_id"),
+                readNullableString(input, MAX_TOKEN_UTF8_BYTES, "event_type")
         );
     }
 
@@ -664,15 +652,15 @@ public final class OfflineSyncStateStore {
             throw new StateUnavailableException("local next sequence does not advance state");
         }
 
-        String priorResourceId = null;
+        String priorSnapshotKey = null;
         for (ResourceSnapshot snapshot : state.snapshots) {
-            if (priorResourceId != null
-                    && priorResourceId.compareTo(snapshot.resourceId()) >= 0) {
+            String key = snapshot.dataClass() + "\u0000" + snapshot.resourceId();
+            if (priorSnapshotKey != null && priorSnapshotKey.compareTo(key) >= 0) {
                 throw new StateUnavailableException(
-                        "canonical snapshots are not uniquely sorted by resource_id"
+                        "canonical snapshots are not uniquely sorted by data_class/resource_id"
                 );
             }
-            priorResourceId = snapshot.resourceId();
+            priorSnapshotKey = key;
         }
 
         long approximateBytes = 128;
@@ -686,7 +674,7 @@ public final class OfflineSyncStateStore {
         for (ResourceSnapshot snapshot : state.snapshots) {
             approximateBytes = safeAdd(
                     approximateBytes,
-                    256L + snapshot.payload().length
+                    384L + snapshot.payload().length
             );
         }
         if (approximateBytes > MAX_STATE_PLAINTEXT_BYTES) {
@@ -746,9 +734,15 @@ public final class OfflineSyncStateStore {
         return null;
     }
 
-    private static int indexOfSnapshot(LocalState state, String resourceId) {
+    private static int indexOfSnapshot(
+            LocalState state,
+            String dataClass,
+            String resourceId
+    ) {
         for (int index = 0; index < state.snapshots.size(); index++) {
-            if (state.snapshots.get(index).resourceId().equals(resourceId)) {
+            ResourceSnapshot candidate = state.snapshots.get(index);
+            if (candidate.dataClass().equals(dataClass)
+                    && candidate.resourceId().equals(resourceId)) {
                 return index;
             }
         }
@@ -756,7 +750,10 @@ public final class OfflineSyncStateStore {
     }
 
     private static void sortSnapshots(ArrayList<ResourceSnapshot> snapshots) {
-        snapshots.sort(Comparator.comparing(ResourceSnapshot::resourceId));
+        snapshots.sort(
+                Comparator.comparing(ResourceSnapshot::dataClass)
+                        .thenComparing(ResourceSnapshot::resourceId)
+        );
     }
 
     private static int readCount(DataInputStream input, int maximum, String field)
@@ -1100,11 +1097,18 @@ public final class OfflineSyncStateStore {
 
     /** One nonauthoritative canonical resource snapshot read back from the future API layer. */
     public static final class ResourceSnapshot {
+        private final String dataClass;
         private final String resourceId;
         private final long revision;
         private final byte[] payload;
 
-        public ResourceSnapshot(String resourceId, long revision, byte[] payload) {
+        public ResourceSnapshot(
+                String dataClass,
+                String resourceId,
+                long revision,
+                byte[] payload
+        ) {
+            this.dataClass = validateDataClass(dataClass);
             this.resourceId = validateId(resourceId, "resource_id");
             if (revision < 1) {
                 throw new OfflineStateException("snapshot revision must be positive");
@@ -1122,7 +1126,11 @@ public final class OfflineSyncStateStore {
         }
 
         ResourceSnapshot(ResourceSnapshot other) {
-            this(other.resourceId, other.revision, other.payload);
+            this(other.dataClass, other.resourceId, other.revision, other.payload);
+        }
+
+        public String dataClass() {
+            return dataClass;
         }
 
         public String resourceId() {
@@ -1187,8 +1195,7 @@ public final class OfflineSyncStateStore {
                 Cipher cipher = Cipher.getInstance(TRANSFORMATION);
                 cipher.init(Cipher.ENCRYPT_MODE, key);
                 cipher.updateAAD(aad(clientId));
-                byte[] ciphertext = cipher.doFinal(plaintext);
-                return new SealedState(cipher.getIV(), ciphertext);
+                return new SealedState(cipher.getIV(), cipher.doFinal(plaintext));
             } catch (GeneralSecurityException | IOException exc) {
                 throw new OfflineStateException(
                         "Android Keystore could not protect offline state",
@@ -1240,7 +1247,6 @@ public final class OfflineSyncStateStore {
             if (keyStore.containsAlias(alias)) {
                 return existingKey(keyStore, alias);
             }
-
             KeyGenerator generator = KeyGenerator.getInstance(
                     KeyProperties.KEY_ALGORITHM_AES,
                     ANDROID_KEYSTORE
