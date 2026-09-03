@@ -37,10 +37,18 @@ class AndroidOwnershipFixture:
         self.temp = TemporaryDirectory()
         self.root = Path(self.temp.name)
         self.main = self.root / "android-client/core/src/main/java/com/example"
+        self.provider_main = (
+            self.root / "android-client/provider/src/main/java/com/example/provider"
+        )
         self.tests = self.root / "android-client/core/src/test/java/com/example"
+        self.provider_tests = (
+            self.root / "android-client/provider/src/test/java/com/example/provider"
+        )
         self.project = self.root / "project"
         self.main.mkdir(parents=True)
+        self.provider_main.mkdir(parents=True)
         self.tests.mkdir(parents=True)
+        self.provider_tests.mkdir(parents=True)
         self.project.mkdir(parents=True)
         (self.root / "FEATURES.md").write_text(FEATURES, encoding="utf-8")
         (self.root / "BACKLOG.md").write_text(BACKLOG, encoding="utf-8")
@@ -81,6 +89,40 @@ class AndroidOwnershipFixture:
     def validate(self):
         return validate_repository(repository_root=self.root)
 
+    def add_provider_component(self) -> tuple[str, str]:
+        source_path = (
+            "android-client/provider/src/main/java/com/example/provider/Bridge.java"
+        )
+        test_path = (
+            "android-client/provider/src/test/java/com/example/provider/BridgeTest.java"
+        )
+        (self.root / source_path).write_text(
+            "package com.example.provider; public final class Bridge {}\n",
+            encoding="utf-8",
+        )
+        (self.root / test_path).write_text(
+            "package com.example.provider; public final class BridgeTest { Bridge value; }\n",
+            encoding="utf-8",
+        )
+        self.manifest.pop("production_root", None)
+        self.manifest["production_roots"] = [
+            "android-client/core/src/main/java",
+            "android-client/provider/src/main/java",
+        ]
+        self.manifest["components"].append(
+            {
+                "id": "android-provider-bridge",
+                "responsibility": "Own provider-specific Android bridge behavior.",
+                "why_separate": "Keep provider SDK code outside provider-neutral core.",
+                "owned_paths": [source_path],
+                "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
+                "work_ids": ["ANDROID-CLIENT-CORE-001"],
+                "verification": [test_path],
+            }
+        )
+        self.write_manifest()
+        return source_path, test_path
+
     def close(self) -> None:
         self.temp.cleanup()
 
@@ -95,6 +137,11 @@ class AndroidCodeOwnershipTests(unittest.TestCase):
         fixture = self.fixture()
         self.assertEqual(fixture.validate(), (1, 1))
 
+    def test_multiple_android_module_roots_are_valid(self) -> None:
+        fixture = self.fixture()
+        fixture.add_provider_component()
+        self.assertEqual(fixture.validate(), (2, 2))
+
     def test_rejects_unowned_android_source(self) -> None:
         fixture = self.fixture()
         (fixture.main / "Orphan.java").write_text(
@@ -107,10 +154,44 @@ class AndroidCodeOwnershipTests(unittest.TestCase):
         ):
             fixture.validate()
 
+    def test_rejects_unowned_source_in_secondary_module(self) -> None:
+        fixture = self.fixture()
+        fixture.add_provider_component()
+        (fixture.provider_main / "OrphanProvider.java").write_text(
+            "package com.example.provider; final class OrphanProvider {}\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            AndroidCodeOwnershipError,
+            "unowned Android production artifacts",
+        ):
+            fixture.validate()
+
+    def test_rejects_root_and_roots_together(self) -> None:
+        fixture = self.fixture()
+        fixture.manifest["production_roots"] = ["android-client/core/src/main/java"]
+        fixture.write_manifest()
+        with self.assertRaisesRegex(
+            AndroidCodeOwnershipError,
+            "production_root or production_roots",
+        ):
+            fixture.validate()
+
+    def test_rejects_overlapping_roots(self) -> None:
+        fixture = self.fixture()
+        fixture.manifest.pop("production_root")
+        fixture.manifest["production_roots"] = [
+            "android-client/core/src/main/java",
+            "android-client/core/src/main/java/com/example",
+        ]
+        fixture.write_manifest()
+        with self.assertRaisesRegex(AndroidCodeOwnershipError, "must not overlap"):
+            fixture.validate()
+
     def test_rejects_java_test_without_direct_class_reference(self) -> None:
         fixture = self.fixture()
         (fixture.root / fixture.test_path).write_text(
-            "package com.example; public final class VaultTest {}\n".replace("VaultTest", "SecurityTest"),
+            "package com.example; public final class SecurityTest {}\n",
             encoding="utf-8",
         )
         with self.assertRaisesRegex(
