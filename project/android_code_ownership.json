@@ -1,6 +1,9 @@
 {
   "schema_version": 1,
-  "production_root": "android-client/core/src/main/java",
+  "production_roots": [
+    "android-client/core/src/main/java",
+    "android-client/google-workspace/src/main/java"
+  ],
   "suffixes": [".java"],
   "components": [
     {
@@ -53,6 +56,45 @@
       "work_ids": ["ANDROID-CLIENT-CORE-001"],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java"
+      ]
+    },
+    {
+      "id": "android-google-workspace-authorization",
+      "responsibility": "Least-privilege Google Identity Services authorization for the Android Personal Workspace lane using drive.file and provider-owned single-Sheet Picker selection, with fail-closed ephemeral grant validation.",
+      "why_separate": "Google authorization and unavoidable provider UI are provider-specific capability concerns; access tokens and selected provider resource identifiers must not enter provider-neutral core, canonical state, or offline persistence.",
+      "owned_paths": [
+        "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleWorkspaceAuthorization.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "API-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceAuthorizationTest.java"
+      ]
+    },
+    {
+      "id": "android-google-sheets-rest-gateway",
+      "responsibility": "Bounded HTTPS Google Sheets values read and Commands-only RAW append gateway beneath the default-Personal Workspace row transport, with no internal ambiguous-write retry.",
+      "why_separate": "Concrete Google network behavior and bearer-token handling are provider-specific and must remain below the provider-neutral row protocol while preventing direct canonical Resource/Changes mutation.",
+      "owned_paths": [
+        "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleSheetsRestGateway.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "API-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleSheetsRestGatewayTest.java"
+      ]
+    },
+    {
+      "id": "android-google-workspace-binding",
+      "responsibility": "Read-only post-consent verification of exact MIRA Personal Workspace Metadata plus Commands/Changes protocol before constructing a usable GoogleWorkspaceTransport binding.",
+      "why_separate": "Provider authorization proves file access, not MIRA readiness. Binding must independently verify the selected resource without writes and without weakening the canonical authority or transport contracts.",
+      "owned_paths": [
+        "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleWorkspaceBinding.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "API-001", "AUTH-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceBindingTest.java"
       ]
     }
   ]
