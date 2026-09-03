@@ -15,6 +15,19 @@
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/security/ProtectedCredentialStoreTest.java"
       ]
+    },
+    {
+      "id": "android-client-offline-sync-state",
+      "responsibility": "Android replay-safe encrypted local state for exact provider-neutral API command intents, acknowledgement replay suppression, nonauthoritative canonical snapshots, and opaque reconnect cursor compare-and-set state.",
+      "why_separate": "Local offline persistence is a client synchronization primitive below transport and UI. It stages exact API intent and verified-readback cache material without becoming network transport, conflict policy, provider authority, or canonical state.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/OfflineSyncStateStore.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/OfflineSyncStateStoreTest.java"
+      ]
     }
   ]
 }
