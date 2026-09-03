@@ -751,7 +751,7 @@ public final class GoogleWorkspaceTransport implements ReconnectCoordinator.Tran
             parsed = ((Number) value).longValue();
         } else if (value instanceof Float || value instanceof Double) {
             double raw = ((Number) value).doubleValue();
-            if (!Double.isFinite(raw) || raw != Math.rint(raw)) {
+            if (Double.isNaN(raw) || Double.isInfinite(raw) || raw != Math.rint(raw)) {
                 throw protocol("Workspace " + field + " must be an integer");
             }
             parsed = (long) raw;
