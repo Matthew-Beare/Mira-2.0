@@ -2,7 +2,9 @@
 
 This governance gate complements the mature Python production ownership gate. It keeps
 Android production source explicit without teaching the Python AST verifier to pretend
-Java imports are Python modules.
+Java imports are Python modules. Multiple Android library modules may participate, but
+every governed production artifact must still have exactly one declared owner and direct
+JVM-test evidence.
 """
 
 from __future__ import annotations
@@ -57,6 +59,34 @@ def _load_work_ids(path: Path) -> set[str]:
     return {record.work_id for record in records}
 
 
+def _production_roots(payload: dict[str, object]) -> tuple[str, ...]:
+    raw_roots = payload.get("production_roots")
+    raw_root = payload.get("production_root")
+    if raw_roots is not None and raw_root is not None:
+        raise AndroidCodeOwnershipError(
+            "Android ownership manifest must use production_root or production_roots, not both"
+        )
+    if raw_roots is None:
+        return (_safe_path(raw_root, field="production_root"),)
+    return tuple(
+        _safe_path(value, field="production_roots")
+        for value in _require_string_list(raw_roots, field="production_roots")
+    )
+
+
+def _reject_overlapping_roots(roots: tuple[str, ...]) -> None:
+    paths = [PurePosixPath(root) for root in roots]
+    for index, left in enumerate(paths):
+        for right in paths[index + 1 :]:
+            if left == right:
+                raise AndroidCodeOwnershipError("Android production roots contain duplicates")
+            if left in right.parents or right in left.parents:
+                raise AndroidCodeOwnershipError(
+                    "Android production roots must not overlap: "
+                    f"{left.as_posix()}, {right.as_posix()}"
+                )
+
+
 def validate_repository(
     *,
     repository_root: str | Path = ".",
@@ -76,21 +106,31 @@ def validate_repository(
     if not isinstance(payload, dict) or payload.get("schema_version") != _SCHEMA_VERSION:
         raise AndroidCodeOwnershipError("unsupported Android ownership schema_version")
 
-    production_root = _safe_path(payload.get("production_root"), field="production_root")
+    production_roots = _production_roots(payload)
+    _reject_overlapping_roots(production_roots)
     suffixes = _require_string_list(payload.get("suffixes"), field="suffixes")
     if any(not suffix.startswith(".") for suffix in suffixes):
         raise AndroidCodeOwnershipError("Android ownership suffixes must start with '.'")
 
-    root = repo / production_root
-    if not root.is_dir():
-        raise AndroidCodeOwnershipError(f"Android production root does not exist: {production_root}")
-    production_files = {
-        path.relative_to(repo).as_posix()
-        for path in root.rglob("*")
-        if path.is_file() and path.suffix in suffixes
-    }
+    production_files: set[str] = set()
+    for production_root in production_roots:
+        root = repo / production_root
+        if not root.is_dir():
+            raise AndroidCodeOwnershipError(
+                f"Android production root does not exist: {production_root}"
+            )
+        root_files = {
+            path.relative_to(repo).as_posix()
+            for path in root.rglob("*")
+            if path.is_file() and path.suffix in suffixes
+        }
+        if not root_files:
+            raise AndroidCodeOwnershipError(
+                f"Android production root contains no governed source: {production_root}"
+            )
+        production_files.update(root_files)
     if not production_files:
-        raise AndroidCodeOwnershipError("Android production root contains no governed source")
+        raise AndroidCodeOwnershipError("Android production roots contain no governed source")
 
     try:
         feature_ids = set(load_registry(repo / features_path).feature_map())
@@ -170,7 +210,7 @@ def validate_repository(
                 )
             if owned_path not in production_files:
                 raise AndroidCodeOwnershipError(
-                    f"component {component_id} owns path outside Android production root: {owned_path}"
+                    f"component {component_id} owns path outside Android production roots: {owned_path}"
                 )
             previous = owner_by_path.get(owned_path)
             if previous is not None:
