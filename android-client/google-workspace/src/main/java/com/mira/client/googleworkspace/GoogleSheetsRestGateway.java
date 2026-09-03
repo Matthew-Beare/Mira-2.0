@@ -15,7 +15,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +41,14 @@ public final class GoogleSheetsRestGateway implements GoogleWorkspaceTransport.S
     private static final int MAX_ROW_CELLS = 64;
     private static final int CONNECT_TIMEOUT_MILLIS = 15_000;
     private static final int READ_TIMEOUT_MILLIS = 15_000;
-    private static final Set<String> READABLE_TABLES = Set.of(
-            "Metadata",
-            GoogleWorkspaceTransport.COMMANDS_TABLE,
-            GoogleWorkspaceTransport.CHANGES_TABLE
+    // Avoid Java 9 Set.of(): the Android client still supports API 23 without requiring
+    // core-library desugaring merely for a three-item allowlist.
+    private static final Set<String> READABLE_TABLES = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(
+                    "Metadata",
+                    GoogleWorkspaceTransport.COMMANDS_TABLE,
+                    GoogleWorkspaceTransport.CHANGES_TABLE
+            ))
     );
 
     private final String spreadsheetId;
@@ -59,7 +65,10 @@ public final class GoogleSheetsRestGateway implements GoogleWorkspaceTransport.S
                 || !SPREADSHEET_ID_PATTERN.matcher(spreadsheetId).matches()) {
             throw new IllegalArgumentException("spreadsheetId is invalid");
         }
-        if (accessToken == null || accessToken.trim().isEmpty() || accessToken.length() > 8192) {
+        if (accessToken == null
+                || accessToken.isEmpty()
+                || !accessToken.equals(accessToken.trim())
+                || accessToken.length() > 8192) {
             throw new IllegalArgumentException("accessToken is invalid");
         }
         this.spreadsheetId = spreadsheetId;
@@ -284,28 +293,31 @@ public final class GoogleSheetsRestGateway implements GoogleWorkspaceTransport.S
         @Override
         public HttpResponse execute(HttpRequest request) throws IOException {
             HttpURLConnection connection = (HttpURLConnection) new URL(request.url).openConnection();
-            connection.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
-            connection.setReadTimeout(READ_TIMEOUT_MILLIS);
-            connection.setInstanceFollowRedirects(false);
-            connection.setRequestMethod(request.method);
-            for (Map.Entry<String, String> entry : request.headers.entrySet()) {
-                connection.setRequestProperty(entry.getKey(), entry.getValue());
-            }
-            if (request.body != null) {
-                connection.setDoOutput(true);
-                connection.setFixedLengthStreamingMode(request.body.length);
-                try (OutputStream stream = connection.getOutputStream()) {
-                    stream.write(request.body);
+            try {
+                connection.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
+                connection.setReadTimeout(READ_TIMEOUT_MILLIS);
+                connection.setInstanceFollowRedirects(false);
+                connection.setRequestMethod(request.method);
+                for (Map.Entry<String, String> entry : request.headers.entrySet()) {
+                    connection.setRequestProperty(entry.getKey(), entry.getValue());
                 }
-            }
+                if (request.body != null) {
+                    connection.setDoOutput(true);
+                    connection.setFixedLengthStreamingMode(request.body.length);
+                    try (OutputStream stream = connection.getOutputStream()) {
+                        stream.write(request.body);
+                    }
+                }
 
-            int status = connection.getResponseCode();
-            InputStream stream = status >= 200 && status <= 299
-                    ? connection.getInputStream()
-                    : connection.getErrorStream();
-            byte[] body = stream == null ? new byte[0] : readBounded(stream);
-            connection.disconnect();
-            return new HttpResponse(status, body);
+                int status = connection.getResponseCode();
+                InputStream stream = status >= 200 && status <= 299
+                        ? connection.getInputStream()
+                        : connection.getErrorStream();
+                byte[] body = stream == null ? new byte[0] : readBounded(stream);
+                return new HttpResponse(status, body);
+            } finally {
+                connection.disconnect();
+            }
         }
 
         private static byte[] readBounded(InputStream stream) throws IOException {
