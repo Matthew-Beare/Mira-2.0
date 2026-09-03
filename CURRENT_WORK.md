@@ -55,12 +55,16 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first, with provi
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `work/m2-gov-012-integration-discovery`
 - **Base SHA:** `50cadf6e18245b4ef0842ad02b143fcb80d92ff0`
-- **Feature-definition commit before this checkpoint:** `9fea012a292a8f50b98c5c973dfd9f7f8ebee931`
-- **Status:** active governance normalization only
+- **Canonical normalization head before this evidence commit:** `2c58b0341ef0dd1c9addf6a7dc8254059318327d`
+- **Verified exact-head CI:** `33731295422` — success
+- **PR:** #104 — open against `main`
+- **Status:** merge candidate after this final evidence head passes exact-head CI
 
-## Objective
+## Objective result
 
-Durably capture the accepted product requirement that MIRA should:
+**COMPLETE AT THE PRODUCT/GOVERNANCE SPECIFICATION EVIDENCE CEILING.**
+
+M2-GOV-012 durably captures the accepted direction that MIRA should:
 
 1. ask during optional progressive onboarding how the user currently keeps track of things and what apps/services they already use;
 2. dynamically choose examples based on explicit work/lifestyle/goals and integrations that are actually supported/available;
@@ -69,22 +73,26 @@ Durably capture the accepted product requirement that MIRA should:
 5. require explicit consent for every connection and heightened explicit intent/disclosure for sensitive domains;
 6. keep concrete providers such as Airtable, Plaid-like financial aggregators, Amazon, wearables, work tools and future services behind capability/provider adapters rather than hard-coded product semantics.
 
-## Acceptance criteria
-
-1. `FEATURES.md` contains a stable provider-neutral semantic feature for context-aware integration discovery/recommendation.
-2. The feature explicitly covers onboarding existing-tool discovery, dynamic domain-aware examples, later evidence-grounded recommendations, recommendation controls, and sensitive-domain consent boundaries.
-3. No provider-specific adapter is made a universal dependency or canonical authority.
-4. No product implementation, provider authorization, live external mutation, Work mode, or legacy-data access occurs.
-5. Git diff remains bounded to product/governance authority files.
-6. Exact-head CI passes before merge.
-7. After merge, remote `main` and post-merge CI are verified before the packet is considered closed.
-
 ## Completed evidence
 
-- GitHub issue #102 captures `AIRTABLE-ADAPTER-001` as optional later provider-adapter intake without making Airtable a default authority.
-- GitHub issue #103 captures the broader context-aware integration discovery/recommendation product intent.
-- `FEATURES.md` commit `9fea012a292a8f50b98c5c973dfd9f7f8ebee931` adds canonical semantic feature `PROVIDER-004`.
-- Compare against base `50cadf6e18245b4ef0842ad02b143fcb80d92ff0` shows exactly one added FEATURES line and no unrelated file changes before this CURRENT_WORK checkpoint.
+- GitHub issue #102 captured optional Airtable-provider intake.
+- GitHub issue #103 captured the broader context-aware integration discovery/recommendation product intent.
+- `FEATURES.md` adds stable semantic feature `PROVIDER-004` without making any specific provider a universal dependency.
+- `BACKLOG.md` adds `INTEGRATION-DISCOVERY-001` as an enhancement and `AIRTABLE-ADAPTER-001` as optional later work.
+- `BACKLOG.md` also reconciles stale Android lifecycle prose: M2-M1-006 is complete, while provider authorization/network binding, automatic Workspace discovery/binding, bounded shared-state vertical, conflict UI and device proof remain unfinished.
+- Compare from base `50cadf6e18245b4ef0842ad02b143fcb80d92ff0` to normalization head `2c58b0341ef0dd1c9addf6a7dc8254059318327d` shows only `FEATURES.md`, `BACKLOG.md`, and `CURRENT_WORK.md` changed.
+- Exact-head CI `33731295422` succeeded on `2c58b0341ef0dd1c9addf6a7dc8254059318327d`, including compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android client core tests, Python tests, and Workspace Apps Script tests.
+- No product implementation, Work mode, provider authorization, live external mutation, historical proof resource, or legacy production fixture was used.
+
+## Acceptance criteria result
+
+1. Stable provider-neutral semantic feature — **satisfied by `PROVIDER-004`**.
+2. Existing-tool onboarding discovery, dynamic examples, evidence-grounded recommendations, controls and sensitive-domain boundaries — **specified**.
+3. Provider-specific adapters remain optional/separate and never implicit canonical authority — **satisfied**.
+4. Zero implementation/provider/live/Work/legacy-state scope — **satisfied**.
+5. Bounded Git scope — **satisfied: three governance authority files**.
+6. Exact-head CI before merge — **satisfied on normalization head `2c58b0341ef0dd1c9addf6a7dc8254059318327d`; this evidence commit requires its own final exact-head CI**.
+7. Merge/main readback and post-merge CI — **pending closeout only**.
 
 ## Explicitly deferred
 
@@ -95,37 +103,38 @@ Durably capture the accepted product requirement that MIRA should:
 - Wearable/work-tool provider adapters.
 - Android Google provider authorization/network binding, which remains the dependency-correct next implementation slice after this governance packet closes.
 
-## Session-end alignment verification — pending
+## Session-end alignment verification — 2026-09-03 M2-GOV-012
 
 ### `FEATURES.md`
 
-Pending final exact diff/readback.
+`PROVIDER-004` now explicitly owns context-aware integration discovery/recommendation. `ONBOARD-004` remains the progressive discovery surface and `PROVIDER-002` remains the connection/consent surface. No concrete provider is promoted into semantic authority.
 
 ### `BACKLOG.md`
 
-Pending final lifecycle check; this packet does not promote provider-specific adapter intake into active implementation.
+`INTEGRATION-DISCOVERY-001` is queued as an enhancement and `AIRTABLE-ADAPTER-001` is deferred optional provider work. Neither displaces the active M2-M1 critical path. The stale Android row/finding now correctly records M2-M1-006 complete and leaves provider authorization/network binding as the next unfinished client-core dependency.
 
 ### `ROADMAP.md`
 
-Pending final confirmation that M2-M1 remains next after this governance packet.
+No roadmap ordering change is required. M2-M0.5 already includes optional connected-integration discovery, and after this governance normalization M2-M1 remains the dependency-correct implementation milestone.
 
 ### `PRODUCT_INVARIANTS.md`
 
-Pending final confirmation that explicit consent, no silent activation and one-authority semantics remain preserved.
+Intent-first consent, capability-honest provider connection, no silent activation, least privilege, automatic post-consent verification, and one-authority/no-dual-writable-master semantics remain preserved. `PROVIDER-004` narrows recommendations within those rules rather than weakening them.
 
 ### Direction result
 
-**PENDING FINAL CI/DIFF VERIFICATION.**
+**ALIGNED.** The new feature/backlog entries capture the accepted product direction without expanding this packet into implementation. Android Google provider binding remains next after durable governance closeout.
 
 ## Exact next action / resume point
 
-1. Verify the final branch diff contains only the intended `FEATURES.md` semantic addition plus this `CURRENT_WORK.md` packet checkpoint.
-2. Run/fetch exact-head CI and repair only governance/integrity failures if any.
-3. Record session-end alignment and merge through a bounded PR.
-4. Verify remote `main` plus post-merge CI.
-5. Close M2-GOV-012, then open exactly one dependency-correct M2-M1 continuation for Android-native Google authorization + automatic Workspace discovery/binding + the concrete narrow Sheets gateway beneath `GoogleWorkspaceTransport`.
-6. Do not use Work mode until implementation/source/tests are green and a narrow live provider/browser/device acceptance proof genuinely requires it.
+1. Require exact-head CI on this final evidence commit.
+2. Verify PR #104 remains exactly the intended three governance files and mergeable.
+3. Merge PR #104 with expected-head protection only after green CI.
+4. Independently read back remote `main` and verify post-merge CI.
+5. Record durable M2-GOV-012 closure in `CURRENT_WORK.md` using the established closeout convention and verify its exact-head CI.
+6. Then open exactly one dependency-correct M2-M1 continuation for Android-native Google authorization + automatic Workspace discovery/binding + the concrete narrow Sheets gateway beneath `GoogleWorkspaceTransport`.
+7. Do not use Work mode until implementation/source/tests are green and a narrow live provider/browser/device acceptance proof genuinely requires it.
 
 ## Recovery protocol
 
-Read this file first. Git remains authoritative. If this packet is interrupted, resume from the exact branch/head and complete only the governance normalization/merge verification before opening Android implementation work.
+Read this file first. Git remains authoritative. If interrupted, resume from PR #104 and the exact branch head, complete only its CI/merge/closeout verification, then open the next Android packet. Do not rerun M2-M1-001 through M2-M1-006.
