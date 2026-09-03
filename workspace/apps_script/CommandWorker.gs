@@ -7,8 +7,14 @@
  * performs revision/idempotency preflight, canonical mutation, recovery and
  * exact readback.
  *
- * This is same-user Personal infrastructure. The command inbox is transport,
- * never canonical state. Cross-person permission semantics remain blocked.
+ * The Changes tab introduced by M2-M1-006 is an append-only read projection of
+ * canonical Resources. It is transport evidence for reconnect, never canonical
+ * state. Missing projection rows are reconstructed from exact current Resource
+ * readback under the same ScriptLock.
+ *
+ * This is same-user Personal infrastructure. The command inbox and Changes
+ * projection are transport, never canonical state. Cross-person permission
+ * semantics remain blocked.
  */
 
 const MIRA_COMMAND_MODE_KEY_ = 'mutation_mode';
@@ -34,6 +40,17 @@ const MIRA_COMMAND_HEADERS_ = [
   'error_code',
   'error_message',
 ];
+const MIRA_CHANGE_HEADERS_ = [
+  'change_seq',
+  'change_id',
+  'data_class',
+  'resource_id',
+  'revision',
+  'payload_json',
+  'recorded_at',
+  'source_command_id',
+  'readback_verified',
+];
 const MIRA_IDEMPOTENCY_HEADERS_ = [
   'idempotency_key',
   'operation',
@@ -51,11 +68,13 @@ const MIRA_RESOURCE_HEADERS_ = [
   'last_idempotency_key',
   'request_hash',
 ];
+const MIRA_INTERNAL_CHANGE_TYPES_ = ['authority', 'authority_binding'];
 
 function miraEnableQueuedWriter() {
   miraWorkspaceSchema_();
   const spreadsheet = miraSpreadsheet_();
   miraEnsureCommandsSheet_(spreadsheet);
+  miraEnsureChangesSheet_(spreadsheet);
   // Trigger validation/creation happens before changing the mutation mode. If
   // trigger setup fails, direct single-writer behavior remains authoritative.
   miraEnsureCommandTrigger_();
@@ -75,34 +94,75 @@ function miraProcessCommandQueue() {
     const spreadsheet = miraSpreadsheet_();
     miraRequireQueuedMode_(spreadsheet);
     const sheet = miraRequireTable_(spreadsheet, 'Commands', MIRA_COMMAND_HEADERS_);
+    miraEnsureChangesSheet_(spreadsheet);
+
+    // Reconcile current canonical state before processing new commands. This
+    // seeds pre-Android Resources and repairs a crash after canonical write but
+    // before projection acknowledgement. Internal Authority rows are excluded
+    // because they are infrastructure, not client-domain state.
+    miraReconcileCurrentChanges_(spreadsheet);
+
     const rows = sheet.getDataRange().getValues();
+    const handled = {};
     let processed = 0;
 
     for (let index = 1; index < rows.length && processed < MIRA_COMMAND_LIMIT_; index += 1) {
       const status = String(rows[index][11] || '').trim();
       if (status !== 'pending') continue;
-      const rowNumber = index + 1;
-      const command = miraParseQueuedCommand_(rows[index], rowNumber);
+
+      const rawCommandId = String(rows[index][0] || '').trim();
+      const rawGroup = miraRawCommandGroup_(rows, rawCommandId);
+      const pendingRows = rawGroup.filter(function (entry) {
+        return String(entry.row[11] || '').trim() === 'pending';
+      }).map(function (entry) {
+        return entry.row_number;
+      });
+
+      if (rawCommandId && handled[rawCommandId]) continue;
+      if (rawCommandId) handled[rawCommandId] = true;
       processed += 1;
 
+      let command = null;
       try {
+        command = miraParseQueuedCommand_(rows[index], index + 1);
+        const group = miraValidateExactCommandGroup_(rawGroup, command);
+        const priorTerminal = miraExactCommandTerminal_(group);
+        if (priorTerminal && priorTerminal.status === 'failed') {
+          pendingRows.forEach(function (rowNumber) {
+            miraWriteCommandResult_(
+              sheet,
+              rowNumber,
+              'failed',
+              null,
+              priorTerminal.error_code,
+              priorTerminal.error_message,
+            );
+          });
+          continue;
+        }
+
         const result = miraExecuteQueuedCommand_(spreadsheet, command);
-        miraWriteCommandResult_(sheet, rowNumber, 'succeeded', result, '', '');
+        pendingRows.forEach(function (rowNumber) {
+          miraWriteCommandResult_(sheet, rowNumber, 'succeeded', result, '', '');
+        });
       } catch (error) {
         const code = error && error.miraCode ? error.miraCode : 'internal_error';
         if (miraRetryableWorkerCode_(code)) {
-          // Leave the durable command pending. A later run retries the same
-          // API-001 material and canonical idempotency key.
+          // Leave every duplicate physical delivery pending. A later run retries
+          // one logical command using the same API-001 idempotency material.
           continue;
         }
-        miraWriteCommandResult_(
-          sheet,
-          rowNumber,
-          'failed',
-          null,
-          code,
-          String(error && error.message ? error.message : error),
-        );
+        const targets = pendingRows.length ? pendingRows : [index + 1];
+        targets.forEach(function (rowNumber) {
+          miraWriteCommandResult_(
+            sheet,
+            rowNumber,
+            'failed',
+            null,
+            code,
+            String(error && error.message ? error.message : error),
+          );
+        });
       }
     }
     SpreadsheetApp.flush();
@@ -150,6 +210,7 @@ function miraExecuteQueuedCommand_(spreadsheet, command) {
     }
     const replay = miraParseResultJson_(stored.result_json);
     miraVerifyQueuedReadback_(spreadsheet, command, fingerprint, replay);
+    miraEnsureVerifiedChange_(spreadsheet, replay.record, command.command_id);
     return miraCommandResult_(command, authority.authority_id, replay.record, true);
   }
 
@@ -180,6 +241,7 @@ function miraExecuteQueuedCommand_(spreadsheet, command) {
     miraAppendIdempotency_(spreadsheet, command, fingerprint, recovered);
     SpreadsheetApp.flush();
     miraVerifyQueuedReadback_(spreadsheet, command, fingerprint, recovered);
+    miraEnsureVerifiedChange_(spreadsheet, recovered.record, command.command_id);
     return miraCommandResult_(command, authority.authority_id, recovered.record, true);
   }
 
@@ -220,6 +282,7 @@ function miraExecuteQueuedCommand_(spreadsheet, command) {
   miraAppendIdempotency_(spreadsheet, command, fingerprint, result, now);
   SpreadsheetApp.flush();
   miraVerifyQueuedReadback_(spreadsheet, command, fingerprint, result);
+  miraEnsureVerifiedChange_(spreadsheet, result.record, command.command_id);
   return miraCommandResult_(command, authority.authority_id, result.record, false);
 }
 
@@ -259,6 +322,71 @@ function miraParseQueuedCommand_(row, rowNumber) {
     idempotency_key: idempotencyKey,
     expected_revision: expectedRevision,
   };
+}
+
+function miraRawCommandGroup_(rows, commandId) {
+  if (!commandId) return [];
+  const group = [];
+  for (let index = 1; index < rows.length; index += 1) {
+    if (String(rows[index][0] || '').trim() === commandId) {
+      group.push({row_number: index + 1, row: rows[index]});
+    }
+  }
+  return group;
+}
+
+function miraValidateExactCommandGroup_(rawGroup, command) {
+  const expected = miraCommandMaterial_(command);
+  const parsed = [];
+  rawGroup.forEach(function (entry) {
+    const candidate = miraParseQueuedCommand_(entry.row, entry.row_number);
+    if (miraCommandMaterial_(candidate) !== expected) {
+      throw miraError_('conflict', 'duplicate command_id has different command material');
+    }
+    parsed.push({
+      row_number: entry.row_number,
+      row: entry.row,
+      command: candidate,
+    });
+  });
+  return parsed;
+}
+
+function miraCommandMaterial_(command) {
+  return miraCanonicalJson_({
+    action: command.action,
+    api_major: command.api_major,
+    command_id: command.command_id,
+    data_class: command.data_class,
+    expected_revision: command.expected_revision,
+    idempotency_key: command.idempotency_key,
+    payload: command.payload,
+    resource_id: command.resource_id,
+    schema_version: command.schema_version,
+    subject_id: command.subject_id,
+  });
+}
+
+function miraExactCommandTerminal_(group) {
+  let terminal = null;
+  group.forEach(function (entry) {
+    const status = String(entry.row[11] || '').trim();
+    if (status !== 'succeeded' && status !== 'failed') return;
+    const candidate = {
+      status: status,
+      result_json: String(entry.row[12] || ''),
+      error_code: String(entry.row[14] || '').trim(),
+      error_message: String(entry.row[15] || '').trim(),
+    };
+    if (!terminal) {
+      terminal = candidate;
+      return;
+    }
+    if (miraCanonicalJson_(terminal) !== miraCanonicalJson_(candidate)) {
+      throw miraError_('conflict', 'duplicate command rows have contradictory terminal state');
+    }
+  });
+  return terminal;
 }
 
 function miraResolveWorkerAuthority_(resources, dataClass, schemaVersion) {
@@ -405,6 +533,143 @@ function miraVerifyQueuedReadback_(spreadsheet, command, fingerprint, result) {
   }
 }
 
+function miraReconcileCurrentChanges_(spreadsheet) {
+  const resources = miraRawResourceRows_(spreadsheet)
+    .filter(function (row) {
+      return MIRA_INTERNAL_CHANGE_TYPES_.indexOf(row.resource_type) === -1;
+    })
+    .sort(function (left, right) {
+      const leftKey = left.resource_type + '\u0000' + left.resource_id;
+      const rightKey = right.resource_type + '\u0000' + right.resource_id;
+      return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
+    });
+  resources.forEach(function (resource) {
+    miraEnsureVerifiedChange_(spreadsheet, {
+      resource_type: resource.resource_type,
+      resource_id: resource.resource_id,
+      revision: resource.revision,
+      payload: resource.payload,
+    }, '');
+  });
+}
+
+function miraEnsureVerifiedChange_(spreadsheet, record, sourceCommandId) {
+  const resourceType = miraDataClass_(String(record.resource_type || ''));
+  const resourceId = miraId_(String(record.resource_id || ''), 'resource_id');
+  const revision = Number(record.revision);
+  if (!Number.isInteger(revision) || revision < 1) {
+    throw miraError_('readback_error', 'change projection revision is invalid');
+  }
+  miraRequireObject_(record.payload, 'change projection payload');
+
+  // Freshly re-read the canonical source before asserting verified projection.
+  const canonical = miraRawResourceRows_(spreadsheet).filter(function (row) {
+    return row.resource_type === resourceType && row.resource_id === resourceId;
+  });
+  if (canonical.length !== 1) {
+    throw miraError_('readback_error', 'change projection source is missing or duplicated');
+  }
+  if (
+    canonical[0].revision !== revision ||
+    miraCanonicalJson_(canonical[0].payload) !== miraCanonicalJson_(record.payload)
+  ) {
+    throw miraError_('readback_error', 'change projection source does not match canonical readback');
+  }
+
+  const material = {
+    data_class: resourceType,
+    payload: record.payload,
+    resource_id: resourceId,
+    revision: revision,
+  };
+  const changeId = miraSha256_(miraCanonicalJson_(material));
+  const sheet = miraEnsureChangesSheet_(spreadsheet);
+  const rows = sheet.getDataRange().getValues();
+  let lastSequence = 0;
+  let existing = null;
+
+  for (let index = 1; index < rows.length; index += 1) {
+    const row = rows[index];
+    if (!String(row[0] || '').trim()) continue;
+    const sequence = Number(row[0]);
+    if (!Number.isInteger(sequence) || sequence !== lastSequence + 1) {
+      throw miraError_('readback_error', 'Changes sequence is not contiguous');
+    }
+    lastSequence = sequence;
+    const rowClass = miraDataClass_(String(row[2] || '').trim());
+    const rowId = miraId_(String(row[3] || '').trim(), 'resource_id');
+    const rowRevision = Number(row[4]);
+    if (!Number.isInteger(rowRevision) || rowRevision < 1) {
+      throw miraError_('readback_error', 'persisted change revision is invalid');
+    }
+    if (rowClass === resourceType && rowId === resourceId && rowRevision === revision) {
+      if (existing) {
+        throw miraError_('readback_error', 'duplicate change projection identity');
+      }
+      existing = row;
+    }
+  }
+
+  if (existing) {
+    let existingPayload;
+    try {
+      existingPayload = JSON.parse(String(existing[5] || ''));
+    } catch (error) {
+      throw miraError_('readback_error', 'persisted change payload_json is invalid');
+    }
+    if (
+      String(existing[1] || '').trim() !== changeId ||
+      miraCanonicalJson_(existingPayload) !== miraCanonicalJson_(record.payload) ||
+      existing[8] !== true
+    ) {
+      throw miraError_('readback_error', 'same canonical revision has contradictory change material');
+    }
+    return {change_seq: Number(existing[0]), change_id: changeId, replay: true};
+  }
+
+  const nextSequence = lastSequence + 1;
+  const now = miraNow_();
+  sheet.getRange(sheet.getLastRow() + 1, 1, 1, MIRA_CHANGE_HEADERS_.length).setValues([[
+    nextSequence,
+    changeId,
+    resourceType,
+    resourceId,
+    revision,
+    miraCanonicalJson_(record.payload),
+    now,
+    sourceCommandId || '',
+    true,
+  ]]);
+  SpreadsheetApp.flush();
+
+  // Exact projection readback. A crash before this point leaves either no row
+  // or a complete row; the next retry revalidates exact material and converges.
+  const verifyRows = sheet.getDataRange().getValues().filter(function (row, index) {
+    return index > 0 && Number(row[0]) === nextSequence;
+  });
+  if (verifyRows.length !== 1) {
+    throw miraError_('readback_error', 'new change projection readback is missing or duplicated');
+  }
+  const verify = verifyRows[0];
+  let verifyPayload;
+  try {
+    verifyPayload = JSON.parse(String(verify[5] || ''));
+  } catch (error) {
+    throw miraError_('readback_error', 'new change projection payload is invalid');
+  }
+  if (
+    String(verify[1] || '').trim() !== changeId ||
+    String(verify[2] || '').trim() !== resourceType ||
+    String(verify[3] || '').trim() !== resourceId ||
+    Number(verify[4]) !== revision ||
+    miraCanonicalJson_(verifyPayload) !== miraCanonicalJson_(record.payload) ||
+    verify[8] !== true
+  ) {
+    throw miraError_('readback_error', 'new change projection readback does not match canonical state');
+  }
+  return {change_seq: nextSequence, change_id: changeId, replay: false};
+}
+
 function miraWriteCommandResult_(sheet, rowNumber, status, result, errorCode, errorMessage) {
   sheet.getRange(rowNumber, 12, 1, 5).setValues([[
     status,
@@ -460,6 +725,17 @@ function miraEnsureCommandsSheet_(spreadsheet) {
     return sheet;
   }
   miraRequireTable_(spreadsheet, 'Commands', MIRA_COMMAND_HEADERS_);
+  return sheet;
+}
+
+function miraEnsureChangesSheet_(spreadsheet) {
+  let sheet = spreadsheet.getSheetByName('Changes');
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet('Changes');
+    sheet.getRange(1, 1, 1, MIRA_CHANGE_HEADERS_.length).setValues([MIRA_CHANGE_HEADERS_]);
+    return sheet;
+  }
+  miraRequireTable_(spreadsheet, 'Changes', MIRA_CHANGE_HEADERS_);
   return sheet;
 }
 
