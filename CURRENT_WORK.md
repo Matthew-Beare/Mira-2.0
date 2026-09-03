@@ -5,47 +5,10 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 ## Prior packet recovery verification — 2026-09-02
 
 - Repository: `Matthew-Beare/Mira-2.0`.
-- Authoritative `main`: `7562c247a471c6ebb27f77d8494054e7a54d52b1`.
+- Authoritative base `main`: `7562c247a471c6ebb27f77d8494054e7a54d52b1`.
 - M2-M1-005 final closeout CI: `33701057632` — success on that exact head.
 - `M2-M1-001` through `M2-M1-005` are durably closed and must not be rerun.
-- No Google provider resource or legacy MIRA production state was accessed while recovering this packet.
-
-## Session-start alignment verification — 2026-09-02 M2-M1-006
-
-### `FEATURES.md`
-
-- `CLIENT-ANDROID-001` requires the native Android client to reuse shared `API-001`, protected credentials, replay-safe synchronization and evidence-based provider capabilities without becoming canonical authority.
-- `API-001` owns bounded commands, synchronization and verified canonical readback. The Android transport may move exact command/read evidence but may not redefine canonical truth.
-- `PROVIDER-002` requires ordinary-user provider onboarding to remain an obvious native Connect/Connected/Reconnect/Needs attention/Disconnect flow with automated post-consent verification. Provider IDs, OAuth scopes, developer consoles and Apps Script mechanics must not become user-facing setup.
-- `RECOVERY-002` requires ambiguous network outcomes, duplicate transport delivery, malformed provider rows and partial sync projection failures to fail closed or converge without dropping pending work.
-
-### `BACKLOG.md`
-
-- `ANDROID-CLIENT-CORE-001` remains the active unfinished prerequisite before `ANDROID-SYNC`.
-- M2-M1-002 through M2-M1-005 already implemented client trust, protected credentials, encrypted offline state and provider-neutral reconnect orchestration. The backlog row saying there is no Android client implementation is stale and will be corrected in this packet without marking the umbrella complete.
-- The next dependency-correct slice is the default-Personal Google Workspace transport needed by `ReconnectCoordinator`; broad UI/device proof remains later.
-
-### `ROADMAP.md`
-
-- M2-M1 step 2 is complete at source/test/repository-integration evidence level.
-- M2-M1 step 3 has durable local queue/cursor state plus provider-neutral orchestration but still lacks a concrete Personal Workspace transport.
-- Steps 4 through 7 remain incomplete: actual Android canonical read, mutation, stock-ChatGPT cross-readback and representative-device proof are not claimed.
-
-### `PRODUCT_INVARIANTS.md`
-
-- The default Personal lane remains Google Workspace first and must not require servers, copied IDs, developer consoles or terminal work from ordinary users.
-- Android must eventually use Google’s native authorization surface. Current Google documentation deprecates legacy `GoogleApiClient`/old Auth entry points in favor of Google Identity Services authorization. This packet does not build the end-user consent UI; it preserves that future seam rather than hard-wiring deprecated auth.
-- OAuth/provider access material must remain transport-local and must not be stored in `OfflineSyncStateStore` or confused with the MIRA client credential.
-
-### Workspace command-boundary architecture check
-
-`docs/M1_CONCURRENT_COMMAND_BOUNDARY.md` remains authoritative: default Personal Android submits the existing API command envelope to the Google Workspace `Commands` inbox and one Apps Script worker owns canonical mutation sequencing. The advanced synchronous WSGI/Cloud Run route is not the Personal default.
-
-Google Sheets `values.append` is an append transport, so an ambiguous client network failure can make physical delivery at-least-once. MIRA must therefore treat exact duplicate physical rows with one `command_id` as one logical command when material matches, while failing closed on mismatched duplicates. Canonical idempotency remains in `STORE-001`.
-
-### Direction result
-
-**ALIGNED.** Open one bounded packet for the Workspace row protocol, replay-safe duplicate physical delivery, verified append-only canonical change projection, and Android transport mapping. Do not absorb OAuth/Connections UI or live-provider proof.
+- No Google provider resource or legacy MIRA production state was accessed while recovering or implementing this packet.
 
 ## Active packet
 
@@ -57,82 +20,122 @@ Google Sheets `values.append` is an append transport, so an ambiguous client net
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `work/m2-m1-006-google-workspace-transport`
 - **Base SHA:** `7562c247a471c6ebb27f77d8494054e7a54d52b1`
-- **Current head:** `2fb79cc466de099a0dc96cb6df5e8b2a4cbeeb56` before this governance correction
-- **Status:** active
+- **Pre-closeout evidence head:** `c2b42050770fce73d841fa8be74a6fc37c750a75`
+- **Status:** merge candidate; umbrella `ANDROID-CLIENT-CORE-001` remains incomplete
 
 ## Objective
 
-Implement the transport-level default-Personal Google Workspace seam between `ReconnectCoordinator` and the already-proven queued-writer Sheet without accessing a live provider.
+Implement the deterministic default-Personal Google Workspace transport seam beneath the future Android Google authorization surface, without live provider access:
 
-The bounded slice will:
-
-1. extend the Workspace worker with an append-only, nonauthoritative verified change projection suitable for opaque cursor synchronization;
-2. ensure current canonical resources can be seeded/reconciled into that projection under the serialized worker lock so Android can perform an initial read of pre-Android state;
-3. make duplicate physical `Commands` rows for the same exact logical command converge safely, while mismatched duplicate material fails closed;
-4. add a provider-specific Android `ReconnectCoordinator.Transport` implementation that maps exact `CommandIntent` values to the Workspace `Commands`/change schemas through a narrow injected Sheets gateway;
-5. require exact row/header/material/status/result validation before the Android transport reports pending, success, failure or verified changes;
-6. keep spreadsheet discovery, Google Identity Services authorization UI, OAuth token acquisition, real Sheets HTTP/SDK calls and live-provider/device proof outside this packet.
+1. append-only, nonauthoritative verified `Changes` projection derived from canonical `Resources` under the serialized Apps Script worker lock;
+2. initial/recovery reconciliation of existing canonical Resources into that projection;
+3. exact duplicate physical `Commands` row convergence for ambiguous Sheets append outcomes while mismatched duplicates fail closed;
+4. Android `ReconnectCoordinator.Transport` mapping through a narrow injected `SheetsGateway` with no provider IDs or OAuth material;
+5. strict Commands/Changes header, row, status, result, hash and opaque-cursor validation;
+6. deterministic Apps Script and Android JVM verification only.
 
 ## User-visible behavior enabled
 
-This packet is infrastructure for a later simple Android **Connect Google** experience. It must make reconnect safe enough that the user can lose connectivity after a command append, regain it, and converge without duplicate logical mutations or silently skipped canonical changes. No user-facing UI is shipped in this packet.
+This packet is infrastructure for the later simple Android **Connect Google** experience. It makes the transport protocol safe for reconnect after an ambiguous append or connectivity loss without duplicating a logical canonical mutation or silently skipping verified canonical changes. It does not ship end-user connection UI.
 
 ## Preserved invariants
 
 - Canonical state remains `single sequencer → API-001 → Authority Registry → STORE-001 → exact readback`.
-- `Commands` and the new change projection are transport/read evidence, never canonical authority.
+- `Commands` and `Changes` are transport/read evidence, never canonical authority.
 - Same-user Personal semantics remain; cross-person/family scope is still blocked.
-- Android stores no provider identifier in source and no OAuth/provider secret in the offline state store.
-- Historical M2-M1-001 disposable provider resources and all legacy MIRA production data remain untouched.
-- Advanced Cloud Run transport remains available but is not substituted for the default Personal lane.
+- Android source contains no spreadsheet/provider resource identifier and `OfflineSyncStateStore` contains no OAuth/provider secret.
+- Historical M2-M1-001 disposable proof resources and all legacy MIRA production data remain untouched.
+- Advanced Cloud Run transport remains an optional advanced profile, not the default Personal Android path.
+- Ordinary users are not exposed to Apps Script, copied IDs, developer consoles, OAuth scopes, or terminal setup by this packet.
 
 ## Explicitly deferred
 
-- Google Identity Services consent/authorization implementation and account-picker UI.
-- Drive/Sheets discovery and automatic provider resource binding.
-- Real Sheets REST/SDK network implementation and access-token lifecycle.
-- Android Connections UI and disconnect/reconnect presentation.
-- Broad canonical read UI or domain rendering.
-- Conflict-resolution UI.
+- Google Identity Services consent/account-picker implementation.
+- Drive/Sheets discovery and automatic resource binding.
+- Real Sheets REST/SDK network gateway and access-token lifecycle.
+- Android Connections UI and reconnect/disconnect presentation.
+- Broad canonical read/domain UI and conflict-resolution UI.
 - Physical Android device/provider proof.
 - Stock ChatGPT cross-readback vertical proof (`ANDROID-SYNC`).
-- Notifications/TTS, capture, release signing and broader UI polish.
+- Notifications/TTS, capture, release signing and broader Android polish.
 - Any legacy-production migration.
 
-## Acceptance criteria
+## Acceptance result
 
-1. No live provider/resource/legacy-state access is required for this packet.
-2. Workspace change projection is append-only, nonauthoritative, versioned by a strictly increasing opaque sequence and validated with exact headers/material.
-3. Every projected change is produced only from canonical `Resources` material that the worker has exact-readback verified; missing projection rows can be reconciled from current canonical state under the worker lock.
-4. Projection append/retry is idempotent for the same canonical `(data_class, resource_id, revision, payload)` and fails closed on contradictory same-version material.
-5. Android cursor tokens remain opaque outside the Google transport; null initial cursor and empty/no-op pages are deterministic.
-6. Android transport validates strict change sequence progression and does not report `readback_verified=true` for malformed/unverified projection rows.
-7. Android exact command intent maps losslessly to the Workspace command row schema.
-8. A command row is acknowledged locally only through existing `ReconnectCoordinator` semantics after exact logical identity, terminal `succeeded`, valid result JSON and `readback_verified=true`.
-9. Exact duplicate physical command rows with identical material converge as one logical remote command; different material under one command ID fails closed.
-10. Pending and terminal-failed command states map deterministically without local acknowledgement.
-11. Ambiguous append/retry behavior is deterministic in tests: re-reading an already-delivered exact command must not create a second logical mutation.
-12. Deterministic Apps Script tests cover change seeding/reconcile, update append, crash/retry projection recovery, exact duplicate physical command delivery and mismatched duplicate rejection.
-13. Deterministic Android JVM tests cover exact row mapping, duplicate remote row handling, pending/success/failure parsing, verified change paging, cursor validation, malformed provider data and transport failure preservation.
-14. Android production ownership metadata covers the new transport class without weakening existing DEV-006 gates.
-15. Existing Android, Python, Apps Script, lifecycle, distribution, alignment and ownership CI remains green.
-16. End-of-packet FEATURES/BACKLOG/ROADMAP alignment is recorded before merge; the umbrella `ANDROID-CLIENT-CORE-001` remains incomplete.
-17. Exact PR head/scope, merge/main readback and post-merge CI are verified before durable closure.
+1. **PASS** — no live provider/resource/legacy-state access was used.
+2. **PASS** — `Changes` is append-only, nonauthoritative and strictly sequence-versioned.
+3. **PASS** — projection material originates from exact-readback-verified canonical Resources and current canonical state can seed/reconcile missing projection rows under the worker lock.
+4. **PASS** — same canonical revision projection is idempotent; contradictory same-version material fails closed.
+5. **PASS** — Android cursor tokens are opaque outside the Workspace transport; null/empty paging is deterministic.
+6. **PASS** — malformed/unverified/noncontiguous change material fails closed.
+7. **PASS** — supported exact command intent maps losslessly to the Workspace Commands schema.
+8. **PASS** — local acknowledgement remains owned by existing `ReconnectCoordinator` verified-success semantics.
+9. **PASS** — exact duplicate physical command rows converge; changed material under one command ID fails closed.
+10. **PASS** — pending and terminal-failed states do not cause local acknowledgement.
+11. **PASS** — ambiguous append tests prove readback convergence without a second append.
+12. **PASS** — Apps Script tests cover seed/reconcile, update projection, crash/retry recovery and duplicate delivery behavior.
+13. **PASS** — Android JVM tests cover row mapping, pending/success/failure parsing, change paging/cursors, malformed provider data and ambiguous transport outcomes.
+14. **PASS** — Android DEV-006 ownership covers the new transport without weakening gates.
+15. **PASS** — compile, feature registry, lifecycle, distribution, alignment, ownership, Android, Python and Apps Script gates are green on exact evidence head.
+16. **PASS** — end-of-packet canonical alignment is recorded below; the umbrella remains incomplete.
+17. **PENDING CLOSEOUT ONLY** — exact merge/main readback and post-merge CI must still be verified before durable closure.
 
 ## Completed evidence
 
-- Session-start Git/main/CI recovery verification complete.
-- FEATURES/BACKLOG/ROADMAP/PRODUCT_INVARIANTS direction review complete.
-- Current official Google documentation checked for Sheets append semantics and modern Android authorization direction; no legacy Google Auth API is being introduced here.
-- PR #101 initial head `2fb79cc466de099a0dc96cb6df5e8b2a4cbeeb56` reached CI `33703372121`; compile, feature registry, lifecycle and Personal distribution were green, then the work-session alignment gate correctly stopped the run because this packet used the noncanonical field label `Related features/invariants`. No product-code gate was weakened; this correction changes the field to the required `Related invariants/features` label.
+- Workspace worker source/test checkpoint: `c0c44c7...7013f`.
+- Android transport source checkpoint: `843c48e...f9a02`.
+- PR #101 opened for the bounded packet.
+- Initial PR CI `33703372121` correctly stopped at the work-session alignment gate because `CURRENT_WORK.md` used the wrong canonical field label. The gate was not weakened.
+- Corrected head `e9df3093cea2d4dbac2d471046f9b82dda6aeea7` passed CI `33703713828` completely.
+- API-23 compatibility correction replaced the API-24-only finite-number convenience call.
+- Fully corrected implementation head `d93a706064b100ee0e2bcae0934270d512b8a1f2` passed CI `33703880669` completely.
+- Canonical backlog drift was corrected without marking `ANDROID-CLIENT-CORE-001` complete.
+- Pre-closeout evidence head `c2b42050770fce73d841fa8be74a6fc37c750a75` passed CI `33704143863` completely.
+- CI `33704143863` green steps include compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android client core unit tests, Python tests and Workspace Apps Script tests.
+- PR #101 at pre-closeout evidence head is open, non-draft and based on `main` `7562c247a471c6ebb27f77d8494054e7a54d52b1`.
+- Exact bounded PR file set before this evidence checkpoint:
+  - `BACKLOG.md`
+  - `CURRENT_WORK.md`
+  - `android-client/core/build.gradle.kts`
+  - `android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceTransport.java`
+  - `android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java`
+  - `project/android_code_ownership.json`
+  - `tests/apps_script/workspace_worker.test.js`
+  - `workspace/apps_script/CommandWorker.gs`
+
+## End-of-packet alignment verification — 2026-09-02
+
+### `FEATURES.md`
+
+- `CLIENT-ANDROID-001` remains required and partial. This packet advances its concrete default-Personal transport prerequisite but does not prove a live Android/provider vertical.
+- `API-001`, `STORE-001` and `RECOVERY-002` remain the authority/readback/recovery semantics; the Workspace adapter does not redefine them.
+- `PROVIDER-002` still requires an ordinary-user native connection flow and automated post-consent verification. Those user-facing/provider authorization requirements are deliberately not claimed here.
+
+### `BACKLOG.md`
+
+- `ANDROID-CLIENT-CORE-001` is correctly recorded as partial through M2-M1-005 with M2-M1-006 as the active concrete Workspace transport slice; the stale claim that no Android implementation existed was removed.
+- The umbrella remains unfinished after this packet because real provider authorization/network binding, a bounded live canonical read/mutation vertical, conflict presentation and representative-device proof remain.
+- `ANDROID-SYNC` remains the dependency-following vertical rather than being silently folded into this packet.
+
+### `ROADMAP.md`
+
+- The milestone intent remains unchanged: Android must read and mutate the same canonical Personal reality without becoming a second authority.
+- M2-M1 steps 2 and 3 now have substantially more implementation/test evidence than the older roadmap narrative states: client identity/protected credential work, durable offline state, reconnect orchestration and the concrete Workspace row protocol are implemented/test-verified.
+- The remaining milestone proof is still live provider-bound Android canonical read, Android mutation through the shared boundary, stock ChatGPT cross-readback and representative-device evidence. No completion claim is made for those steps.
+
+### Result
+
+**ALIGNED FOR MERGE.** The packet advances only the dependency-correct transport layer and preserves the accepted product direction. No unrelated feature work, provider ceremony, live Google proof, or legacy-state mutation was absorbed.
 
 ## Exact next action / resume point
 
-1. Finish the small governance/API-compatibility/test-signature correction set.
-2. Run replacement CI through Android ownership/unit tests and Apps Script tests.
-3. Correct the stale `ANDROID-CLIENT-CORE-001` backlog status without marking it complete once code behavior is green.
-4. Record end-of-packet alignment and exact evidence before merge.
+1. Read back this branch head and verify CI on the exact evidence-checkpoint commit containing this file.
+2. Re-read PR #101 exact head, mergeability and changed-file scope.
+3. Merge PR #101 only if the exact head is green and scope remains bounded.
+4. Independently read back remote `main` at the merge SHA.
+5. Verify post-merge `main` CI on that exact SHA.
+6. Write the final Git-backed M2-M1-006 closure checkpoint on `main`, keeping `ANDROID-CLIENT-CORE-001` incomplete and identifying the next bounded dependency-correct slice.
 
 ## Recovery protocol
 
-Read this file first. Verify branch/head and `main` before continuing. Do not rerun M2-M1-001 through M2-M1-005. Do not access Google provider state or Work mode merely to test deterministic transport code.
+Read this file first and verify branch/main heads before continuing. Do not rerun M2-M1-001 through M2-M1-005. Do not access Google provider state or Work mode merely to close deterministic transport code.
