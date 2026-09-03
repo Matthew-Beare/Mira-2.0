@@ -29,7 +29,8 @@ import java.util.regex.Pattern;
  *
  * <p>Access tokens are ephemeral provider material. This class never persists them and callers must
  * not place them in MIRA's protected client credential store, offline sync state, canonical MIRROR
- * resources, logs, or Git.</p>
+ * resources, logs, or Git. Raw token and provider-file identifiers are intentionally package-private
+ * so ordinary app/UI code receives an opaque grant rather than secret material.</p>
  */
 public final class GoogleWorkspaceAuthorization {
     public static final String DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
@@ -118,10 +119,8 @@ public final class GoogleWorkspaceAuthorization {
         return Outcome.authorized(authorized);
     }
 
-    /**
-     * Pure validation seam used by deterministic JVM tests and by the Google result adapter.
-     */
-    public static AuthorizedWorkspace validateGrantedMaterial(
+    /** Pure validation seam used by deterministic JVM tests and the Google result adapter. */
+    static AuthorizedWorkspace validateGrantedMaterial(
             String accessToken,
             List<String> grantedScopes,
             String pickedFileIds
@@ -132,10 +131,10 @@ public final class GoogleWorkspaceAuthorization {
                     "Google authorization did not return an access token"
             );
         }
-        if (accessToken.length() > 8192) {
+        if (!accessToken.equals(accessToken.trim()) || accessToken.length() > 8192) {
             throw new AuthorizationException(
                     "authorization_invalid_token",
-                    "Google authorization returned an oversized access token"
+                    "Google authorization returned invalid access-token material"
             );
         }
         if (grantedScopes == null || grantedScopes.size() != 1
@@ -160,7 +159,8 @@ public final class GoogleWorkspaceAuthorization {
             );
         }
         String spreadsheetId = raw[0].trim();
-        if (!SPREADSHEET_ID_PATTERN.matcher(spreadsheetId).matches()) {
+        if (!spreadsheetId.equals(raw[0])
+                || !SPREADSHEET_ID_PATTERN.matcher(spreadsheetId).matches()) {
             throw new AuthorizationException(
                     "authorization_invalid_workspace",
                     "Google Picker returned an invalid spreadsheet identifier"
@@ -169,7 +169,7 @@ public final class GoogleWorkspaceAuthorization {
         return new AuthorizedWorkspace(accessToken, spreadsheetId);
     }
 
-    /** Ephemeral successful provider grant. Never persist {@link #accessToken()}. */
+    /** Ephemeral successful provider grant. Raw provider material stays inside this package. */
     public static final class AuthorizedWorkspace {
         private final String accessToken;
         private final String spreadsheetId;
@@ -179,11 +179,11 @@ public final class GoogleWorkspaceAuthorization {
             this.spreadsheetId = spreadsheetId;
         }
 
-        public String accessToken() {
+        String accessToken() {
             return accessToken;
         }
 
-        public String spreadsheetId() {
+        String spreadsheetId() {
             return spreadsheetId;
         }
     }
