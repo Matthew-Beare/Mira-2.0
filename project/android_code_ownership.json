@@ -28,6 +28,19 @@
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/OfflineSyncStateStoreTest.java"
       ]
+    },
+    {
+      "id": "android-client-reconnect-coordinator",
+      "responsibility": "Provider-neutral Android reconnect orchestration enforcing exact queued-command replay, verified terminal acknowledgement, verified canonical snapshot persistence, and snapshot-before-cursor progression.",
+      "why_separate": "Reconnect orchestration coordinates durable local state with future authenticated transports without owning provider OAuth, network implementation, canonical authority, conflict UI, or provider connection UX.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/ReconnectCoordinator.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java"
+      ]
     }
   ]
 }

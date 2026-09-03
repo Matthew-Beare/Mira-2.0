@@ -6,191 +6,223 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 Default Personal MIRA remains stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Android extends the same canonical MIRA semantics and must never become a second provider/database/source authority or bypass the verified serialized shared command boundary.
 
-Ordinary users must not be exposed to developer/provider mechanics merely because Android owns more UI. Provider Connections UI, provider consent, network transport, actual canonical read/write and representative-device proof remain later packets.
+For the default Personal Android lane, M2-M1-001 selected Google Workspace as the command transport: Android eventually uses the user's provider authorization to append the existing `API-001` command envelope to the durable Workspace `Commands` inbox, while one Apps Script worker owns canonical mutation sequencing. The preserved synchronous WSGI/Cloud Run transport remains an advanced profile and must not silently become the Personal default.
 
-`M2-M1-001` queued-writer boundary, `M2-M1-002` enrollment/session trust, and `M2-M1-003` OS-protected Android credential storage are complete and must not be rerun.
+Ordinary users must not be exposed to developer/provider mechanics. Google OAuth/connection UI, actual Sheets API calls, provider resource discovery/binding, and representative-device proof remain later packets. M2-M1-005 is provider-neutral Android reconnect orchestration only.
 
-## Session-start alignment verification — 2026-09-02 M2-M1-004
+`M2-M1-001` queued-writer boundary, `M2-M1-002` enrollment/session trust, `M2-M1-003` OS-protected MIRA client credential storage, and `M2-M1-004` encrypted replay/cache/cursor local state are complete and must not be rerun.
+
+## Prior-packet recovery verification — 2026-09-02
+
+- Authoritative remote `main` was read back at `9b7dc8dc681b8af0cd74bbd4c739817f3df030e1`.
+- Final M2-M1-004 closeout CI `33699114156` completed successfully on that exact main head.
+- M2-M1-004 is durably closed at its declared source/build/test/repository-integration evidence ceiling.
+
+## Session-start alignment verification — 2026-09-02 M2-M1-005
 
 ### `FEATURES.md`
 
-- `CLIENT-ANDROID-001` requires the native client to use `API-001`, keep credentials protected, remain replay-safe offline and never become canonical/provider authority.
-- `API-001` owns commands, queries, synchronization and verified mutation readback. Android local state may stage exact API intent or cache verified readback but cannot reinterpret canonical truth.
-- `RECOVERY-002` requires local corruption/key loss to fail closed without silently discarding unsynced work or mutating canonical state.
+- `CLIENT-ANDROID-001` requires the Android native client to use shared `API-001`, protected credentials, offline replay-safe synchronization, and evidence-based device capabilities without becoming canonical authority.
+- `API-001` owns authenticated bounded commands, queries, synchronization and verified mutation readback. Android reconnect orchestration may reconcile transport results but cannot redefine canonical truth.
+- `RECOVERY-002` requires transport interruption, stale cursor state, malformed remote results, and local persistence failures to fail closed without silently dropping pending work or advancing synchronization state.
 
 ### `BACKLOG.md`
 
 - `ANDROID-CLIENT-CORE-001` remains the unfinished prerequisite before `ANDROID-SYNC`.
-- Its remaining scope includes transport-authenticated bounded reads/commands, reconnect/cursor synchronization and server conflict/readback handling.
-- The dependency-correct slice for this packet was local durable replay/cache/cursor state only.
+- M2-M1-004 completed the durable local queue/cache/cursor primitive. The next dependency-correct slice was reconnect orchestration over a provider-neutral transport contract.
+- Actual Personal Google transport, bounded canonical reads, provider binding, conflict presentation and the broader Android vertical remain unfinished.
 
 ### `ROADMAP.md`
 
-- M2-M1 step 2, scoped/revocable identity plus OS-protected credentials, was completed by M2-M1-002/003 at their stated evidence ceilings.
+- M2-M1 step 2 is complete at its declared source/test evidence ceiling through M2-M1-002/003.
 - M2-M1 step 3 is replay-safe offline queue plus reconnect/cursor synchronization.
-- M2-M1-004 implements the durable local prerequisite for step 3 but does not claim reconnect synchronization because no Android transport exists yet.
+- M2-M1-004 implemented the local durable half of step 3. M2-M1-005 adds provider-neutral client orchestration and does not claim live reconnect because no concrete provider transport is implemented here.
 
 ### `PRODUCT_INVARIANTS.md`
 
-- Android reuses provider-neutral MIRA service/connection semantics and may not invent a second provider activation or authority model.
-- Provider OAuth material, Google resource identifiers and developer setup material do not belong in Android offline state.
+- Android must reuse MIRA's provider-neutral connection/service semantics and cannot invent technical setup for ordinary users.
+- Provider authorization remains a transport-adapter concern. OAuth/provider credentials do not enter `OfflineSyncStateStore` or become canonical identity.
+- Future Android Connections UI still needs obvious Connect/Connected/Reconnect/Needs attention/Disconnect semantics and automated post-consent verification.
 
-### Existing API contract check
+### M2-M1 command-boundary architecture check
 
-`mira/api_core.py` was re-read before implementation. Android `CommandIntent` preserves the current transport-independent `CommandEnvelope` semantics required for exact future replay: `command_id`, `subject_id`, `data_class`, `action`, `api_major`, `schema_version`, `resource_id`, opaque serialized payload bytes, `idempotency_key`, optional `expected_revision`, and append-event-only `event_id` / `event_type`.
+`docs/M1_CONCURRENT_COMMAND_BOUNDARY.md` was re-read before activation. It explicitly selects Google Workspace `Commands` inbox + serialized Apps Script worker for the default Personal Android mutation path. The existing `mira/http_transport.py` synchronous `/v1/commands` route executes `ApiService.execute_command` directly and belongs to the preserved advanced managed profile; wiring Personal Android to that route would bypass the queued-writer decision and was rejected.
 
 ### Direction result
 
-**ALIGNED.** The bounded slice was a durable encrypted local state machine for exact API command intents, acknowledgement replay suppression, monotonic cached canonical snapshots and opaque cursor compare-and-set state, with no network/provider/canonical authority access.
+**ALIGNED.** The smallest safe continuation was a provider-neutral Android reconnect coordinator and transport contract proving replay/poll/readback/cursor ordering against deterministic fake transport behavior before any Google OAuth/Sheets implementation.
 
 ## Active packet
 
-### `M2-M1-004` — Android client core, replay-safe local offline state
+### `M2-M1-005` — Android client core, reconnect coordinator and transport contract
 
 - **Primary work:** `ANDROID-CLIENT-CORE-001`
 - **Primary features:** `CLIENT-ANDROID-001`, `API-001`
-- **Related invariants/features:** `RECOVERY-002`, `AUTH-001`, `STORE-001`
+- **Related invariants/features:** `RECOVERY-002`, `AUTH-001`, `STORE-001`, `PROVIDER-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Implementation branch:** `work/m2-m1-004-android-offline-state`
-- **Base/main SHA:** `8cdd8abc5a5db3d022a9bfd9081d8c93830f99b2`
-- **Verified base CI:** `33685113659` — success
-- **Implementation head:** `00192de7ea6730aab88747a1fdcdbe619bb736a3`
-- **Implementation-head CI:** `33698665125` — success
-- **Evidence/merge-candidate head:** `090b148f393b281716315f4bd9c300b030e53828`
-- **Evidence-head CI:** `33698847886` — success
-- **PR:** #99
-- **Merge/main SHA:** `5f0de376b001721d79115a42b02b72b8c274fdd4`
-- **Post-merge CI:** `33698946968` — success
-- **Status:** implementation merged and post-merge verified; this final documentation-only closeout head must pass CI before the packet is called durably closed
+- **Branch:** `work/m2-m1-005-android-reconnect-contract`
+- **Base/main SHA:** `9b7dc8dc681b8af0cd74bbd4c739817f3df030e1`
+- **Verified base CI:** `33699114156` — success
+- **Activation checkpoint:** `450ea4b615403d3444f4d65a8a7abe3b0e1bf23f`
+- **Initial coordinator source:** `043f104314f83cd24ad13561eb9da5598dfd1665`
+- **Reconnect tests checkpoint:** `6e7c6a12a7c4d784ee492c43979c634e75ce040e`
+- **API-23 compatibility correction:** `fd6abe19cff06a334151d5767847a6c889ed990b`
+- **Verified implementation head before this evidence commit:** `edf7c6a3f1dbb8e9b77900ed1a200c1221932cd1`
+- **Verified implementation-head CI:** `33700649333` — success
+- **PR:** #100
+- **Verified changed-file scope before this evidence commit:** exactly 4 intended files
+- **Status:** bounded implementation/build/test slice satisfied; this evidence head, merge/main readback and post-merge verification remain
 
 ## Objective result
 
-**IMPLEMENTED, TEST-VERIFIED, REPOSITORY-INTEGRATED AND MERGED FOR THIS BOUNDED SLICE.** `OfflineSyncStateStore` provides the durable local primitive required before Android reconnect transport can be implemented safely. It stores no provider authority and performs no network or canonical mutation.
+**IMPLEMENTED AND TEST-VERIFIED FOR THIS BOUNDED SLICE.** `ReconnectCoordinator` now defines the provider-neutral orchestration seam between `OfflineSyncStateStore` and future authenticated transport adapters. It does not contain Google SDK code, provider URLs, resource identifiers, OAuth material or canonical mutation code.
 
-The encrypted local state contains only:
+The coordinator enforces these ordering rules:
 
-1. exact provider-neutral `API-001` command intents with stable local FIFO sequence;
-2. durable acknowledgement tombstones that suppress already-read-back command re-enqueue after restart;
-3. nonauthoritative canonical snapshots keyed by `(data_class, resource_id)` with monotonic revision enforcement; and
-4. one opaque synchronization cursor updated through compare-and-set semantics.
+1. pending commands are reconciled in stable local FIFO order;
+2. transport acceptance/pending state never removes local work;
+3. local acknowledgement requires exact `command_id`, exact `idempotency_key`, terminal remote success and `readback_verified=true`;
+4. terminal remote validation/authorization/conflict failure is returned without local acknowledgement for later explicit handling;
+5. transport/protocol/local-state failure stops the bounded pass without inventing remote truth;
+6. verified remote snapshots are persisted before local command acknowledgement when supplied with a command result;
+7. after all bounded local commands are resolved, verified canonical change snapshots are persisted before the opaque cursor advances;
+8. a bounded pass that leaves local commands pending does not read/advance the change cursor.
 
-Production persistence uses a separate Android Keystore AES-256-GCM key, exact `client_id` authenticated associated data, Android `AtomicFile`, and `Context.getNoBackupFilesDir()`. There is no plaintext fallback. Missing/corrupt key material or tampered/malformed stored state fails closed rather than silently resetting unsynced state.
-
-This packet does **not** complete `ANDROID-CLIENT-CORE-001` or M2-M1 step 3. HTTP/API transport, server cursor acquisition, reconnect execution, canonical reads, command submission, verified server acknowledgement, and conflict/readback presentation remain unfinished.
+This packet does **not** complete `ANDROID-CLIENT-CORE-001` or M2-M1 step 3. A concrete Personal Google transport still must authenticate through the intended provider lane, append/read the Workspace command inbox, read verified canonical changes, and map provider evidence into this contract. No live provider synchronization is claimed.
 
 ## Completed implementation evidence
 
-### Replay-safe command state
+### Provider-neutral transport contract
 
-- `OfflineSyncStateStore.CommandIntent` preserves the exact current API command-envelope fields needed for later replay.
-- Only current command actions `upsert` and `append_event` are accepted with the same event-field shape constraints as `API-001`.
-- Payload bytes are preserved exactly; this layer does not become a second JSON/wire-schema implementation.
-- New commands receive monotonically increasing local sequence numbers.
-- Exact duplicate enqueue is idempotent.
-- Same `command_id` with different complete command material fails closed.
-- Exact acknowledgement moves a pending command to a durable tombstone containing sequence, command ID, idempotency key and complete-command SHA-256 fingerprint.
-- Exact repeated acknowledgement is idempotent; unknown or conflicting acknowledgement fails closed.
-- A command matching a durable tombstone returns `ALREADY_ACKNOWLEDGED` after restart rather than being queued again.
+- Added `android-client/core/src/main/java/com/mira/client/core/sync/ReconnectCoordinator.java`.
+- `Transport.reconcileCommand(CommandIntent)` accepts the exact immutable local command intent rather than a second Android command model.
+- `Transport.readChanges(cursor, limit)` uses an opaque cursor and returns only adapter-asserted verified canonical snapshots plus exact from/next cursor state.
+- Transport failures have stable adapter-owned code/message through `TransportException`.
+- No provider, HTTP, OAuth, Google, Cloud Run, Sheet or resource-ID dependency exists in the coordinator source.
 
-### Canonical cache and cursor foundations
+### Command reconciliation rules
 
-- Cached snapshot identity is the full `(data_class, resource_id)` pair, allowing different data classes to reuse the same resource ID without collision.
-- Snapshot revisions must be positive and may only advance.
-- Exact same revision/payload is idempotent.
-- Revision regression and same-revision/different-payload fork fail closed.
-- Cursor values are opaque; no lexical, numeric or provider ordering is invented.
-- Cursor replacement uses compare-and-set so a stale reconnect flow cannot overwrite a newer local cursor. An already-applied exact next cursor is idempotent.
+- Exact command and idempotency identities are required on every remote command projection.
+- `PENDING` leaves the command queued and stops the pass honestly.
+- `FAILED` leaves the command queued and returns deterministic error material for later conflict/error handling.
+- `SUCCEEDED` is rejected unless canonical readback is explicitly verified and no terminal error material is present.
+- Verified snapshots accompanying terminal success are stored before acknowledgement.
+- Local acknowledgement occurs only after all required local persistence succeeds.
+- When a command limit leaves additional local pending work, the pass returns `MORE_PENDING` and does not fetch/advance canonical changes.
 
-### Protected bounded persistence
+### Canonical change/cursor rules
 
-- Offline state uses a distinct Android Keystore key namespace from credential storage.
-- Production encryption is AES-256-GCM through `AndroidKeyStore` with randomized encryption required and exact-client AAD binding.
-- Versioned encrypted state is stored under no-backup app-private storage using `AtomicFile`.
-- Raw client ID is not used as a filename; stable SHA-256-derived local identifiers are used.
-- Existing malformed/truncated/tampered state or missing/invalid key fails closed and leaves the blob in place.
-- Decrypted plaintext state bytes are zeroed after decode.
-- Explicit idempotent `discardLocalState()` removes only the local blob/key and never claims server revocation/provider cleanup/canonical mutation.
-- Bounds are explicit: 128 pending commands, 512 acknowledgement tombstones, 128 snapshots, 32 KiB command payload, 128 KiB snapshot payload, and 8 MiB encoded plaintext state. Capacity exhaustion fails explicitly; no pending command or tombstone is silently dropped.
+- Change page `fromCursor` must exactly equal the requested current cursor.
+- Change pages must explicitly claim verified canonical readback.
+- Returned snapshot count may not exceed the requested bound.
+- A page may reuse the same cursor only when it contains no snapshots; snapshots without cursor progress fail closed.
+- Every verified snapshot is persisted through existing monotonic/fork-safe `OfflineSyncStateStore.putSnapshot` before cursor CAS.
+- Snapshot regression/fork or local persistence failure prevents cursor advancement.
 
-### Deterministic verification
+### Crash/retry behavior
 
-`OfflineSyncStateStoreTest` uses injected JVM AES-GCM and in-memory blob dependencies to prove portable storage/replay semantics without pretending a desktop runner proves Android Keystore execution.
+- A package-private deterministic fault seam simulates interruption after verified remote command success but before local acknowledgement. Retry replays the exact same stored command identity and converges through remote idempotency without creating a second local logical command.
+- A second fault seam simulates interruption after verified change snapshots are persisted but before cursor advancement. Retry sees the old cursor, safely re-stores unchanged snapshots, then advances the cursor.
+- The production coordinator has no automatic destructive reset path.
 
-Tests cover restart persistence, exact API field/payload preservation, FIFO sequence, plaintext non-retention in persisted bytes, duplicate pending suppression, durable acknowledged replay suppression, conflicting command/ack rejection, `(data_class, resource_id)` cache identity, cache revision/fork rules, cursor compare-and-set, tamper rejection, missing-key failure, wrong-client AAD rejection even with deliberately copied test AES key, explicit local discard, capacity exhaustion without loss, and current API action/event-shape validation.
+### Android compatibility
 
-### DEV-006 ownership
+- The initial source pass used Java collection/string convenience methods that are not guaranteed by Android API 23.
+- Before CI, `List.of()` and `String.isBlank()` were removed rather than adding core-library desugaring/dependency scope. Production code now stays compatible with the existing minSdk-23 client module surface.
 
-- `project/android_code_ownership.json` now owns `OfflineSyncStateStore.java` as component `android-client-offline-sync-state`.
-- Ownership ties the source to `CLIENT-ANDROID-001`, `API-001`, `RECOVERY-002`, `ANDROID-CLIENT-CORE-001` and direct Java verification in `OfflineSyncStateStoreTest.java`.
-- Existing credential-security ownership and validators were not weakened.
+### Deterministic JVM tests
 
-## Merge and CI evidence
+Added `android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java`. Tests cover:
 
-- PR #99 changed exactly four intended files throughout the verified merge candidate:
+- exact command-envelope field/payload preservation into transport;
+- stable FIFO verified-success acknowledgement;
+- accepted/pending remote state without local acknowledgement;
+- terminal conflict retention;
+- unverified success and mismatched idempotency rejection;
+- transport failure preserving pending queue, cache and cursor;
+- interruption after remote success before local acknowledgement, then safe exact replay/convergence;
+- verified snapshots before cursor progression;
+- snapshot fork/regression preventing cursor progression;
+- interruption after snapshots before cursor, then idempotent retry;
+- malformed/unverified change-page rejection;
+- bounded pass behavior with additional pending local commands; and
+- empty/no-op reconnect cursor behavior.
+
+### Repository integrity / DEV-006
+
+- Extended `project/android_code_ownership.json` with `android-client-reconnect-coordinator`.
+- New production source is owned by `CLIENT-ANDROID-001`, `API-001`, `RECOVERY-002` and work `ANDROID-CLIENT-CORE-001`.
+- Direct Java verification references `ReconnectCoordinatorTest.java`.
+- Existing credential-security and offline-state ownership entries remain intact; no validator/gate was weakened.
+
+### CI and scope evidence
+
+- PR #100 opened against exact base `9b7dc8dc681b8af0cd74bbd4c739817f3df030e1`.
+- Exact implementation head `edf7c6a3f1dbb8e9b77900ed1a200c1221932cd1` completed CI `33700649333` successfully.
+- Green stages include compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android client-core unit tests, Python unit tests and Workspace Apps Script tests.
+- Changed-file scope before this evidence commit is exactly:
   - `CURRENT_WORK.md`
-  - `android-client/core/src/main/java/com/mira/client/core/sync/OfflineSyncStateStore.java`
-  - `android-client/core/src/test/java/com/mira/client/core/sync/OfflineSyncStateStoreTest.java`
+  - `android-client/core/src/main/java/com/mira/client/core/sync/ReconnectCoordinator.java`
+  - `android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java`
   - `project/android_code_ownership.json`
-- Implementation-head CI `33698665125` succeeded on exact head `00192de7ea6730aab88747a1fdcdbe619bb736a3`.
-- Evidence-head CI `33698847886` succeeded on exact merge candidate `090b148f393b281716315f4bd9c300b030e53828`.
-- PR #99 was re-read as mergeable with the same four-file scope and exact evidence head before merge.
-- PR #99 merged successfully using expected head `090b148f393b281716315f4bd9c300b030e53828`.
-- Remote `main` independently read back at merge SHA `5f0de376b001721d79115a42b02b72b8c274fdd4`.
-- Post-merge CI `33698946968` succeeded on that exact merge SHA. Compile, feature registry, lifecycle ledger, Personal starter distribution, work-session alignment, Python + Android ownership, Android client-core tests/production compilation, Python tests and Workspace Apps Script tests all passed.
-- No Google provider resource, Apps Script project, disposable proof Sheet, provider authorization flow, network endpoint or legacy MIRA production state was accessed or modified.
+- No Google provider resource, Apps Script project, provider authorization flow, network endpoint or legacy MIRA production state was accessed or modified.
 
 ## Acceptance criteria result
 
-1. Production Android offline-state store with no UI/network/provider/canonical mutation — **satisfied**.
-2. AES-256-GCM Android Keystore + exact-client AAD + no-backup atomic storage + no plaintext fallback — **satisfied in source/build evidence; device runtime not claimed**.
-3. Exact provider-neutral API command staging, stable FIFO, duplicate idempotency and conflicting command-ID rejection — **satisfied**.
-4. Exact acknowledgement identity, durable tombstone and restart replay suppression — **satisfied**.
-5. Explicit pending/tombstone/payload/state bounds with no silent prune/drop — **satisfied**.
-6. `(data_class, resource_id)` cache identity with monotonic revision/fork rules — **satisfied**.
-7. Opaque cursor compare-and-set and stale-writer rejection — **satisfied**.
-8. Versioned bounded local state; missing state empty; malformed/tampered/missing-key state fails closed without silent reset — **satisfied at deterministic/source evidence ceiling**.
-9. Explicit idempotent local discard distinct from server/provider/canonical state — **satisfied**.
-10. Deterministic JVM restart/FIFO/replay/cache/cursor/encryption/tamper/wrong-client/discard tests — **satisfied**.
-11. Android production source compiles against pinned toolchain; representative-device evidence remains unclaimed — **satisfied at this evidence ceiling**.
-12. Android DEV-006 ownership extended and existing gates remain green — **satisfied**.
-13. No provider/network/legacy production resource touched — **satisfied**.
-14. Branch/PR exact-head scope + CI, merge, remote main readback and post-merge CI — **satisfied**.
+1. Provider-neutral Android reconnect transport contract with no provider SDK/URL/OAuth/resource ID/canonical mutation implementation — **satisfied**.
+2. Exact stored `CommandIntent` passed to transport without inventing a second command model — **satisfied**.
+3. Stable FIFO processing and no acknowledgement on submission/pending alone — **satisfied**.
+4. Ack requires exact identities + terminal success + verified readback — **satisfied**.
+5. Terminal remote failure retained locally and returned deterministically — **satisfied**.
+6. Transport/auth/unavailable failure preserves local truth and stops pass — **satisfied**.
+7. Verified snapshots persist before cursor advancement — **satisfied**.
+8. Snapshot regression/fork/local persistence failure prevents cursor advancement — **satisfied**.
+9. Interrupted remote-success-before-ack retry converges with same local command identity — **satisfied**.
+10. Interrupted snapshots-before-cursor retry is idempotent — **satisfied**.
+11. Deterministic JVM coverage for required replay/pending/failure/cursor cases — **satisfied**.
+12. Android DEV-006 ownership extended without weakening gates — **satisfied**.
+13. Existing Android/Python/Apps Script/governance CI remains green — **satisfied at exact implementation head**.
+14. No provider/network/legacy resource touched — **satisfied**.
+15. Exact PR head/scope CI, merge/main readback and post-merge CI — **partially satisfied**: bounded PR exists and implementation-head CI is green; evidence-head CI, merge/readback and post-merge verification remain.
 
 ## Evidence ceiling
 
-- **Implemented:** encrypted Android local queue/tombstone/cache/cursor state and Android ownership metadata.
-- **Test verified:** deterministic JVM AES-GCM/restart/replay/cache/cursor semantics plus Android production-source compilation.
-- **Integration verified:** repository CI integrates the new source/tests into the existing Android/Python/Apps Script/governance suite and post-merge main is green.
-- **Not network/live/device verified:** physical Android Keystore execution, hardware-backed key availability, app process/reboot behavior, actual API authentication/HTTP transport, reconnect, server cursor acquisition, command submission, canonical readback, conflict handling, provider consent or Android mutation of MIRROR.
+- **Implemented:** provider-neutral Android reconnect coordinator/transport contract and ownership metadata.
+- **Test verified:** deterministic JVM replay/failure/cursor/crash semantics plus Android production compilation.
+- **Integration verified:** repository CI integrates the coordinator/tests with the existing Android/Python/Apps Script and governance suite at exact implementation head.
+- **Not provider/live/device verified:** Google authorization, provider API calls, Workspace command submission/readback from Android, canonical provider change feed, physical-device execution, process/reboot behavior, actual conflict UI, Android canonical read/write, or representative-device proof.
 
-## Session-end alignment verification — 2026-09-02 M2-M1-004
+## Session-end alignment verification — 2026-09-02 M2-M1-005
 
 ### `FEATURES.md`
 
-`CLIENT-ANDROID-001` remains partially implemented. M2-M1-004 satisfies only the protected local replay/cache/cursor prerequisite. `API-001` remains the service/canonical boundary. No feature should be promoted to complete.
+`CLIENT-ANDROID-001` remains partially implemented. M2-M1-005 satisfies only the provider-neutral reconnect orchestration prerequisite. `API-001` remains the service/canonical boundary; transport adapters must provide verified evidence rather than granting the coordinator provider authority. No feature evidence/status should be promoted to complete.
 
 ### `BACKLOG.md`
 
-`ANDROID-CLIENT-CORE-001` remains unfinished and must not be marked complete. The next dependency-correct bounded slice is Android transport/reconnect plumbing that authenticates with the protected client credential, obtains/advances server synchronization state and replays pending commands only through the shared API/serialized command boundary, persisting only verified readback into this local store. It must not absorb the full Android UI/conflict/canonical-read vertical.
+`ANDROID-CLIENT-CORE-001` remains unfinished and must not be marked complete. After this packet closes, the next dependency-correct slice is the concrete default-Personal Google Android transport needed to implement this contract safely: provider authorization/capability binding, exact Workspace command-inbox submission/status readback, and a bounded verified canonical change-read mechanism. That future packet must remain separate from Connections UI, broad canonical read UI, conflict presentation and the full Android vertical.
 
 ### `ROADMAP.md`
 
-M2-M1 ordering remains correct. M2-M1-004 provides the durable local half of step 3 but does not satisfy reconnect synchronization without transport/server evidence. Steps 4 through 7 remain untouched.
+M2-M1 ordering remains correct. M2-M1-005 advances step 3 at the client orchestration/test level but does not satisfy actual reconnect synchronization without a concrete provider transport. Steps 4 through 7 remain untouched.
 
 ### `PRODUCT_INVARIANTS.md`
 
-The implementation remains provider-neutral, stores no provider credentials/resource identifiers, exports no setup ceremony to ordinary users, and creates no second provider activation/authority model.
+The implementation remains provider-neutral and introduces no technical provider setup, OAuth persistence, copied provider IDs or alternate activation model. The future Android Connections surface and automatic post-consent verification remain required before ordinary-user shared access ships.
 
 ### Direction result
 
-**ALIGNED.** M2-M1-004 is bounded, merged and post-merge verified at its stated evidence ceiling. No unrelated feature or provider work entered the packet.
+**ALIGNED.** The packet adds only the reconnect orchestration primitive required before safe Personal Google transport integration, preserves the M2-M1 queued-writer decision, keeps canonical authority outside Android, and does not counterfeit provider/live/device evidence.
 
 ## Exact next action / resume point
 
-1. Require CI on this final documentation-only closeout head. If it succeeds and remote `main` still equals that head, M2-M1-004 is durably closed.
-2. On the next explicit `continue`, read this file and remote `main` first, then open a new bounded packet for the next dependency-correct Android transport/reconnect slice under `ANDROID-CLIENT-CORE-001`.
-3. Do not reinterpret M2-M1-004 as physical-device or live-network proof and do not rerun provider proof resources.
+1. Require CI on this evidence commit and fix only M2-M1-005 defects if a gate fails.
+2. Re-read PR #100 head, mergeability and changed-file scope; require exact green evidence head and the same four-file bounded scope.
+3. Merge PR #100 using the exact verified head.
+4. Read back remote `main` and require post-merge CI on the exact merge head.
+5. Persist final merge/main/post-merge evidence in `CURRENT_WORK.md` on main, require exact closeout-head CI, and independently read back remote main before declaring M2-M1-005 durably closed.
+6. Do not begin the concrete Google transport packet inside M2-M1-005.
 
 ## Recovery protocol
 
-Read this file first and verify remote `main` plus the final closeout-head CI. Treat M2-M1-001 through M2-M1-003 as closed and M2-M1-004 as closed only after this final closeout head is green. Never touch the historical Google proof resource or legacy MIRA production state merely to resume Android client-core work.
+Read this file first. Verify PR #100 exact head and CI before merge. Do not rerun M2-M1-001 through M2-M1-004. Do not touch the historical Google proof resource, create provider resources, invoke provider authorization, or substitute the advanced synchronous HTTP profile for the default Personal queued-writer path merely to make reconnect look implemented.
