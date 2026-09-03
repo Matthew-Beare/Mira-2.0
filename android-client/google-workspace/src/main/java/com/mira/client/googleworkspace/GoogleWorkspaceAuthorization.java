@@ -88,20 +88,16 @@ public final class GoogleWorkspaceAuthorization {
                 .build();
     }
 
-    /**
-     * Interprets an AuthorizationResult without treating provider consent alone as readiness.
-     */
+    /** Interprets provider evidence without treating provider consent alone as readiness. */
     public static Outcome interpret(AuthorizationResult result) throws AuthorizationException {
         Objects.requireNonNull(result, "result");
-        if (result.hasResolution()) {
-            PendingIntent resolution = result.getPendingIntent();
-            if (resolution == null) {
-                throw new AuthorizationException(
-                        "authorization_protocol_error",
-                        "Google authorization requires resolution but supplied no PendingIntent"
-                );
-            }
-            return Outcome.needsUserAction(resolution);
+        PendingIntent pendingIntent = result.getPendingIntent();
+        Outcome.Status resolution = classifyResolution(
+                result.hasResolution(),
+                pendingIntent != null
+        );
+        if (resolution == Outcome.Status.NEEDS_USER_ACTION) {
+            return Outcome.needsUserAction(pendingIntent);
         }
 
         ArrayList<String> scopes = new ArrayList<>();
@@ -119,7 +115,21 @@ public final class GoogleWorkspaceAuthorization {
         return Outcome.authorized(authorized);
     }
 
-    /** Pure validation seam used by deterministic JVM tests and the Google result adapter. */
+    /** Pure provider-resolution classification seam for deterministic JVM tests. */
+    static Outcome.Status classifyResolution(boolean hasResolution, boolean hasPendingIntent)
+            throws AuthorizationException {
+        if (hasResolution != hasPendingIntent) {
+            throw new AuthorizationException(
+                    "authorization_protocol_error",
+                    "Google authorization resolution evidence is contradictory"
+            );
+        }
+        return hasResolution
+                ? Outcome.Status.NEEDS_USER_ACTION
+                : Outcome.Status.AUTHORIZED;
+    }
+
+    /** Pure grant validation seam used by deterministic JVM tests and the Google result adapter. */
     static AuthorizedWorkspace validateGrantedMaterial(
             String accessToken,
             List<String> grantedScopes,
