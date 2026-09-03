@@ -14,7 +14,8 @@ import java.util.Objects;
  *
  * <p>Google authorization proves access to a file. It does not prove the file is a compatible
  * MIRA authority. Binding therefore stays read-only until exact Metadata, Commands and Changes
- * protocol material has been verified.</p>
+ * protocol material has been verified. Raw provider identifiers remain inside this provider layer;
+ * ordinary app/UI code receives the verified transport rather than a copyable spreadsheet ID.</p>
  */
 public final class GoogleWorkspaceBinding {
     private static final List<String> METADATA_HEADERS = immutableList("Key", "Value");
@@ -63,9 +64,7 @@ public final class GoogleWorkspaceBinding {
         this.gatewayFactory = Objects.requireNonNull(gatewayFactory, "gatewayFactory");
     }
 
-    /**
-     * Verifies the selected file and only then constructs the already-proven Workspace transport.
-     */
+    /** Verifies the selected file and only then constructs the proven Workspace transport. */
     public Binding bind(GoogleWorkspaceAuthorization.AuthorizedWorkspace authorized)
             throws BindingException {
         Objects.requireNonNull(authorized, "authorized");
@@ -103,10 +102,7 @@ public final class GoogleWorkspaceBinding {
                 MAX_PROTOCOL_ROWS_DURING_BIND
         );
 
-        return new Binding(
-                authorized.spreadsheetId(),
-                new GoogleWorkspaceTransport(gateway)
-        );
+        return new Binding(new GoogleWorkspaceTransport(gateway));
     }
 
     private static List<List<Object>> read(
@@ -236,18 +232,12 @@ public final class GoogleWorkspaceBinding {
         GoogleWorkspaceTransport.SheetsGateway create(String spreadsheetId, String accessToken);
     }
 
-    /** Verified provider binding. Contains no access token. */
+    /** Verified provider binding. Raw provider token/file identifiers are intentionally not exposed. */
     public static final class Binding {
-        private final String spreadsheetId;
         private final GoogleWorkspaceTransport transport;
 
-        Binding(String spreadsheetId, GoogleWorkspaceTransport transport) {
-            this.spreadsheetId = spreadsheetId;
+        Binding(GoogleWorkspaceTransport transport) {
             this.transport = transport;
-        }
-
-        public String spreadsheetId() {
-            return spreadsheetId;
         }
 
         public GoogleWorkspaceTransport transport() {
