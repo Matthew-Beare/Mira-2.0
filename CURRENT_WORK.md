@@ -53,11 +53,11 @@ Google Sheets `values.append` is an append transport, so an ambiguous client net
 
 - **Primary work:** `ANDROID-CLIENT-CORE-001`
 - **Primary features:** `CLIENT-ANDROID-001`, `API-001`
-- **Related features/invariants:** `PROVIDER-002`, `RECOVERY-002`, `STORE-001`, `AUTH-001`, `DATA-001`
+- **Related invariants/features:** `PROVIDER-002`, `RECOVERY-002`, `STORE-001`, `AUTH-001`, `DATA-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `work/m2-m1-006-google-workspace-transport`
 - **Base SHA:** `7562c247a471c6ebb27f77d8494054e7a54d52b1`
-- **Current head:** activation commit pending readback
+- **Current head:** `2fb79cc466de099a0dc96cb6df5e8b2a4cbeeb56` before this governance correction
 - **Status:** active
 
 ## Objective
@@ -124,14 +124,14 @@ This packet is infrastructure for a later simple Android **Connect Google** expe
 - Session-start Git/main/CI recovery verification complete.
 - FEATURES/BACKLOG/ROADMAP/PRODUCT_INVARIANTS direction review complete.
 - Current official Google documentation checked for Sheets append semantics and modern Android authorization direction; no legacy Google Auth API is being introduced here.
+- PR #101 initial head `2fb79cc466de099a0dc96cb6df5e8b2a4cbeeb56` reached CI `33703372121`; compile, feature registry, lifecycle and Personal distribution were green, then the work-session alignment gate correctly stopped the run because this packet used the noncanonical field label `Related features/invariants`. No product-code gate was weakened; this correction changes the field to the required `Related invariants/features` label.
 
 ## Exact next action / resume point
 
-1. Read the existing Apps Script worker tests and Android ownership manifest on this branch.
-2. Correct the stale `ANDROID-CLIENT-CORE-001` backlog status without marking it complete.
-3. Implement and test the Workspace change projection + duplicate-physical-row convergence.
-4. Implement and test the Android Workspace transport mapping through a narrow injected Sheets gateway.
-5. Run repository CI before opening/merging any PR.
+1. Finish the small governance/API-compatibility/test-signature correction set.
+2. Run replacement CI through Android ownership/unit tests and Apps Script tests.
+3. Correct the stale `ANDROID-CLIENT-CORE-001` backlog status without marking it complete once code behavior is green.
+4. Record end-of-packet alignment and exact evidence before merge.
 
 ## Recovery protocol
 
