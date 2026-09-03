@@ -12,10 +12,34 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 
 ## Session-start alignment verification — 2026-09-02 M2-M1-006
 
-- `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, `PRODUCT_INVARIANTS.md`, and the established Workspace command-boundary architecture were read before implementation.
-- The dependency-correct next slice was the concrete default-Personal Workspace transport beneath the already-complete client trust, protected credential, offline-state, and provider-neutral reconnect layers.
-- The packet was bounded away from OAuth/Connections UI, live Google/provider proof, representative-device proof, and the full `ANDROID-SYNC` vertical.
-- Direction result at activation: **ALIGNED**.
+### `FEATURES.md`
+
+- `CLIENT-ANDROID-001` requires the native Android client to reuse shared `API-001`, protected credentials, replay-safe synchronization and evidence-based provider capabilities without becoming canonical authority.
+- `API-001` owns bounded commands, synchronization and verified canonical readback. The Android transport may move exact command/read evidence but may not redefine canonical truth.
+- `PROVIDER-002` preserves the future ordinary-user Connect/Connected/Reconnect/Needs-attention/Disconnect experience and keeps provider IDs, OAuth scopes, developer consoles and Apps Script mechanics out of ordinary setup.
+- `RECOVERY-002` requires ambiguous network outcomes and duplicate transport delivery to converge safely without dropping pending work.
+
+### `BACKLOG.md`
+
+- `ANDROID-CLIENT-CORE-001` remains the active unfinished prerequisite before `ANDROID-SYNC`.
+- M2-M1-002 through M2-M1-005 already implemented client trust, protected credentials, encrypted offline state and provider-neutral reconnect orchestration.
+- The dependency-correct next slice at packet activation was the default-Personal Google Workspace transport needed by `ReconnectCoordinator`; broad UI/device/live-provider proof remained later.
+
+### `ROADMAP.md`
+
+- M2-M1 still requires Android to read and mutate the same canonical Personal reality without becoming a second authority.
+- The completed command boundary and existing Android client-core slices made the concrete default-Personal Workspace transport the next hard prerequisite.
+- Live provider-bound Android canonical read, Android mutation, stock ChatGPT cross-readback and representative-device proof remained outside this packet.
+
+### `PRODUCT_INVARIANTS.md`
+
+- The default Personal lane remains Google Workspace first and must not require servers, copied IDs, developer consoles or terminal work from ordinary users.
+- OAuth/provider access material must remain transport-local and must not be stored in `OfflineSyncStateStore` or confused with the MIRA client credential.
+- Historical proof resources and legacy MIRA production state remain protected and unavailable as development fixtures.
+
+### Direction result
+
+**ALIGNED.** Open only the bounded Workspace row protocol, replay-safe duplicate physical delivery, verified canonical change projection and Android transport mapping. Do not absorb OAuth/Connections UI, live-provider proof, representative-device proof or the full `ANDROID-SYNC` vertical.
 
 ## Active packet
 
@@ -109,7 +133,8 @@ This packet is infrastructure for the later simple Android **Connect Google** ex
   - `project/android_code_ownership.json`
   - `tests/apps_script/workspace_worker.test.js`
   - `workspace/apps_script/CommandWorker.gs`
-- Evidence-only checkpoint `b290c334dcda36b456dfa9979562c58bdd13499c` reached CI `33704631432`; compile/registry/lifecycle/distribution were green, then alignment correctly rejected the missing required `## Session-start alignment verification` heading. This commit restores that required heading without altering product code.
+- Evidence-only checkpoint `b290c334dcda36b456dfa9979562c58bdd13499c` reached CI `33704631432`; compile/registry/lifecycle/distribution were green, then alignment correctly rejected the missing required `## Session-start alignment verification` heading.
+- Follow-up checkpoint `caef78a18227b415c9d8494231eed8bb9fffe16e` reached CI `33704769403`; the heading was restored, then alignment correctly required literal canonical authority subheadings. This commit restores the complete authority-review structure without altering product code.
 
 ## End-of-packet alignment verification — 2026-09-02
 
