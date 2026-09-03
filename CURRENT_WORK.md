@@ -10,6 +10,13 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - `M2-M1-001` through `M2-M1-005` are durably closed and must not be rerun.
 - No Google provider resource or legacy MIRA production state was accessed while recovering or implementing this packet.
 
+## Session-start alignment verification — 2026-09-02 M2-M1-006
+
+- `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, `PRODUCT_INVARIANTS.md`, and the established Workspace command-boundary architecture were read before implementation.
+- The dependency-correct next slice was the concrete default-Personal Workspace transport beneath the already-complete client trust, protected credential, offline-state, and provider-neutral reconnect layers.
+- The packet was bounded away from OAuth/Connections UI, live Google/provider proof, representative-device proof, and the full `ANDROID-SYNC` vertical.
+- Direction result at activation: **ALIGNED**.
+
 ## Active packet
 
 ### `M2-M1-006` — Android client core, default-Personal Google Workspace transport protocol
@@ -76,7 +83,7 @@ This packet is infrastructure for the later simple Android **Connect Google** ex
 12. **PASS** — Apps Script tests cover seed/reconcile, update projection, crash/retry recovery and duplicate delivery behavior.
 13. **PASS** — Android JVM tests cover row mapping, pending/success/failure parsing, change paging/cursors, malformed provider data and ambiguous transport outcomes.
 14. **PASS** — Android DEV-006 ownership covers the new transport without weakening gates.
-15. **PASS** — compile, feature registry, lifecycle, distribution, alignment, ownership, Android, Python and Apps Script gates are green on exact evidence head.
+15. **PASS** — compile, feature registry, lifecycle, distribution, alignment, ownership, Android, Python and Apps Script gates are green on exact pre-closeout evidence head.
 16. **PASS** — end-of-packet canonical alignment is recorded below; the umbrella remains incomplete.
 17. **PENDING CLOSEOUT ONLY** — exact merge/main readback and post-merge CI must still be verified before durable closure.
 
@@ -102,6 +109,7 @@ This packet is infrastructure for the later simple Android **Connect Google** ex
   - `project/android_code_ownership.json`
   - `tests/apps_script/workspace_worker.test.js`
   - `workspace/apps_script/CommandWorker.gs`
+- Evidence-only checkpoint `b290c334dcda36b456dfa9979562c58bdd13499c` reached CI `33704631432`; compile/registry/lifecycle/distribution were green, then alignment correctly rejected the missing required `## Session-start alignment verification` heading. This commit restores that required heading without altering product code.
 
 ## End-of-packet alignment verification — 2026-09-02
 
