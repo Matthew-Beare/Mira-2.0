@@ -39,6 +39,19 @@ public final class GoogleWorkspaceAuthorizationTest {
     }
 
     @Test
+    public void whitespaceWrappedAccessTokenFailsClosed() {
+        GoogleWorkspaceAuthorization.AuthorizationException error = assertThrows(
+                GoogleWorkspaceAuthorization.AuthorizationException.class,
+                () -> GoogleWorkspaceAuthorization.validateGrantedMaterial(
+                        " " + TOKEN,
+                        Collections.singletonList(GoogleWorkspaceAuthorization.DRIVE_FILE_SCOPE),
+                        SHEET_ID
+                )
+        );
+        assertEquals("authorization_invalid_token", error.code());
+    }
+
+    @Test
     public void missingDriveFileScopeFailsClosed() {
         GoogleWorkspaceAuthorization.AuthorizationException error = assertThrows(
                 GoogleWorkspaceAuthorization.AuthorizationException.class,
@@ -101,6 +114,19 @@ public final class GoogleWorkspaceAuthorizationTest {
                         TOKEN,
                         Collections.singletonList(GoogleWorkspaceAuthorization.DRIVE_FILE_SCOPE),
                         "bad id with spaces"
+                )
+        );
+        assertEquals("authorization_invalid_workspace", error.code());
+    }
+
+    @Test
+    public void whitespaceWrappedPickerSelectionFailsClosedInsteadOfSilentlyNormalizing() {
+        GoogleWorkspaceAuthorization.AuthorizationException error = assertThrows(
+                GoogleWorkspaceAuthorization.AuthorizationException.class,
+                () -> GoogleWorkspaceAuthorization.validateGrantedMaterial(
+                        TOKEN,
+                        Collections.singletonList(GoogleWorkspaceAuthorization.DRIVE_FILE_SCOPE),
+                        " " + SHEET_ID
                 )
         );
         assertEquals("authorization_invalid_workspace", error.code());
