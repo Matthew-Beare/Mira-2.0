@@ -13,6 +13,37 @@ public final class GoogleWorkspaceAuthorizationTest {
     private static final String SHEET_ID = "synthetic_MIRA_sheet_12345";
 
     @Test
+    public void providerResolutionWithPendingIntentRequiresUserAction() throws Exception {
+        assertEquals(
+                GoogleWorkspaceAuthorization.Outcome.Status.NEEDS_USER_ACTION,
+                GoogleWorkspaceAuthorization.classifyResolution(true, true)
+        );
+    }
+
+    @Test
+    public void resolvedProviderEvidenceMayProceedToGrantValidation() throws Exception {
+        assertEquals(
+                GoogleWorkspaceAuthorization.Outcome.Status.AUTHORIZED,
+                GoogleWorkspaceAuthorization.classifyResolution(false, false)
+        );
+    }
+
+    @Test
+    public void contradictoryProviderResolutionEvidenceFailsClosed() {
+        GoogleWorkspaceAuthorization.AuthorizationException missingIntent = assertThrows(
+                GoogleWorkspaceAuthorization.AuthorizationException.class,
+                () -> GoogleWorkspaceAuthorization.classifyResolution(true, false)
+        );
+        assertEquals("authorization_protocol_error", missingIntent.code());
+
+        GoogleWorkspaceAuthorization.AuthorizationException strayIntent = assertThrows(
+                GoogleWorkspaceAuthorization.AuthorizationException.class,
+                () -> GoogleWorkspaceAuthorization.classifyResolution(false, true)
+        );
+        assertEquals("authorization_protocol_error", strayIntent.code());
+    }
+
+    @Test
     public void exactDriveFileGrantAndOnePickedSheetAreAccepted() throws Exception {
         GoogleWorkspaceAuthorization.AuthorizedWorkspace authorized =
                 GoogleWorkspaceAuthorization.validateGrantedMaterial(
