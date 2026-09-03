@@ -25,4 +25,7 @@ android {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    // Android supplies org.json at runtime. JVM unit tests need the real implementation
+    // instead of android.jar method stubs so the production row parser is actually exercised.
+    testImplementation("org.json:json:20250517")
 }

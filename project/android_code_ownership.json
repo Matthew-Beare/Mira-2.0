@@ -41,6 +41,19 @@
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java"
       ]
+    },
+    {
+      "id": "android-client-google-workspace-transport",
+      "responsibility": "Default-Personal Android mapping between exact API command intent / reconnect change pages and the MIRA Google Workspace Commands and verified Changes row protocols through an injected authorized Sheets gateway.",
+      "why_separate": "The row protocol must validate provider transport evidence without owning OAuth UI, account selection, spreadsheet discovery, provider identifiers, network client lifecycle, canonical authority, or local persistence.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceTransport.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java"
+      ]
     }
   ]
 }
