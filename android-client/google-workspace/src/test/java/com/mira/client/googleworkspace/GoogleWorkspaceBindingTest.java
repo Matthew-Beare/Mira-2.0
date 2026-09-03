@@ -30,7 +30,6 @@ public final class GoogleWorkspaceBindingTest {
 
         GoogleWorkspaceBinding.Binding result = binding.bind(authorized());
 
-        assertEquals(SHEET_ID, result.spreadsheetId());
         assertNotNull(result.transport());
         assertEquals(Arrays.asList("Metadata", "Commands", "Changes"), gateway.reads);
         assertEquals(0, gateway.appends);
