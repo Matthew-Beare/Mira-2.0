@@ -4,164 +4,139 @@ Git is authoritative. This file identifies exactly one active packet and exact r
 
 ## Product direction
 
-Default Personal MIRA remains stock ChatGPT + Google Workspace with no external infrastructure prerequisite. When Android or another software writer is enabled, direct independent Google Sheets mutation remains disabled; commands use the verified serialized shared command boundary.
+Default Personal MIRA remains stock ChatGPT + Google Workspace with no external infrastructure prerequisite. Android extends the same canonical MIRA semantics and must never become a second provider/database/source authority or bypass the verified serialized shared command boundary.
 
-Ordinary users must never open Apps Script, paste code, manage triggers, copy provider IDs, run a terminal, or understand queued-writer internals merely to enable Android/shared access. The shipped Android path eventually needs an obvious MIRA Connect/Enable action and a clearly identified, appropriately verified provider consent surface.
+Ordinary users must not be exposed to developer/provider mechanics merely because Android owns more UI. Provider Connections UI, provider consent, transport, and actual canonical read/write remain later packets; this packet is local client-core state only.
 
-`M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001` is complete and must not be rerun. `M2-M1-002` completed the enrollment/session trust slice of `ANDROID-CLIENT-CORE-001`. `M2-M1-003` completes only the next OS-protected Android credential-storage slice; the umbrella Android client core remains unfinished.
+`M2-M1-001` / `ANDROID-COMMAND-BOUNDARY-001`, `M2-M1-002` enrollment/session trust, and `M2-M1-003` OS-protected Android credential storage are complete and must not be rerun.
 
-## Session-start alignment verification — 2026-09-02 M2-M1-003
+## Prior-packet recovery verification — 2026-09-02
+
+- Authoritative remote `main` read back at `8cdd8abc5a5db3d022a9bfd9081d8c93830f99b2`.
+- Final closeout CI `33685113659` is complete/success on that exact main head.
+- Therefore `M2-M1-003` is durably closed at its declared source/build/test/repository-integration evidence ceiling.
+
+## Session-start alignment verification — 2026-09-02 M2-M1-004
 
 ### `FEATURES.md`
 
-- `CLIENT-ANDROID-001` requires the Android native client to use `API-001`, keep durable client credentials OS-protected, remain replay-safe offline, and never become a canonical/provider authority.
-- `API-001` remains the authenticated policy/data boundary. The opaque client credential issued by the `ClientSessionRegistry` is client authentication material, not provider/database/source authority.
-- `RECOVERY-002` requires protected-credential failure to fail closed without corrupting canonical state or weakening unrelated modules.
+- `CLIENT-ANDROID-001` requires the Android native client to use `API-001`, keep protected client credentials, remain replay-safe offline, and never become canonical/provider authority.
+- `API-001` owns bounded commands, queries, synchronization and verified mutation readback. Local Android state may stage or cache API material but cannot reinterpret server/provider truth.
+- `RECOVERY-002` requires failure isolation. Local corruption/key loss must fail closed and must not silently discard unsynced commands or mutate canonical state.
 
 ### `BACKLOG.md`
 
-- `ANDROID-CLIENT-CORE-001` remains the uncompleted umbrella prerequisite before `ANDROID-SYNC`.
-- Enrollment/session identity and revocation were implemented by `M2-M1-002`; this packet adds OS-protected Android credential storage.
-- Offline queue, cursor synchronization, bounded network reads/commands, conflict presentation, provider Connections UI, notifications/TTS, capture, and release packaging remain outside this packet.
+- `ANDROID-CLIENT-CORE-001` remains the unfinished prerequisite before `ANDROID-SYNC`.
+- Its remaining scope includes bounded reads, canonical commands, replay-safe offline queue, reconnect/cursor sync and server conflict/readback handling.
+- The smallest next prerequisite is local durable queue/cache/cursor state. Network transport, canonical reads/writes and server conflict resolution remain separate.
 
 ### `ROADMAP.md`
 
-- M2-M1 step 2 requires scoped/revocable client identity plus OS-protected durable credentials before step 3 offline queue/reconnect synchronization.
-- This packet advances step 2 only and does not jump into the Android shared-state vertical or native feature fan-out.
+- M2-M1 step 2 (scoped/revocable client identity + OS-protected credentials) is complete at source/test evidence through M2-M1-002/003.
+- M2-M1 step 3 is replay-safe offline queue and reconnect/cursor synchronization.
+- This packet implements only the local durable state machine needed by step 3; it does not claim reconnect synchronization because no transport exists yet.
 
 ### `PRODUCT_INVARIANTS.md`
 
-- Android must reuse provider-neutral MIRA connection/service semantics and must not export developer/provider setup ceremony to ordinary users.
-- Provider credentials and Google resource identifiers do not belong in Android protected-client storage. This packet stores only the opaque MIRA client credential needed to authenticate the enrolled same-user client.
+- Android must reuse provider-neutral MIRA service/connection semantics and may not invent a second activation or provider-authority model.
+- No provider OAuth token, Google resource identifier, developer setup material, or legacy production state belongs in the local offline-state store.
 
 ### Direction result
 
-**ALIGNED.** The smallest dependency-correct slice was a buildable Android client-core security module that accepts the opaque enrollment credential, protects its encryption key with Android Keystore, stores only authenticated ciphertext in app-private no-backup storage, fails closed on corruption/key loss, and supports local deletion. Offline sync and network transport remain later packets.
+**ALIGNED.** The dependency-correct bounded slice is a durable, replay-safe Android client-core local state machine for pending canonical commands, acknowledged-command replay suppression, monotonic cached canonical snapshots, and compare-and-set reconnect cursor state. It remains transport-agnostic and provider-neutral.
 
 ## Active packet
 
-### `M2-M1-003` — Android client core, OS-protected credential storage
+### `M2-M1-004` — Android client core, replay-safe local offline state
 
 - **Primary work:** `ANDROID-CLIENT-CORE-001`
 - **Primary features:** `CLIENT-ANDROID-001`, `API-001`
-- **Related invariants/features:** `RECOVERY-002`, `AUTH-001`, `STORE-001`, `PROVIDER-002`, `ONBOARD-006`
+- **Related invariants/features:** `RECOVERY-002`, `AUTH-001`, `STORE-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Checkpoint branch:** `main`
-- **Packet base/main SHA:** `f32b099edf18af52d4eaf80b8de964ec5d359554`
-- **Verified implementation head:** `9f506c955c638ab9b26ef6d8a3861e6a24ec2904`
-- **Verified evidence head:** `4b4bfc43a2bac307eeb097258b511ed0221ea964`
-- **PR:** #98 — merged
-- **Merge/main SHA before this closeout commit:** `6c8e859191e9876885ee7152e7d13f47a560218d`
-- **Verified post-merge CI:** `33684865556` — success
-- **Status:** complete for this bounded source/build/test/integration evidence slice; this closeout commit still requires exact-head CI before the packet is called durably closed
+- **Branch:** `work/m2-m1-004-android-offline-state`
+- **Base/main SHA:** `8cdd8abc5a5db3d022a9bfd9081d8c93830f99b2`
+- **Verified base CI:** `33685113659` — success
+- **Status:** active; design checkpoint committed before implementation
 
-## Objective result
+## Objective
 
-**COMPLETE AT THE BOUNDED SOURCE/BUILD/TEST/REPOSITORY-INTEGRATION EVIDENCE CEILING.** MIRA now has its first Android-native client-core library. `ProtectedCredentialStore` accepts only the opaque MIRA client credential, encrypts it with AES-256-GCM using a key generated/loaded from the `AndroidKeyStore` provider, binds the ciphertext to the exact `client_id` through authenticated associated data, and stores only a versioned IV/ciphertext envelope in app-private no-backup storage.
+Implement one Android client-core local state primitive with no UI, network, provider SDK or canonical authority access. The primitive must durably preserve exactly the information a later transport/reconnect engine needs to replay safely without creating a second truth source:
 
-The storage API clears the caller-supplied mutable credential byte buffer after every store attempt, fails closed on malformed/tampered/wrong-client/missing-key material, and supports idempotent local removal of both ciphertext and the Keystore entry. Local deletion is explicitly not server revocation; server revocation remains authority in the `ClientSessionRegistry` introduced by M2-M1-002.
+1. pending canonical command intents in stable FIFO sequence;
+2. bounded acknowledged-command tombstones so an already-read-back command is not re-enqueued after process restart;
+3. cached canonical resource snapshots that may advance by revision but never regress or fork silently at the same revision; and
+4. an opaque synchronization cursor updated by explicit compare-and-set so stale reconnect flows cannot overwrite newer local cursor state.
 
-This does **not** complete `ANDROID-CLIENT-CORE-001`. Offline replay queue, reconnect/cursor synchronization, Android network transport, bounded API reads/queued commands, conflict/readback presentation, Connections UI, release hardening, and representative-device evidence remain unfinished.
+Production local state must live in app-private no-backup storage and be authenticated/encrypted with a separate Android Keystore AES-256-GCM key bound to the exact `client_id`. This prevents backup/restore duplication from becoming an accidental cross-device replay path and avoids storing queued/cached user data as plaintext. Key loss, malformed/tampered ciphertext, stale cursor writes, revision regression and conflicting duplicate command IDs must fail closed.
 
-## Completed implementation evidence
+## Intended local contract
 
-### Android client security library
+### Pending commands
 
-- Added a minimal `android-client` Gradle library tree with no application UI and no provider SDK dependency.
-- Pinned build inputs for this slice: AGP 9.3.0, Gradle 9.5.0, JDK 17, compile SDK 36, minimum SDK 23.
-- `ProtectedCredentialStore` uses `AES/GCM/NoPadding`, an AES-256 key created through `AndroidKeyStore`, randomized encryption, a 12-byte IV, and 128-bit GCM authentication tags.
-- Keystore aliases and ciphertext filenames use SHA-256-derived client identifiers rather than raw client IDs.
-- Persisted material is a bounded versioned binary envelope containing only format version, IV, ciphertext length, and ciphertext.
-- Ciphertext is stored under `Context.getNoBackupFilesDir()` through Android `AtomicFile`; no plaintext fallback exists.
-- Associated data binds protected material to the exact validated `client_id`.
-- `storeAndClear` wipes the caller-provided credential byte array in a `finally` path even when validation/encryption/persistence fails.
-- Local `delete` removes ciphertext and the matching Android Keystore entry idempotently while making no claim about server-side session revocation.
+A queued command carries only provider-neutral MIRA/API fields: immutable `command_id`, `idempotency_key`, canonical `resource_id`, command/action name, expected canonical revision, and bounded request payload bytes. The store assigns a monotonically increasing local sequence.
 
-### Deterministic test evidence
+- exact re-enqueue of the same command fingerprint is idempotent;
+- same `command_id` with different content is a local integrity conflict;
+- pending listing is stable FIFO and bounded;
+- acknowledgement requires the exact command/idempotency identity and moves the command to a durable tombstone;
+- an acknowledged command cannot be silently re-enqueued after restart;
+- tombstones are bounded and are not silently pruned in this packet because safe pruning depends on later verified server/cursor semantics.
 
-`ProtectedCredentialStoreTest` uses an injected JVM AES-GCM cipher and in-memory blob store to test portable security/storage semantics without pretending a desktop JVM proves Android Keystore runtime behavior. Tests cover:
+### Cached canonical snapshots
 
-- exact store/load roundtrip;
-- absence of plaintext credential bytes in persisted material;
-- caller-buffer clearing after success and storage failure;
-- ciphertext tamper rejection;
-- exact client-ID binding / wrong-client substitution rejection;
-- replacement with fresh authenticated ciphertext and latest-secret readback;
-- idempotent local deletion of ciphertext/key state;
-- malformed envelope rejection; and
-- invalid client-ID rejection with credential-buffer clearing.
+A snapshot carries canonical `resource_id`, server/canonical revision and bounded payload bytes.
 
-### Repository integrity / DEV-006
+- higher revision replaces lower revision;
+- exact same revision + exact same bytes is idempotent;
+- lower revision is rejected;
+- same revision + different bytes is rejected as a fork/conflict;
+- cached state is explicitly nonauthoritative and may only be populated later from verified API/server readback.
 
-- The mature Python ownership gate remains intact.
-- Added a parallel Android production ownership manifest/validator for `android-client/core/src/main/java` instead of pretending Java is Python or leaving Android source unowned.
-- The Android ownership gate rejects unowned Java production source, overlapping ownership, unknown feature/work IDs, missing test evidence, and missing direct Java verification references.
-- CI's Code ownership stage requires both Python and Android ownership checks.
+### Cursor
 
-### CI evidence
+The synchronization cursor is opaque. This packet therefore does not invent ordering semantics for it. Cursor advancement uses compare-and-set (`expected current` -> `next`) so a stale reconnect path cannot overwrite state created by a newer path. Exact same current/next may be idempotent; mismatched expected state fails closed.
 
-- First Android-enabled run `33684167115` failed only because the new Android ownership script was invoked as a path, causing Python import-root resolution to exclude repository `mira`; Android build/tests were not reached.
-- The invocation was corrected to `python -m project.android_code_ownership check`. The newly added deprecated `actions/setup-java@v4` reference was also corrected to v5. No product/security gate was weakened.
-- Exact implementation-head CI `33684341143` succeeded on `9f506c955c638ab9b26ef6d8a3861e6a24ec2904`.
-- Final PR evidence-head CI `33684646826` succeeded on `4b4bfc43a2bac307eeb097258b511ed0221ea964`.
-- PR #98 remained mergeable and changed exactly 13 intended files before merge.
-- PR #98 merged to main as `6c8e859191e9876885ee7152e7d13f47a560218d`.
-- Remote `main` independently read back at that exact merge SHA.
-- Post-merge CI `33684865556` succeeded on that exact merge SHA with Android build/unit tests, both ownership gates, full Python tests, and Workspace Apps Script tests green.
-- No Google provider resource, Apps Script project, disposable proof Sheet, authorization flow, or legacy MIRA production state was accessed or modified.
+### Local-state discard
 
-## Acceptance criteria result
+An explicit local discard operation may remove the encrypted blob and its Android Keystore key. It is destructive to unsynced local work and therefore must never be invoked silently. It does not mutate or revoke any server/provider/canonical state.
 
-1. Minimal Android client-core library builds in repository CI with no application UI/provider dependency — **satisfied**.
-2. AES-256-GCM key generated/loaded through `AndroidKeyStore`; no deprecated `EncryptedSharedPreferences`/`MasterKey` dependency — **satisfied in source/build evidence; device runtime not claimed**.
-3. Credential encrypted before persistence; versioned IV/ciphertext envelope stored under no-backup app-private storage — **satisfied**.
-4. Exact `client_id` AAD binding; wrong-client/tamper behavior fails closed — **satisfied by deterministic tests**.
-5. Mutable enrollment credential input cleared after every store attempt — **satisfied by implementation/tests**.
-6. Exact credential load only for valid material; malformed/missing/authentication failures explicit and fail closed — **satisfied at source/JVM-test evidence; actual Android Keystore runtime remains deferred**.
-7. Local ciphertext + Keystore-key deletion idempotent and distinct from server revocation — **satisfied**.
-8. JVM crypto/storage tests + Android SDK compilation; representative-device runtime proof explicitly unclaimed — **satisfied at this evidence ceiling**.
-9. DEV-006 ownership extended to Android rather than bypassed — **satisfied**.
-10. Existing repository gates remain green and Android build/test gate added — **satisfied**.
-11. No Google provider proof/resource/authorization or legacy production state touched — **satisfied**.
-12. Branch/PR exact-head CI, bounded scope, merge/main readback/post-merge CI — **satisfied through merge head `6c8e859191e9876885ee7152e7d13f47a560218d`; final closeout-head CI remains the only recovery-checkpoint gate**.
+## Acceptance criteria
 
-## Evidence ceiling
+1. Add a production Android client-core offline-state store with no application UI, network client, provider dependency or direct canonical/provider mutation.
+2. Production persistence uses an AES-256-GCM key generated/loaded through `AndroidKeyStore`; the state blob is authenticated/encrypted, bound to exact validated `client_id`, stored atomically under `Context.getNoBackupFilesDir()`, and has no plaintext fallback.
+3. Pending commands have bounded validated provider-neutral fields and a stable local FIFO sequence. Exact duplicate enqueue is idempotent; same command ID with different fingerprint fails closed.
+4. Acknowledging a pending command requires exact identity, persists an acknowledgement tombstone and prevents re-enqueue of that same command after store re-instantiation/restart. Unknown or conflicting acknowledgements fail closed.
+5. Pending-command and acknowledgement-tombstone counts/payload sizes are bounded. Reaching a bound fails explicitly; no silent drop/prune of unsynced commands or tombstones occurs.
+6. Cached snapshots advance monotonically by canonical revision. Revision regression and same-revision/different-payload forks fail closed; exact same revision/payload is idempotent.
+7. Opaque cursor writes use compare-and-set semantics and reject stale expected cursors rather than inventing token ordering.
+8. Entire local state is versioned and bounded. Missing state initializes empty; malformed/truncated/tampered ciphertext or missing/invalid Keystore key fails closed without silently resetting unsynced state.
+9. Explicit local discard deletes the encrypted state and matching Keystore key idempotently and makes no claim about server revocation, canonical mutation, or provider cleanup.
+10. Deterministic JVM tests with injected AES-GCM/blob dependencies prove restart persistence, FIFO ordering, duplicate suppression, conflicting duplicate rejection, durable acknowledgement replay suppression, cache revision rules, cursor compare-and-set, ciphertext plaintext non-retention, tamper/wrong-client rejection and explicit discard behavior.
+11. Android production source compiles against the existing pinned Android toolchain; representative-device Keystore/process/reboot evidence remains explicitly unclaimed.
+12. `DEV-006` Android ownership is extended for the new production source with direct Java test evidence; existing ownership, feature/lifecycle/alignment, Python, Android and Apps Script gates remain green.
+13. No Google provider resource, Apps Script project, disposable proof Sheet, provider authorization flow, network endpoint or legacy MIRA production state is accessed or modified.
+14. Branch is pushed, exact PR head/scope are remotely verified, CI succeeds on the exact head, merge succeeds, remote `main` is read back and post-merge CI succeeds before this packet is called complete.
 
-- **Implemented:** Android credential-store source, Android library build surface, Java ownership governance, CI Android build/test integration.
-- **Test verified:** deterministic JVM AES-GCM/storage behavior plus Android production-source compilation.
-- **Integration verified:** repository CI integrates Android build/test and both ownership gates alongside the existing suite; merge/post-merge exact-head verification succeeded.
-- **Not live/device verified:** physical Android Keystore execution, hardware-backed key availability, app installation, process/reboot behavior, biometric/user-auth policy, actual network enrollment, actual client authentication over transport, provider consent, or canonical Android read/write.
+## Explicitly deferred
 
-## Session-end alignment verification — 2026-09-02 M2-M1-003
-
-### `FEATURES.md`
-
-`CLIENT-ANDROID-001` remains partially implemented. This packet satisfies only its protected-client-credential prerequisite. `API-001` remains the service boundary and Android remains nonauthoritative. No semantic feature-status edit is warranted because offline synchronization, transport, and shared-state client behavior remain missing.
-
-### `BACKLOG.md`
-
-`ANDROID-CLIENT-CORE-001` remains the unfinished umbrella work item and must not be marked complete. The next dependency-correct bounded slice is replay-safe offline command/cache state plus reconnect cursor foundations before the full Android/shared-state vertical. No BACKLOG lifecycle edit is warranted by this sub-slice alone.
-
-### `ROADMAP.md`
-
-M2-M1 ordering remains correct. M2-M1-002 and M2-M1-003 jointly satisfy the source/test prerequisites for step 2 (scoped/revocable identity + OS-protected credentials) without skipping into step 3 or `ANDROID-SYNC`. No ROADMAP wording change is required.
-
-### `PRODUCT_INVARIANTS.md`
-
-The implementation stores only MIRA client authentication material and introduces no Google/provider credentials, IDs, authorization ceremony, or Android-specific activation model. The ordinary-user Connect/Enable and appropriately verified consent requirement remains a later release requirement and is not falsely satisfied here.
-
-### Direction result
-
-**ALIGNED.** The merged implementation preserves the verified shared-writer/API boundary, adds only the Android credential primitive required by the roadmap, keeps evidence claims below representative-device level, and leaves offline synchronization/transport structurally separate for the next packet.
+- Android HTTP/API transport and authentication over the network.
+- Actual reconnect requests or server cursor acquisition.
+- Android canonical reads or command submission.
+- Server conflict/readback presentation and resolution policy.
+- Provider Connections UI/consent/discovery.
+- Native notifications/TTS and capture surfaces.
+- Release signing/update continuity.
+- Representative-device installation, Keystore, reboot/process-death or hardware-backed-key proof.
 
 ## Exact next action / resume point
 
-1. Require CI on this final main closeout commit and verify it succeeds on the exact pushed head.
-2. Read back remote `main` at that exact closeout head.
-3. Once both are verified, M2-M1-003 is durably closed. Do not rerun its Android credential-storage work.
-4. In the next development packet, re-read Git first and open exactly one bounded continuation of `ANDROID-CLIENT-CORE-001` for replay-safe offline command/cache state and reconnect/cursor foundations. Do not attempt the entire remaining Android client core at once.
-5. Provider Connections UI, actual transport, canonical Android read/write, native delivery, capture, release signing, and representative-device proof remain later evidence layers unless a newly discovered hard dependency requires otherwise.
+1. Implement the bounded encrypted local offline-state store and deterministic Java tests.
+2. Extend the Android ownership manifest for the new production source; do not weaken the existing validator.
+3. Run exact-head CI and fix only defects required by this packet.
+4. Record implementation/test evidence plus session-end FEATURES/BACKLOG/ROADMAP/PRODUCT_INVARIANTS alignment.
+5. Open/verify one bounded PR, require exact-head CI, merge, read back remote `main`, and require post-merge CI before durable closeout.
+6. Do not begin Android transport/canonical read-write work until M2-M1-004 is closed.
 
 ## Recovery protocol
 
-Read this file first and verify remote `main` plus its exact CI. If the final closeout-head CI is green, treat M2-M1-003 as complete and start no work from chat reconstruction. Do not rerun M2-M1-001, M2-M1-002, or M2-M1-003; do not touch the historical Google proof resource; choose the next bounded Android client-core slice from Git.
+Read this file first, verify remote branch/head and `main`, then continue from the first incomplete acceptance criterion. Treat M2-M1-001 through M2-M1-003 as closed. Never touch the historical Google proof resource or legacy MIRA production state for this packet, and never claim synchronization merely because local queue/cursor code exists.
