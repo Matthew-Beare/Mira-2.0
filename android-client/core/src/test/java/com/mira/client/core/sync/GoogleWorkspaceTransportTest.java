@@ -224,7 +224,7 @@ public final class GoogleWorkspaceTransportTest {
     }
 
     @Test
-    public void changeSequenceGapFailsClosed() {
+    public void changeSequenceGapFailsClosed() throws Exception {
         FakeGateway gateway = gateway();
         gateway.tables.get("Changes").add(changeRow(2, 1, "{\"a\":1}"));
 
@@ -236,7 +236,7 @@ public final class GoogleWorkspaceTransportTest {
     }
 
     @Test
-    public void unverifiedOrTamperedChangeFailsClosed() {
+    public void unverifiedOrTamperedChangeFailsClosed() throws Exception {
         FakeGateway unverified = gateway();
         List<Object> row = changeRow(1, 1, "{\"a\":1}");
         row.set(8, false);
