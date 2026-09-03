@@ -34,6 +34,17 @@ const COMMAND_HEADERS = [
   'error_code',
   'error_message',
 ];
+const CHANGE_HEADERS = [
+  'change_seq',
+  'change_id',
+  'data_class',
+  'resource_id',
+  'revision',
+  'payload_json',
+  'recorded_at',
+  'source_command_id',
+  'readback_verified',
+];
 
 function baseRows() {
   return {
@@ -344,19 +355,42 @@ function idempotencyRows(app, key = 'idem-001') {
   return app.rows.Idempotency.slice(1).filter((row) => row[0] === key);
 }
 
-test('queued-writer activation creates Commands and exactly one one-minute trigger', () => {
+function changeRows(app, resourceId = null) {
+  const rows = app.rows.Changes.slice(1);
+  return resourceId === null ? rows : rows.filter((row) => row[3] === resourceId);
+}
+
+function addCanonicalEntity(rows, {
+  resourceId = 'existing-entity',
+  revision = 2,
+  state = 'already-here',
+} = {}) {
+  rows.Resources.push([
+    'entity',
+    resourceId,
+    revision,
+    JSON.stringify({state}),
+    '2026-08-29T19:00:00Z',
+    'prior-idem',
+    'prior-hash',
+  ]);
+}
+
+test('queued-writer activation creates Commands, Changes and exactly one one-minute trigger', () => {
   const app = runtime();
   const first = app.context.miraEnableQueuedWriter();
   assert.equal(first.mutation_mode, 'queued_writer');
   assert.equal(first.worker, 'miraProcessCommandQueue');
   assert.equal(first.interval_minutes, 1);
   assert.deepEqual(app.rows.Commands[0], COMMAND_HEADERS);
+  assert.deepEqual(app.rows.Changes[0], CHANGE_HEADERS);
   assert.equal(metadataValue(app, 'mutation_mode'), 'queued_writer');
   assert.deepEqual(app.triggerCreations, [['miraProcessCommandQueue', 1]]);
 
   app.context.miraEnableQueuedWriter();
   assert.deepEqual(app.triggerCreations, [['miraProcessCommandQueue', 1]]);
   assert.equal(app.triggers.length, 1);
+  assert.deepEqual(app.rows.Changes[0], CHANGE_HEADERS);
 });
 
 test('duplicate worker triggers fail before queued mode becomes authoritative', () => {
@@ -368,7 +402,30 @@ test('duplicate worker triggers fail before queued mode becomes authoritative', 
   assert.equal(metadataValue(app, 'mutation_mode'), null);
 });
 
-test('worker locks, commits one canonical create, reads it back and acknowledges command', () => {
+test('worker seeds current non-internal canonical Resources into verified Changes', () => {
+  const rows = baseRows();
+  addCanonicalEntity(rows);
+  const app = runtime({rows});
+  enableAndQueue(app);
+  const result = app.context.miraProcessCommandQueue();
+
+  assert.equal(result.processed, 0);
+  assert.equal(changeRows(app).length, 1);
+  const change = changeRows(app)[0];
+  assert.equal(change[0], 1);
+  assert.equal(change[2], 'entity');
+  assert.equal(change[3], 'existing-entity');
+  assert.equal(change[4], 2);
+  assert.deepEqual(JSON.parse(change[5]), {state: 'already-here'});
+  assert.equal(change[7], '');
+  assert.equal(change[8], true);
+  assert.match(change[1], /^[0-9a-f]{64}$/);
+
+  app.context.miraProcessCommandQueue();
+  assert.equal(changeRows(app).length, 1);
+});
+
+test('worker locks, commits one canonical create, reads it back, projects it and acknowledges command', () => {
   const app = runtime();
   enableAndQueue(app, commandRow());
   const result = app.context.miraProcessCommandQueue();
@@ -384,11 +441,15 @@ test('worker locks, commits one canonical create, reads it back and acknowledges
   assert.equal(commandResult.record.revision, 1);
   assert.equal(commandResult.idempotent_replay, false);
   assert.equal(commandResult.readback_verified, true);
+  assert.equal(changeRows(app, 'shared-entity-001').length, 1);
+  assert.equal(changeRows(app, 'shared-entity-001')[0][7], 'cmd-001');
+  assert.equal(changeRows(app, 'shared-entity-001')[0][8], true);
 
   const second = app.context.miraProcessCommandQueue();
   assert.equal(second.processed, 0);
   assert.equal(entityRows(app).length, 1);
   assert.equal(idempotencyRows(app).length, 1);
+  assert.equal(changeRows(app, 'shared-entity-001').length, 1);
 });
 
 test('two stale revision-zero commands serialize so only first commits', () => {
@@ -409,6 +470,7 @@ test('two stale revision-zero commands serialize so only first commits', () => {
   assert.deepEqual(JSON.parse(entityRows(app)[0][3]), {state: 'alpha'});
   assert.equal(idempotencyRows(app, 'idem-a').length, 1);
   assert.equal(idempotencyRows(app, 'idem-b').length, 0);
+  assert.equal(changeRows(app, 'shared-entity-001').length, 1);
 });
 
 test('crash after resource write leaves pending command and retry reconstructs idempotency without revision bump', () => {
@@ -438,9 +500,104 @@ test('crash after resource write leaves pending command and retry reconstructs i
   assert.equal(entityRows(app).length, 1);
   assert.equal(entityRows(app)[0][2], 1);
   assert.equal(idempotencyRows(app, 'idem-crash').length, 1);
+  assert.equal(changeRows(app, 'shared-entity-001').length, 1);
   const commandResult = JSON.parse(app.rows.Commands[1][12]);
   assert.equal(commandResult.record.revision, 1);
   assert.equal(commandResult.idempotent_replay, true);
+});
+
+test('crash after verified change append leaves command pending and retry reuses one projection row', () => {
+  const app = runtime();
+  enableAndQueue(app, commandRow({commandId: 'cmd-change-crash', idempotencyKey: 'idem-change-crash'}));
+  const originalEnsure = app.context.miraEnsureVerifiedChange_;
+  let crashed = false;
+  app.context.miraEnsureVerifiedChange_ = function (...args) {
+    const result = originalEnsure(...args);
+    if (!crashed) {
+      crashed = true;
+      throw new Error('synthetic post-change crash');
+    }
+    return result;
+  };
+
+  const first = app.context.miraProcessCommandQueue();
+  assert.equal(first.processed, 1);
+  assert.equal(app.rows.Commands[1][11], 'pending');
+  assert.equal(entityRows(app).length, 1);
+  assert.equal(idempotencyRows(app, 'idem-change-crash').length, 1);
+  assert.equal(changeRows(app, 'shared-entity-001').length, 1);
+
+  app.context.miraEnsureVerifiedChange_ = originalEnsure;
+  const second = app.context.miraProcessCommandQueue();
+  assert.equal(second.processed, 1);
+  assert.equal(app.rows.Commands[1][11], 'succeeded');
+  assert.equal(entityRows(app)[0][2], 1);
+  assert.equal(idempotencyRows(app, 'idem-change-crash').length, 1);
+  assert.equal(changeRows(app, 'shared-entity-001').length, 1);
+  const commandResult = JSON.parse(app.rows.Commands[1][12]);
+  assert.equal(commandResult.idempotent_replay, true);
+});
+
+test('exact duplicate physical command rows converge as one logical command', () => {
+  const app = runtime();
+  const first = commandRow({commandId: 'cmd-dup', idempotencyKey: 'idem-dup'});
+  const second = first.slice();
+  second[10] = '2026-08-29T20:00:05Z';
+  enableAndQueue(app, first, second);
+
+  const result = app.context.miraProcessCommandQueue();
+  assert.equal(result.processed, 1);
+  assert.equal(app.rows.Commands[1][11], 'succeeded');
+  assert.equal(app.rows.Commands[2][11], 'succeeded');
+  assert.equal(app.rows.Commands[1][12], app.rows.Commands[2][12]);
+  assert.equal(entityRows(app).length, 1);
+  assert.equal(entityRows(app)[0][2], 1);
+  assert.equal(idempotencyRows(app, 'idem-dup').length, 1);
+  assert.equal(changeRows(app, 'shared-entity-001').length, 1);
+});
+
+test('duplicate physical command ID with different material fails closed before mutation', () => {
+  const app = runtime();
+  enableAndQueue(
+    app,
+    commandRow({commandId: 'cmd-mismatch', idempotencyKey: 'idem-a', state: 'alpha'}),
+    commandRow({commandId: 'cmd-mismatch', idempotencyKey: 'idem-b', state: 'beta'}),
+  );
+
+  const result = app.context.miraProcessCommandQueue();
+  assert.equal(result.processed, 1);
+  assert.equal(app.rows.Commands[1][11], 'failed');
+  assert.equal(app.rows.Commands[2][11], 'failed');
+  assert.equal(app.rows.Commands[1][14], 'conflict');
+  assert.equal(app.rows.Commands[2][14], 'conflict');
+  assert.equal(entityRows(app).length, 0);
+  assert.equal(idempotencyRows(app, 'idem-a').length, 0);
+  assert.equal(idempotencyRows(app, 'idem-b').length, 0);
+  assert.equal(changeRows(app).length, 0);
+});
+
+test('contradictory same-revision change material fails closed', () => {
+  const rows = baseRows();
+  addCanonicalEntity(rows, {resourceId: 'existing-entity', revision: 2, state: 'canonical'});
+  rows.Changes = [CHANGE_HEADERS, [
+    1,
+    '0'.repeat(64),
+    'entity',
+    'existing-entity',
+    2,
+    JSON.stringify({state: 'wrong'}),
+    '2026-08-29T19:01:00Z',
+    '',
+    true,
+  ]];
+  const app = runtime({rows});
+  enableAndQueue(app);
+
+  assert.throws(
+    () => app.context.miraProcessCommandQueue(),
+    (error) => error.miraCode === 'readback_error',
+  );
+  assert.equal(changeRows(app).length, 1);
 });
 
 test('worker without queued mode fails closed and still releases ScriptLock', () => {
@@ -468,4 +625,5 @@ test('subject mismatch is terminal authorization failure with no entity mutation
   assert.equal(app.rows.Commands[1][14], 'authorization_error');
   assert.equal(entityRows(app).length, 0);
   assert.equal(idempotencyRows(app, 'idem-other').length, 0);
+  assert.equal(changeRows(app).length, 0);
 });
