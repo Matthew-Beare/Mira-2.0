@@ -71,8 +71,9 @@ public final class GooglePlayWorkspaceAuthorization {
     }
 
     /**
-     * Revalidates a previously stored token-free binding and rebuilds the transport without
-     * exposing the fresh Google access token to UI/app code or reopening Picker selection.
+     * Revalidates the stored token-free binding and reconstructs the transport from a fresh Google
+     * authorization result without exposing the access token or making the user pick the same file
+     * again. The stored provider identity is consumed only inside this provider package.
      */
     public GoogleWorkspaceTransport transportFromResult(
             GoogleWorkspaceConnection connection,
@@ -84,9 +85,14 @@ public final class GooglePlayWorkspaceAuthorization {
         Objects.requireNonNull(api, "api");
         Objects.requireNonNull(binding, "binding");
         String token = tokenFromResult(result);
+        GoogleWorkspaceConnection.PickerGrant internalGrant =
+                new GoogleWorkspaceConnection.PickerGrant(
+                        token,
+                        Collections.singletonList(binding.spreadsheetId())
+                );
         GoogleWorkspaceConnection.VerifiedBinding refreshed =
-                connection.revalidateWithToken(binding, token);
-        return new GoogleWorkspaceTransport(api.gatewayWithToken(refreshed, token));
+                connection.revalidate(binding, internalGrant);
+        return new GoogleWorkspaceTransport(api.gateway(refreshed, internalGrant));
     }
 
     public Task<Void> revokeAccess() {
