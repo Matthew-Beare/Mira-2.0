@@ -4,7 +4,7 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 
 ## Product direction
 
-Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android extends the same canonical reality without becoming a second authority. M2-M1-001 through M2-M1-009 are durably closed. `ANDROID-SYNC` remains partial only because stock ChatGPT has not yet been proven to read an Android-originated canonical mutation back from the same authority; representative-device proof remains a later, separate evidence step.
+Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android extends the same canonical reality without becoming a second authority. M2-M1-001 through M2-M1-009 are durably closed. M2-M1-010 now has deterministic integration evidence for the final functional `ANDROID-SYNC` cross-client contract: an Android-shaped queued mutation becomes canonical Workspace state and the existing stock-ChatGPT query path reads that exact state through the same Authority. Live Android authorization/device execution and representative-device evidence remain separate and must not be inferred from this packet.
 
 ## Prior-packet recovery verification — 2026-09-04
 
@@ -24,14 +24,14 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android ex
 
 ### `BACKLOG.md`
 
-- `ANDROID-CLIENT-CORE-001` is partial through M2-M1-009.
-- `ANDROID-SYNC` is partial through M2-M1-009: canonical Android read/freshness and deterministic queued mutation are complete; stock-ChatGPT cross-readback remains.
-- The next unfinished dependency is stock ChatGPT reading the Android-originated mutation from the same canonical Google-backed authority.
+- `ANDROID-CLIENT-CORE-001` was partial through M2-M1-009.
+- `ANDROID-SYNC` was partial through M2-M1-009: canonical Android read/freshness and deterministic queued mutation were complete; stock-ChatGPT cross-readback remained.
+- Stock ChatGPT reading the Android-originated mutation from the same canonical Google-backed authority was the next unfinished dependency.
 
 ### `ROADMAP.md`
 
-- M2-M1 ordered proof step 7 is stock ChatGPT reading the Android mutation back from the same authority.
-- Representative-device proof is step 8 and remains separate unless this packet discovers a hard dependency.
+- M2-M1 ordered proof step 7 was stock ChatGPT reading the Android mutation back from the same authority.
+- Representative-device proof was step 8 and remained separate unless this packet discovered a hard dependency.
 
 ### `PRODUCT_INVARIANTS.md`
 
@@ -56,86 +56,97 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android ex
 - **Implementation branch:** `work/m2-m1-010-stock-chatgpt-cross-readback`
 - **Packet base SHA:** `a7238151a08734b51e1ffa3386a5b672a73c46c0`
 - **Activation SHA:** `151bb3e0853fbbbe172ac7df81cb6c3864d0283f`
-- **Cross-readback test head:** `e3483a95adbf6dd24e940834486768001c0576ad`
-- **Status:** active implementation; first CI blocked only by corrected alignment metadata before test execution
+- **Integration-test SHA:** `e3483a95adbf6dd24e940834486768001c0576ad`
+- **Alignment-fix SHA:** `f7bfbda6aed92349f2ea6f8d4def695f37574cc3`
+- **Green integration CI:** `33901335696` — success on exact `f7bfbda6aed92349f2ea6f8d4def695f37574cc3`
+- **PR:** #110 — open and mergeable before this evidence checkpoint
+- **Status:** implementation/test evidence complete; this checkpoint requires exact-head CI before expected-head merge
 
-## Objective
+## Objective result
 
-Prove client-origin neutrality across the existing default-Personal Google Workspace boundary without inventing new canonical state or a second stock-ChatGPT read path.
+**COMPLETE AT THE BOUNDED DETERMINISTIC INTEGRATION EVIDENCE CEILING.**
 
-The bounded proof must:
+No new production read path was required. The existing queued writer and existing stock-ChatGPT Workspace query path already compose correctly over the same canonical Authority.
 
-1. use the existing `Commands` row shape accepted by `GoogleWorkspaceTransport` / `CommandWorker.gs` as the Android-originated mutation boundary;
-2. execute that command through the existing queued writer, not by directly editing canonical `Resources` in the proof;
-3. require successful worker canonical readback before treating the mutation as persisted;
-4. query the resulting entity through the existing stock-ChatGPT `/v1/query` Workspace read contract in `Code.gs`;
-5. resolve the same persisted Authority/Authority-binding records used by the no-app Personal path;
-6. return the exact resource type, ID, revision and payload written by the worker;
-7. demonstrate that read success is independent of command/client provenance and does not consult Android local cache or the nonauthoritative `Changes` projection;
-8. fail closed for missing/duplicate authority or resource identity, stale/failed queued mutation, or malformed provider state;
-9. preserve direct-native write prohibition while queued mode is active;
-10. distinguish deterministic repository integration evidence from any later live stock-ChatGPT/provider proof.
-
-## Acceptance criteria
-
-1. One deterministic cross-readback integration test/harness exercises both `CommandWorker.gs` and the existing `Code.gs` query path against one shared synthetic Workbook state.
-2. The synthetic queued command uses the exact 16-column Android Workspace command protocol and a same-user subject/authority owner.
-3. The worker mutates canonical `Resources` and records terminal success/readback through existing production code; the test does not pre-seed the target post-mutation Resource.
-4. Stock-ChatGPT query reads the resulting exact canonical record through `/v1/query` and the persisted entity Authority binding.
-5. Exact returned revision and canonical payload match the worker's persisted Resource and terminal command result.
-6. Query success does not require or inspect `Changes`, Android offline cache, or Android-only state.
-7. Queued-mode metadata remains compatible with read queries while direct native mutation remains prohibited.
-8. A failed/stale queued command cannot be represented as successful cross-readback evidence.
-9. Existing Apps Script, native Workspace, Android, Python, lifecycle and ownership suites remain green.
-10. No Work mode, live provider mutation, legacy MIRA production data, historical disposable M2-M1-001 resource, private provider identifier, token, credential, or secret is used for deterministic implementation/test evidence.
-11. Before merge, re-read FEATURES/BACKLOG/ROADMAP/invariants and keep representative-device/live-host evidence explicitly separate.
-12. Expected-head merge, remote-main readback, post-merge CI, lifecycle reconciliation and final closeout CI are required before durable closure.
+1. `android_cross_readback.test.js` loads both production `Code.gs` and `CommandWorker.gs` into one shared synthetic Workbook runtime.
+2. The target canonical Resource is absent before the command; the test does not pre-seed the post-mutation state.
+3. The test submits the exact 16-column Android Workspace command shape with same-user subject, API/schema, idempotency identity and expected revision.
+4. `miraProcessCommandQueue()` executes the command through the serialized worker and produces terminal `succeeded` with `readback_verified=true` and the canonical record.
+5. The persisted Resource exactly matches the worker terminal result.
+6. The primary test deletes the nonauthoritative `Changes` projection after worker success and before stock-ChatGPT readback.
+7. Existing `doPost(.../v1/query...)` then resolves the persisted entity Authority binding and returns the exact canonical resource ID, revision and payload from `Resources`.
+8. The query result and worker terminal canonical record are exact matches, proving client-origin neutrality at the canonical-state contract.
+9. A second test confirms `mutation_mode=queued_writer` remains compatible with the existing stock-ChatGPT read contract.
+10. A stale Android-shaped command fails with conflict, does not mutate canonical state, and the stock-ChatGPT query continues to return the prior canonical revision rather than the rejected Android payload.
 
 ## Completed evidence
 
 - M2-M1-009 durably closed on exact main `a7238151a08734b51e1ffa3386a5b672a73c46c0` with final CI `33900587999` green.
-- Fresh canonical lifecycle review identifies stock-ChatGPT cross-readback as M2-M1 step 7 and the next unfinished dependency.
-- `workspace/apps_script/Code.gs` already resolves canonical reads through persisted `authority_binding` + verified/enabled Google Sheets Authority and reads `Resources`; it does not use Android cache or Changes.
-- `workspace/apps_script/CommandWorker.gs` already owns queued-mode canonical mutation, same-user authority validation, exact readback and Changes projection.
-- Queued-writer activation stores `mutation_mode=queued_writer`; the stock-ChatGPT schema/read contract continues to use `writer_model=single_writer`, so queued mutation does not inherently invalidate read queries.
-- Existing `workspace_read.test.js` proves exact canonical query behavior for persisted Resources, but does not yet prove a Resource created/updated by the queued Android/shared-client writer can be read by that same query path.
-- `android_cross_readback.test.js` now adds the missing shared-runtime proof without changing production code.
-- First PR CI `33901154860` stopped at Work-session alignment before Apps Script tests because `CHATGPT-API-CLIENT-001` and `CORE-ROUNDTRIP` were incorrectly placed in the feature-only `Related invariants/features` field; this checkpoint corrects only that taxonomy and preserves them as related work.
+- Fresh canonical lifecycle review identified stock-ChatGPT cross-readback as M2-M1 step 7 and the next unfinished dependency.
+- `Code.gs` already resolves canonical reads through persisted `authority_binding` + verified/enabled Google Sheets Authority and reads `Resources`; it does not use Android cache or Changes.
+- `CommandWorker.gs` already owns queued-mode canonical mutation, same-user authority validation, exact readback and Changes projection.
+- Queued-writer activation stores `mutation_mode=queued_writer`; the stock-ChatGPT schema/read contract continues to use `writer_model=single_writer`, so queued mutation does not invalidate reads.
+- New test-only file `tests/apps_script/android_cross_readback.test.js` supplies the missing shared-runtime integration evidence; no production source changed.
+- First PR CI `33901154860` correctly stopped at Work-session alignment before test execution because two backlog work IDs were accidentally placed in the feature-only `Related invariants/features` field. No implementation/test code changed in response.
+- Checkpoint `f7bfbda6aed92349f2ea6f8d4def695f37574cc3` corrected only that taxonomy by retaining `AUTH-001`, `STORE-001`, `RECOVERY-002`, `DATA-001`, and `PROVIDER-002` as related features and moving `CHATGPT-API-CLIENT-001` / `CORE-ROUNDTRIP` to a separate related-work field.
+- Corrected exact-head CI `33901335696` is completely green: compile, feature registry, product lifecycle, starter distribution, work-session alignment, code ownership, Android unit tests, Python unit tests and Workspace Apps Script tests all passed.
+- Pre-merge re-read of `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md` still aligns with the bounded result: deterministic cross-readback satisfies M2-M1 step 7, while live Android/provider/device and representative-device evidence remain separate.
+- No Work mode, live provider mutation, legacy MIRA production data, historical disposable M2-M1-001 resource, private provider identifier, token, credential, or secret was used.
+
+## Acceptance criteria result
+
+1. Shared deterministic worker + stock-ChatGPT query integration harness — **satisfied**.
+2. Exact 16-column Android Workspace command protocol and same-user subject — **satisfied**.
+3. Worker creates the target canonical Resource and terminal verified result through production code — **satisfied**.
+4. Existing stock-ChatGPT `/v1/query` reads the result through persisted Authority binding — **satisfied**.
+5. Exact revision/payload matches worker terminal result and canonical Resource — **satisfied**.
+6. Query independence from Changes/Android cache — **satisfied; primary test removes Changes before read**.
+7. Queued mutation mode remains read-compatible; no second read engine — **satisfied**.
+8. Failed stale command cannot masquerade as cross-readback success — **satisfied**.
+9. Existing repository suites remain green — **satisfied on CI `33901335696`**.
+10. Zero Work/live-provider/legacy/private-state usage — **satisfied**.
+11. Pre-merge FEATURES/BACKLOG/ROADMAP/invariant alignment re-read — **satisfied**.
+12. Expected-head merge, remote-main readback, post-merge CI, lifecycle reconciliation and final closeout CI — **pending**.
 
 ## Explicitly deferred
 
 - Live Android Google authorization and physical-device mutation execution.
-- Live stock-ChatGPT/provider cross-readback, unless deterministic work is green and this packet reaches a genuinely narrow live acceptance ceiling.
+- Live provider/host cross-readback using an actual Android device-originated command; this belongs with representative-device/live-evidence work rather than being fabricated from deterministic tests.
 - Representative-device proof.
 - User-facing conflict-resolution UI and broad Connections/app-shell polish.
 - Release signing/distribution, notifications/TTS, capture paths, unrelated providers, and legacy-data migration.
 
-## Session-end alignment verification — pending
+## Session-end alignment verification — 2026-09-04 M2-M1-010 pre-merge
 
 ### `FEATURES.md`
 
-Pending final evidence review. `CLIENT-ANDROID-001` must not be promoted solely by deterministic cross-readback.
+`CLIENT-ANDROID-001` remains partial. M2-M1-010 adds deterministic cross-client integration evidence but does not prove live Android authorization/device behavior or representative-device delivery.
 
 ### `BACKLOG.md`
 
-Pending final lifecycle review. `ANDROID-SYNC` may become complete only if the packet's accepted cross-readback evidence ceiling is actually satisfied; live/device evidence gaps must remain separately truthful.
+The accepted `ANDROID-SYNC` functional contract is now satisfied at deterministic integration evidence: Android-shaped queued mutation reaches canonical Workspace state and the stock-ChatGPT query contract reads that exact state from the same Authority. `ANDROID-CLIENT-CORE-001` remains partial because its live provider/device, conflict-UI and representative-device evidence gaps remain.
 
 ### `ROADMAP.md`
 
-Pending final confirmation of step 7 evidence and whether representative-device proof remains step 8.
+M2-M1 step 7 is satisfied at deterministic integration evidence. Step 8 representative-device proof remains next within the Android milestone unless fresh dependency ranking selects a higher-priority release blocker after this packet closes.
+
+### `PRODUCT_INVARIANTS.md`
+
+One-authority semantics, client-origin neutrality, nonauthoritative Changes/cache state, default Personal Google path, ordinary-user setup expectations, evidence honesty and legacy-data protection remain preserved.
 
 ### Direction result
 
-**PENDING IMPLEMENTATION + EXACT-HEAD CI.**
+**ALIGNED.** The packet required no production read implementation because the existing canonical read contract already composes correctly with queued Android/shared-client mutation. This is a test/evidence completion, not permission to claim live Android/provider/device behavior.
 
 ## Exact next action / resume point
 
-1. Run CI again after the alignment-field correction.
-2. If the cross-readback Apps Script integration test reaches execution, repair only packet-scoped failures.
-3. Change production code only if that integration test exposes a real contract incompatibility.
-4. Re-read canonical lifecycle authorities before merge.
-5. Do not use Work mode until deterministic cross-readback implementation/tests are green and a narrow live provider/host acceptance proof genuinely remains.
+1. Require exact-head CI on this evidence checkpoint.
+2. Re-read PR #110 head/mergeability and merge only with exact expected-head SHA if CI is green.
+3. Independently read back remote `main` at the merge SHA and require post-merge CI.
+4. Reconcile BACKLOG/ROADMAP lifecycle so `ANDROID-SYNC` records deterministic integration completion while `ANDROID-CLIENT-CORE-001` / `CLIENT-ANDROID-001` retain live/device gaps.
+5. Write final CURRENT_WORK closeout and require exact-head CI/readback before durable closure.
+6. Do not use Work mode for lifecycle closeout. Any later representative-device/live-provider packet must be separately bounded and may use Work only when its deterministic prerequisites are green.
 
 ## Recovery protocol
 
-Read this file first. Verify branch `work/m2-m1-010-stock-chatgpt-cross-readback` against base `a7238151a08734b51e1ffa3386a5b672a73c46c0`. Resume from CI after the alignment taxonomy correction. Do not rerun M2-M1-001 through M2-M1-009 and do not absorb representative-device proof without a hard dependency.
+Read this file first. Verify PR #110 exact head and CI. Resume from expected-head merge after this checkpoint passes exact-head CI. Do not rerun M2-M1-001 through M2-M1-009, do not add production read code without new failing evidence, and do not collapse representative-device/live-provider proof into this deterministic packet.
