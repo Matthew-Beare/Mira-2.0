@@ -150,6 +150,26 @@ public final class GoogleSheetsRestGatewayTest {
     }
 
     @Test
+    public void oversizedResponseFailsClosedBeforeJsonParsing() {
+        FakeExecutor executor = new FakeExecutor();
+        executor.response = new GoogleSheetsRestGateway.HttpResponse(
+                200,
+                new byte[(4 * 1024 * 1024) + 1]
+        );
+        GoogleSheetsRestGateway gateway = new GoogleSheetsRestGateway(SHEET_ID, TOKEN, executor);
+
+        GoogleWorkspaceTransport.GatewayException error = assertThrows(
+                GoogleWorkspaceTransport.GatewayException.class,
+                () -> gateway.readTable("Metadata")
+        );
+        assertEquals(
+                "Google Sheets response is empty or exceeds the bounded response size",
+                error.getMessage()
+        );
+        assertEquals(1, executor.requests.size());
+    }
+
+    @Test
     public void nestedCellMaterialFailsClosed() throws Exception {
         FakeExecutor executor = new FakeExecutor();
         executor.response = jsonResponse(200, new JSONObject().put(
