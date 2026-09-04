@@ -70,8 +70,8 @@ public final class GoogleWorkspaceConnection {
     }
 
     /**
-     * Revalidates a prior token-free binding from a fresh opaque provider grant.
-     * A different provider-selected file fails closed as binding drift.
+     * Revalidates a prior token-free binding from a fresh Picker grant and rejects provider-file
+     * drift explicitly. Useful when the provider intentionally returns selected-file evidence.
      */
     public VerifiedBinding revalidate(VerifiedBinding binding, PickerGrant grant)
             throws ConnectionException {
@@ -85,6 +85,17 @@ public final class GoogleWorkspaceConnection {
             );
         }
         return verify(requireToken(grant.accessToken()), requireFileId(ids.get(0)), binding);
+    }
+
+    /** Provider-package seam for refreshing a stored binding with a fresh token and no new Picker. */
+    VerifiedBinding revalidateWithToken(VerifiedBinding binding, String accessToken)
+            throws ConnectionException {
+        Objects.requireNonNull(binding, "binding");
+        return verify(
+                requireToken(accessToken),
+                requireFileId(binding.spreadsheetId()),
+                binding
+        );
     }
 
     private VerifiedBinding verify(String token, String spreadsheetId, VerifiedBinding prior)
@@ -396,7 +407,6 @@ public final class GoogleWorkspaceConnection {
         public boolean canEdit() { return canEdit; }
     }
 
-    /** Minimal provider read surface needed to verify a Picker-selected Workspace binding. */
     public interface WorkspaceApi {
         FileMetadata readFileMetadata(String accessToken, String fileId) throws ProviderException;
 
