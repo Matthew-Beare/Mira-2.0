@@ -50,12 +50,14 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android ex
 
 - **Primary work:** `ANDROID-SYNC`
 - **Primary features:** `CLIENT-ANDROID-001`, `API-001`
-- **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `DATA-001`, `PROVIDER-002`, `CHATGPT-API-CLIENT-001`, `CORE-ROUNDTRIP`
+- **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `DATA-001`, `PROVIDER-002`
+- **Related work:** `CHATGPT-API-CLIENT-001`, `CORE-ROUNDTRIP`
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Implementation branch:** `work/m2-m1-010-stock-chatgpt-cross-readback`
 - **Packet base SHA:** `a7238151a08734b51e1ffa3386a5b672a73c46c0`
-- **Current head SHA:** pending this activation commit
-- **Status:** active implementation
+- **Activation SHA:** `151bb3e0853fbbbe172ac7df81cb6c3864d0283f`
+- **Cross-readback test head:** `e3483a95adbf6dd24e940834486768001c0576ad`
+- **Status:** active implementation; first CI blocked only by corrected alignment metadata before test execution
 
 ## Objective
 
@@ -97,7 +99,8 @@ The bounded proof must:
 - `workspace/apps_script/CommandWorker.gs` already owns queued-mode canonical mutation, same-user authority validation, exact readback and Changes projection.
 - Queued-writer activation stores `mutation_mode=queued_writer`; the stock-ChatGPT schema/read contract continues to use `writer_model=single_writer`, so queued mutation does not inherently invalidate read queries.
 - Existing `workspace_read.test.js` proves exact canonical query behavior for persisted Resources, but does not yet prove a Resource created/updated by the queued Android/shared-client writer can be read by that same query path.
-- Therefore the smallest missing evidence is a shared-runtime integration proof, not a new production read implementation.
+- `android_cross_readback.test.js` now adds the missing shared-runtime proof without changing production code.
+- First PR CI `33901154860` stopped at Work-session alignment before Apps Script tests because `CHATGPT-API-CLIENT-001` and `CORE-ROUNDTRIP` were incorrectly placed in the feature-only `Related invariants/features` field; this checkpoint corrects only that taxonomy and preserves them as related work.
 
 ## Explicitly deferred
 
@@ -127,12 +130,12 @@ Pending final confirmation of step 7 evidence and whether representative-device 
 
 ## Exact next action / resume point
 
-1. Inspect `workspace_worker.test.js` runtime mocks and reuse the smallest safe subset for a cross-readback integration test.
-2. Add a shared synthetic Workspace test that executes an exact Android-shaped command through `miraProcessCommandQueue()` and then reads the resulting canonical Resource through `doPost(.../v1/query...)`.
+1. Run CI again after the alignment-field correction.
+2. If the cross-readback Apps Script integration test reaches execution, repair only packet-scoped failures.
 3. Change production code only if that integration test exposes a real contract incompatibility.
-4. Run CI and repair only packet-scoped failures.
+4. Re-read canonical lifecycle authorities before merge.
 5. Do not use Work mode until deterministic cross-readback implementation/tests are green and a narrow live provider/host acceptance proof genuinely remains.
 
 ## Recovery protocol
 
-Read this file first. Verify branch `work/m2-m1-010-stock-chatgpt-cross-readback` against base `a7238151a08734b51e1ffa3386a5b672a73c46c0`. Resume from the shared Apps Script cross-readback integration test. Do not rerun M2-M1-001 through M2-M1-009 and do not absorb representative-device proof without a hard dependency.
+Read this file first. Verify branch `work/m2-m1-010-stock-chatgpt-cross-readback` against base `a7238151a08734b51e1ffa3386a5b672a73c46c0`. Resume from CI after the alignment taxonomy correction. Do not rerun M2-M1-001 through M2-M1-009 and do not absorb representative-device proof without a hard dependency.
