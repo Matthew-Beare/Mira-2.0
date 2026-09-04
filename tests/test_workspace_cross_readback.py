@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 import unittest
 
-from mira.structured_state import ResourceRecord
+from mira.structured_state import ResourceRecord, ValidationError
 from mira.workspace_native import (
     WorkspaceIdempotencyRecord,
     WorkspaceReadbackError,
@@ -169,7 +169,7 @@ class WorkspaceSharedCrossReadbackTests(unittest.TestCase):
         with self.assertRaisesRegex(WorkspaceReadbackError, "expected upsert transition"):
             self.verify(revision=3)
 
-        with self.assertRaisesRegex(ValueError, "mutation_mode"):
+        with self.assertRaisesRegex(ValidationError, "mutation_mode"):
             self.verify(mutation_mode="mystery-writer")
 
 
