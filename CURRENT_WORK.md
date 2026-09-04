@@ -13,7 +13,7 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android ex
 - M2-GOV-012 final closeout CI: `33731858470` — success on that exact head.
 - Remote `main` independently read back the same SHA.
 - M2-M1-001 through M2-M1-006 and M2-GOV-012 are durably closed and must not be rerun.
-- Existing historical disposable provider proof resources remain protected and are not needed for implementation.
+- Existing historical disposable provider proof resources remain protected and were not needed for this packet.
 
 ## Session-start alignment verification — 2026-09-03 M2-M1-007
 
@@ -25,9 +25,9 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android ex
 
 ### `BACKLOG.md`
 
-- `ANDROID-CLIENT-CORE-001` is partial through M2-M1-006. Enrollment/session trust, protected credentials, encrypted offline state, reconnect orchestration and the default-Personal Workspace row transport are merged/test-verified.
-- The next unfinished client-core dependency is real Google provider authorization/network binding plus automatic safe Workspace resource selection/binding.
-- `ANDROID-SYNC` remains blocked until the client can reach the verified shared Workspace transport through a real authorized gateway.
+- `ANDROID-CLIENT-CORE-001` was partial through M2-M1-006 at packet start. Enrollment/session trust, protected credentials, encrypted offline state, reconnect orchestration and the default-Personal Workspace row transport were already merged/test-verified.
+- The next unfinished client-core dependency was real Google provider authorization/network binding plus automatic safe Workspace resource selection/binding.
+- `ANDROID-SYNC` remained blocked until the client could reach the verified shared Workspace transport through a real authorized gateway.
 
 ### `ROADMAP.md`
 
@@ -42,13 +42,13 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android ex
 
 ### Current Google capability evidence
 
-Official Google Android/Workspace documentation checked 2026-09-03 establishes the bounded implementation path:
+Official Google Android/Workspace documentation checked 2026-09-03 established the bounded implementation path:
 
 - Google Identity Services `AuthorizationClient` returns tokens when grants already exist or a `PendingIntent` for unavoidable account/consent UI when they do not.
 - Google Drive Picker can be invoked from Android authorization with `AuthorizationRequest.ResourceParameter.PICKER_OAUTH_TRIGGER`.
 - The Picker flow uses only `https://www.googleapis.com/auth/drive.file`, with `setOptOutIncludingGrantedScopes(true)`; this scope is the recommended non-sensitive Sheets-capable scope and is sufficient for Sheets values read/append on selected files.
 - Picker can be filtered to Google Sheets, limited to one selection, and returns selected IDs through `AuthorizationResult.getTokenResponseParams()` key `picked_file_ids`.
-- `play-services-auth` 21.6.0 is the latest documented release as of 2026-05-27.
+- `play-services-auth` 21.6.0 is the documented current release used by this packet.
 
 ### Direction result
 
@@ -64,37 +64,59 @@ Official Google Android/Workspace documentation checked 2026-09-03 establishes t
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `work/m2-m1-007-google-provider-binding`
 - **Base SHA:** `290b78518947f060e06a11d9141faf0c5d64d4e5`
-- **Current head before this activation commit:** `290b78518947f060e06a11d9141faf0c5d64d4e5`
-- **Status:** active
+- **Last fully verified implementation head:** `6075c4ddc34f77a609c0f4dece1fd405819c2242`
+- **Verified implementation CI:** `33764927985` — success on that exact head
+- **Later bounded-response/lifecycle reconciliation commits:** through `efa776fe80538c33dcd7f8bce970fa60278bd5b8` before this evidence commit
+- **PR:** #105
+- **Status:** implementation/test candidate complete at deterministic evidence ceiling; final evidence head CI and merge closeout remain
 
-## Objective
+## Objective result
 
-Complete the missing real-provider seam beneath the already-test-verified M2-M1-006 Workspace transport without expanding into the full Android app:
+**IMPLEMENTED AND TEST-VERIFIED AT THE DETERMINISTIC PROVIDER-ADAPTER EVIDENCE CEILING.**
 
-1. Add an Android Google-Workspace provider module separate from provider-neutral core.
-2. Build the Google Identity Services authorization request with only `drive.file`, single Google-Sheets Picker selection, explicit provider consent, and no broad Drive/Sheets-all-files scope.
-3. Convert successful authorization evidence into an ephemeral access-token + exactly one selected spreadsheet ID; fail closed on missing token/scope/file, multiple files, malformed provider evidence or unresolved consent.
-4. Verify the selected spreadsheet is actually a compatible MIRA Personal Workspace before binding: exact Metadata markers, queued-writer mode, and exact Commands/Changes protocol headers.
-5. Implement a bounded HTTPS Google Sheets REST gateway for exact table reads and RAW append-row operations required by `GoogleWorkspaceTransport`.
-6. Keep access tokens ephemeral/provider-layer only. Never write them to `ProtectedCredentialStore`, `OfflineSyncStateStore`, MIRROR Resources, Git or logs.
-7. Preserve ambiguous append semantics already owned by `GoogleWorkspaceTransport`; the gateway reports transport failure and does not invent retries that could duplicate commands.
-8. Provide deterministic JVM tests for authorization evidence validation, MIRA Workspace verification, Sheets REST request/response mapping, error handling and no-unverified binding.
-9. Update Android component ownership for every new production path.
+M2-M1-007 adds the missing real-provider seam beneath the M2-M1-006 Workspace transport without expanding into the full Android app:
 
-## Acceptance criteria
+1. A separate Android `:google-workspace` library depends on provider-neutral `:core`; `:core` does not depend on Google Play Services or the concrete HTTP implementation.
+2. Google Identity Services authorization uses only `drive.file`, opts out of inherited scopes, explicitly requests provider consent, invokes Google-owned Picker, filters to Google spreadsheets, and disallows multiple selection.
+3. Successful authorization requires an ephemeral nonblank access token, exact `drive.file` grant, and exactly one valid picked spreadsheet ID. Pending provider resolution remains an explicit user-action outcome rather than fake readiness.
+4. Selected files are read-only verified before binding against exact MIRA Metadata plus Commands and Changes protocol headers.
+5. Metadata requires `mira-structured-state-v1`, `personal_google_starter`, `STORE-001`, `single_writer`, and `queued_writer`; duplicate/missing/contradictory material fails closed.
+6. The bounded Sheets REST gateway can read only Metadata/Commands/Changes and append only to Commands using RAW values + INSERT_ROWS.
+7. Ambiguous command append failures are not retried by the gateway; the already-verified `GoogleWorkspaceTransport` owns readback convergence.
+8. Provider error bodies are not exposed in gateway errors; network/HTTP/malformed/nested/oversized responses fail explicitly.
+9. Access-token and raw selected-provider identifiers are opaque outside the provider package after the privacy-hardening pass. Tokens are never persisted to protected client credentials, offline sync state, canonical MIRROR state, logs or Git.
+10. Android production ownership and CI now cover multiple Android modules so provider code cannot sit outside the repository ownership gate.
 
-1. `:core` remains free of Google Play Services/network implementation dependencies; provider-specific code lives in a separate Android library module depending on `:core`.
-2. Authorization request is `drive.file` only, opts out of inherited granted scopes, invokes Picker, filters to Google spreadsheets, and disallows multiple selection.
-3. Successful binding requires exactly one selected spreadsheet ID, exact granted `drive.file`, nonblank access token and exact verified MIRA Workspace contract.
-4. Metadata verification requires `schema_version=mira-structured-state-v1`, `store_role=personal_google_starter`, `adapter_contract=STORE-001`, `mutation_mode=queued_writer`, and expected writer model; duplicate/missing/contradictory Metadata fails closed.
-5. Commands and Changes exact header verification occurs before a transport is considered bound.
-6. REST gateway reads only explicit MIRA ranges and appends only through `spreadsheets.values.append` with `valueInputOption=RAW`; non-2xx, malformed JSON, oversized responses and provider/network failures are explicit gateway failures.
-7. No access token, spreadsheet ID, account identifier or other private provider state is committed to the public repository or persisted in canonical/offline state.
-8. Unit tests cover successful bind, pending/unresolved consent evidence, missing scope/token/file, multiple selected files, wrong Metadata, wrong headers, HTTP/auth failures, malformed provider responses and exact append body/range.
-9. Android ownership/CI gates and existing core tests remain green.
-10. No Work mode or live provider mutation is used before implementation and deterministic tests are green. Any later live proof must use isolated disposable/synthetic MIRA state only and must not rerun M2-M1-001 publication/setup.
-11. End-of-packet FEATURES/BACKLOG/ROADMAP/PRODUCT_INVARIANTS alignment is recorded before merge.
-12. Exact-head CI, expected-head merge, remote-main readback, post-merge CI and final closeout CI are all verified before closure.
+## Completed evidence
+
+- New provider module: `android-client/google-workspace`.
+- `GoogleWorkspaceAuthorization` owns the Google authorization request/result boundary and fail-closed pure grant validation.
+- `GoogleSheetsRestGateway` owns bounded HTTPS Sheets values read/Commands append mapping, provider failure handling and response-size bounds.
+- `GoogleWorkspaceBinding` owns post-consent zero-write MIRA Metadata/Commands/Changes verification and constructs the already-proven `GoogleWorkspaceTransport` only after exact verification.
+- JVM tests cover exact authorization material, missing token/scope/file, inherited extra scope, multiple/malformed selection, provider-resolution evidence, exact REST request/body mapping, Commands-only append, no retry on ambiguous network failure, forbidden arbitrary reads/Changes writes, non-2xx body non-leakage, malformed JSON, nested cells, bounded oversized-response rejection, exact zero-write Workspace bind, wrong/missing/duplicate Metadata, wrong headers, provider read failure and null gateway failure.
+- Android ownership governance was generalized from one production root to explicit governed Android production roots and directly tested for multi-module ownership/unowned-source rejection.
+- CI now runs both `:core:testDebugUnitTest` and `:google-workspace:testDebugUnitTest`.
+- First clean provider-module CI `33763861622` succeeded on `8cdb895e521f9d79b202439bd3efc1d3441d1255`.
+- Hardened exact-head CI `33764552075` succeeded on `640e3bf438399f17a6f29d98d2b335cad64b8cb6`.
+- Exact head `6075c4ddc34f77a609c0f4dece1fd405819c2242` passed CI `33764927985` after the explicit provider-resolution test seam.
+- `ROADMAP.md` now correctly records M2-M1-001 through M2-M1-006 complete and M2-M1-007 active instead of claiming Android client work has not begun.
+- `FEATURES.md` now records `CLIENT-ANDROID-001` as test-verified/partially merged with this provider-binding candidate unmerged; the umbrella feature remains incomplete.
+- No Work mode, live Google provider mutation, historical disposable proof resource, copied provider ID, account identifier, legacy MIRA production state or secret/provider credential was used.
+
+## Acceptance criteria result
+
+1. Separate Google provider module with core remaining provider-neutral — **satisfied**.
+2. Exact least-privilege `drive.file` + Picker single-Sheet request — **satisfied and compiled against Google Play Services 21.6.0**.
+3. Exact one-file/token/scope plus verified MIRA contract before binding — **satisfied**.
+4. Exact queued-writer Metadata markers and fail-closed contradictions — **satisfied**.
+5. Commands/Changes headers verified before transport binding — **satisfied**.
+6. Bounded explicit REST reads + RAW Commands append + explicit HTTP/network/malformed/oversized failures — **satisfied**.
+7. No provider secrets/private IDs in public Git or canonical/offline state — **satisfied by code scope and privacy-hardening**.
+8. Required deterministic authorization/binding/HTTP/error tests — **satisfied**, including explicit provider resolution and oversized response coverage.
+9. Android ownership/CI plus existing core suite — **satisfied on multiple exact green heads; final evidence head still requires exact CI**.
+10. No Work/live provider mutation before deterministic green — **satisfied; no Work/provider mutation used at all in implementation**.
+11. End-of-packet canonical alignment — **recorded below**.
+12. Exact-head CI, protected merge, main readback, post-merge CI and final closeout CI — **final evidence CI + merge/closeout pending only**.
 
 ## Explicitly deferred
 
@@ -106,41 +128,38 @@ Complete the missing real-provider seam beneath the already-test-verified M2-M1-
 - Gmail, Calendar, Contacts, Microsoft, Apple/iCloud, Airtable, finance and other provider adapters.
 - Integration recommendation engine under `PROVIDER-004`.
 
-## Completed evidence
-
-- M2-M1-006 already supplies `GoogleWorkspaceTransport` with an injected narrow `SheetsGateway`, exact Commands/Changes parsing, ambiguous append readback convergence, verified change cursors and deterministic tests.
-- Current Google docs verify `drive.file` is sufficient for Sheets read/append and is the recommended least-privilege scope for selected files.
-- Current Google docs verify Android Picker authorization returns `picked_file_ids`, removing any need for normal users to copy a spreadsheet ID.
-- Branch is based exactly on verified main `290b78518947f060e06a11d9141faf0c5d64d4e5`.
-
-## Session-end alignment verification — pending
+## Session-end alignment verification — 2026-09-03 M2-M1-007
 
 ### `FEATURES.md`
-Pending implementation/test evidence.
+
+`CLIENT-ANDROID-001` remains incomplete but its evidence is reconciled from the old legacy-build-only label to the actual partial merged/test-verified client-core state with this provider-binding candidate still unmerged. `PROVIDER-002` ordinary-user connection semantics remain preserved: unavoidable Google consent/file selection only, then automatic MIRA verification and no copied IDs.
 
 ### `BACKLOG.md`
-Pending lifecycle reconciliation; `ANDROID-CLIENT-CORE-001` must remain partial unless the entire umbrella is truly complete.
+
+`ANDROID-CLIENT-CORE-001` correctly remains **partial through M2-M1-006** before PR #105 merges. This packet supplies the next provider-binding candidate but does not claim merged evidence early. After protected merge and post-merge verification, the closeout checkpoint must advance the backlog narrative to partial through M2-M1-007. `ANDROID-SYNC` remains the next vertical and is not smuggled into this packet.
 
 ### `ROADMAP.md`
-Pending confirmation that `ANDROID-SYNC` remains next after this provider seam.
+
+M2-M1 status is reconciled to the real progression: command boundary, enrollment/session, protected credentials, encrypted offline state/reconnect and Workspace transport are complete; M2-M1-007 is the active Google authorization/binding/gateway step; canonical Android read, mutation, stock-ChatGPT cross-readback and representative-device proof remain later proof steps.
 
 ### `PRODUCT_INVARIANTS.md`
-Pending confirmation of least privilege, unavoidable-provider-UI only, automatic verification, no copied IDs and no second authority.
+
+The implementation preserves intent-first connection semantics, least privilege, provider-owned unavoidable UI only, automatic post-consent verification, provider consent not equaling readiness, no copied IDs/developer setup, no silent service activation, no direct canonical mutation from the provider layer, and no second writable master.
 
 ### Direction result
 
-**PENDING IMPLEMENTATION/CI.**
+**ALIGNED.** M2-M1-007 completes exactly the bounded Google provider-binding prerequisite beneath the existing Workspace transport. The Android umbrella remains partial. No related UI, device proof, integration recommendation, other provider, or full shared-state vertical was added.
 
 ## Exact next action / resume point
 
-1. Add `:google-workspace` Android library module depending on `:core` and `com.google.android.gms:play-services-auth:21.6.0`.
-2. Add pure/testable authorization evidence validation and the thin Google Identity Services request/result adapter.
-3. Add MIRA Workspace verifier and bounded Sheets REST gateway.
-4. Add an explicit non-mutating protocol-verification entry point to `GoogleWorkspaceTransport` if required to avoid duplicated Commands/Changes header definitions.
-5. Add deterministic tests and ownership entries.
-6. Run exact branch CI and repair only failures required by this packet.
-7. Do not enter Work mode unless all deterministic implementation gates are green and a narrowly scoped live provider proof is still required.
+1. Require CI on the exact final evidence head produced by this checkpoint; repair only packet-required failures.
+2. Verify PR #105 remains mergeable and its changed-file scope is exactly the provider module, its tests, Android ownership/CI governance, lifecycle docs and this checkpoint.
+3. Merge PR #105 with expected-head protection only after exact green CI.
+4. Independently read back remote `main` and verify post-merge CI on the merge SHA.
+5. Update `BACKLOG.md` on the closeout checkpoint from partial-through-M2-M1-006 to partial-through-M2-M1-007, while leaving `ANDROID-CLIENT-CORE-001` incomplete and `ANDROID-SYNC` next.
+6. Record final M2-M1-007 closure in `CURRENT_WORK.md`, verify final exact-head CI and remote `main`.
+7. Do not use Work mode for M2-M1-007 unless deterministic evidence unexpectedly reveals a live-provider-only acceptance blocker. No such blocker is currently known.
 
 ## Recovery protocol
 
-Read this file first, verify branch/head against remote Git, and resume from the exact next action. Do not reconstruct M2-M1-001 through M2-M1-006, do not create another historical proof Sheet/Apps Script project, and do not touch legacy MIRA production data.
+Read this file first and verify PR #105 plus the exact branch head. Do not rerun M2-M1-001 through M2-M1-006, do not create another historical proof Sheet/Apps Script project, and do not touch legacy MIRA production data. Resume only the final CI/merge/post-merge/backlog-closeout sequence for M2-M1-007.
