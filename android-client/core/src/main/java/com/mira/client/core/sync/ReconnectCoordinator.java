@@ -115,11 +115,37 @@ public final class ReconnectCoordinator {
             return ReconnectResult.morePending(acknowledged, snapshotsStored, remaining);
         }
 
+        return refreshChangePage(changeLimit, acknowledged, snapshotsStored);
+    }
+
+    /**
+     * Performs one bounded verified remote-change refresh without reconciling local commands.
+     *
+     * <p>This path is deliberately read-only with respect to the canonical provider. Pending local
+     * commands remain untouched. Verified snapshots are stored before the cursor advances, exactly
+     * as in the full reconnect path.</p>
+     */
+    public synchronized ReconnectResult refreshChangesOnly() {
+        return refreshChangesOnly(DEFAULT_CHANGE_LIMIT);
+    }
+
+    public synchronized ReconnectResult refreshChangesOnly(int changeLimit) {
+        validateLimit(changeLimit, MAX_CHANGE_LIMIT, "changeLimit");
+        return refreshChangePage(changeLimit, 0, 0);
+    }
+
+    private ReconnectResult refreshChangePage(
+            int changeLimit,
+            int acknowledged,
+            int snapshotsStoredBeforePage
+    ) {
         final String currentCursor;
         try {
             currentCursor = stateStore.cursor();
         } catch (OfflineSyncStateStore.OfflineStateException exc) {
-            return ReconnectResult.localFailure(null, acknowledged, snapshotsStored, exc.getMessage());
+            return ReconnectResult.localFailure(
+                    null, acknowledged, snapshotsStoredBeforePage, exc.getMessage()
+            );
         }
 
         final ChangePage page;
@@ -127,15 +153,18 @@ public final class ReconnectCoordinator {
             page = transport.readChanges(currentCursor, changeLimit);
         } catch (TransportException exc) {
             return ReconnectResult.transportFailure(
-                    null, acknowledged, snapshotsStored, exc.code(), exc.getMessage()
+                    null, acknowledged, snapshotsStoredBeforePage, exc.code(), exc.getMessage()
             );
         }
 
         String pageError = validateChangePage(currentCursor, changeLimit, page);
         if (pageError != null) {
-            return ReconnectResult.protocolFailure(null, acknowledged, snapshotsStored, pageError);
+            return ReconnectResult.protocolFailure(
+                    null, acknowledged, snapshotsStoredBeforePage, pageError
+            );
         }
 
+        int snapshotsStored = snapshotsStoredBeforePage;
         try {
             for (OfflineSyncStateStore.ResourceSnapshot snapshot : page.verifiedSnapshots()) {
                 stateStore.putSnapshot(snapshot);
@@ -144,9 +173,16 @@ public final class ReconnectCoordinator {
             faultInjector.afterChangeSnapshotsStored(page);
             stateStore.compareAndSetCursor(currentCursor, page.nextCursor());
         } catch (OfflineSyncStateStore.OfflineStateException exc) {
-            return ReconnectResult.localFailure(null, acknowledged, snapshotsStored, exc.getMessage());
+            return ReconnectResult.localFailure(
+                    null, acknowledged, snapshotsStored, exc.getMessage()
+            );
         }
 
+        if (page.moreAvailable()) {
+            return ReconnectResult.moreRemoteChanges(
+                    acknowledged, snapshotsStored, page.nextCursor()
+            );
+        }
         return ReconnectResult.complete(acknowledged, snapshotsStored, page.nextCursor());
     }
 
@@ -215,6 +251,9 @@ public final class ReconnectCoordinator {
                 && !page.verifiedSnapshots().isEmpty()) {
             return "remote change page contains snapshots without cursor progress";
         }
+        if (page.moreAvailable() && page.verifiedSnapshots().isEmpty()) {
+            return "remote change page claims more data without advancing any verified snapshot";
+        }
         return null;
     }
 
@@ -241,6 +280,7 @@ public final class ReconnectCoordinator {
     public enum Status {
         COMPLETE,
         MORE_PENDING,
+        MORE_REMOTE_CHANGES,
         WAITING_REMOTE,
         REMOTE_FAILURE,
         TRANSPORT_FAILURE,
@@ -303,8 +343,7 @@ public final class ReconnectCoordinator {
             return new RemoteCommandState(
                     commandId, idempotencyKey, RemoteCommandStatus.FAILED, false,
                     Collections.<OfflineSyncStateStore.ResourceSnapshot>emptyList(),
-                    requireText(errorCode, "errorCode"),
-                    requireText(errorMessage, "errorMessage")
+                    requireText(errorCode, "errorCode"), requireText(errorMessage, "errorMessage")
             );
         }
 
@@ -342,26 +381,49 @@ public final class ReconnectCoordinator {
         private final String fromCursor;
         private final String nextCursor;
         private final boolean readbackVerified;
+        private final boolean moreAvailable;
         private final List<OfflineSyncStateStore.ResourceSnapshot> verifiedSnapshots;
 
+        /** Backward-compatible constructor for a terminal page with no known further changes. */
         public ChangePage(
                 String fromCursor,
                 String nextCursor,
                 boolean readbackVerified,
                 List<OfflineSyncStateStore.ResourceSnapshot> verifiedSnapshots
         ) {
+            this(fromCursor, nextCursor, readbackVerified, false, verifiedSnapshots);
+        }
+
+        public ChangePage(
+                String fromCursor,
+                String nextCursor,
+                boolean readbackVerified,
+                boolean moreAvailable,
+                List<OfflineSyncStateStore.ResourceSnapshot> verifiedSnapshots
+        ) {
             this.fromCursor = optionalText(fromCursor, "fromCursor");
             this.nextCursor = requireText(nextCursor, "nextCursor");
             this.readbackVerified = readbackVerified;
+            this.moreAvailable = moreAvailable;
             this.verifiedSnapshots = copySnapshots(verifiedSnapshots);
         }
 
+        /** Backward-compatible verified terminal page factory. */
         public static ChangePage verified(
                 String fromCursor,
                 String nextCursor,
                 List<OfflineSyncStateStore.ResourceSnapshot> snapshots
         ) {
-            return new ChangePage(fromCursor, nextCursor, true, snapshots);
+            return new ChangePage(fromCursor, nextCursor, true, false, snapshots);
+        }
+
+        public static ChangePage verified(
+                String fromCursor,
+                String nextCursor,
+                boolean moreAvailable,
+                List<OfflineSyncStateStore.ResourceSnapshot> snapshots
+        ) {
+            return new ChangePage(fromCursor, nextCursor, true, moreAvailable, snapshots);
         }
 
         public String fromCursor() {
@@ -374,6 +436,10 @@ public final class ReconnectCoordinator {
 
         public boolean readbackVerified() {
             return readbackVerified;
+        }
+
+        public boolean moreAvailable() {
+            return moreAvailable;
         }
 
         public List<OfflineSyncStateStore.ResourceSnapshot> verifiedSnapshots() {
@@ -422,6 +488,17 @@ public final class ReconnectCoordinator {
             return new ReconnectResult(
                     Status.MORE_PENDING, null, acknowledged, snapshots, remaining,
                     null, null, "more local commands remain for a later bounded reconnect pass"
+            );
+        }
+
+        static ReconnectResult moreRemoteChanges(
+                int acknowledged,
+                int snapshots,
+                String cursor
+        ) {
+            return new ReconnectResult(
+                    Status.MORE_REMOTE_CHANGES, null, acknowledged, snapshots, 0,
+                    cursor, null, "more verified remote changes remain for a later bounded refresh"
             );
         }
 
