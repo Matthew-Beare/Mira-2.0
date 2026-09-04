@@ -2,7 +2,8 @@
   "schema_version": 1,
   "production_roots": [
     "android-client/core/src/main/java",
-    "android-client/google-workspace/src/main/java"
+    "android-client/google-workspace/src/main/java",
+    "android-client/device-proof-app/src/main/java"
   ],
   "suffixes": [".java"],
   "components": [
@@ -124,6 +125,20 @@
       "work_ids": ["ANDROID-CLIENT-CORE-001"],
       "verification": [
         "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceRestApiTest.java"
+      ]
+    },
+    {
+      "id": "android-device-proof-shell",
+      "responsibility": "Minimal installable Android proof application that composes the existing Google authorization/binding, canonical read and queued mutation seams into truthful representative-device evidence states without rendering provider secrets or identifiers.",
+      "why_separate": "The proof shell is a disposable presentation/composition boundary for physical-device verification. It must not absorb provider authorization internals, transport protocol, canonical authority, release distribution, notifications, capture hardware or the future full Android product UI.",
+      "owned_paths": [
+        "android-client/device-proof-app/src/main/java/com/mira/deviceproof/DeviceProofActivity.java",
+        "android-client/device-proof-app/src/main/java/com/mira/deviceproof/DeviceProofPresentation.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/device-proof-app/src/test/java/com/mira/deviceproof/DeviceProofPresentationTest.java"
       ]
     }
   ]
