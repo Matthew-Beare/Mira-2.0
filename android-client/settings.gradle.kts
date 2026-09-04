@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "mira-android-client"
 include(":core")
 include(":google-workspace")
+include(":device-proof-app")
