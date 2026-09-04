@@ -1,4 +1,6 @@
-package com.mira.client.core.sync;
+package com.mira.client.googleworkspace;
+
+import com.mira.client.core.sync.GoogleWorkspaceTransport;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,16 +20,18 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Narrow REST adapter for a Picker-granted MIRA Personal spreadsheet.
+ * Least-authority REST bridge for one Picker-granted MIRA Personal spreadsheet.
  *
- * <p>This adapter deliberately exposes only Drive file metadata, bounded Sheets value reads,
- * Commands/Changes transport reads, and one-row Commands append. It is not a generic Drive or
- * Sheets client and cannot mutate arbitrary ranges.</p>
+ * <p>This adapter can read only the provider material needed to verify one selected file and the
+ * bounded Commands/Changes transport ranges. It can append only one exact Commands protocol row.
+ * It is deliberately not a generic Drive or Sheets client.</p>
  */
 public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.WorkspaceApi {
     private static final String DRIVE_BASE = "https://www.googleapis.com/drive/v3/files/";
     private static final String SHEETS_BASE = "https://sheets.googleapis.com/v4/spreadsheets/";
     private static final int MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
+    private static final int MAX_RESPONSE_ROWS = 16_385;
+    private static final int MAX_ROW_CELLS = 64;
     private static final int CONNECT_TIMEOUT_MS = 10_000;
     private static final int READ_TIMEOUT_MS = 20_000;
 
@@ -61,19 +65,35 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
     @Override
     public List<List<Object>> readValues(String accessToken, String spreadsheetId, String range)
             throws GoogleWorkspaceConnection.ProviderException {
+        if (!GoogleWorkspaceConnection.METADATA_RANGE.equals(range)
+                && !GoogleWorkspaceConnection.COMMAND_HEADER_RANGE.equals(range)
+                && !GoogleWorkspaceConnection.CHANGE_HEADER_RANGE.equals(range)) {
+            throw new GoogleWorkspaceConnection.ProviderException(
+                    "provider_request_invalid",
+                    "Workspace verification cannot read an arbitrary Sheets range"
+            );
+        }
         return readValuesInternal(accessToken, spreadsheetId, range);
     }
 
-    /** Returns the only mutation/read gateway accepted by GoogleWorkspaceTransport. */
+    /** Creates the transport gateway only after queued-writer readiness has been verified. */
     public GoogleWorkspaceTransport.SheetsGateway gateway(
             GoogleWorkspaceConnection.VerifiedBinding binding,
-            String accessToken
+            GoogleWorkspaceConnection.PickerGrant grant
     ) {
         Objects.requireNonNull(binding, "binding");
+        Objects.requireNonNull(grant, "grant");
         if (!binding.sharedWriterReady()) {
             throw new IllegalStateException("MIRA Workspace is bound but shared writer is not ready");
         }
-        return new BoundGateway(binding.spreadsheetId(), requireNonBlank(accessToken, "accessToken"));
+        List<String> picked = grant.pickedFileIds();
+        if (picked.size() != 1 || !binding.spreadsheetId().equals(picked.get(0))) {
+            throw new IllegalArgumentException("Google grant does not match the verified Workspace binding");
+        }
+        return new BoundGateway(
+                binding.spreadsheetId(),
+                requireNonBlank(grant.accessToken(), "accessToken")
+        );
     }
 
     private List<List<Object>> readValuesInternal(
@@ -88,14 +108,25 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
         if (values == null) {
             return Collections.emptyList();
         }
+        if (values.length() > MAX_RESPONSE_ROWS) {
+            throw new GoogleWorkspaceConnection.ProviderException(
+                    "provider_protocol_error",
+                    "Google Sheets returned too many rows"
+            );
+        }
         ArrayList<List<Object>> rows = new ArrayList<>(values.length());
         try {
             for (int rowIndex = 0; rowIndex < values.length(); rowIndex++) {
                 JSONArray row = values.getJSONArray(rowIndex);
+                if (row.length() > MAX_ROW_CELLS) {
+                    throw new GoogleWorkspaceConnection.ProviderException(
+                            "provider_protocol_error",
+                            "Google Sheets returned a row wider than the bounded protocol"
+                    );
+                }
                 ArrayList<Object> cells = new ArrayList<>(row.length());
                 for (int column = 0; column < row.length(); column++) {
-                    Object value = row.get(column);
-                    cells.add(value == JSONObject.NULL ? "" : value);
+                    cells.add(primitiveCell(row.get(column)));
                 }
                 rows.add(Collections.unmodifiableList(cells));
             }
@@ -120,7 +151,7 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
         JSONArray values = new JSONArray();
         JSONArray cells = new JSONArray();
         for (Object value : row) {
-            cells.put(value == null ? "" : value);
+            cells.put(primitiveAppendCell(value));
         }
         values.put(cells);
         JSONObject body = new JSONObject();
@@ -136,10 +167,13 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
         }
         String url = SHEETS_BASE + path(spreadsheetId) + "/values/" + path("Commands!A:P")
                 + ":append?valueInputOption=RAW&insertDataOption=INSERT_ROWS";
+        // Exactly one POST attempt. An IOException after provider acceptance is ambiguous; the
+        // existing GoogleWorkspaceTransport owns readback convergence before any future retry.
         executeJson(new Request("POST", url, accessToken, body.toString()));
     }
 
-    private JSONObject executeJson(Request request) throws GoogleWorkspaceConnection.ProviderException {
+    private JSONObject executeJson(Request request)
+            throws GoogleWorkspaceConnection.ProviderException {
         final Response response;
         try {
             response = executor.execute(request);
@@ -150,14 +184,26 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
                     exc
             );
         }
+        if (response == null) {
+            throw new GoogleWorkspaceConnection.ProviderException(
+                    "provider_protocol_error",
+                    "Google Workspace returned no HTTP response"
+            );
+        }
+        if (response.bodyBytes.length > MAX_RESPONSE_BYTES) {
+            throw new GoogleWorkspaceConnection.ProviderException(
+                    "provider_protocol_error",
+                    "Google Workspace response exceeds bounded size"
+            );
+        }
         if (response.statusCode < 200 || response.statusCode >= 300) {
             throw httpFailure(response.statusCode);
         }
-        if (response.body == null || response.body.trim().isEmpty()) {
+        if (response.bodyBytes.length == 0) {
             return new JSONObject();
         }
         try {
-            return new JSONObject(response.body);
+            return new JSONObject(new String(response.bodyBytes, StandardCharsets.UTF_8));
         } catch (JSONException exc) {
             throw new GoogleWorkspaceConnection.ProviderException(
                     "provider_protocol_error",
@@ -167,34 +213,68 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
         }
     }
 
+    private static Object primitiveCell(Object value)
+            throws GoogleWorkspaceConnection.ProviderException {
+        if (value == null || value == JSONObject.NULL) {
+            return "";
+        }
+        if (value instanceof String || value instanceof Boolean || value instanceof Number) {
+            return value;
+        }
+        throw new GoogleWorkspaceConnection.ProviderException(
+                "provider_protocol_error",
+                "Google Sheets returned unsupported nested cell material"
+        );
+    }
+
+    private static Object primitiveAppendCell(Object value)
+            throws GoogleWorkspaceConnection.ProviderException {
+        if (value == null) {
+            return "";
+        }
+        if (value instanceof String || value instanceof Boolean || value instanceof Number) {
+            return value;
+        }
+        throw new GoogleWorkspaceConnection.ProviderException(
+                "provider_request_invalid",
+                "Commands append contains unsupported cell material"
+        );
+    }
+
     private static GoogleWorkspaceConnection.ProviderException httpFailure(int status) {
         if (status == 401) {
             return new GoogleWorkspaceConnection.ProviderException(
-                    "authorization_expired", "Google authorization is expired or invalid"
+                    "authorization_expired",
+                    "Google authorization is expired or invalid"
             );
         }
         if (status == 403) {
             return new GoogleWorkspaceConnection.ProviderException(
-                    "authorization_denied", "Google account does not grant access to the selected MIRA spreadsheet"
+                    "authorization_denied",
+                    "Google account does not grant access to the selected MIRA spreadsheet"
             );
         }
         if (status == 404) {
             return new GoogleWorkspaceConnection.ProviderException(
-                    "workspace_not_found", "Selected MIRA spreadsheet is no longer available"
+                    "workspace_not_found",
+                    "Selected MIRA spreadsheet is no longer available"
             );
         }
         if (status == 409 || status == 412) {
             return new GoogleWorkspaceConnection.ProviderException(
-                    "provider_conflict", "Google Workspace rejected the request because provider state changed"
+                    "provider_conflict",
+                    "Google Workspace rejected the request because provider state changed"
             );
         }
         if (status == 429 || status >= 500) {
             return new GoogleWorkspaceConnection.ProviderException(
-                    "provider_unavailable", "Google Workspace is temporarily unavailable"
+                    "provider_unavailable",
+                    "Google Workspace is temporarily unavailable"
             );
         }
         return new GoogleWorkspaceConnection.ProviderException(
-                "provider_error", "Google Workspace request failed with HTTP " + status
+                "provider_error",
+                "Google Workspace request failed with HTTP " + status
         );
     }
 
@@ -204,7 +284,9 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
             return URLEncoder.encode(text, StandardCharsets.UTF_8.name()).replace("+", "%20");
         } catch (Exception exc) {
             throw new GoogleWorkspaceConnection.ProviderException(
-                    "provider_request_invalid", "Could not encode Google Workspace request", exc
+                    "provider_request_invalid",
+                    "Could not encode Google Workspace request",
+                    exc
             );
         }
     }
@@ -226,7 +308,8 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
         }
 
         @Override
-        public List<List<Object>> readTable(String tableName) throws GoogleWorkspaceTransport.GatewayException {
+        public List<List<Object>> readTable(String tableName)
+                throws GoogleWorkspaceTransport.GatewayException {
             final String range;
             if (GoogleWorkspaceTransport.COMMANDS_TABLE.equals(tableName)) {
                 range = "Commands!A1:P4097";
@@ -241,7 +324,8 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
                 return readValuesInternal(accessToken, spreadsheetId, range);
             } catch (GoogleWorkspaceConnection.ProviderException exc) {
                 throw new GoogleWorkspaceTransport.GatewayException(
-                        exc.code() + ": " + exc.getMessage(), exc
+                        exc.code() + ": " + exc.getMessage(),
+                        exc
                 );
             }
         }
@@ -258,7 +342,8 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
                 appendCommandRow(accessToken, spreadsheetId, row);
             } catch (GoogleWorkspaceConnection.ProviderException exc) {
                 throw new GoogleWorkspaceTransport.GatewayException(
-                        exc.code() + ": " + exc.getMessage(), exc
+                        exc.code() + ": " + exc.getMessage(),
+                        exc
                 );
             }
         }
@@ -268,23 +353,27 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
         final String method;
         final String url;
         final String accessToken;
-        final String body;
+        final byte[] body;
 
         Request(String method, String url, String accessToken, String body) {
             this.method = requireNonBlank(method, "method");
             this.url = requireNonBlank(url, "url");
             this.accessToken = requireNonBlank(accessToken, "accessToken");
-            this.body = body;
+            this.body = body == null ? null : body.getBytes(StandardCharsets.UTF_8);
         }
     }
 
     static final class Response {
         final int statusCode;
-        final String body;
+        final byte[] bodyBytes;
 
         Response(int statusCode, String body) {
+            this(statusCode, body == null ? new byte[0] : body.getBytes(StandardCharsets.UTF_8));
+        }
+
+        Response(int statusCode, byte[] bodyBytes) {
             this.statusCode = statusCode;
-            this.body = body == null ? "" : body;
+            this.bodyBytes = bodyBytes == null ? new byte[0] : bodyBytes.clone();
         }
     }
 
@@ -295,32 +384,38 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
     private static final class UrlConnectionExecutor implements HttpExecutor {
         @Override
         public Response execute(Request request) throws IOException {
-            HttpURLConnection connection = (HttpURLConnection) URI.create(request.url).toURL().openConnection();
-            connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
-            connection.setReadTimeout(READ_TIMEOUT_MS);
-            connection.setRequestMethod(request.method);
-            connection.setRequestProperty("Authorization", "Bearer " + request.accessToken);
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setUseCaches(false);
-            if (request.body != null) {
-                byte[] encoded = request.body.getBytes(StandardCharsets.UTF_8);
-                connection.setDoOutput(true);
-                connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-                connection.setFixedLengthStreamingMode(encoded.length);
-                try (OutputStream output = connection.getOutputStream()) {
-                    output.write(encoded);
+            HttpURLConnection connection = null;
+            try {
+                connection = (HttpURLConnection) URI.create(request.url).toURL().openConnection();
+                connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+                connection.setReadTimeout(READ_TIMEOUT_MS);
+                connection.setRequestMethod(request.method);
+                connection.setRequestProperty("Authorization", "Bearer " + request.accessToken);
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setUseCaches(false);
+                connection.setInstanceFollowRedirects(false);
+                if (request.body != null) {
+                    connection.setDoOutput(true);
+                    connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                    connection.setFixedLengthStreamingMode(request.body.length);
+                    try (OutputStream output = connection.getOutputStream()) {
+                        output.write(request.body);
+                    }
+                }
+                int status = connection.getResponseCode();
+                InputStream stream = status >= 200 && status < 300
+                        ? connection.getInputStream()
+                        : connection.getErrorStream();
+                byte[] body = stream == null ? new byte[0] : readBounded(stream);
+                return new Response(status, body);
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
                 }
             }
-            int status = connection.getResponseCode();
-            InputStream stream = status >= 200 && status < 400
-                    ? connection.getInputStream()
-                    : connection.getErrorStream();
-            String body = stream == null ? "" : readBounded(stream);
-            connection.disconnect();
-            return new Response(status, body);
         }
 
-        private static String readBounded(InputStream stream) throws IOException {
+        private static byte[] readBounded(InputStream stream) throws IOException {
             try (InputStream input = stream; ByteArrayOutputStream output = new ByteArrayOutputStream()) {
                 byte[] buffer = new byte[8192];
                 int total = 0;
@@ -335,7 +430,7 @@ public final class GoogleWorkspaceRestApi implements GoogleWorkspaceConnection.W
                     }
                     output.write(buffer, 0, read);
                 }
-                return output.toString(StandardCharsets.UTF_8.name());
+                return output.toByteArray();
             }
         }
     }

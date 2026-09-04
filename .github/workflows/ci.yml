@@ -22,7 +22,7 @@ jobs:
           python-version: "3.12"
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
 
@@ -69,8 +69,8 @@ jobs:
           python -m mira.code_ownership check
           python -m project.android_code_ownership check
 
-      - name: Android client core unit tests
-        run: gradle -p android-client :core:testDebugUnitTest --stacktrace
+      - name: Android client unit tests
+        run: gradle -p android-client :core:testDebugUnitTest :google-workspace:testDebugUnitTest --stacktrace
 
       - name: Python unit tests
         run: python -m unittest discover -s tests -v

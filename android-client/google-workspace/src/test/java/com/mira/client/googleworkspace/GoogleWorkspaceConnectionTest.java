@@ -1,4 +1,4 @@
-package com.mira.client.core.sync;
+package com.mira.client.googleworkspace;
 
 import org.junit.Test;
 
@@ -18,13 +18,9 @@ public final class GoogleWorkspaceConnectionTest {
     private static final String TOKEN = "token-not-persisted";
 
     @Test
-    public void pickerGrantBindsExactVerifiedWorkspaceWithoutTokenPersistence() throws Exception {
+    public void pickerGrantBindsExactQueuedWorkspaceWithoutSensitiveStringMaterial() throws Exception {
         FakeApi api = FakeApi.valid();
-        GoogleWorkspaceConnection connection = new GoogleWorkspaceConnection(api);
-
-        GoogleWorkspaceConnection.VerifiedBinding binding = connection.connect(
-                new GoogleWorkspaceConnection.PickerGrant(TOKEN, Collections.singletonList(FILE_ID))
-        );
+        GoogleWorkspaceConnection.VerifiedBinding binding = connect(api);
 
         assertEquals(FILE_ID, binding.spreadsheetId());
         assertEquals("MIRA Personal Starter", binding.displayName());
@@ -32,6 +28,8 @@ public final class GoogleWorkspaceConnectionTest {
         assertEquals("queued_writer", binding.mutationMode());
         assertEquals("ready", binding.readinessCode());
         assertFalse(binding.toString().contains(TOKEN));
+        assertFalse(binding.toString().contains(FILE_ID));
+        assertFalse(binding.toString().contains("MIRA Personal Starter"));
         assertEquals(Arrays.asList(
                 GoogleWorkspaceConnection.METADATA_RANGE,
                 GoogleWorkspaceConnection.COMMAND_HEADER_RANGE,
@@ -75,10 +73,22 @@ public final class GoogleWorkspaceConnectionTest {
     }
 
     @Test
-    public void rejectsMetadataThatIsNotCleanPersonalQueuedWorkspace() throws Exception {
+    public void rejectsLegacyOrMalformedMetadata() throws Exception {
         FakeApi legacy = FakeApi.valid();
         legacy.metadata = metadataRows("environment", "legacy_production");
         expectCode("workspace_schema_mismatch", () -> connect(legacy));
+
+        FakeApi badHeader = FakeApi.valid();
+        badHeader.metadata = new ArrayList<>(badHeader.metadata);
+        badHeader.metadata.set(0, Arrays.asList("Wrong", "Value"));
+        expectCode("workspace_schema_mismatch", () -> connect(badHeader));
+
+        FakeApi extraCell = FakeApi.valid();
+        extraCell.metadata = new ArrayList<>(extraCell.metadata);
+        extraCell.metadata.set(1, Arrays.asList(
+                "schema_version", "mira-structured-state-v1", "unexpected"
+        ));
+        expectCode("workspace_schema_mismatch", () -> connect(extraCell));
     }
 
     @Test
@@ -94,24 +104,21 @@ public final class GoogleWorkspaceConnectionTest {
     }
 
     @Test
-    public void rejectsDuplicateMetadataKeys() throws Exception {
-        FakeApi api = FakeApi.valid();
-        api.metadata = new ArrayList<>(api.metadata);
-        api.metadata.add(Arrays.asList("schema_version", "mira-structured-state-v1"));
-        expectCode("workspace_schema_mismatch", () -> connect(api));
+    public void rejectsDuplicateMetadataAndTransportHeaderDrift() throws Exception {
+        FakeApi duplicate = FakeApi.valid();
+        duplicate.metadata = new ArrayList<>(duplicate.metadata);
+        duplicate.metadata.add(Arrays.asList("schema_version", "mira-structured-state-v1"));
+        expectCode("workspace_schema_mismatch", () -> connect(duplicate));
+
+        FakeApi drift = FakeApi.valid();
+        drift.commands = new ArrayList<>(drift.commands);
+        drift.commands.set(0, new ArrayList<>(drift.commands.get(0)));
+        drift.commands.get(0).set(0, "wrong_command_header");
+        expectCode("workspace_schema_mismatch", () -> connect(drift));
     }
 
     @Test
-    public void rejectsTransportHeaderDriftBeforeReady() throws Exception {
-        FakeApi api = FakeApi.valid();
-        api.commands = new ArrayList<>(api.commands);
-        api.commands.set(0, new ArrayList<>(api.commands.get(0)));
-        api.commands.get(0).set(0, "wrong_command_header");
-        expectCode("workspace_schema_mismatch", () -> connect(api));
-    }
-
-    @Test
-    public void revalidateUsesFreshTokenAndSameProviderBinding() throws Exception {
+    public void revalidateUsesFreshOpaqueGrantAndRejectsBindingDrift() throws Exception {
         FakeApi api = FakeApi.valid();
         GoogleWorkspaceConnection connection = new GoogleWorkspaceConnection(api);
         GoogleWorkspaceConnection.VerifiedBinding initial = connection.connect(
@@ -119,10 +126,23 @@ public final class GoogleWorkspaceConnectionTest {
         );
         api.tokens.clear();
 
-        GoogleWorkspaceConnection.VerifiedBinding refreshed = connection.revalidate(initial, "fresh-token");
-
+        GoogleWorkspaceConnection.VerifiedBinding refreshed = connection.revalidate(
+                initial,
+                new GoogleWorkspaceConnection.PickerGrant(
+                        "fresh-token",
+                        Collections.singletonList(FILE_ID)
+                )
+        );
         assertEquals(FILE_ID, refreshed.spreadsheetId());
         assertEquals(Arrays.asList("fresh-token", "fresh-token", "fresh-token", "fresh-token"), api.tokens);
+
+        expectCode("binding_changed", () -> connection.revalidate(
+                initial,
+                new GoogleWorkspaceConnection.PickerGrant(
+                        "fresh-token",
+                        Collections.singletonList("differentMiraFile_12345")
+                )
+        ));
     }
 
     @Test
@@ -214,6 +234,18 @@ public final class GoogleWorkspaceConnectionTest {
             tokens.add(token);
             if (failure != null) {
                 throw failure;
+            }
+            if (!FILE_ID.equals(fileId) && !"differentMiraFile_12345".equals(fileId)) {
+                throw new AssertionError("unexpected file " + fileId);
+            }
+            if ("differentMiraFile_12345".equals(fileId)) {
+                return new GoogleWorkspaceConnection.FileMetadata(
+                        fileId,
+                        "Different MIRA",
+                        GoogleWorkspaceConnection.SPREADSHEET_MIME_TYPE,
+                        false,
+                        true
+                );
             }
             return file;
         }

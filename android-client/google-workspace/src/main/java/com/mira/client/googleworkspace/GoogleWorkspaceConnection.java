@@ -1,4 +1,4 @@
-package com.mira.client.core.sync;
+package com.mira.client.googleworkspace;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,12 +10,11 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Verifies a Google Picker grant and binds Android to exactly one MIRA Personal Workspace sheet.
+ * Verifies one Google Picker grant and binds Android to one compatible MIRA Personal Workspace.
  *
- * <p>The binding intentionally contains no access token. Google authorization is ephemeral evidence;
- * callers obtain a fresh same-user token and revalidate this non-secret binding before reconnect.
- * The initial file grant comes from Google's native mobile Picker using {@code drive.file}; no broad
- * Drive enumeration and no user-supplied spreadsheet ID are part of the Personal flow.</p>
+ * <p>The binding contains no access token. Token material remains inside this provider module and
+ * is consumed only while verifying or constructing a bounded transport gateway. The ordinary-user
+ * path uses Google's own Picker, never a copied spreadsheet ID or broad Drive enumeration.</p>
  */
 public final class GoogleWorkspaceConnection {
     public static final String DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
@@ -26,6 +25,7 @@ public final class GoogleWorkspaceConnection {
     static final String CHANGE_HEADER_RANGE = "Changes!A1:I1";
 
     private static final Pattern FILE_ID_PATTERN = Pattern.compile("^[A-Za-z0-9_-]{10,256}$");
+    private static final int MAX_METADATA_ROWS = 32;
     private static final List<String> COMMAND_HEADERS = immutableList(
             "command_id", "subject_id", "data_class", "action", "api_major",
             "schema_version", "resource_id", "payload_json", "idempotency_key",
@@ -55,24 +55,47 @@ public final class GoogleWorkspaceConnection {
         this.api = Objects.requireNonNull(api, "api");
     }
 
-    /**
-     * Verifies the one file explicitly granted by Google Picker and returns a token-free binding.
-     */
+    /** Verifies the one file explicitly granted by Google Picker and returns a token-free binding. */
     public VerifiedBinding connect(PickerGrant grant) throws ConnectionException {
         Objects.requireNonNull(grant, "grant");
         String token = requireToken(grant.accessToken());
         List<String> ids = grant.pickedFileIds();
         if (ids.size() != 1) {
-            throw failure("picker_selection_invalid", "Google Picker must grant exactly one MIRA spreadsheet");
+            throw failure(
+                    "picker_selection_invalid",
+                    "Google Picker must grant exactly one MIRA spreadsheet"
+            );
         }
         return verify(token, requireFileId(ids.get(0)), null);
     }
 
-    /** Revalidates a previously verified non-secret binding using a fresh authorization token. */
-    public VerifiedBinding revalidate(VerifiedBinding binding, String accessToken)
+    /**
+     * Revalidates a prior token-free binding from a fresh Picker grant and rejects provider-file
+     * drift explicitly. Useful when the provider intentionally returns selected-file evidence.
+     */
+    public VerifiedBinding revalidate(VerifiedBinding binding, PickerGrant grant)
             throws ConnectionException {
         Objects.requireNonNull(binding, "binding");
-        return verify(requireToken(accessToken), requireFileId(binding.spreadsheetId()), binding);
+        Objects.requireNonNull(grant, "grant");
+        List<String> ids = grant.pickedFileIds();
+        if (ids.size() != 1) {
+            throw failure(
+                    "picker_selection_invalid",
+                    "Google Picker must grant exactly one MIRA spreadsheet"
+            );
+        }
+        return verify(requireToken(grant.accessToken()), requireFileId(ids.get(0)), binding);
+    }
+
+    /** Provider-package seam for refreshing a stored binding with a fresh token and no new Picker. */
+    VerifiedBinding revalidateWithToken(VerifiedBinding binding, String accessToken)
+            throws ConnectionException {
+        Objects.requireNonNull(binding, "binding");
+        return verify(
+                requireToken(accessToken),
+                requireFileId(binding.spreadsheetId()),
+                binding
+        );
     }
 
     private VerifiedBinding verify(String token, String spreadsheetId, VerifiedBinding prior)
@@ -135,7 +158,10 @@ public final class GoogleWorkspaceConnection {
 
     private static void validateFile(FileMetadata file, String expectedId) throws ConnectionException {
         if (file == null || !expectedId.equals(file.id())) {
-            throw failure("workspace_identity_mismatch", "Drive metadata did not read back the selected file identity");
+            throw failure(
+                    "workspace_identity_mismatch",
+                    "Drive metadata did not read back the selected file identity"
+            );
         }
         if (!SPREADSHEET_MIME_TYPE.equals(file.mimeType())) {
             throw failure("workspace_type_mismatch", "Selected Google Drive file is not a Google Sheet");
@@ -147,32 +173,53 @@ public final class GoogleWorkspaceConnection {
             throw failure("workspace_read_only", "Selected MIRA spreadsheet is not editable by this account");
         }
         if (file.name().trim().isEmpty()) {
-            throw failure("workspace_identity_mismatch", "Selected MIRA spreadsheet has no readable name");
+            throw failure(
+                    "workspace_identity_mismatch",
+                    "Selected MIRA spreadsheet has no readable name"
+            );
         }
     }
 
     private static Map<String, String> validateMetadata(List<List<Object>> rows)
             throws ConnectionException {
-        if (rows == null || rows.isEmpty()) {
-            throw failure("workspace_schema_mismatch", "MIRA Metadata table is missing");
+        if (rows == null || rows.isEmpty() || rows.size() > MAX_METADATA_ROWS) {
+            throw failure(
+                    "workspace_schema_mismatch",
+                    "MIRA Metadata table is missing or exceeds the bounded row limit"
+            );
         }
+        List<Object> header = rows.get(0);
+        if (header == null || header.size() != 2
+                || !"Key".equals(cell(header, 0))
+                || !"Value".equals(cell(header, 1))) {
+            throw failure("workspace_schema_mismatch", "MIRA Metadata header is invalid");
+        }
+
         LinkedHashMap<String, String> values = new LinkedHashMap<>();
-        int start = 0;
-        if (rows.size() > 0 && "Key".equals(cell(rows.get(0), 0)) && "Value".equals(cell(rows.get(0), 1))) {
-            start = 1;
-        }
-        for (int index = start; index < rows.size(); index++) {
+        for (int index = 1; index < rows.size(); index++) {
             List<Object> row = rows.get(index);
-            String key = cell(row, 0).trim();
-            String value = cell(row, 1).trim();
-            if (key.isEmpty() && value.isEmpty()) {
+            if (isBlankRow(row)) {
                 continue;
             }
+            if (row == null || row.size() > 2) {
+                throw failure(
+                        "workspace_schema_mismatch",
+                        "MIRA Metadata contains unexpected cells"
+                );
+            }
+            String key = cell(row, 0).trim();
+            String value = cell(row, 1).trim();
             if (key.isEmpty() || value.isEmpty()) {
-                throw failure("workspace_schema_mismatch", "MIRA Metadata contains an incomplete key/value row");
+                throw failure(
+                        "workspace_schema_mismatch",
+                        "MIRA Metadata contains an incomplete key/value row"
+                );
             }
             if (values.put(key, value) != null) {
-                throw failure("workspace_schema_mismatch", "MIRA Metadata contains duplicate key: " + key);
+                throw failure(
+                        "workspace_schema_mismatch",
+                        "MIRA Metadata contains duplicate key: " + key
+                );
             }
         }
         for (Map.Entry<String, String> required : REQUIRED_METADATA.entrySet()) {
@@ -194,26 +241,39 @@ public final class GoogleWorkspaceConnection {
     ) throws ConnectionException {
         if (rows == null || rows.size() != 1 || rows.get(0) == null
                 || rows.get(0).size() != expected.size()) {
-            throw failure("workspace_schema_mismatch", table + " header is missing or has the wrong width");
+            throw failure(
+                    "workspace_schema_mismatch",
+                    table + " header is missing or has the wrong width"
+            );
         }
         List<Object> row = rows.get(0);
         for (int index = 0; index < expected.size(); index++) {
             if (!expected.get(index).equals(cell(row, index))) {
-                throw failure("workspace_schema_mismatch", table + " header does not match MIRA protocol");
+                throw failure(
+                        "workspace_schema_mismatch",
+                        table + " header does not match MIRA protocol"
+                );
             }
         }
     }
 
     private static String requireToken(String value) throws ConnectionException {
-        if (value == null || value.trim().isEmpty() || !value.equals(value.trim())) {
-            throw failure("authorization_unavailable", "Google authorization did not return a usable access token");
+        if (value == null || value.trim().isEmpty() || !value.equals(value.trim())
+                || value.length() > 8192) {
+            throw failure(
+                    "authorization_unavailable",
+                    "Google authorization did not return a usable access token"
+            );
         }
         return value;
     }
 
     private static String requireFileId(String value) throws ConnectionException {
         if (value == null || !FILE_ID_PATTERN.matcher(value).matches()) {
-            throw failure("picker_selection_invalid", "Google Picker returned an invalid file identity");
+            throw failure(
+                    "picker_selection_invalid",
+                    "Google Picker returned an invalid file identity"
+            );
         }
         return value;
     }
@@ -225,6 +285,18 @@ public final class GoogleWorkspaceConnection {
         return String.valueOf(row.get(index));
     }
 
+    private static boolean isBlankRow(List<Object> row) {
+        if (row == null || row.isEmpty()) {
+            return true;
+        }
+        for (Object value : row) {
+            if (value != null && !String.valueOf(value).trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static List<String> immutableList(String... values) {
         return Collections.unmodifiableList(Arrays.asList(values.clone()));
     }
@@ -233,28 +305,33 @@ public final class GoogleWorkspaceConnection {
         return new ConnectionException(code, message);
     }
 
-    /** Ephemeral authorization result. The access token must never be persisted in a binding. */
+    /** Opaque ephemeral authorization result. Token/file details remain provider-package internal. */
     public static final class PickerGrant {
         private final String accessToken;
         private final List<String> pickedFileIds;
 
-        public PickerGrant(String accessToken, List<String> pickedFileIds) {
+        PickerGrant(String accessToken, List<String> pickedFileIds) {
             this.accessToken = accessToken;
             this.pickedFileIds = pickedFileIds == null
                     ? Collections.emptyList()
                     : Collections.unmodifiableList(new ArrayList<>(pickedFileIds));
         }
 
-        public String accessToken() {
+        String accessToken() {
             return accessToken;
         }
 
-        public List<String> pickedFileIds() {
+        List<String> pickedFileIds() {
             return pickedFileIds;
+        }
+
+        @Override
+        public String toString() {
+            return "PickerGrant{opaque}";
         }
     }
 
-    /** Non-secret provider binding safe to persist in Android connection state. */
+    /** Token-free provider binding. Provider identity is deliberately not included in toString(). */
     public static final class VerifiedBinding {
         private final String spreadsheetId;
         private final String displayName;
@@ -276,7 +353,7 @@ public final class GoogleWorkspaceConnection {
             this.sharedWriterReady = sharedWriterReady;
         }
 
-        public String spreadsheetId() {
+        String spreadsheetId() {
             return spreadsheetId;
         }
 
@@ -302,7 +379,9 @@ public final class GoogleWorkspaceConnection {
 
         @Override
         public String toString() {
-            return "VerifiedBinding{" + spreadsheetId + ", " + schemaVersion + ", " + mutationMode + "}";
+            return "VerifiedBinding{schemaVersion=" + schemaVersion
+                    + ", mutationMode=" + mutationMode
+                    + ", sharedWriterReady=" + sharedWriterReady + "}";
         }
     }
 
@@ -328,7 +407,6 @@ public final class GoogleWorkspaceConnection {
         public boolean canEdit() { return canEdit; }
     }
 
-    /** Minimal provider read surface needed to verify a Picker-selected Workspace binding. */
     public interface WorkspaceApi {
         FileMetadata readFileMetadata(String accessToken, String fileId) throws ProviderException;
 

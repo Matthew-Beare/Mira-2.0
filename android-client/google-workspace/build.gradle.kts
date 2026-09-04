@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.mira.client.core"
+    namespace = "com.mira.client.googleworkspace"
     compileSdk = 36
 
     defaultConfig {
@@ -24,8 +24,9 @@ android {
 }
 
 dependencies {
+    api(project(":core"))
+    implementation("com.google.android.gms:play-services-auth:21.6.0")
+
     testImplementation("junit:junit:4.13.2")
-    // Android supplies org.json at runtime. JVM unit tests need the real implementation
-    // instead of android.jar method stubs so the production row parser is actually exercised.
     testImplementation("org.json:json:20250517")
 }

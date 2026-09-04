@@ -1,8 +1,12 @@
-package com.mira.client.core.sync;
+package com.mira.client.googleworkspace;
 
+import com.mira.client.core.sync.GoogleWorkspaceTransport;
+
+import org.json.JSONObject;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,16 +44,56 @@ public final class GoogleWorkspaceRestApiTest {
     }
 
     @Test
-    public void parsesBoundedSheetsRowsWithoutArbitraryMutation() throws Exception {
+    public void verificationReadRejectsArbitraryRangeBeforeNetwork() throws Exception {
         FakeHttp http = new FakeHttp();
-        http.enqueue(200, "{\"values\":[[\"Key\",\"Value\"],[\"mutation_mode\",\"queued_writer\"]]}");
+        GoogleWorkspaceRestApi api = new GoogleWorkspaceRestApi(http);
+        expectProviderCode("provider_request_invalid", () ->
+                api.readValues(TOKEN, FILE_ID, "Resources!A:Z"));
+        assertEquals(0, http.requests.size());
+    }
+
+    @Test
+    public void parsesBoundedPrimitiveSheetsRows() throws Exception {
+        FakeHttp http = new FakeHttp();
+        http.enqueue(200, "{\"values\":[[\"Key\",\"Value\"],[\"enabled\",true],[\"revision\",3]]}");
         GoogleWorkspaceRestApi api = new GoogleWorkspaceRestApi(http);
 
-        List<List<Object>> rows = api.readValues(TOKEN, FILE_ID, "Metadata!A1:B32");
+        List<List<Object>> rows = api.readValues(
+                TOKEN,
+                FILE_ID,
+                GoogleWorkspaceConnection.METADATA_RANGE
+        );
 
-        assertEquals(2, rows.size());
+        assertEquals(3, rows.size());
         assertEquals(Arrays.asList("Key", "Value"), rows.get(0));
         assertTrue(http.requests.get(0).url.contains("Metadata%21A1%3AB32"));
+    }
+
+    @Test
+    public void nestedCellMaterialFailsClosed() throws Exception {
+        FakeHttp http = new FakeHttp();
+        http.enqueue(200, "{\"values\":[[{\"bad\":true}]]}");
+        expectProviderCode("provider_protocol_error", () ->
+                new GoogleWorkspaceRestApi(http).readValues(
+                        TOKEN,
+                        FILE_ID,
+                        GoogleWorkspaceConnection.METADATA_RANGE
+                ));
+    }
+
+    @Test
+    public void oversizedResponseFailsClosedEvenWithFakeExecutor() throws Exception {
+        FakeHttp http = new FakeHttp();
+        http.responses.addLast(new GoogleWorkspaceRestApi.Response(
+                200,
+                new byte[(2 * 1024 * 1024) + 1]
+        ));
+        expectProviderCode("provider_protocol_error", () ->
+                new GoogleWorkspaceRestApi(http).readValues(
+                        TOKEN,
+                        FILE_ID,
+                        GoogleWorkspaceConnection.METADATA_RANGE
+                ));
     }
 
     @Test
@@ -58,7 +102,7 @@ public final class GoogleWorkspaceRestApiTest {
         http.enqueue(200, "{\"values\":[[\"command_id\"]]}");
         http.enqueue(200, "{\"values\":[[\"change_seq\"]]}");
         GoogleWorkspaceRestApi api = new GoogleWorkspaceRestApi(http);
-        GoogleWorkspaceTransport.SheetsGateway gateway = api.gateway(binding(), TOKEN);
+        GoogleWorkspaceTransport.SheetsGateway gateway = api.gateway(binding(), grant());
 
         gateway.readTable(GoogleWorkspaceTransport.COMMANDS_TABLE);
         gateway.readTable(GoogleWorkspaceTransport.CHANGES_TABLE);
@@ -68,85 +112,131 @@ public final class GoogleWorkspaceRestApiTest {
     }
 
     @Test
-    public void boundGatewayAppendsExactlyOneCommandRow() throws Exception {
+    public void boundGatewayAppendsExactlyOnePrimitiveCommandRow() throws Exception {
         FakeHttp http = new FakeHttp();
         http.enqueue(200, "{}");
         GoogleWorkspaceRestApi api = new GoogleWorkspaceRestApi(http);
-        GoogleWorkspaceTransport.SheetsGateway gateway = api.gateway(binding(), TOKEN);
+        GoogleWorkspaceTransport.SheetsGateway gateway = api.gateway(binding(), grant());
         List<Object> row = new ArrayList<>();
         for (int index = 0; index < 16; index++) {
-            row.add("v" + index);
+            row.add(index == 4 ? 1L : "v" + index);
         }
 
         gateway.appendRow(GoogleWorkspaceTransport.COMMANDS_TABLE, row);
 
+        assertEquals(1, http.requests.size());
         GoogleWorkspaceRestApi.Request request = http.requests.get(0);
         assertEquals("POST", request.method);
         assertTrue(request.url.contains("Commands%21A%3AP:append"));
         assertTrue(request.url.contains("valueInputOption=RAW"));
-        assertTrue(request.body.contains("\"values\":"));
+        assertTrue(new String(request.body, StandardCharsets.UTF_8).contains("\"values\":"));
     }
 
     @Test
-    public void boundGatewayRejectsArbitraryTableReadOrAppend() throws Exception {
-        GoogleWorkspaceRestApi api = new GoogleWorkspaceRestApi(new FakeHttp());
-        GoogleWorkspaceTransport.SheetsGateway gateway = api.gateway(binding(), TOKEN);
+    public void appendNetworkFailureIsOneAttemptOnly() throws Exception {
+        FakeHttp http = new FakeHttp();
+        http.ioFailure = new IOException("ambiguous socket failure");
+        GoogleWorkspaceTransport.SheetsGateway gateway =
+                new GoogleWorkspaceRestApi(http).gateway(binding(), grant());
+
+        expectGatewayFailure(() -> gateway.appendRow(
+                GoogleWorkspaceTransport.COMMANDS_TABLE,
+                Collections.nCopies(16, "x")
+        ));
+        assertEquals(1, http.requests.size());
+    }
+
+    @Test
+    public void boundGatewayRejectsArbitraryTableAndBadRowBeforeNetwork() throws Exception {
+        FakeHttp http = new FakeHttp();
+        GoogleWorkspaceTransport.SheetsGateway gateway =
+                new GoogleWorkspaceRestApi(http).gateway(binding(), grant());
         expectGatewayFailure(() -> gateway.readTable("Resources"));
         expectGatewayFailure(() -> gateway.appendRow("Resources", Collections.nCopies(16, "x")));
-    }
-
-    @Test
-    public void commandAppendRejectsWrongProtocolWidthBeforeNetwork() throws Exception {
-        FakeHttp http = new FakeHttp();
-        GoogleWorkspaceTransport.SheetsGateway gateway = new GoogleWorkspaceRestApi(http)
-                .gateway(binding(), TOKEN);
-
         expectGatewayFailure(() -> gateway.appendRow(
                 GoogleWorkspaceTransport.COMMANDS_TABLE,
                 Collections.singletonList("too-short")
         ));
-
         assertEquals(0, http.requests.size());
     }
 
     @Test
-    public void mapsExpiredAndDeniedAuthorizationWithoutLeakingProviderBody() throws Exception {
+    public void appendRejectsNestedCellBeforeNetwork() throws Exception {
+        FakeHttp http = new FakeHttp();
+        GoogleWorkspaceTransport.SheetsGateway gateway =
+                new GoogleWorkspaceRestApi(http).gateway(binding(), grant());
+        List<Object> row = new ArrayList<>(Collections.nCopies(16, "x"));
+        row.set(7, new JSONObject().put("bad", true));
+        expectGatewayFailure(() -> gateway.appendRow(GoogleWorkspaceTransport.COMMANDS_TABLE, row));
+        assertEquals(0, http.requests.size());
+    }
+
+    @Test
+    public void mapsAuthorizationFailuresWithoutLeakingProviderBody() throws Exception {
         FakeHttp expired = new FakeHttp();
         expired.enqueue(401, "{\"error\":{\"message\":\"secret provider detail\"}}");
-        expectProviderCode("authorization_expired", () -> new GoogleWorkspaceRestApi(expired)
-                .readFileMetadata(TOKEN, FILE_ID));
+        try {
+            new GoogleWorkspaceRestApi(expired).readFileMetadata(TOKEN, FILE_ID);
+            fail("expected ProviderException");
+        } catch (GoogleWorkspaceConnection.ProviderException exc) {
+            assertEquals("authorization_expired", exc.code());
+            assertFalse(exc.getMessage().contains("secret"));
+        }
 
         FakeHttp denied = new FakeHttp();
         denied.enqueue(403, "permission body");
-        expectProviderCode("authorization_denied", () -> new GoogleWorkspaceRestApi(denied)
-                .readFileMetadata(TOKEN, FILE_ID));
+        expectProviderCode("authorization_denied", () ->
+                new GoogleWorkspaceRestApi(denied).readFileMetadata(TOKEN, FILE_ID));
     }
 
     @Test
     public void networkFailureNormalizesToProviderUnavailable() throws Exception {
         FakeHttp http = new FakeHttp();
         http.ioFailure = new IOException("socket exploded");
-        expectProviderCode("provider_unavailable", () -> new GoogleWorkspaceRestApi(http)
-                .readFileMetadata(TOKEN, FILE_ID));
+        expectProviderCode("provider_unavailable", () ->
+                new GoogleWorkspaceRestApi(http).readFileMetadata(TOKEN, FILE_ID));
     }
 
     @Test
-    public void gatewayRefusesBoundButNotSharedWriterReadyWorkspace() {
+    public void gatewayRefusesNotReadyOrMismatchedBindingGrant() {
         GoogleWorkspaceConnection.VerifiedBinding notReady = new GoogleWorkspaceConnection.VerifiedBinding(
-                FILE_ID, "MIRA Personal Starter", "mira-structured-state-v1",
-                "direct_single_writer", false
+                FILE_ID,
+                "MIRA Personal Starter",
+                "mira-structured-state-v1",
+                "direct_single_writer",
+                false
         );
         try {
-            new GoogleWorkspaceRestApi(new FakeHttp()).gateway(notReady, TOKEN);
+            new GoogleWorkspaceRestApi(new FakeHttp()).gateway(notReady, grant());
             fail("expected shared writer readiness guard");
         } catch (IllegalStateException expected) {
             assertTrue(expected.getMessage().contains("not ready"));
+        }
+
+        try {
+            new GoogleWorkspaceRestApi(new FakeHttp()).gateway(
+                    binding(),
+                    new GoogleWorkspaceConnection.PickerGrant(
+                            TOKEN,
+                            Collections.singletonList("differentMiraFile_12345")
+                    )
+            );
+            fail("expected grant/binding identity guard");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage().contains("does not match"));
         }
     }
 
     @Test
     public void productionRestClassHasDirectJvmEvidence() {
         assertEquals("GoogleWorkspaceRestApi", GoogleWorkspaceRestApi.class.getSimpleName());
+    }
+
+    private static GoogleWorkspaceConnection.PickerGrant grant() {
+        return new GoogleWorkspaceConnection.PickerGrant(
+                TOKEN,
+                Collections.singletonList(FILE_ID)
+        );
     }
 
     private static GoogleWorkspaceConnection.VerifiedBinding binding() {
