@@ -4,7 +4,7 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 
 ## Product direction
 
-Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android extends the same canonical reality without becoming a second authority. M2-M1-001 through M2-M1-009 are durably closed. M2-M1-010 now has deterministic integration evidence for the final functional `ANDROID-SYNC` cross-client contract: an Android-shaped queued mutation becomes canonical Workspace state and the existing stock-ChatGPT query path reads that exact state through the same Authority. Live Android authorization/device execution and representative-device evidence remain separate and must not be inferred from this packet.
+Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android extends the same canonical reality without becoming a second authority. M2-M1-001 through M2-M1-009 are durably closed. M2-M1-010 has now merged its deterministic integration proof for the final functional `ANDROID-SYNC` cross-client contract: an Android-shaped queued mutation becomes canonical Workspace state and the existing stock-ChatGPT query path reads that exact state through the same Authority. Live Android authorization/device execution, conflict UI and representative-device evidence remain separate and must not be inferred from this packet.
 
 ## Prior-packet recovery verification — 2026-09-04
 
@@ -58,9 +58,15 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android ex
 - **Activation SHA:** `151bb3e0853fbbbe172ac7df81cb6c3864d0283f`
 - **Integration-test SHA:** `e3483a95adbf6dd24e940834486768001c0576ad`
 - **Alignment-fix SHA:** `f7bfbda6aed92349f2ea6f8d4def695f37574cc3`
-- **Green integration CI:** `33901335696` — success on exact `f7bfbda6aed92349f2ea6f8d4def695f37574cc3`
-- **PR:** #110 — open and mergeable before this evidence checkpoint
-- **Status:** implementation/test evidence complete; this checkpoint requires exact-head CI before expected-head merge
+- **Final implementation/evidence head:** `d49f136511734762b4e8b4c827d1cc929898e774`
+- **Final implementation exact-head CI:** `33901584522` — success
+- **Implementation PR:** #110 — merged with expected-head protection
+- **Implementation merge SHA:** `9e2314ee1e653291ecb857c6faa126f603fcd33d`
+- **Implementation post-merge CI:** `33902636268` — success on exact merge SHA
+- **Lifecycle closeout branch:** `work/m2-m1-010-lifecycle-closeout`
+- **Lifecycle roadmap commit:** `e5518fdde5475ef7bd72058ad8f0737fdea47024`
+- **Lifecycle backlog commit:** `438d50e824da1483c352a3ff5aa8228676c3266b`
+- **Status:** functional implementation is merged and post-merge green; lifecycle closeout is staged and requires exact-head CI/merge/readback before durable packet closure
 
 ## Objective result
 
@@ -86,12 +92,19 @@ No new production read path was required. The existing queued writer and existin
 - `Code.gs` already resolves canonical reads through persisted `authority_binding` + verified/enabled Google Sheets Authority and reads `Resources`; it does not use Android cache or Changes.
 - `CommandWorker.gs` already owns queued-mode canonical mutation, same-user authority validation, exact readback and Changes projection.
 - Queued-writer activation stores `mutation_mode=queued_writer`; the stock-ChatGPT schema/read contract continues to use `writer_model=single_writer`, so queued mutation does not invalidate reads.
-- New test-only file `tests/apps_script/android_cross_readback.test.js` supplies the missing shared-runtime integration evidence; no production source changed.
+- `tests/apps_script/android_cross_readback.test.js` supplies the missing shared-runtime integration evidence; no production source changed.
 - First PR CI `33901154860` correctly stopped at Work-session alignment before test execution because two backlog work IDs were accidentally placed in the feature-only `Related invariants/features` field. No implementation/test code changed in response.
 - Checkpoint `f7bfbda6aed92349f2ea6f8d4def695f37574cc3` corrected only that taxonomy by retaining `AUTH-001`, `STORE-001`, `RECOVERY-002`, `DATA-001`, and `PROVIDER-002` as related features and moving `CHATGPT-API-CLIENT-001` / `CORE-ROUNDTRIP` to a separate related-work field.
-- Corrected exact-head CI `33901335696` is completely green: compile, feature registry, product lifecycle, starter distribution, work-session alignment, code ownership, Android unit tests, Python unit tests and Workspace Apps Script tests all passed.
-- Pre-merge re-read of `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md` still aligns with the bounded result: deterministic cross-readback satisfies M2-M1 step 7, while live Android/provider/device and representative-device evidence remain separate.
+- Corrected integration CI `33901335696` is completely green.
+- Final evidence head `d49f136511734762b4e8b4c827d1cc929898e774` passed exact-head CI `33901584522`.
+- PR #110 merged only with that exact expected head; merge SHA is `9e2314ee1e653291ecb857c6faa126f603fcd33d`.
+- Remote `main` independently read back exact merge SHA `9e2314ee1e653291ecb857c6faa126f603fcd33d`.
+- Post-merge CI `33902636268` completed successfully on exact merge SHA `9e2314ee1e653291ecb857c6faa126f603fcd33d`.
+- Lifecycle reconciliation is staged on `work/m2-m1-010-lifecycle-closeout`: `BACKLOG.md` changes exactly four lines and `ROADMAP.md` changes exactly four lines versus the merge base, preserving all other content.
+- `BACKLOG.md` now marks `ANDROID-SYNC` complete at deterministic integration evidence while retaining Android live provider/device, conflict-UI and representative-device gaps under `ANDROID-CLIENT-CORE-001`.
+- `ROADMAP.md` now marks M2-M1 step 7 complete and leaves representative-device proof as step 8 / next within the milestone subject to fresh dependency ranking.
 - No Work mode, live provider mutation, legacy MIRA production data, historical disposable M2-M1-001 resource, private provider identifier, token, credential, or secret was used.
+- A concurrently opened duplicate PR #111 was detected and closed without merge; PR #110 remained the authoritative stronger production-path integration proof, preserving the one-active-packet rule.
 
 ## Acceptance criteria result
 
@@ -103,10 +116,12 @@ No new production read path was required. The existing queued writer and existin
 6. Query independence from Changes/Android cache — **satisfied; primary test removes Changes before read**.
 7. Queued mutation mode remains read-compatible; no second read engine — **satisfied**.
 8. Failed stale command cannot masquerade as cross-readback success — **satisfied**.
-9. Existing repository suites remain green — **satisfied on CI `33901335696`**.
+9. Existing repository suites remain green — **satisfied through implementation post-merge CI `33902636268`**.
 10. Zero Work/live-provider/legacy/private-state usage — **satisfied**.
 11. Pre-merge FEATURES/BACKLOG/ROADMAP/invariant alignment re-read — **satisfied**.
-12. Expected-head merge, remote-main readback, post-merge CI, lifecycle reconciliation and final closeout CI — **pending**.
+12. Expected-head implementation merge, remote-main readback and implementation post-merge CI — **satisfied**.
+13. BACKLOG/ROADMAP lifecycle reconciliation — **staged on dedicated closeout branch; exact-head CI/merge/readback pending**.
+14. Final CURRENT_WORK closeout with exact-head CI/readback — **pending after lifecycle merge**.
 
 ## Explicitly deferred
 
@@ -116,19 +131,19 @@ No new production read path was required. The existing queued writer and existin
 - User-facing conflict-resolution UI and broad Connections/app-shell polish.
 - Release signing/distribution, notifications/TTS, capture paths, unrelated providers, and legacy-data migration.
 
-## Session-end alignment verification — 2026-09-04 M2-M1-010 pre-merge
+## Session-end alignment verification — 2026-09-04 M2-M1-010 lifecycle closeout
 
 ### `FEATURES.md`
 
-`CLIENT-ANDROID-001` remains partial. M2-M1-010 adds deterministic cross-client integration evidence but does not prove live Android authorization/device behavior or representative-device delivery.
+`CLIENT-ANDROID-001` remains partial. M2-M1-010 completes the deterministic cross-client functional contract but does not prove live Android authorization/device behavior, conflict UI, or representative-device delivery.
 
 ### `BACKLOG.md`
 
-The accepted `ANDROID-SYNC` functional contract is now satisfied at deterministic integration evidence: Android-shaped queued mutation reaches canonical Workspace state and the stock-ChatGPT query contract reads that exact state from the same Authority. `ANDROID-CLIENT-CORE-001` remains partial because its live provider/device, conflict-UI and representative-device evidence gaps remain.
+`ANDROID-SYNC` is complete at deterministic integration evidence in M2-M1-010 / PR #110. `ANDROID-CLIENT-CORE-001` remains partial through M2-M1-010 because its live provider/device, conflict-UI and representative-device evidence gaps remain.
 
 ### `ROADMAP.md`
 
-M2-M1 step 7 is satisfied at deterministic integration evidence. Step 8 representative-device proof remains next within the Android milestone unless fresh dependency ranking selects a higher-priority release blocker after this packet closes.
+M2-M1 step 7 is complete at deterministic integration evidence. Step 8 representative-device proof remains next within the Android milestone unless the fresh post-closeout dependency review selects a higher-priority blocker.
 
 ### `PRODUCT_INVARIANTS.md`
 
@@ -136,17 +151,17 @@ One-authority semantics, client-origin neutrality, nonauthoritative Changes/cach
 
 ### Direction result
 
-**ALIGNED.** The packet required no production read implementation because the existing canonical read contract already composes correctly with queued Android/shared-client mutation. This is a test/evidence completion, not permission to claim live Android/provider/device behavior.
+**ALIGNED.** The packet required no production read implementation because the existing canonical read contract already composes correctly with queued Android/shared-client mutation. Lifecycle state now reflects that bounded completion without claiming live Android/provider/device evidence.
 
 ## Exact next action / resume point
 
-1. Require exact-head CI on this evidence checkpoint.
-2. Re-read PR #110 head/mergeability and merge only with exact expected-head SHA if CI is green.
-3. Independently read back remote `main` at the merge SHA and require post-merge CI.
-4. Reconcile BACKLOG/ROADMAP lifecycle so `ANDROID-SYNC` records deterministic integration completion while `ANDROID-CLIENT-CORE-001` / `CLIENT-ANDROID-001` retain live/device gaps.
-5. Write final CURRENT_WORK closeout and require exact-head CI/readback before durable closure.
-6. Do not use Work mode for lifecycle closeout. Any later representative-device/live-provider packet must be separately bounded and may use Work only when its deterministic prerequisites are green.
+1. Read back lifecycle closeout branch head after this CURRENT_WORK checkpoint.
+2. Open one lifecycle-only PR containing exactly `BACKLOG.md`, `ROADMAP.md`, and `CURRENT_WORK.md`; verify its diff contains only the intended M2-M1-010 lifecycle/closeout changes.
+3. Require exact-head CI and merge only with exact expected-head SHA if green.
+4. Independently read back remote `main` at the lifecycle merge SHA and require post-merge CI.
+5. Write one final `CURRENT_WORK.md` closure checkpoint recording the lifecycle merge SHA and post-merge CI, then require exact-head CI and remote-main readback before declaring M2-M1-010 durably closed.
+6. Only after durable closure, re-read `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md` to select exactly one next bounded packet. Do not assume representative-device work outranks a newly exposed integrity blocker without that fresh ranking.
 
 ## Recovery protocol
 
-Read this file first. Verify PR #110 exact head and CI. Resume from expected-head merge after this checkpoint passes exact-head CI. Do not rerun M2-M1-001 through M2-M1-009, do not add production read code without new failing evidence, and do not collapse representative-device/live-provider proof into this deterministic packet.
+Read this file first. Verify `work/m2-m1-010-lifecycle-closeout` and its exact head. Do not rerun M2-M1-001 through M2-M1-010 implementation work. Resume from lifecycle closeout PR/CI/merge, then final CURRENT_WORK closure. Do not use Work mode for lifecycle closeout. Any later representative-device/live-provider packet must be separately bounded and may use Work only when its deterministic prerequisites are green and the packet explicitly requires provider/browser actions.
