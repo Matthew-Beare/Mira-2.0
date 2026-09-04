@@ -29,6 +29,9 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(project(":google-workspace"))
+    // The proof Activity directly consumes AuthorizationResult/Task types exposed by
+    // GooglePlayWorkspaceAuthorization, so keep this dependency explicit at the app edge.
+    implementation("com.google.android.gms:play-services-auth:21.6.0")
 
     testImplementation("junit:junit:4.13.2")
 }
