@@ -56,8 +56,10 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first, with provi
 - **Repository:** `Matthew-Beare/Mira-2.0`
 - **Branch:** `work/m2-m1-007-android-google-binding`
 - **Packet base SHA:** `290b78518947f060e06a11d9141faf0c5d64d4e5`
-- **Current head SHA:** pending source checkpoint readback
-- **Status:** active
+- **Pre-closeout implementation head SHA:** `18b64af91c76a8488bcf145738c090eb9f9a2371`
+- **Current head SHA:** this closeout checkpoint commit; verify by remote branch readback before merge
+- **PR:** `#106`
+- **Status:** implementation/test checkpoint green; final exact-head closeout CI pending
 
 ## Objective
 
@@ -84,7 +86,7 @@ This decision is reversible if Google changes the Picker contract or a later pro
 - `ANDROID-COMMAND-BOUNDARY-001` — complete.
 - `GoogleWorkspaceTransport`, `ReconnectCoordinator`, protected credential storage, encrypted offline queue/cache/cursor state — merged/test-verified through M2-M1-006.
 - Google OAuth client registration/release signing configuration is deployment/provider configuration, not repository secret material. No client secret or personal provider identifier may be committed.
-- Live Google/device proof is intentionally deferred until source/tests/CI are green.
+- Live Google/device proof remains intentionally outside this packet's evidence ceiling.
 
 ## Acceptance criteria
 
@@ -101,21 +103,34 @@ This decision is reversible if Google changes the Picker contract or a later pro
 ## Completed evidence
 
 - Session-start Git recovery verified remote `main` at `290b78518947f060e06a11d9141faf0c5d64d4e5`.
-- Exact-head CI `33731858470` succeeded on that closeout SHA.
+- Exact-head CI `33731858470` succeeded on that prior closeout SHA.
 - Canonical feature/backlog/roadmap/invariant alignment was re-read before implementation.
 - Active branch created from the exact verified main SHA: `work/m2-m1-007-android-google-binding`.
 - Current official Google Drive/Picker authorization guidance was rechecked before choosing scopes: Android mobile Picker supports Google Identity Services `AuthorizationRequest`, requires `drive.file` for this flow, supports Picker resource parameters, and returns selected file IDs through authorization result parameters.
-- Source checkpoint implements token-free Workspace binding/revalidation, Google Identity Services Picker handoff, and a bounded Drive/Sheets REST gateway beneath the existing transport seam.
-- Deterministic JVM test sources cover grant parsing, metadata/readiness validation, REST bounds/error mapping, and refusal of arbitrary table mutation. CI evidence is still pending.
+- Production source implements token-free Workspace binding/revalidation, Google Identity Services Picker handoff, and a bounded Drive/Sheets REST gateway beneath the existing transport seam.
+- Deterministic JVM tests cover grant parsing, metadata/readiness validation, REST bounds/error mapping, refusal of arbitrary table mutation, exact-scope enforcement, and binding revalidation.
+- Android production ownership manifest covers every new Java production artifact with direct JVM verification references.
+- PR `#106` opened from `work/m2-m1-007-android-google-binding` into `main`.
+- Exact implementation head `18b64af91c76a8488bcf145738c090eb9f9a2371` passed full repository CI run `33826168175` / run number 372. The workflow includes feature registry, product lifecycle ledger, work-session alignment, code ownership, Android unit tests, Python tests and Workspace Apps Script tests.
+- GitHub reports PR `#106` mergeable at the green implementation head.
+
+## Session-end alignment review before merge
+
+- `FEATURES.md`: no requirement-state change is justified. `CLIENT-ANDROID-001` remains partial because live provider/device/shared-state proof is intentionally absent; `PROVIDER-002` and `PROVIDER-003` remain broader than this Android-specific adapter slice.
+- `BACKLOG.md`: `ANDROID-CLIENT-CORE-001` correctly remains partial. Its wording about **real provider authorization** remains true at the live/provider evidence level even though this packet now supplies the tested production adapter. `ANDROID-SYNC` remains unstarted as a vertical and is not promoted by this packet.
+- `ROADMAP.md`: M2-M1 ordering remains correct. This packet fills the provider-binding implementation prerequisite but does not complete Android shared-state mutation/readback or representative-device proof.
+- `PRODUCT_INVARIANTS.md`: unchanged. The implementation strengthens the ordinary-user and least-authority provider invariants by using provider-native Picker selection and `drive.file` instead of exposing IDs or requesting restricted all-Drive metadata scope.
+- No unrelated backlog item became a hard dependency and no new feature ID is required.
+- **Result: ALIGNED.** No canonical file besides this packet checkpoint requires semantic modification before merge; existing partial statuses are intentionally preserved to prevent code existence from being mistaken for live completion.
 
 ## Exact next action / resume point
 
-1. Commit/read back the M2-M1-007 source checkpoint and record its exact remote SHA.
-2. Open a PR against `main` to trigger repository CI.
-3. Diagnose only actual CI failures; do not expand packet scope.
-4. After exact-head CI is green, reconcile `BACKLOG.md`, `FEATURES.md`, `ROADMAP.md`, `PRODUCT_INVARIANTS.md`, and `CURRENT_WORK.md` against the evidence ceiling.
-5. Merge only when review/alignment gates are satisfied, then verify remote `main` and exact-head post-merge CI.
-6. Only then decide whether a separate provider/device acceptance packet is required. Do not invoke Work mode preemptively.
+1. Read back the new remote branch head created by this CURRENT_WORK closeout checkpoint.
+2. Require a new PR CI run to succeed on that exact head, because this documentation commit changed the packet head after the first green run.
+3. Re-read PR mergeability after exact-head CI is green.
+4. Merge PR `#106` only if the exact head is green and mergeable.
+5. Verify remote `main` SHA and require post-merge main CI success on that exact SHA before declaring M2-M1-007 durably closed.
+6. Then select the next bounded Android packet from the remaining evidence gap. Do not invoke Work mode or touch live Google resources unless the next packet specifically requires provider/device evidence.
 
 ## Recovery protocol
 
