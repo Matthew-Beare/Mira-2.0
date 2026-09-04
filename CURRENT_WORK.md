@@ -4,140 +4,129 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 
 ## Product direction
 
-Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android extends the same canonical reality without becoming a second authority. M2-M1-001 through M2-M1-007 are durably closed. M2-M1-008 has completed the canonical Android read/freshness child of `ANDROID-SYNC`; Android mutation and stock-ChatGPT cross-readback remain the next shared-state work.
+Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android extends the same canonical reality without becoming a second authority. M2-M1-001 through M2-M1-008 are durably closed. The next dependency-correct Android shared-state slice is canonical mutation through the already-verified queued writer; stock-ChatGPT cross-readback remains separate unless a hard implementation dependency emerges.
 
 ## Prior-packet recovery verification — 2026-09-04
 
 - Repository: `Matthew-Beare/Mira-2.0`.
-- Authoritative `main` before M2-M1-008: `4e79ea15caabfc753fe422354a986a1bc650797d`.
-- M2-M1-007 final closeout CI: `33836075071` — success on that exact head.
-- M2-M1-001 through M2-M1-007 and M2-GOV-012 are durably closed and must not be rerun.
+- Authoritative `main`: `fbef838a0ef7e60d2aec3a4943227d589cca0827`.
+- M2-M1-008 final closeout CI: `33839865147` — success on that exact head.
+- Remote `main` independently read back the same SHA.
+- M2-M1-001 through M2-M1-008 and M2-GOV-012 are durably closed and must not be rerun.
 
-## Session-start alignment verification — 2026-09-04 M2-M1-008
+## Session-start alignment verification — 2026-09-04 M2-M1-009
 
 ### `FEATURES.md`
 
-- `CLIENT-ANDROID-001` remained partial with merged implementation/test evidence through M2-M1-007.
-- `API-001`, `AUTH-001`, `STORE-001` and `RECOVERY-002` require exact verified canonical readback and forbid Android cache state from becoming authority.
+- `CLIENT-ANDROID-001` remains `specified+implemented+test_verified+partial`.
+- `API-001`, `AUTH-001`, `STORE-001`, and `RECOVERY-002` require replay-safe mutation, exact verified canonical readback, and one-authority semantics.
+- Android local queue/cache state is never canonical authority.
 
 ### `BACKLOG.md`
 
-- `ANDROID-SYNC` was the next vertical and required read, mutation and cross-readback from one authority.
-- The smallest dependency-correct child was canonical Android read with freshness truth.
+- `ANDROID-CLIENT-CORE-001` is partial through M2-M1-008.
+- `ANDROID-SYNC` is partial through M2-M1-008: canonical Android read/freshness is complete; Android mutation and stock-ChatGPT cross-readback remain.
+- The next unfinished dependency is Android canonical mutation through the existing queued writer.
 
 ### `ROADMAP.md`
 
-- M2-M1 explicitly ordered Android canonical read before mutation, stock-ChatGPT cross-readback and representative-device proof.
-
-### `PRODUCT_INVARIANTS.md`
-
-- One canonical authority remains authoritative; Android cache state is nonauthoritative.
-- A read operation must not silently submit pending mutations.
-- Freshness requires complete verified remote-change consumption.
+- M2-M1 ordered proof step 6 is Android mutation through the shared queued execution boundary.
+- Stock-ChatGPT cross-readback is step 7 and remains separate from this packet unless implementation proves it is a hard dependency.
+- Representative-device proof remains later.
 
 ### Direction result
 
-**ALIGNED.** M2-M1-008 was bounded to canonical Android read/freshness only.
+**ALIGNED.** Implement one provider-neutral Android mutation surface that durably enqueues an exact upsert intent before provider I/O, drives the existing queued transport/reconnect contract, and reports applied success only after verified canonical readback and local acknowledgement. Do not implement stock-ChatGPT cross-readback, conflict UI, app-shell polish, release signing, or live provider/device proof in this packet.
 
 ## Active packet
 
-### `M2-M1-008` — Canonical Android read and freshness boundary
+### `M2-M1-009` — Canonical Android mutation through queued writer
 
 - **Primary work:** `ANDROID-SYNC`
 - **Primary features:** `CLIENT-ANDROID-001`, `API-001`
 - **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `DATA-001`, `PROVIDER-002`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Implementation branch:** `work/m2-m1-008-canonical-read`
-- **Packet base SHA:** `4e79ea15caabfc753fe422354a986a1bc650797d`
-- **Final PR head:** `b50b7e42fb12c882e85c9bdc47655873f86dd255`
-- **Final PR-head CI:** `33838629635` — success
-- **PR:** #108 — merged
-- **Merge SHA:** `2a6a25b37fd5f5a69c59a7a2ad28a41aeeaf5d85`
-- **Post-merge CI:** `33838720600` — success on exact merge SHA
-- **Roadmap lifecycle commit:** `a0930a5c3124e795e08c0a58b607156f131e9f32`
-- **Roadmap lifecycle CI:** `33839029375` — success
-- **Final backlog lifecycle head before this closeout:** `b8c7679f74425ff9d9279c27cd487bf55b49c473`
-- **Backlog lifecycle CI:** `33839747724` — success
-- **Status:** complete; this closeout commit requires exact-head CI and matching remote-main readback before durable closure
+- **Branch:** `work/m2-m1-009-canonical-mutation`
+- **Base SHA:** `fbef838a0ef7e60d2aec3a4943227d589cca0827`
+- **Status:** active implementation
 
-## Objective result
+## Objective
 
-**COMPLETE AT THE BOUNDED REPOSITORY EVIDENCE CEILING.**
+Provide the smallest safe Android canonical mutation façade over the already-verified offline queue, `ReconnectCoordinator`, and `GoogleWorkspaceTransport` semantics.
 
-M2-M1-008 adds truthful read-only Android canonical-state synchronization without making Android a second authority or submitting pending writes.
+The façade must:
 
-1. `ReconnectCoordinator.ChangePage` carries explicit `moreAvailable` evidence.
-2. Google Workspace change reads derive completeness from the fully validated contiguous Changes projection instead of page-size guesswork.
-3. `refreshChangesOnly(...)` performs verified read-only refresh and never reconciles pending commands.
-4. Snapshot-before-cursor persistence, monotonic revisions, fork rejection and cursor CAS remain preserved.
-5. `CanonicalResourceReader` returns fresh found/missing only after verified remote exhaustion; intermediate pages return more-remote-changes.
-6. Later-page newer revisions cannot be hidden by an earlier cache snapshot.
-7. Android ownership and direct JVM tests cover the new production surface.
+1. accept one exact caller-supplied command identity/idempotency identity and upsert material;
+2. durably enqueue the command before any provider/transport call;
+3. preserve exact replay semantics for already-pending and already-acknowledged commands;
+4. drive only the existing queued-writer path, never direct canonical provider mutation;
+5. preserve pending state when the remote worker is still pending or transport fails;
+6. treat remote failure/protocol/local failure explicitly and never fabricate success;
+7. report applied success only when the existing coordinator has verified canonical readback, stored the verified snapshot, and acknowledged the exact local command;
+8. return the resulting exact canonical cached snapshot only after that terminal verified success;
+9. preserve crash/retry convergence, FIFO ordering, revision conflict behavior, and nonauthoritative local-cache semantics;
+10. remain provider-neutral in `:core` with zero new provider SDK/token/resource-ID ownership.
+
+## Acceptance criteria
+
+1. One bounded mutation façade exists in Android `:core`; it does not duplicate transport/reconnect logic.
+2. Caller supplies stable `command_id` and `idempotency_key`; retry does not generate new identities.
+3. Durable enqueue occurs before transport I/O and exact duplicate enqueue is idempotent.
+4. A command already acknowledged with identical material returns converged applied state without re-enqueueing or provider mutation when the verified cached result is present; missing result evidence fails closed rather than inventing success.
+5. Remote `PENDING` leaves the command pending and returns a waiting state.
+6. Transport failure leaves the command pending and returns an explicit transport failure.
+7. Remote failed/stale-revision result is explicit and does not acknowledge the local command.
+8. Terminal `SUCCEEDED` cannot be exposed as applied unless canonical readback is verified, the snapshot is persisted, and the local command is acknowledged.
+9. Crash/retry after remote success but before local acknowledgement converges through existing idempotent remote reconciliation without duplicate canonical mutation.
+10. Exact resulting resource class/ID/revision/payload is returned only from the verified local canonical snapshot after acknowledgement.
+11. Existing reconnect, read-freshness, Workspace transport, offline-state, Android ownership, Python, and Apps Script tests remain green.
+12. No Work mode, live provider mutation, legacy production state, historical proof resource, private provider identifier, token, or credential is used for deterministic implementation/test evidence.
+13. End-of-packet FEATURES/BACKLOG/ROADMAP/invariant alignment is recorded before merge.
+14. Exact-head CI, expected-head merge, remote-main readback, post-merge CI, lifecycle reconciliation, and final closeout CI are required before durable closure.
 
 ## Completed evidence
 
-- PR #108 merged exactly the bounded seven-file read/freshness slice.
-- Exact PR-head CI `33838629635` succeeded on `b50b7e42fb12c882e85c9bdc47655873f86dd255`.
-- Remote `main` independently read back merge SHA `2a6a25b37fd5f5a69c59a7a2ad28a41aeeaf5d85`.
-- Post-merge CI `33838720600` succeeded on that exact merge SHA.
-- `ROADMAP.md` now records M2-M1-008 canonical read complete and mutation next; CI `33839029375` succeeded on `a0930a5c3124e795e08c0a58b607156f131e9f32`.
-- `BACKLOG.md` now records `ANDROID-CLIENT-CORE-001` and `ANDROID-SYNC` partial through M2-M1-008, with canonical read complete and mutation/cross-readback remaining.
-- Final backlog reconciliation was kept packet-scoped after reverting two unrelated wording changes; CI `33839747724` succeeded on `b8c7679f74425ff9d9279c27cd487bf55b49c473`.
-- `FEATURES.md` correctly remains `CLIENT-ANDROID-001` implemented/test-verified/partial rather than falsely complete.
-- No Work mode, live Google provider access/mutation, historical proof resource, legacy MIRA production data, provider token, credential or private identifier was used.
-
-## Acceptance criteria result
-
-1. Explicit remote-pagination completeness — **satisfied**.
-2. Exact terminal-page semantics — **satisfied**.
-3. Read-only refresh never submits pending commands — **satisfied**.
-4. Snapshot-before-cursor and revision/fork protections — **satisfied**.
-5. Fresh found/missing only after remote exhaustion — **satisfied**.
-6. Later-page revision supersession — **satisfied**.
-7. Full repository tests and ownership gates — **satisfied**.
-8. Expected-head merge, remote-main readback and post-merge CI — **satisfied**.
-9. FEATURES/BACKLOG/ROADMAP lifecycle reconciliation — **satisfied**.
-10. Final closeout exact-head CI and matching remote-main readback — **pending only**.
+- M2-M1-008 closed at `fbef838a0ef7e60d2aec3a4943227d589cca0827` with final CI `33839865147` green.
+- Fresh authority review confirms mutation is the next M2-M1 roadmap step and `ANDROID-SYNC` remains partial.
+- `OfflineSyncStateStore` already provides durable FIFO enqueue, exact-material duplicate detection, acknowledgement tombstones, monotonic snapshots, and replay suppression.
+- `ReconnectCoordinator` already enforces FIFO command reconciliation, pending/failure preservation, verified snapshots before acknowledgement, crash/retry convergence, and explicit failure states.
+- `GoogleWorkspaceTransport.reconcileCommand` already preserves the Commands inbox contract, ambiguous-append reread convergence, exact-material duplicate validation, and terminal canonical readback parsing.
+- No existing canonical mutation façade was found; this packet composes the proven seams rather than adding another execution engine.
 
 ## Explicitly deferred
 
-- Android canonical mutation submission, queued-worker completion and acknowledgement/readback proof.
-- Stock ChatGPT reading an Android mutation back from the same canonical authority.
-- Live Android Google authorization/provider-device proof.
-- Conflict-resolution UI and broad Connections UI.
-- Representative-device proof, signing/distribution, notifications/TTS and capture paths.
+- Stock ChatGPT reading the Android mutation back from the same canonical authority.
+- Live Android Google authorization/provider-device execution evidence.
+- User-facing conflict-resolution UI.
+- Broad Connections/app-shell polish.
+- Representative-device proof, signing/distribution, notifications/TTS, capture paths, and unrelated providers.
 
-## Session-end alignment verification — 2026-09-04 M2-M1-008
+## Session-end alignment verification — pending
 
 ### `FEATURES.md`
 
-`CLIENT-ANDROID-001` remains partial. M2-M1-008 adds canonical-read evidence only.
+Pending final implementation/evidence review.
 
 ### `BACKLOG.md`
 
-`ANDROID-SYNC` remains partial through M2-M1-008. Canonical read/freshness is complete; Android mutation and stock-ChatGPT cross-readback remain.
+Pending final lifecycle review; `ANDROID-SYNC` must remain partial unless stock-ChatGPT cross-readback is also genuinely proven.
 
 ### `ROADMAP.md`
 
-The ordered canonical Android read step is complete. Android mutation is next, followed by stock-ChatGPT cross-readback and later representative-device proof.
-
-### `PRODUCT_INVARIANTS.md`
-
-One-authority semantics, nonauthoritative encrypted cache, exact freshness truth, no hidden write-on-read, provider-neutral core and legacy-data protection remain preserved.
+Pending final confirmation that mutation step 6 is satisfied while step 7 cross-readback remains next.
 
 ### Direction result
 
-**ALIGNED.** M2-M1-008 completes only the canonical-read child and does not falsely complete `ANDROID-SYNC` or the Android client.
+**PENDING IMPLEMENTATION + EXACT-HEAD CI.**
 
 ## Exact next action / resume point
 
-1. Require exact-head CI on this closeout commit and independently read back remote `main` at the same SHA.
-2. Once both are green, treat M2-M1-008 as durably closed.
-3. Re-read `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PRODUCT_INVARIANTS.md` from that exact main state.
-4. Open exactly one next bounded packet for Android canonical mutation through the existing queued writer.
-5. Keep stock-ChatGPT cross-readback separate unless fresh dependency review proves it is safely bounded with mutation.
-6. Do not use Work mode until deterministic mutation implementation/tests are green and a narrow live-provider/device proof genuinely remains.
+1. Inspect existing direct tests for `OfflineSyncStateStore`, `ReconnectCoordinator`, and `GoogleWorkspaceTransport` to reuse their proven semantics without duplication.
+2. Implement the smallest provider-neutral canonical mutation façade and direct JVM tests.
+3. Add ownership metadata only if new production source requires it.
+4. Run/open clean CI and repair only packet-scoped failures.
+5. Do not use Work mode until deterministic mutation implementation/tests are green and a narrow live provider/device acceptance proof genuinely remains.
 
 ## Recovery protocol
 
-Read this file first. Verify remote `main` plus this closeout commit's exact-head CI. If both are green, M2-M1-008 is durably closed and the next dependency-correct packet is Android canonical mutation. Do not rerun M2-M1-001 through M2-M1-008.
+Read this file first. Verify branch `work/m2-m1-009-canonical-mutation` against base `fbef838a0ef7e60d2aec3a4943227d589cca0827`. Resume from the mutation façade direct-test implementation. Do not rerun M2-M1-001 through M2-M1-008 and do not absorb stock-ChatGPT cross-readback without a hard dependency.
