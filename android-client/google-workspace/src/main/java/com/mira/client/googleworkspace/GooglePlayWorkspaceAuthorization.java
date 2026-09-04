@@ -13,18 +13,13 @@ import com.google.android.gms.auth.api.identity.RevokeAccessRequest;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
+import com.mira.client.core.sync.GoogleWorkspaceTransport;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Google Identity Services authorization boundary for the Android Personal Workspace lane.
- *
- * <p>The request uses Google's provider-owned mobile Picker and exactly the non-sensitive
- * {@code drive.file} scope. MIRA receives opaque ephemeral grant material and never asks an
- * ordinary user to copy a spreadsheet ID, OAuth scope, token, or developer-console value.</p>
- */
+/** Google Identity Services boundary for the Android Personal Workspace lane. */
 public final class GooglePlayWorkspaceAuthorization {
     static final String PICKED_FILE_IDS = "picked_file_ids";
 
@@ -38,12 +33,10 @@ public final class GooglePlayWorkspaceAuthorization {
         this.client = Objects.requireNonNull(client, "client");
     }
 
-    /** Begins the provider-owned consent + one-file Picker flow. */
     public Task<AuthorizationResult> beginPickerAuthorization() {
         return client.authorize(pickerRequest());
     }
 
-    /** Returns Google's unavoidable provider-owned resolution when interactive action is needed. */
     public PendingIntent resolution(AuthorizationResult result) throws AuthorizationException {
         if (result == null || !result.hasResolution() || result.getPendingIntent() == null) {
             throw new AuthorizationException(
@@ -54,14 +47,11 @@ public final class GooglePlayWorkspaceAuthorization {
         return result.getPendingIntent();
     }
 
-    /** Parses the provider Activity result into opaque grant material. */
     public GoogleWorkspaceConnection.PickerGrant grantFromIntent(Intent data)
             throws AuthorizationException {
         final AuthorizationResult result;
         try {
-            result = client.getAuthorizationResultFromIntent(
-                    Objects.requireNonNull(data, "data")
-            );
+            result = client.getAuthorizationResultFromIntent(Objects.requireNonNull(data, "data"));
         } catch (ApiException exc) {
             throw new AuthorizationException(
                     "authorization_denied",
@@ -72,27 +62,33 @@ public final class GooglePlayWorkspaceAuthorization {
         return grantFromResult(result);
     }
 
-    /** Parses a result that Google could satisfy without another provider UI roundtrip. */
     public GoogleWorkspaceConnection.PickerGrant grantFromResult(AuthorizationResult result)
             throws AuthorizationException {
-        if (result == null) {
-            throw new AuthorizationException(
-                    "authorization_unavailable",
-                    "Google authorization returned no result"
-            );
-        }
-        if (result.hasResolution()) {
-            throw new AuthorizationException(
-                    "resolution_required",
-                    "Google authorization requires provider UI before a Workspace can be bound"
-            );
-        }
+        String token = tokenFromResult(result);
         Bundle params = result.getTokenResponseParams();
         String picked = params == null ? null : params.getString(PICKED_FILE_IDS);
-        return grantFromMaterial(result.getAccessToken(), result.getGrantedScopes(), picked);
+        return grantFromMaterial(token, result.getGrantedScopes(), picked);
     }
 
-    /** Revokes MIRA's per-file Google Drive authorization scope. */
+    /**
+     * Revalidates a previously stored token-free binding and rebuilds the transport without
+     * exposing the fresh Google access token to UI/app code or reopening Picker selection.
+     */
+    public GoogleWorkspaceTransport transportFromResult(
+            GoogleWorkspaceConnection connection,
+            GoogleWorkspaceRestApi api,
+            GoogleWorkspaceConnection.VerifiedBinding binding,
+            AuthorizationResult result
+    ) throws AuthorizationException, GoogleWorkspaceConnection.ConnectionException {
+        Objects.requireNonNull(connection, "connection");
+        Objects.requireNonNull(api, "api");
+        Objects.requireNonNull(binding, "binding");
+        String token = tokenFromResult(result);
+        GoogleWorkspaceConnection.VerifiedBinding refreshed =
+                connection.revalidateWithToken(binding, token);
+        return new GoogleWorkspaceTransport(api.gatewayWithToken(refreshed, token));
+    }
+
     public Task<Void> revokeAccess() {
         RevokeAccessRequest request = RevokeAccessRequest.builder()
                 .setScopes(Collections.singletonList(
@@ -129,6 +125,45 @@ public final class GooglePlayWorkspaceAuthorization {
             List<String> grantedScopes,
             String pickedFileIds
     ) throws AuthorizationException {
+        String token = validateTokenAndScopes(accessToken, grantedScopes);
+        if (pickedFileIds == null || pickedFileIds.trim().isEmpty()) {
+            throw new AuthorizationException(
+                    "picker_selection_missing",
+                    "Google Picker returned no selected MIRA spreadsheet"
+            );
+        }
+        String[] ids = pickedFileIds.split(",", -1);
+        if (ids.length != 1 || ids[0].trim().isEmpty() || !ids[0].equals(ids[0].trim())) {
+            throw new AuthorizationException(
+                    "picker_selection_invalid",
+                    "Google Picker must return exactly one file identity"
+            );
+        }
+        return new GoogleWorkspaceConnection.PickerGrant(
+                token,
+                Collections.singletonList(ids[0])
+        );
+    }
+
+    private static String tokenFromResult(AuthorizationResult result)
+            throws AuthorizationException {
+        if (result == null) {
+            throw new AuthorizationException(
+                    "authorization_unavailable",
+                    "Google authorization returned no result"
+            );
+        }
+        if (result.hasResolution()) {
+            throw new AuthorizationException(
+                    "resolution_required",
+                    "Google authorization requires provider UI before Workspace access can continue"
+            );
+        }
+        return validateTokenAndScopes(result.getAccessToken(), result.getGrantedScopes());
+    }
+
+    private static String validateTokenAndScopes(String accessToken, List<String> grantedScopes)
+            throws AuthorizationException {
         if (accessToken == null || accessToken.trim().isEmpty()
                 || !accessToken.equals(accessToken.trim())
                 || accessToken.length() > 8192) {
@@ -145,23 +180,7 @@ public final class GooglePlayWorkspaceAuthorization {
                     "Google authorization did not return the exact drive.file grant requested by MIRA"
             );
         }
-        if (pickedFileIds == null || pickedFileIds.trim().isEmpty()) {
-            throw new AuthorizationException(
-                    "picker_selection_missing",
-                    "Google Picker returned no selected MIRA spreadsheet"
-            );
-        }
-        String[] ids = pickedFileIds.split(",", -1);
-        if (ids.length != 1 || ids[0].trim().isEmpty() || !ids[0].equals(ids[0].trim())) {
-            throw new AuthorizationException(
-                    "picker_selection_invalid",
-                    "Google Picker must return exactly one file identity"
-            );
-        }
-        return new GoogleWorkspaceConnection.PickerGrant(
-                accessToken,
-                Collections.singletonList(ids[0])
-        );
+        return accessToken;
     }
 
     public static final class AuthorizationException extends Exception {
