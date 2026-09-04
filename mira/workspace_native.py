@@ -2,13 +2,14 @@
 
 Stock ChatGPT can use its authenticated Google Drive/Sheets connection directly
 for the zero-infrastructure Personal lane. This module defines the durable
-single-writer bootstrap/preflight/mutation/readback semantics that the
-orchestration layer must follow so direct connector writes remain compatible
-with AUTH-001 and STORE-001.
+single-writer bootstrap/preflight/mutation semantics plus shared-writer
+canonical readback semantics that the orchestration layer must follow so native
+connector behavior remains compatible with AUTH-001 and STORE-001.
 
 It contains no spreadsheet IDs, account data, credentials, or connector calls.
 It produces runtime batchUpdate request shapes from already-grounded sheet IDs
-and freshly read provider state.
+and freshly read provider state, and verifies shared-writer state without
+performing provider I/O itself.
 """
 
 from __future__ import annotations
@@ -68,6 +69,23 @@ class WorkspaceIdempotencyRecord:
         _token(self.request_hash, "request_hash")
         _token(self.resource_ref, "resource_ref")
         _normalize_mapping(self.result, "result")
+
+
+@dataclass(frozen=True)
+class WorkspaceResourceRow:
+    """Canonical Resource row including persisted mutation provenance."""
+
+    row_number: int
+    record: ResourceRecord
+    last_idempotency_key: str
+    request_hash: str
+
+    def __post_init__(self) -> None:
+        _positive_row(self.row_number, "row_number")
+        if not isinstance(self.record, ResourceRecord):
+            raise ValidationError("record must be a ResourceRecord")
+        _token(self.last_idempotency_key, "last_idempotency_key")
+        _token(self.request_hash, "request_hash")
 
 
 @dataclass(frozen=True)
@@ -430,6 +448,161 @@ def verify_workspace_upsert_readback(
         raise WorkspaceReadbackError("Google Workspace idempotency material mismatch")
 
 
+def verify_workspace_shared_resource_readback(
+    resource_type: str,
+    resource_id: str,
+    payload: Mapping[str, Any],
+    *,
+    revision: int,
+    expected_revision: int,
+    idempotency_key: str,
+    resource_rows: Sequence[WorkspaceResourceRow],
+    idempotency_rows: Sequence[WorkspaceIdempotencyRecord],
+    mutation_mode: str,
+    schema_version: str = _PERSONAL_SCHEMA_VERSION,
+) -> ResourceRecord:
+    """Verify stock-ChatGPT readback of a shared-writer canonical upsert.
+
+    Reads are valid in both Personal mutation modes. In queued mode this proves
+    that the canonical Resource and its idempotency provenance agree with the
+    exact logical upsert expected from the shared writer. The function has no
+    Commands/Changes input by design: transport and reconnect projections cannot
+    become canonical authority merely because they mention the same resource.
+    """
+
+    _require_readable_mutation_mode(mutation_mode)
+    data_class = _token(resource_type, "resource_type")
+    stable_id = _identifier(resource_id, "resource_id")
+    key = _token(idempotency_key, "idempotency_key")
+    schema = _token(schema_version, "schema_version")
+    if (
+        not isinstance(expected_revision, int)
+        or isinstance(expected_revision, bool)
+        or expected_revision < 0
+    ):
+        raise ValidationError("expected_revision must be a non-negative integer")
+    if not isinstance(revision, int) or isinstance(revision, bool) or revision < 1:
+        raise ValidationError("revision must be a positive integer")
+    if revision != expected_revision + 1:
+        raise WorkspaceReadbackError(
+            "canonical revision does not match the expected upsert transition"
+        )
+
+    normalized_payload = _normalize_mapping(payload, "payload")
+    expected_record = ResourceRecord(
+        resource_type=data_class,
+        resource_id=stable_id,
+        payload=normalized_payload,
+        revision=revision,
+    )
+    expected_hash = workspace_upsert_fingerprint(
+        data_class,
+        stable_id,
+        normalized_payload,
+        expected_revision=expected_revision,
+    )
+
+    targets = [
+        row
+        for row in resource_rows
+        if row.record.resource_type == data_class
+        and row.record.resource_id == stable_id
+    ]
+    if len(targets) != 1:
+        raise WorkspaceReadbackError(
+            "canonical resource readback is missing or duplicated"
+        )
+    target = targets[0]
+    if target.record != expected_record:
+        raise WorkspaceReadbackError(
+            "canonical resource revision or payload does not match expected shared mutation"
+        )
+    if (
+        target.last_idempotency_key != key
+        or target.request_hash != expected_hash
+    ):
+        raise WorkspaceReadbackError(
+            "canonical resource mutation provenance does not match expected shared mutation"
+        )
+
+    bindings = [
+        row.record
+        for row in resource_rows
+        if row.record.resource_type == "authority_binding"
+        and row.record.payload.get("data_class") == data_class
+    ]
+    if len(bindings) != 1:
+        raise WorkspaceReadbackError(
+            "expected exactly one canonical authority binding for the data class"
+        )
+    raw_authority_id = bindings[0].payload.get("authority_id")
+    try:
+        authority_id = _identifier(raw_authority_id, "authority_id")
+    except ValidationError as exc:
+        raise WorkspaceReadbackError(
+            "canonical authority binding contains an invalid authority identity"
+        ) from exc
+
+    authorities = [
+        row.record
+        for row in resource_rows
+        if row.record.resource_type == "authority"
+        and row.record.resource_id == authority_id
+    ]
+    if len(authorities) != 1:
+        raise WorkspaceReadbackError(
+            "expected exactly one referenced canonical authority"
+        )
+    authority = authorities[0]
+    authority_payload = authority.payload
+    if (
+        authority_payload.get("authority_id") != authority_id
+        or authority_payload.get("adapter_key") != "google-sheets"
+        or authority_payload.get("schema_version") != schema
+        or authority_payload.get("enabled") is not True
+        or authority_payload.get("verified") is not True
+    ):
+        raise WorkspaceReadbackError(
+            "referenced canonical authority is disabled, unverified, or incompatible"
+        )
+
+    matches = [row for row in idempotency_rows if row.idempotency_key == key]
+    if len(matches) != 1:
+        raise WorkspaceReadbackError(
+            "shared mutation idempotency readback is missing or duplicated"
+        )
+    expected_result = {
+        "kind": "upsert",
+        "record": {
+            "payload": normalized_payload,
+            "resource_id": stable_id,
+            "resource_type": data_class,
+            "revision": revision,
+        },
+    }
+    stored = matches[0]
+    if (
+        stored.operation != "upsert"
+        or stored.request_hash != expected_hash
+        or stored.resource_ref != f"{data_class}/{stable_id}"
+        or _normalize_mapping(stored.result, "idempotency result")
+        != expected_result
+    ):
+        raise WorkspaceReadbackError(
+            "shared mutation idempotency provenance does not match canonical resource"
+        )
+
+    return expected_record
+
+
+def _require_readable_mutation_mode(value: object) -> None:
+    if value in (_DIRECT_MUTATION_MODE, _QUEUED_MUTATION_MODE):
+        return
+    raise ValidationError(
+        "mutation_mode must be direct_single_writer or queued_writer"
+    )
+
+
 def _require_direct_mutation_mode(value: object) -> None:
     if value == _DIRECT_MUTATION_MODE:
         return
@@ -521,10 +694,12 @@ __all__ = [
     "WorkspaceIdempotencyRecord",
     "WorkspaceQueuedWriterRequiredError",
     "WorkspaceReadbackError",
+    "WorkspaceResourceRow",
     "WorkspaceUpsertPlan",
     "plan_workspace_bootstrap",
     "plan_workspace_upsert",
     "verify_workspace_bootstrap_readback",
+    "verify_workspace_shared_resource_readback",
     "verify_workspace_upsert_readback",
     "workspace_upsert_fingerprint",
 ]
