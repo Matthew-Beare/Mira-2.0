@@ -4,134 +4,142 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 
 ## Product direction
 
-Default Personal MIRA remains stock ChatGPT + Google Workspace first, with provider-neutral expansion through explicit ordinary-user connections. MIRA should progressively learn what tools and services a user already relies on and recommend useful supported integrations without silently installing, authorizing, activating, migrating, or changing canonical authority.
+Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android extends the same canonical reality and must not become a second authority. Provider-specific Android authorization/network code must remain replaceable behind the shared client/core transport semantics so later Microsoft, Apple/iCloud and other provider lanes do not inherit Google as an architectural dependency.
 
-`M2-M1-001` through `M2-M1-006` are durably closed. `M2-GOV-012` is also durably closed at its bounded product/governance specification evidence ceiling.
+M2-M1-001 through M2-M1-006 and M2-GOV-012 are durably closed. M2-M1-007 remains active because a duplicate concurrent implementation was discovered after PR #106 merged and before durable packet closeout.
 
-## Prior-packet recovery verification — 2026-09-03
+## Prior-packet / remote-main verification — 2026-09-04
 
 - Repository: `Matthew-Beare/Mira-2.0`.
-- M2-GOV-012 final closeout/main SHA: `290b78518947f060e06a11d9141faf0c5d64d4e5`.
-- Exact-head CI: `33731858470` — success on that exact SHA.
-- M2-GOV-012 parent/merge SHA: `00fa7ccf53e8e4e7e0a0630a2e5a891dbd78eac7`.
-- M2-M1-001 through M2-M1-006 and M2-GOV-012 must not be rerun.
+- PR #106 merged M2-M1-007 implementation candidate to `main` at `f6d38ee9398bc473425f33b6fe97fb5fb0ae4b35`.
+- Post-merge CI `33826483012` succeeded on exact merge SHA `f6d38ee9398bc473425f33b6fe97fb5fb0ae4b35`.
+- A second concurrent M2-M1-007 implementation existed in PR #105 / `work/m2-m1-007-google-provider-binding`; PR #105 is now closed unmerged and preserved only as salvage evidence.
+- The duplicate implementation is an active architecture/integrity blocker for packet closure, not a new product feature.
 
-## Session-start alignment verification — 2026-09-03 M2-M1-007
+## Session-start alignment verification — reconciliation checkpoint
 
 ### `FEATURES.md`
 
-- `CLIENT-ANDROID-001` remains the required Android client feature and is only partially evidenced.
-- `PROVIDER-002` requires an ordinary-user Connect flow with provider-native consent/selection, automated post-consent verification/binding, capability verification and exact readback.
-- `PROVIDER-003` already defines deterministic Personal Google bootstrap/readback semantics and must remain the Google-specific implementation boundary rather than changing product semantics.
-- `AUTH-001`, `STORE-001`, `API-001`, `RECOVERY-002`, and `SERVICE-001` remain integrity boundaries that this packet must preserve.
+- `CLIENT-ANDROID-001` remains partial and requires provider-neutral shared client semantics, protected credentials, replay-safe sync and evidence-based capability truth.
+- `PROVIDER-002` requires ordinary-user native connection, unavoidable provider consent only, automatic post-consent verification/binding and no copied provider IDs or technical setup.
+- `API-001`, `AUTH-001`, `STORE-001` and `RECOVERY-002` remain provider-neutral integrity boundaries.
 
 ### `BACKLOG.md`
 
-- `ANDROID-COMMAND-BOUNDARY-001` is complete and must not be revisited.
-- `ANDROID-CLIENT-CORE-001` is partial through M2-M1-006. The next unfinished dependency-correct slice is real Google provider authorization/network binding plus ordinary-user Workspace selection/verification beneath the already-tested `GoogleWorkspaceTransport` contract.
-- `ANDROID-SYNC` remains a later vertical and is not pulled into this packet except where a narrow test seam is required.
+- `ANDROID-CLIENT-CORE-001` remains partial; provider binding is only one prerequisite beneath the later `ANDROID-SYNC` vertical.
+- `ANDROID-SYNC` remains unstarted and must not be smuggled into this reconciliation.
+- The concurrent duplicate does not create a second work item; it must be reconciled inside M2-M1-007 before closure.
 
 ### `ROADMAP.md`
 
-- M2-M1 requires Android to read and mutate the same canonical Personal reality without becoming a second authority.
-- The next proof step is Android client core provider binding, before full shared-state mutation/readback or representative-device proof.
+- M2-M1 still requires one Android connection/transport path into the same canonical Personal Workspace, followed later by canonical read, mutation, stock-ChatGPT cross-readback and representative-device proof.
+- Two parallel Google provider stacks would contradict the single client path and increase migration/provider coupling risk.
 
 ### `PRODUCT_INVARIANTS.md`
 
-- Android must use the same simple connection semantics as stock ChatGPT and must not export OAuth scopes, resource IDs, developer-console work, terminal steps, or hidden-resource creation to an ordinary user.
-- Provider consent, capability verification, resource binding, service activation and canonical authority remain separate truths.
-- Legacy production state remains protected and cannot be used as a development fixture.
+- Provider consent is not readiness.
+- Ordinary users must never copy IDs/scopes/tokens or perform developer setup.
+- Google-specific provider details must not become canonical product semantics or a dependency of unrelated provider-neutral core behavior.
+- No legacy MIRA production state may be used as a development fixture.
 
 ### Direction result
 
-**ALIGNED.** Open one bounded Android provider-binding packet. Implement source and deterministic tests first. Do not use Work mode or live provider state until source/CI evidence is green and a narrow live acceptance proof is actually needed.
+**ALIGNED WITH RECONCILIATION REQUIRED.** Keep the stronger product behavior from merged PR #106, but remove Google SDK/network dependencies from provider-neutral `:core` and salvage the separate provider module, stronger privacy surface, multi-module ownership/CI and stricter HTTP bounds from closed PR #105. Do not retain two implementations.
 
 ## Active packet
 
-### `M2-M1-007` — Android Google authorization and Workspace binding
+### `M2-M1-007` — Android Google authorization and Workspace binding reconciliation
 
 - **Primary work:** `ANDROID-CLIENT-CORE-001`
 - **Primary features:** `CLIENT-ANDROID-001`, `PROVIDER-002`, `PROVIDER-003`
-- **Related invariants/features:** `AUTH-001`, `STORE-001`, `API-001`, `SERVICE-001`, `RECOVERY-002`, `SOURCE-001`
+- **Related invariants/features:** `AUTH-001`, `STORE-001`, `API-001`, `RECOVERY-002`, `DATA-001`, `SOURCE-001`
 - **Repository:** `Matthew-Beare/Mira-2.0`
-- **Branch:** `work/m2-m1-007-android-google-binding`
-- **Packet base SHA:** `290b78518947f060e06a11d9141faf0c5d64d4e5`
-- **Pre-closeout implementation head SHA:** `18b64af91c76a8488bcf145738c090eb9f9a2371`
-- **Current head SHA:** this closeout checkpoint commit; verify by remote branch readback before merge
-- **PR:** `#106`
-- **Status:** implementation/test checkpoint green; final exact-head closeout CI pending
+- **Branch:** `work/m2-m1-007-provider-module-reconcile`
+- **Base/main SHA:** `f6d38ee9398bc473425f33b6fe97fb5fb0ae4b35`
+- **Source implementation:** merged PR #106
+- **Salvage reference:** closed unmerged PR #105 / head `51d2203a6f951ae0bd8ef50b4e5ab3e596c2fa16`
+- **Status:** active integrity reconciliation before durable M2-M1-007 closure
 
-## Objective
+## Reconciliation decision
 
-Implement the narrow Android-native Google connection boundary required by the already-tested `GoogleWorkspaceTransport`: obtain revocable same-user Google authorization through a product-owned Android connection flow, use Google's provider-native mobile Picker so the user grants exactly one MIRA spreadsheet without copying any provider ID, verify that selected file against bounded MIRA metadata/protocol state, bind a concrete bounded Sheets gateway, and expose honest connection/readiness state to the existing reconnect layer.
+Keep from PR #106/main:
 
-This packet does **not** implement the full Android app, full `ANDROID-SYNC`, conflict UI, notification/TTS delivery, camera/NFC/BLE capture, release signing, representative-device proof, stock-ChatGPT cross-readback, or automatic activation of the queued writer on a direct-only starter.
+1. Google Identity Services Picker flow with exact `drive.file` scope and explicit revoke support.
+2. Drive file metadata verification: selected ID, Google-Sheet MIME type, Trash state, edit capability and display name.
+3. Clean-starter Metadata verification including environment/data-policy markers.
+4. Distinction between `direct_single_writer` binding and verified `queued_writer` shared-write readiness.
+5. Fresh-token revalidation of a token-free persisted binding.
+6. Bounded Commands/Changes REST gateway and explicit provider failure mapping.
 
-## Reversible engineering decision — least-authority Google file grant
+Salvage/strengthen from PR #105:
 
-Current Google provider documentation explicitly supports the mobile Google Picker from Android through Google Identity Services using `AuthorizationRequest.ResourceParameter.PICKER_OAUTH_TRIGGER`. Google requires the mobile/desktop Picker lane to use `drive.file` and does not permit combining it with broader scopes in that flow. MIRA therefore uses the provider-owned Picker plus **only** `https://www.googleapis.com/auth/drive.file` rather than requesting restricted `drive.metadata.readonly`, `drive.readonly`, or full Drive access merely to discover a spreadsheet.
-
-Consequences:
-
-- the ordinary user taps Connect Google and chooses the MIRA spreadsheet in Google's own file UI; they never copy a spreadsheet ID, OAuth scope, token, or developer-console value;
-- MIRA verifies the returned opaque file identity against Drive metadata and bounded `Metadata`, `Commands`, and `Changes` cells before shared-write readiness is claimed;
-- a valid direct/single-writer MIRA starter may be bound but reports `needs_shared_writer_activation`; the Android transport gateway cannot be constructed until queued-writer readiness is verified;
-- access tokens remain ephemeral and are not persisted in the provider binding;
-- this avoids a restricted all-Drive metadata permission and its heavier privacy/verification burden while preserving provider-neutral MIRA semantics.
-
-This decision is reversible if Google changes the Picker contract or a later product requirement genuinely needs broader discovery.
-
-## Dependencies and blockers
-
-- `ANDROID-COMMAND-BOUNDARY-001` — complete.
-- `GoogleWorkspaceTransport`, `ReconnectCoordinator`, protected credential storage, encrypted offline queue/cache/cursor state — merged/test-verified through M2-M1-006.
-- Google OAuth client registration/release signing configuration is deployment/provider configuration, not repository secret material. No client secret or personal provider identifier may be committed.
-- Live Google/device proof remains intentionally outside this packet's evidence ceiling.
+1. Move Google SDK/network implementation into a dedicated `:google-workspace` Android library depending on `:core`; `:core` must not depend on Google Play Services or INTERNET solely for this provider.
+2. Extend Android ownership governance to multiple explicit Android production roots and run direct tests for all provider production files.
+3. CI must execute both `:core` and `:google-workspace` unit tests.
+4. Make access-token material package-internal/opaque outside the provider module; never expose it through public value-object getters or string representations.
+5. Remove provider file IDs from `toString`/accidental log surfaces while retaining the non-secret binding identity internally for future persistence/revalidation.
+6. Ensure HTTP connections disconnect in failure paths, bound response size is tested, response cells are primitive-only, and provider error bodies are never leaked.
 
 ## Acceptance criteria
 
-1. **Android-native authorization boundary** — production code uses Google Identity Services and the provider-native mobile Picker with the non-sensitive `drive.file` scope only, supports provider resolution/revocation semantics, and never requires an ordinary user to copy OAuth scopes, IDs, tokens, or provider resource identifiers.
-2. **Provider-native Workspace selection + automatic verification** — after provider consent/selection, code accepts exactly one Picker-returned Google Sheet identity and automatically validates MIRA identity by bounded `Metadata` reads. Zero/multiple selections, MIME/type mismatch, Trash/read-only state, metadata mismatch, legacy-looking state, or unsupported mutation mode fail closed rather than being guessed through broad Drive search.
-3. **Exact binding/readiness evidence** — the selected spreadsheet binding stores only non-secret provider identity/configuration, never the access token, distinguishes a valid direct-writer binding from verified queued-writer readiness, and can be revalidated with a fresh token before use.
-4. **Concrete narrow Sheets gateway** — a Google-backed implementation of `GoogleWorkspaceTransport.SheetsGateway` can read only bounded `Commands`/`Changes` ranges and append exactly one 16-cell command row, with provider error normalization and no generic arbitrary-sheet mutation surface. Gateway creation is refused unless queued-writer readiness was verified.
-5. **Provider-neutral transport preserved** — `GoogleWorkspaceTransport`, canonical command semantics, cursor/replay rules, Authority/store ownership, and readback requirements remain unchanged.
-6. **No legacy production mutation** — deterministic tests use fakes/synthetic fixtures only. No personal Sheet ID, token, email, credential, legacy MIRA artifact, or live production content is committed or used as a fixture.
-7. **Tests** — unit tests cover successful Picker grant handoff, denied/expired authorization material, exact-scope enforcement, zero/multiple selection rejection, exact metadata validation, direct-vs-queued readiness, schema/header mismatch, gateway bounded reads/appends, arbitrary-range mutation rejection, HTTP/provider failure mapping, reconnect/revalidation, and no-manual-ID behavior.
-8. **Build/CI** — required Android unit tests and repository CI pass on the exact packet head before merge.
-9. **Evidence ceiling** — this packet may reach implemented/test/integration evidence in Git. It must not claim live provider authorization, physical-device behavior, production signing, queued-writer activation, or shared-state Android↔ChatGPT proof without separate exact provider/device evidence.
+1. Exactly one Google Workspace provider implementation remains in production source after reconciliation.
+2. `android-client/core` contains only provider-neutral Android/client/transport semantics and has no Google Play Services dependency or provider-specific INTERNET requirement.
+3. `android-client/google-workspace` owns Google Identity Services authorization/revocation, Picker grant parsing, Drive/Sheets verification, readiness/revalidation and concrete REST gateway behavior.
+4. Merged PR #106 product behavior is preserved: file metadata verification, clean starter markers, direct-vs-queued readiness, queued headers, revalidation and revocation.
+5. Provider token material is ephemeral and not publicly exposed by provider value objects; no token/file ID appears in `toString` or logs.
+6. REST behavior remains bounded and fail-closed; arbitrary table mutation/read surfaces are rejected, ambiguous command append is not internally retried, response size and primitive-cell validation are directly tested.
+7. Multi-module Android ownership and CI gates cover all production Java source with direct JVM test references.
+8. No live provider mutation, Work mode, historical proof resource or legacy MIRA production fixture is used.
+9. Exact-head CI passes before reconciliation merge.
+10. After merge, remote main readback, post-merge CI, canonical lifecycle reconciliation and final closeout CI are verified before M2-M1-007 closes.
 
 ## Completed evidence
 
-- Session-start Git recovery verified remote `main` at `290b78518947f060e06a11d9141faf0c5d64d4e5`.
-- Exact-head CI `33731858470` succeeded on that prior closeout SHA.
-- Canonical feature/backlog/roadmap/invariant alignment was re-read before implementation.
-- Active branch created from the exact verified main SHA: `work/m2-m1-007-android-google-binding`.
-- Current official Google Drive/Picker authorization guidance was rechecked before choosing scopes: Android mobile Picker supports Google Identity Services `AuthorizationRequest`, requires `drive.file` for this flow, supports Picker resource parameters, and returns selected file IDs through authorization result parameters.
-- Production source implements token-free Workspace binding/revalidation, Google Identity Services Picker handoff, and a bounded Drive/Sheets REST gateway beneath the existing transport seam.
-- Deterministic JVM tests cover grant parsing, metadata/readiness validation, REST bounds/error mapping, refusal of arbitrary table mutation, exact-scope enforcement, and binding revalidation.
-- Android production ownership manifest covers every new Java production artifact with direct JVM verification references.
-- PR `#106` opened from `work/m2-m1-007-android-google-binding` into `main`.
-- Exact implementation head `18b64af91c76a8488bcf145738c090eb9f9a2371` passed full repository CI run `33826168175` / run number 372. The workflow includes feature registry, product lifecycle ledger, work-session alignment, code ownership, Android unit tests, Python tests and Workspace Apps Script tests.
-- GitHub reports PR `#106` mergeable at the green implementation head.
+- PR #106 product implementation and exact post-merge CI are green on current main.
+- PR #105 duplicate is closed unmerged; its branch remains available for salvage/readback.
+- Comparative review found PR #106 stronger in readiness/file-verification/revalidation/revocation semantics and PR #105 stronger in provider-module separation/privacy/multi-module governance/HTTP hardening.
+- Reconciliation branch created exactly from green main `f6d38ee9398bc473425f33b6fe97fb5fb0ae4b35`.
 
-## Session-end alignment review before merge
+## Explicitly deferred
 
-- `FEATURES.md`: no requirement-state change is justified. `CLIENT-ANDROID-001` remains partial because live provider/device/shared-state proof is intentionally absent; `PROVIDER-002` and `PROVIDER-003` remain broader than this Android-specific adapter slice.
-- `BACKLOG.md`: `ANDROID-CLIENT-CORE-001` correctly remains partial. Its wording about **real provider authorization** remains true at the live/provider evidence level even though this packet now supplies the tested production adapter. `ANDROID-SYNC` remains unstarted as a vertical and is not promoted by this packet.
-- `ROADMAP.md`: M2-M1 ordering remains correct. This packet fills the provider-binding implementation prerequisite but does not complete Android shared-state mutation/readback or representative-device proof.
-- `PRODUCT_INVARIANTS.md`: unchanged. The implementation strengthens the ordinary-user and least-authority provider invariants by using provider-native Picker selection and `drive.file` instead of exposing IDs or requesting restricted all-Drive metadata scope.
-- No unrelated backlog item became a hard dependency and no new feature ID is required.
-- **Result: ALIGNED.** No canonical file besides this packet checkpoint requires semantic modification before merge; existing partial statuses are intentionally preserved to prevent code existence from being mistaken for live completion.
+- Full `ANDROID-SYNC` canonical read/mutation/cross-ChatGPT proof.
+- Broad Connections UI polish and conflict UI.
+- Persistent account/profile UX beyond the token-free binding contract.
+- Representative physical-device proof and release signing/distribution.
+- Gmail, Calendar, Contacts, Microsoft, Apple/iCloud, Airtable, finance and other provider adapters.
+- Integration recommendation engine under `PROVIDER-004`.
+
+## Session-end alignment verification — pending reconciliation CI
+
+### `FEATURES.md`
+
+Pending final provider-module evidence reconciliation. `CLIENT-ANDROID-001` must remain partial.
+
+### `BACKLOG.md`
+
+Pending final M2-M1-007 closeout status. `ANDROID-CLIENT-CORE-001` remains partial and `ANDROID-SYNC` remains next.
+
+### `ROADMAP.md`
+
+Pending final confirmation that one reconciled provider path fills the M2-M1 provider-binding prerequisite without advancing the shared-state vertical.
+
+### `PRODUCT_INVARIANTS.md`
+
+Pending final confirmation of ordinary-user connection, least privilege, provider-neutral core, no second authority and no legacy-state mutation.
+
+### Direction result
+
+**PENDING RECONCILIATION IMPLEMENTATION/CI.**
 
 ## Exact next action / resume point
 
-1. Read back the new remote branch head created by this CURRENT_WORK closeout checkpoint.
-2. Require a new PR CI run to succeed on that exact head, because this documentation commit changed the packet head after the first green run.
-3. Re-read PR mergeability after exact-head CI is green.
-4. Merge PR `#106` only if the exact head is green and mergeable.
-5. Verify remote `main` SHA and require post-merge main CI success on that exact SHA before declaring M2-M1-007 durably closed.
-6. Then select the next bounded Android packet from the remaining evidence gap. Do not invoke Work mode or touch live Google resources unless the next packet specifically requires provider/device evidence.
+1. Port the PR #106 Google provider implementation from `:core` into a dedicated `:google-workspace` module while preserving its stronger readiness/revalidation/revocation behavior.
+2. Apply the PR #105 privacy/HTTP/multi-module ownership/CI hardening.
+3. Delete the duplicate Google provider production/test files and Google SDK/network requirements from `:core`.
+4. Run exact-head CI and repair only M2-M1-007 integrity failures.
+5. Record final FEATURES/BACKLOG/ROADMAP/PRODUCT_INVARIANTS alignment, merge the reconciliation PR with expected-head protection, verify main/post-merge CI, then perform final lifecycle closeout.
+6. Do not enter Work mode; no live-provider-only blocker is currently known.
 
 ## Recovery protocol
 
-Read this file first. Verify branch `work/m2-m1-007-android-google-binding` is based on `290b78518947f060e06a11d9141faf0c5d64d4e5`. Do not rerun M2-M1-001 through M2-M1-006 or M2-GOV-012. Continue at the exact next action above.
+Read this file first. Authoritative base is green main `f6d38ee9398bc473425f33b6fe97fb5fb0ae4b35`. PR #105 is closed salvage only; PR #106 is merged source behavior. Resume only the reconciliation steps above and do not create a third provider stack.
