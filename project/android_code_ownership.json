@@ -43,7 +43,8 @@
       "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC"],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java",
-        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java"
+        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java",
+        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceMutatorTest.java"
       ]
     },
     {
@@ -57,6 +58,19 @@
       "work_ids": ["ANDROID-SYNC"],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java"
+      ]
+    },
+    {
+      "id": "android-client-canonical-resource-mutator",
+      "responsibility": "Provider-neutral Android canonical upsert facade that durably stages exact command intent, drives only the queued reconnect boundary, distinguishes FIFO blocking/failure states, and exposes applied success only from acknowledged verified canonical readback.",
+      "why_separate": "A user-facing mutation needs one bounded composition surface over the existing queue and coordinator without duplicating transport logic, owning provider credentials, becoming canonical authority, or absorbing conflict UI and cross-client presentation.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/CanonicalResourceMutator.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-SYNC"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceMutatorTest.java"
       ]
     },
     {
