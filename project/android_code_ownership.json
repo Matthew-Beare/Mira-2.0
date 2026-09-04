@@ -54,6 +54,45 @@
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java"
       ]
+    },
+    {
+      "id": "android-client-google-workspace-binding",
+      "responsibility": "Token-free Android binding and revalidation of one provider-selected MIRA Personal Google Sheet, including exact clean-starter metadata checks and honest shared-writer readiness state.",
+      "why_separate": "Provider binding decides whether a selected Workspace is really MIRA and ready for shared writes; it must not own Google consent UI, raw HTTP execution, canonical mutation, or local reconnect state.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceConnection.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "PROVIDER-003", "AUTH-001", "STORE-001", "SERVICE-001"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceConnectionTest.java"
+      ]
+    },
+    {
+      "id": "android-client-google-play-authorization",
+      "responsibility": "Android Google Identity Services consent and mobile Picker handoff using only drive.file, with exact one-file grant parsing and provider revocation support.",
+      "why_separate": "Provider-owned consent and file selection are an Android authorization boundary; they must not persist tokens, validate canonical MIRA state, or gain generic Drive authority.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/GooglePlayWorkspaceAuthorization.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "AUTH-001", "SERVICE-001"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/GooglePlayWorkspaceAuthorizationTest.java"
+      ]
+    },
+    {
+      "id": "android-client-google-workspace-rest",
+      "responsibility": "Least-authority Android REST bridge for selected-file metadata, bounded MIRA Sheets reads, and the Commands-only append surface consumed by GoogleWorkspaceTransport.",
+      "why_separate": "Provider HTTP/network behavior and error normalization are below MIRA transport semantics and must remain incapable of arbitrary Drive or Sheets mutation.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceRestApi.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "PROVIDER-003", "API-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceRestApiTest.java"
+      ]
     }
   ]
 }
