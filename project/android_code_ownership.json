@@ -34,28 +34,43 @@
     },
     {
       "id": "android-client-reconnect-coordinator",
-      "responsibility": "Provider-neutral Android reconnect orchestration enforcing exact queued-command replay, verified terminal acknowledgement, verified canonical snapshot persistence, and snapshot-before-cursor progression.",
+      "responsibility": "Provider-neutral Android reconnect orchestration enforcing exact queued-command replay, verified terminal acknowledgement, verified canonical snapshot persistence, snapshot-before-cursor progression, and a read-only verified-change refresh path that never submits pending commands.",
       "why_separate": "Reconnect orchestration coordinates durable local state with authenticated transports without owning provider OAuth, network implementation, canonical authority, conflict UI, or provider connection UX.",
       "owned_paths": [
         "android-client/core/src/main/java/com/mira/client/core/sync/ReconnectCoordinator.java"
       ],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC"],
       "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java"
+        "android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java",
+        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java"
+      ]
+    },
+    {
+      "id": "android-client-canonical-resource-reader",
+      "responsibility": "Freshness-gated provider-neutral Android reads of exact canonical resources from the encrypted nonauthoritative snapshot cache after verified remote Changes are exhausted.",
+      "why_separate": "A user-facing read must distinguish fresh canonical truth from merely cached material and must never submit pending writes as a side effect of refreshing remote state.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/CanonicalResourceReader.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-SYNC"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java"
       ]
     },
     {
       "id": "android-client-google-workspace-transport",
-      "responsibility": "Default-Personal Android mapping between exact API command intent / reconnect change pages and the MIRA Google Workspace Commands and verified Changes row protocols through an injected authorized Sheets gateway.",
+      "responsibility": "Default-Personal Android mapping between exact API command intent / reconnect change pages and the MIRA Google Workspace Commands and verified Changes row protocols through an injected authorized Sheets gateway, including explicit verified pagination completeness.",
       "why_separate": "The row protocol validates transport evidence without owning OAuth UI, account selection, provider identifiers, network client lifecycle, canonical authority, or local persistence; concrete Google SDK/network behavior remains outside core.",
       "owned_paths": [
         "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceTransport.java"
       ],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC"],
       "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java"
+        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java",
+        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceChangePaginationTest.java"
       ]
     },
     {
