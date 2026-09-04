@@ -88,16 +88,18 @@ A packet in M2-M0.5 must not expand into the entire product. The objective is re
 
 Goal: Android reads and mutates the same canonical reality as the no-app Personal product without becoming a second authority.
 
-**Current status:** the shared command-boundary prerequisite is complete in M2-M1-001 at implemented, test, exact existing-project integration and live isolated Google-provider evidence levels. Android client core is next and unblocked; no Android client/UI/device evidence is claimed yet.
+**Current status:** M2-M1-001 through M2-M1-006 are complete and merged: the shared queued command boundary, same-user enrollment/session trust, OS-protected credential storage, encrypted offline queue/cache/cursor state, provider-neutral reconnect orchestration, and the concrete default-Personal Workspace transport are test-verified, with M2-M1-001 additionally live-verified against isolated Google provider state. M2-M1-007 is active for least-privilege Google authorization, provider-owned single-Sheet selection, automatic Workspace verification/binding, and the real bounded Sheets gateway. Full Android shared-state read/mutate/cross-ChatGPT and representative-device evidence remain unfinished.
 
-Ordered proof when resumed:
-1. ~~complete the live isolated Google queued-writer proof for the already-built stronger shared execution boundary~~ — complete in M2-M1-001 on 2026-09-02;
-2. Android client core with scoped/revocable client identity and OS-protected durable credentials — next;
-3. replay-safe offline queue and reconnect/cursor synchronization;
-4. Android read of canonical Personal state;
-5. Android mutation through the shared execution boundary;
-6. stock ChatGPT reads the Android mutation back from the same authority;
-7. representative-device proof.
+Ordered proof:
+1. ~~stronger shared queued execution boundary~~ — complete in M2-M1-001 on 2026-09-02;
+2. ~~same-user enrollment/session identity, revocation and OS-protected durable credentials~~ — complete in M2-M1-002/M2-M1-003;
+3. ~~encrypted replay-safe offline queue/cache/cursor state plus reconnect orchestration~~ — complete in M2-M1-004/M2-M1-005;
+4. ~~concrete default-Personal Workspace Commands/Changes transport protocol~~ — complete in M2-M1-006;
+5. least-privilege Google authorization + provider-owned Workspace selection + automatic protocol verification + real bounded Sheets gateway — active in M2-M1-007;
+6. Android read of canonical Personal state;
+7. Android mutation through the shared execution boundary;
+8. stock ChatGPT reads the Android mutation back from the same authority;
+9. representative-device proof.
 
 Native notifications/TTS, camera/barcode/NFC/BLE capture, release signing, and broader UI polish follow the shared-state proof unless required to demonstrate the client core itself.
 
