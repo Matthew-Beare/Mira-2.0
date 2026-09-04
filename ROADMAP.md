@@ -88,7 +88,7 @@ A packet in M2-M0.5 must not expand into the entire product. The objective is re
 
 Goal: Android reads and mutates the same canonical reality as the no-app Personal product without becoming a second authority.
 
-**Current status:** M2-M1-001 through M2-M1-009 are complete at their bounded evidence ceilings. The stronger queued writer has live isolated Google proof; Android enrollment/session trust, OS-protected credentials, encrypted offline state, reconnect/cursor orchestration, Workspace row transport, Google authorization/Workspace-binding implementation, truthful canonical read/freshness, and deterministic queued canonical mutation are merged and test-verified. M2-M1-009 does not claim live Android provider/device behavior. Stock-ChatGPT cross-readback and representative-device proof remain unfinished.
+**Current status:** M2-M1-001 through M2-M1-010 are complete at their bounded evidence ceilings. The stronger queued writer has live isolated Google proof; Android enrollment/session trust, OS-protected credentials, encrypted offline state, reconnect/cursor orchestration, Workspace row transport, Google authorization/Workspace-binding implementation, truthful canonical read/freshness, deterministic queued canonical mutation, and deterministic stock-ChatGPT cross-readback from the same canonical Authority are merged and test-verified. M2-M1-010 does not claim live Android provider/device behavior. Representative-device proof remains unfinished.
 
 Ordered proof:
 1. ~~complete the live isolated Google queued-writer proof for the stronger shared execution boundary~~ — complete in M2-M1-001 on 2026-09-02;
@@ -97,8 +97,8 @@ Ordered proof:
 4. ~~default-Personal Workspace transport plus Android Google authorization/resource-binding implementation~~ — complete through M2-M1-006 and M2-M1-007 at merged/test-verified evidence; M2-M1-007 does not claim live Google authorization or physical-device proof;
 5. ~~Android read of canonical Personal state with explicit freshness truth~~ — complete in M2-M1-008 / PR #108 at merged/test-verified evidence; no live Android provider/device claim;
 6. ~~Android mutation through the shared queued execution boundary~~ — complete in M2-M1-009 / PR #109 at merged/test-verified evidence; no live Android provider/device claim;
-7. stock ChatGPT reads the Android mutation back from the same authority — **next**;
-8. representative-device proof.
+7. ~~stock ChatGPT reads the Android mutation back from the same authority~~ — complete in M2-M1-010 / PR #110 at deterministic integration evidence; no live Android provider/device claim;
+8. representative-device proof — **next within M2-M1 unless fresh dependency ranking selects a higher-priority blocker after closeout**.
 
 Native notifications/TTS, camera/barcode/NFC/BLE capture, release signing, and broader UI polish follow the shared-state proof unless required to demonstrate the client core itself.
 
