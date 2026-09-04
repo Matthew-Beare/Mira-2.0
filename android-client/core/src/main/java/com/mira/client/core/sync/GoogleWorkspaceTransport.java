@@ -111,9 +111,6 @@ public final class GoogleWorkspaceTransport implements ReconnectCoordinator.Tran
             try {
                 gateway.appendRow(COMMANDS_TABLE, append);
             } catch (GatewayException appendFailure) {
-                // values.append has an ambiguous network window: Google may have accepted the row
-                // before the client observed the failure. Read back before deciding the delivery
-                // failed so a retry cannot manufacture a second logical command.
                 try {
                     rows = readValidatedTable(
                             COMMANDS_TABLE,
@@ -212,10 +209,12 @@ public final class GoogleWorkspaceTransport implements ReconnectCoordinator.Tran
             next = change.sequence;
         }
 
+        boolean moreAvailable = lastSequence > next;
         String nextCursor = formatCursor(next);
         return ReconnectCoordinator.ChangePage.verified(
                 cursor,
                 nextCursor,
+                moreAvailable,
                 Collections.unmodifiableList(snapshots)
         );
     }
