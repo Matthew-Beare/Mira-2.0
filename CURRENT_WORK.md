@@ -45,7 +45,7 @@ Default Personal MIRA remains stock ChatGPT + Google Workspace first. Android ex
 
 **ALIGNED.** M2-M1-010 was bounded to the stock-ChatGPT cross-readback child of `ANDROID-SYNC`: prove that an Android-shaped queued command is executed by the existing serialized Workspace writer into canonical `Resources`, then the existing stock-ChatGPT Workspace query contract reads that exact canonical revision/payload through the same persisted Authority binding. No second read engine, Android UI expansion, representative-device proof, or legacy production state was included.
 
-## Active/recovery packet
+## Active packet
 
 ### `M2-M1-010` — Stock ChatGPT cross-readback of Android canonical mutation
 
