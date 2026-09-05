@@ -72,6 +72,22 @@ jobs:
       - name: Android client unit tests and proof APK
         run: gradle -p android-client :core:testDebugUnitTest :google-workspace:testDebugUnitTest :device-proof-app:testDebugUnitTest :device-proof-app:assembleDebug --stacktrace
 
+      - name: Verify Android device proof APK provenance
+        run: |
+          APK="android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk"
+          test -f "$APK"
+          sha256sum "$APK" > "${APK}.sha256"
+          cat "${APK}.sha256"
+
+      - name: Retain Android device proof APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: mira-device-proof-${{ github.sha }}
+          path: |
+            android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk
+            android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk.sha256
+          if-no-files-found: error
+
       - name: Python unit tests
         run: python -m unittest discover -s tests -v
 
