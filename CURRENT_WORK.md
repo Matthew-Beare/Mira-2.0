@@ -22,12 +22,11 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-012-android-device-proof`.
 - **Base SHA:** `6e907c900f8d0496fa74296dc5213169d445a683`.
-- **Final authoritative pre-merge head:** `16895f4b466622db1c4c37bb3b5b66d802b88c8b`.
-- **Final exact-head CI:** `33984090401` — success.
-- **Final retained artifact:** ID `9974629890`, name `mira-device-proof-16895f4b466622db1c4c37bb3b5b66d802b88c8b`.
+- **Last recorded pre-merge checkpoint:** `16895f4b466622db1c4c37bb3b5b66d802b88c8b`, exact-head CI `33984090401`, retained artifact `9974629890`.
+- **Merge rule:** the actual PR head is verified externally from GitHub immediately before merge and must pass its own exact-head CI; CURRENT_WORK does not attempt self-referential recording of the commit SHA that contains CURRENT_WORK itself.
 - **Dependencies:** M2-M1-001 through M2-M1-011 and M2-G0-012 are durably closed at their recorded evidence ceilings; the existing `device-proof-app`, `core`, and `google-workspace` modules remain the proof surface.
 - **Current blocker:** repository/build/signing prerequisites are satisfied. The remaining unearned evidence begins at live provider registration/authorization and physical representative-device execution.
-- **Status:** active; stable development signing, exact APK provenance, independent binary verification, final exact-head CI and provider-target read-only preflight are complete. PR merge/main readback and post-merge artifact verification are next; no live Google authorization or physical-device success is claimed yet.
+- **Status:** active; stable development signing, exact APK provenance, independent binary verification, exact-head CI and provider-target read-only preflight are complete. Protected merge/main readback and post-merge artifact verification are next; no live Google authorization or physical-device success is claimed yet.
 
 ## Objective
 
@@ -78,19 +77,11 @@ The repository workflow consumes optional secret `MIRA_DEVICE_PROOF_KEYSTORE_B64
 
 After repository secret provisioning, workflow `33952071965` was rerun on unchanged implementation head `423ecc650689f64656115715fed85552d758bafb`; latest job `101353054082` passed with `Secret source: Actions`, `signing_mode=stable_secret`, the exact expected signing certificate, and `live_proof_eligible=true`. Artifact `9974483194` was independently downloaded and its APK SHA-256, sidecar, provenance and embedded signer certificate all matched exactly.
 
-## Final pre-merge exact-head verification — complete
+## Pre-merge proof-chain evidence
 
-The final branch head is `16895f4b466622db1c4c37bb3b5b66d802b88c8b`. Exact-head CI `33984090401` passed all required gates using the stable Actions secret.
+Successive Git-backed evidence-only CURRENT_WORK checkpoints were intentionally rebuilt and tested through CI. The last recorded checkpoint `16895f4b466622db1c4c37bb3b5b66d802b88c8b` passed CI `33984090401` and retained artifact `9974629890`, stable-secret and live-proof eligible.
 
-Retained final pre-merge artifact:
-
-- artifact ID: `9974629890`;
-- artifact name: `mira-device-proof-16895f4b466622db1c4c37bb3b5b66d802b88c8b`;
-- archive digest: `sha256:c3760e2fee06423b8af9b5f2a230b41758767220fbfd47c67d70224e161c5b94`;
-- signing mode: stable secret, exact expected certificate;
-- live-proof eligible: true.
-
-The APK payload itself remains byte-identical to the independently verified stable build from the preceding evidence heads because the final branch changes after implementation were Git-backed evidence-only CURRENT_WORK updates. CI still rebuilt, verified, and retained the APK from the exact final head before merge.
+The final merge candidate is not encoded into its own CURRENT_WORK text because that would create an impossible self-reference: changing the file to name the commit creates a new commit. Instead, GitHub PR metadata plus exact-head CI are the authoritative external proof for the final merge head immediately before merge. The merge must use `expected_head_sha` on that externally verified SHA.
 
 ## Provider target preflight — read only
 
@@ -107,7 +98,7 @@ This fixture remains the only permitted provider target for the next proof step 
 5. Repository secret `MIRA_DEVICE_PROOF_KEYSTORE_B64` provisioned without committing private key material — **satisfied by successful redacted Actions-secret consumption**.
 6. Secret-backed CI reports `stable_secret`, expected certificate SHA-1, and `live_proof_eligible=true` — **satisfied**.
 7. Stable artifact independently downloaded and APK/checksum/provenance/signer certificate verified — **satisfied**.
-8. Final fresh exact-head CI before merge — **satisfied** by head `16895f4b466622db1c4c37bb3b5b66d802b88c8b`, CI `33984090401`, artifact `9974629890`.
+8. Final merge candidate exact-head CI — **must be verified externally from GitHub immediately before merge**.
 9. Protected PR merge/readback and post-merge `main` CI stable artifact tied to exact merge SHA — **pending**.
 10. One representative Android device installs and launches that exact post-merge stable retained debug APK — **pending**.
 11. Provider-native Google authorization executes without exposing tokens or turning developer-only setup into future ordinary-user UX — **pending**.
@@ -129,15 +120,16 @@ This fixture remains the only permitted provider target for the next proof step 
 
 ## Exact next action / resume point
 
-1. Merge PR #117 only with exact expected-head protection at `16895f4b466622db1c4c37bb3b5b66d802b88c8b`.
-2. Independently read back remote `main` at the merge SHA and require post-merge CI on that exact SHA.
-3. Require the post-merge main run to retain a stable-secret artifact whose provenance binds both head/source to the merged main SHA; independently verify its APK SHA-256 and embedded signing certificate before installation.
-4. Before live authorization, verify the fixed `com.mira.deviceproof` + stable certificate SHA-1 Android OAuth/provider registration path. No suitable Google Cloud/OAuth administration connector is currently available in the connected tool set, so any required provider-console action must be narrowly scoped and evidence-driven rather than guessed.
-5. Install only the independently verified post-merge APK on one representative device, then execute provider-native authorization against the already-verified isolated disposable Workspace target.
-6. Use the synthetic existing entity at revision 1 for bounded read and revision-checked queued mutation/readback; never substitute a production resource.
-7. Independently verify the resulting canonical mutation through the stock-ChatGPT/native Workspace read path.
-8. Before packet closeout, re-read FEATURES/BACKLOG/ROADMAP and preserve every unearned evidence gap.
+1. Freeze the branch. Read PR #117 head from GitHub and require exact-head CI success for that SHA. Do not edit CURRENT_WORK merely to copy that SHA into this file.
+2. Merge PR #117 only with `expected_head_sha` equal to that externally verified final head.
+3. Independently read back remote `main` at the merge SHA and require post-merge CI on that exact SHA.
+4. Require the post-merge main run to retain a stable-secret artifact whose provenance binds both head/source to the merged main SHA; independently verify its APK SHA-256 and embedded signing certificate before installation.
+5. Before live authorization, verify the fixed `com.mira.deviceproof` + stable certificate SHA-1 Android OAuth/provider registration path. No suitable Google Cloud/OAuth administration connector is currently available in the connected tool set, so any required provider-console action must be narrowly scoped and evidence-driven rather than guessed.
+6. Install only the independently verified post-merge APK on one representative device, then execute provider-native authorization against the already-verified isolated disposable Workspace target.
+7. Use the synthetic existing entity at revision 1 for bounded read and revision-checked queued mutation/readback; never substitute a production resource.
+8. Independently verify the resulting canonical mutation through the stock-ChatGPT/native Workspace read path.
+9. Before packet closeout, re-read FEATURES/BACKLOG/ROADMAP and preserve every unearned evidence gap.
 
 ## Recovery protocol
 
-Read this file first, then verify branch/head and PR #117. M2-M1-001 through M2-M1-011 and M2-G0-012 are closed and must not be repeated. The stable development signing secret is provisioned and verified without exposing or committing private key material. Final exact-head CI `33984090401` passed on `16895f4b466622db1c4c37bb3b5b66d802b88c8b`; artifact `9974629890` is stable-secret and live-proof eligible. The isolated disposable Workspace fixture is read-only verified intact and remains the sole permitted provider target. The next step is protected PR #117 merge, exact main/post-merge stable artifact verification, then bounded provider/device execution. Do not claim live-provider/device success until those provider and device readbacks actually occur.
+Read this file first, then verify branch/head and PR #117. M2-M1-001 through M2-M1-011 and M2-G0-012 are closed and must not be repeated. The stable development signing secret is provisioned and verified without exposing or committing private key material. The branch is to remain frozen after this self-reference repair; the actual final head and its exact-head CI are read from GitHub externally and merged only with expected-head protection. The isolated disposable Workspace fixture is read-only verified intact and remains the sole permitted provider target. After merge, require exact main/post-merge stable artifact verification, then bounded provider/device execution. Do not claim live-provider/device success until those provider and device readbacks actually occur.
