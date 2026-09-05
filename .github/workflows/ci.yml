@@ -75,17 +75,36 @@ jobs:
       - name: Verify Android device proof APK provenance
         run: |
           APK="android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk"
+          PROVENANCE="android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.provenance.txt"
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          SOURCE_SHA="${{ github.sha }}"
+          CHECKED_OUT_SHA="$(git rev-parse HEAD)"
+
           test -f "$APK"
+          test "$CHECKED_OUT_SHA" = "$SOURCE_SHA"
           sha256sum "$APK" > "${APK}.sha256"
+          APK_SHA256="$(cut -d ' ' -f1 "${APK}.sha256")"
+
+          printf '%s\n' \
+            "repository=${{ github.repository }}" \
+            "event_name=${{ github.event_name }}" \
+            "run_id=${{ github.run_id }}" \
+            "head_sha=${HEAD_SHA}" \
+            "source_sha=${SOURCE_SHA}" \
+            "apk_sha256=${APK_SHA256}" \
+            > "$PROVENANCE"
+
           cat "${APK}.sha256"
+          cat "$PROVENANCE"
 
       - name: Retain Android device proof APK
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: mira-device-proof-${{ github.sha }}
+          name: mira-device-proof-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk
             android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk.sha256
+            android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.provenance.txt
           if-no-files-found: error
 
       - name: Python unit tests
