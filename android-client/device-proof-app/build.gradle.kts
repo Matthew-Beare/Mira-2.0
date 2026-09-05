@@ -2,6 +2,10 @@ plugins {
     id("com.android.application")
 }
 
+val proofKeystorePath = providers.environmentVariable("MIRA_DEVICE_PROOF_KEYSTORE_PATH").orNull
+val proofKeystorePassword = providers.environmentVariable("MIRA_DEVICE_PROOF_KEYSTORE_PASSWORD").orNull
+val proofKeyAlias = providers.environmentVariable("MIRA_DEVICE_PROOF_KEY_ALIAS").orNull
+
 android {
     namespace = "com.mira.deviceproof"
     compileSdk = 36
@@ -12,6 +16,27 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1"
+    }
+
+    if (proofKeystorePath != null) {
+        signingConfigs {
+            create("proof") {
+                storeFile = file(proofKeystorePath)
+                storePassword = requireNotNull(proofKeystorePassword) {
+                    "MIRA_DEVICE_PROOF_KEYSTORE_PASSWORD is required when proof signing is enabled"
+                }
+                keyAlias = requireNotNull(proofKeyAlias) {
+                    "MIRA_DEVICE_PROOF_KEY_ALIAS is required when proof signing is enabled"
+                }
+                keyPassword = proofKeystorePassword
+            }
+        }
+
+        buildTypes {
+            getByName("debug") {
+                signingConfig = signingConfigs.getByName("proof")
+            }
+        }
     }
 
     compileOptions {
