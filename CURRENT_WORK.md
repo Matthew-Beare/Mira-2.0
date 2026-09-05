@@ -2,101 +2,110 @@
 
 Git is authoritative. This file identifies exactly one active/recovery packet and exact recovery state.
 
+## Prior-packet durable closure — 2026-09-05
+
+`M2-G0-012` is durably closed and must not be rerun.
+
+- Governance repair head `e5ddd961dcdb64374e4c6a15a75caee287ea0cec` passed exact-head CI `33951335264`.
+- PR #116 merged with expected-head protection as `6e907c900f8d0496fa74296dc5213169d445a683`.
+- Remote `main` readback confirmed exactly `6e907c900f8d0496fa74296dc5213169d445a683`.
+- Post-merge CI `33951430022` succeeded on that exact main SHA.
+- Therefore `M2-M1-011` is durably closed at repository/build evidence and the fresh ranking result selecting representative-device execution is authoritative.
+
 ## Active packet
 
-### `M2-G0-012` — Post-M2-M1-011 closeout and next-work ranking
+### `M2-M1-012` — Android representative-device execution proof
 
-- **Type:** governance / lifecycle reconciliation.
-- **Primary work:** `FEATURE-ALIGN-001`.
-- **Primary features:** `DEV-007`, `CLIENT-ANDROID-001`.
-- **Related invariants/features:** `DEV-001`, `DEV-002`, `DEV-003`, `DEV-005`, `DATA-001`, `API-001`, `AUTH-001`, `STORE-001`, `RECOVERY-002`, `PROVIDER-002`.
+- **Primary work:** `ANDROID-CLIENT-CORE-001`.
+- **Primary features:** `CLIENT-ANDROID-001`, `API-001`.
+- **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `PROVIDER-002`, `DATA-001`, `DEV-007`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-g0-012-post-m1-011-closeout`.
-- **Base SHA:** `e66d5374dc0076bfa3d8ea87fa5c73437e210b0c`.
-- **Current head SHA:** first checkpoint `84c766214341309d591d03e29780dd163f821725`; CI `33951264151` failed only at the work-session alignment gate because the initial compact governance checkpoint omitted the machine-required primary-work/feature fields and authority-review headings. This repair changes governance metadata only.
-- **Objective:** durably close `M2-M1-011` at its earned repository/build evidence ceiling, verify the merge/CI chain, reconcile stale recovery state, and select the next bounded packet from unfinished accepted scope without claiming physical-device or live-provider evidence that was not earned.
+- **Branch:** `work/m2-m1-012-android-device-proof`.
+- **Base SHA:** `6e907c900f8d0496fa74296dc5213169d445a683`.
+- **Artifact-retention implementation SHA:** `a07696a366c29d8caa15f9190deb068778b49430`.
+- **Dependencies:** M2-M1-001 through M2-M1-011 and M2-G0-012 are durably closed at their recorded evidence ceilings; the existing `device-proof-app`, `core`, and `google-workspace` modules remain the proof surface.
+- **Current direct blocker:** M2-M1-011 CI assembled a debug APK but retained no downloadable Actions artifact, so representative-device installation cannot yet use an exact CI-produced binary with durable provenance.
+- **Status:** active; artifact-retention prerequisite implemented, exact-head CI/artifact readback and representative-device execution pending.
 
-## Session-start alignment verification — 2026-09-05 M2-G0-012
+## Objective
+
+Prove the already-implemented Android client path on one representative Android device against isolated synthetic MIRA 2.0 Google state, while preserving the same canonical Authority and honest evidence boundaries used by stock ChatGPT. The packet must not expand into general Android product development.
+
+The smallest immediate prerequisite is to retain the exact CI-built debug APK plus SHA-256 provenance so the binary installed on the representative device can be tied to an exact Git revision. No new Google resource or Apps Script publication is required merely to obtain the APK.
+
+## Session-start alignment verification — 2026-09-05 M2-M1-012
 
 ### `FEATURES.md`
 
-- `DEV-007` requires packet-to-feature alignment before implementation/merge and lifecycle reconciliation against canonical product scope.
-- `CLIENT-ANDROID-001` remains `specified+implemented+test_verified+partial`; repository/build proof does not equal representative-device or live-provider proof.
-- `API-001`, `AUTH-001`, `STORE-001`, and `RECOVERY-002` continue to require the Android client to use the shared canonical authority/readback semantics rather than inventing a second state authority.
-- `PROVIDER-002` preserves ordinary-user native connection semantics and forbids exporting avoidable provider IDs, OAuth scopes, developer-console work, pasted code, or terminal setup to ordinary users.
-- `DATA-001` protects legacy production state from development fixtures.
+- `CLIENT-ANDROID-001` remains `specified+implemented+test_verified+partial`; live Android Google authorization/provider-device behavior and representative-device evidence remain unfinished.
+- `API-001`, `AUTH-001`, `STORE-001`, and `RECOVERY-002` require the Android client to read and mutate through the shared canonical boundary with exact readback rather than becoming a second authority.
+- `PROVIDER-002` requires provider-native ordinary-user connection semantics and forbids avoidable provider IDs, OAuth scopes, developer-console work, pasted code, or terminal setup from becoming future ordinary-user UX.
+- `DATA-001` forbids legacy production state from being used as a development fixture.
+- `DEV-007` requires this packet to re-check product direction and evidence status before merge/closeout.
 
 ### `BACKLOG.md`
 
-- `FEATURE-ALIGN-001` is complete/CI-enforced and is the appropriate governance work anchor for this closeout packet.
-- `ANDROID-CLIENT-CORE-001` remains partial through the existing merged Android client work; live Android Google authorization/provider-device evidence, conflict UI, and representative-device behavior remain unfinished.
-- `ANDROID-SYNC` is already complete at deterministic integration evidence and must not be reopened merely to obtain device evidence.
-- `ANDROID-RELEASE-001`, native delivery, and capture hardware remain later hardening unless representative-device execution exposes a direct blocker.
-- The no-app Personal usefulness prerequisite is already satisfied by completed canonical backlog verticals including `OPS-BRIEF-VSLICE` plus subsequent receipt/asset/inventory work.
+- `ANDROID-CLIENT-CORE-001` is the unfinished prerequisite carrying the live Google authorization/provider-device, conflict-UI, and representative-device evidence gaps.
+- `ANDROID-SYNC` is already complete at deterministic integration evidence and must not be reopened simply to acquire physical-device evidence.
+- `ANDROID-RELEASE-001` remains later hardening. This packet may retain a development debug APK for proof without claiming production signing, store distribution, update continuity, or release readiness.
+- `ANDROID-NATIVE-DELIVERY-001` and `ANDROID-CAPTURE-001` remain outside this packet unless a direct representative-device acceptance blocker proves otherwise.
+- No higher-priority integrity/security blocker or hard prerequisite outranks the bounded representative-device proof.
 
 ### `ROADMAP.md`
 
 - Default Personal MIRA remains stock ChatGPT + Google Workspace first; Android is a companion over the same canonical reality.
-- The roadmap's requirement for a useful no-app Personal vertical before Android focus has been met by already-completed canonical no-app vertical work.
-- M2-M1 step 8 remains representative-device proof unless a fresh integrity/security/dependency review exposes a higher-priority blocker.
-- M2-M1-011 supplied the missing installable proof shell prerequisite but did not itself earn representative-device evidence.
+- The required useful no-app Personal vertical already exists in completed backlog evidence, so representative-device proof is not blocked by the historical no-app-first sequencing rule.
+- M2-M1 step 8 is representative-device proof. M2-M1-011 supplied the installable proof shell but did not itself earn physical-device/live-provider evidence.
 
 ### Direction result
 
-**ALIGNED.** `M2-G0-012` is a bounded governance closeout/ranking packet. It changes no product runtime code, claims no new live-provider/device evidence, and preserves the Personal Google, one-authority, ordinary-user connection, and legacy-data protection direction. Fresh ranking still selects representative-device execution as the next bounded M2-M1 candidate.
+**ALIGNED.** M2-M1-012 is the smallest remaining vertical proof for the Android client core. APK retention is a direct prerequisite for exact-binary representative-device evidence, not release engineering scope creep. No live-provider/device success is claimed until provider and device readback actually occur.
 
-## M2-M1-011 durable closure evidence
+## Implemented prerequisite — exact proof APK retention
 
-`M2-M1-011` — Minimal installable Android representative-device proof shell — is **complete at repository/build evidence** and must not be rerun.
+At `a07696a366c29d8caa15f9190deb068778b49430`, CI was extended only after the existing Android test/assemble step to:
 
-Verified remote evidence:
+1. require the expected debug output at `android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk`;
+2. generate a SHA-256 sidecar for that exact APK;
+3. fail closed if the APK is absent;
+4. retain the APK and SHA-256 as a GitHub Actions artifact named `mira-device-proof-${{ github.sha }}`;
+5. use the current GitHub `actions/upload-artifact@v7` line.
 
-1. PR #114 final head: `dd6c6cafb4034d5beb242b1d7833ab9616ca2e78`.
-2. Final exact-head PR CI: `33905670967` — success.
-3. PR #114 merged to `main` as `e66d5374dc0076bfa3d8ea87fa5c73437e210b0c` on 2026-09-04.
-4. Remote `main` readback confirmed exactly `e66d5374dc0076bfa3d8ea87fa5c73437e210b0c`.
-5. Post-merge CI on that exact main SHA: `33905883963` — success.
-6. The merged proof shell provides one installable Android application module/activity that composes the existing tested Android client modules and builds a debug APK in CI.
-7. No live Android Google authorization, physical-device execution, provider mutation, conflict-resolution UX, release signing/store distribution, notifications/TTS, capture hardware, or legacy-production interaction is claimed by `M2-M1-011`.
+This change does not alter Android runtime behavior, provider scopes, canonical state semantics, app permissions, signing identity, or any Google resource.
 
-## Fresh priority result
+## Acceptance criteria
 
-No higher-ranked unfinished integrity/security blocker or hard prerequisite was found ahead of representative-device execution. The next implementation candidate is therefore the smallest bounded representative-device proof packet for the existing debug proof shell.
-
-## Proposed next implementation packet
-
-### `M2-M1-012` — Android representative-device execution proof
-
-Expected bounded objective:
-
-1. obtain the exact debug APK produced from the merged `M2-M1-011` proof shell or rebuild the same source revision through the verified CI/toolchain;
-2. install it on one representative Android device using a development-only path;
-3. execute provider-native Google authorization without exporting provider IDs, OAuth scopes, developer-console work, pasted code, or terminal commands to an ordinary future user;
-4. bind only to the existing isolated MIRA 2.0 synthetic Google proof namespace, never legacy production data;
-5. verify truthful disconnected / authorizing / verifying / verified-ready state transitions;
-6. perform one bounded canonical read and capture exact resource revision plus payload SHA-256 without displaying raw payload, secrets, tokens, or private provider IDs;
-7. perform one queued canonical mutation through the existing shared writer and require acknowledged canonical readback before displaying success;
-8. independently verify the resulting canonical state through the existing stock-ChatGPT/native Workspace read path when available;
-9. capture failure evidence honestly if device/provider execution exposes a blocker instead of broadening the packet into general Android application development.
-
-This packet may earn representative-device/live-provider evidence only for the exact actions actually completed. It does not by itself complete conflict UX, production release signing/distribution, notifications/TTS, capture hardware, or the finished Android product.
+1. Prior packet closure is exact-readback verified — **satisfied** by PR #116 merge `6e907c900f8d0496fa74296dc5213169d445a683` and post-merge CI `33951430022`.
+2. Exact CI-produced proof APK is retained with commit-bound artifact identity and SHA-256 sidecar — **implemented; CI/artifact readback pending**.
+3. Fresh exact-head CI passes all existing repository gates plus APK provenance/retention — **pending**.
+4. The retained artifact is independently listed/read back from the exact successful workflow run before installation — **pending**.
+5. One representative Android device installs and launches the exact retained debug APK — **pending**.
+6. Provider-native Google authorization executes without exposing tokens or turning developer-only setup into future ordinary-user UX — **pending**.
+7. Binding is restricted to the existing isolated/synthetic MIRA 2.0 Google proof namespace; legacy production is untouched — **pending live verification**.
+8. The device truthfully demonstrates disconnected/authorizing/verifying/verified-ready states and fails closed when readiness is absent — **pending live verification**.
+9. One bounded canonical read reports exact revision and payload SHA-256 without rendering raw canonical payload, OAuth tokens, or private provider IDs — **pending live verification**.
+10. One queued canonical mutation reports success only after acknowledged canonical readback through the existing shared writer — **pending live verification**.
+11. When the existing stock-ChatGPT/native Workspace read path is available, independently verify the resulting canonical mutation from the same Authority — **pending live verification**.
+12. Any device/provider failure is recorded as evidence and repaired only if it directly blocks these criteria; conflict UX, release signing/distribution, notifications/TTS, capture hardware, and broad product UI remain deferred — **active constraint**.
 
 ## Protected constraints
 
-- Do not touch legacy MIRA production Sheets, Drive artifacts, Apps Script projects, briefs, schedules, automations, or other live state as development fixtures.
-- Use synthetic or explicitly approved isolated MIRA 2.0 provider resources only.
-- Do not repeat `M2-M1-001` Google provider proof, authorization repair, or fresh Apps Script publication.
-- Do not claim CI/build evidence as physical-device or provider evidence.
-- Do not expand `M2-M1-012` into release distribution or broad product UI unless a direct acceptance blocker requires it.
+- Never touch legacy MIRA production Sheets, Drive artifacts, Apps Script projects, briefs, schedules, automations, or other live state as development fixtures.
+- Do not repeat M2-M1-001 Google provider proof, Google authorization repair, or fresh Apps Script publication.
+- Do not create a new Google Sheet or Apps Script project merely for APK installation/proof if the existing isolated synthetic namespace remains suitable.
+- Do not commit tokens, credentials, private provider IDs, live spreadsheet contents, or personal operational state to the public repository.
+- CI/build evidence is not physical-device or provider evidence.
+- A debug artifact retained for development proof does not satisfy `ANDROID-RELEASE-001`.
 
 ## Exact next action / resume point
 
-1. Require fresh exact-head CI after this work-session-alignment metadata repair; repair only `M2-G0-012` governance failures.
-2. If green, merge PR #116 only with exact expected-head protection.
-3. Independently read back remote `main` at the merge SHA and require post-merge CI on that exact SHA.
-4. After `M2-G0-012` is durably merged, activate exactly one implementation packet: `M2-M1-012` as defined above, unless the closeout CI reveals a higher-priority blocker.
-5. For `M2-M1-012`, first inspect the successful `M2-M1-011` workflow artifacts and recover the exact debug APK if CI retained it; do not rebuild or create provider resources unnecessarily.
+1. Open the bounded M2-M1-012 PR from `work/m2-m1-012-android-device-proof`.
+2. Require fresh exact-head CI after this CURRENT_WORK checkpoint; repair only failures directly caused by M2-M1-012.
+3. On green CI, list the exact run artifacts and verify one `mira-device-proof-<exact-head-sha>` artifact exists before claiming APK retention succeeded.
+4. Download/read back that exact artifact and verify the included APK plus SHA-256 sidecar are present and internally consistent.
+5. Only then proceed to representative-device installation and live provider/canonical proof. The unavoidable physical-device/provider consent actions may require the user, but no provider-resource recreation or broad technical setup should be exported to them.
+6. Before merge/closeout, re-read FEATURES/BACKLOG/ROADMAP, preserve unearned evidence gaps, merge only with expected-head protection, then require exact remote-main readback and post-merge CI.
 
 ## Recovery protocol
 
-Read this file first, then verify repository/branch/head and PR #116. `M2-M1-001` through `M2-M1-011` are closed at their recorded evidence ceilings and must not be rerun. `M2-G0-012` is governance-only. Its first CI `33951264151` failed solely because the compact checkpoint omitted required alignment metadata; the repair must pass fresh exact-head CI before merge. Do not broaden this packet into Android runtime changes.
+Read this file first, then verify branch/head and the active M2-M1-012 PR. M2-M1-001 through M2-M1-011 and M2-G0-012 are closed and must not be repeated. The artifact-retention implementation is `a07696a366c29d8caa15f9190deb068778b49430`; this CURRENT_WORK checkpoint follows it and therefore requires a fresh exact-head CI run. Do not claim physical-device/live-provider success until the representative-device actions and canonical readbacks actually occur.
