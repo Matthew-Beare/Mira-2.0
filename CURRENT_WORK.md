@@ -22,14 +22,9 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-012-android-device-proof`.
 - **Base SHA:** `6e907c900f8d0496fa74296dc5213169d445a683`.
-- **Pre-checkpoint implementation head:** `423ecc650689f64656115715fed85552d758bafb`.
-- **Stable-secret verification run:** workflow `33952071965`, rerun/latest job `101353054082` — success on the unchanged authoritative implementation head.
-- **Durable evidence checkpoint head:** `7cfc439e54a4b5ceb89a9b81b91ece2e9f97fc66`.
-- **Checkpoint exact-head CI:** `33983815742` — success.
-- **Checkpoint stable artifact:** ID `9974552386`, name `mira-device-proof-7cfc439e54a4b5ceb89a9b81b91ece2e9f97fc66`.
-- **Final pre-merge head:** `5b6763249fe61eceef030eb2a1c4125e36597e8c`.
-- **Final pre-merge exact-head CI:** `33983961661` — success.
-- **Final pre-merge stable artifact:** ID `9974592159`, name `mira-device-proof-5b6763249fe61eceef030eb2a1c4125e36597e8c`.
+- **Final authoritative pre-merge head:** `16895f4b466622db1c4c37bb3b5b66d802b88c8b`.
+- **Final exact-head CI:** `33984090401` — success.
+- **Final retained artifact:** ID `9974629890`, name `mira-device-proof-16895f4b466622db1c4c37bb3b5b66d802b88c8b`.
 - **Dependencies:** M2-M1-001 through M2-M1-011 and M2-G0-012 are durably closed at their recorded evidence ceilings; the existing `device-proof-app`, `core`, and `google-workspace` modules remain the proof surface.
 - **Current blocker:** repository/build/signing prerequisites are satisfied. The remaining unearned evidence begins at live provider registration/authorization and physical representative-device execution.
 - **Status:** active; stable development signing, exact APK provenance, independent binary verification, final exact-head CI and provider-target read-only preflight are complete. PR merge/main readback and post-merge artifact verification are next; no live Google authorization or physical-device success is claimed yet.
@@ -68,9 +63,7 @@ The representative-device binary must be traceable to exact Git/CI source, use o
 
 **ALIGNED.** M2-M1-012 remains the smallest remaining vertical proof for the Android client core. Stable development signing is verified infrastructure evidence, not a production-release claim. The packet now proceeds only into bounded live provider/device proof.
 
-## Verified APK retention and stable-signing evidence
-
-The branch first proved deterministic artifact retention and dual-SHA provenance at head `522f249e35e1deb9f8fa8df35e6261922cd69f3d`, CI `33951751487`, artifact `9965052790`. Two separate CI artifacts proved default ephemeral Android debug signing produces different certificates across hosted runners and therefore cannot be the fixed Android OAuth identity.
+## Stable development proof signing — verified
 
 A dedicated development-only signing identity exists outside Git for package `com.mira.deviceproof`:
 
@@ -87,23 +80,17 @@ After repository secret provisioning, workflow `33952071965` was rerun on unchan
 
 ## Final pre-merge exact-head verification — complete
 
-The final branch head is `5b6763249fe61eceef030eb2a1c4125e36597e8c`. Exact-head CI `33983961661` passed all required gates using the stable Actions secret.
+The final branch head is `16895f4b466622db1c4c37bb3b5b66d802b88c8b`. Exact-head CI `33984090401` passed all required gates using the stable Actions secret.
 
 Retained final pre-merge artifact:
 
-- artifact ID: `9974592159`;
-- artifact name: `mira-device-proof-5b6763249fe61eceef030eb2a1c4125e36597e8c`;
-- archive digest: `sha256:6f8a52533d4253dbf8769cba108472853f9cbbf5bc7a0c506f2439eeba2ee352`;
-- provenance `head_sha`: `5b6763249fe61eceef030eb2a1c4125e36597e8c`;
-- provenance checked-out/tested PR merge `source_sha`: `3b860fb9c317d86b7d930ac02f7482d81bb8cd0c`;
-- APK SHA-256: `9ecb56f8dca3ea51fd1736fea62417f2b0066274ef08977511c15a7ae3d325c6`;
-- signing mode: `stable_secret`;
-- signing SHA-1: `AF:E0:18:6B:7C:21:EA:74:D3:4C:4A:33:04:FF:B1:15:EF:DB:A5:6D`;
-- live-proof eligible: `true`.
+- artifact ID: `9974629890`;
+- artifact name: `mira-device-proof-16895f4b466622db1c4c37bb3b5b66d802b88c8b`;
+- archive digest: `sha256:c3760e2fee06423b8af9b5f2a230b41758767220fbfd47c67d70224e161c5b94`;
+- signing mode: stable secret, exact expected certificate;
+- live-proof eligible: true.
 
-Independent archive readback again found exactly APK + SHA-256 sidecar + provenance, recomputed the identical APK SHA-256, and independently read the APK embedded signer certificate as the exact stable development certificate.
-
-The older artifact `9965159204` came from the pre-secret run and is explicitly **not** an accepted live-proof binary.
+The APK payload itself remains byte-identical to the independently verified stable build from the preceding evidence heads because the final branch changes after implementation were Git-backed evidence-only CURRENT_WORK updates. CI still rebuilt, verified, and retained the APK from the exact final head before merge.
 
 ## Provider target preflight — read only
 
@@ -120,7 +107,7 @@ This fixture remains the only permitted provider target for the next proof step 
 5. Repository secret `MIRA_DEVICE_PROOF_KEYSTORE_B64` provisioned without committing private key material — **satisfied by successful redacted Actions-secret consumption**.
 6. Secret-backed CI reports `stable_secret`, expected certificate SHA-1, and `live_proof_eligible=true` — **satisfied**.
 7. Stable artifact independently downloaded and APK/checksum/provenance/signer certificate verified — **satisfied**.
-8. Final fresh exact-head CI before merge — **satisfied** by head `5b6763249fe61eceef030eb2a1c4125e36597e8c`, CI `33983961661`, artifact `9974592159`.
+8. Final fresh exact-head CI before merge — **satisfied** by head `16895f4b466622db1c4c37bb3b5b66d802b88c8b`, CI `33984090401`, artifact `9974629890`.
 9. Protected PR merge/readback and post-merge `main` CI stable artifact tied to exact merge SHA — **pending**.
 10. One representative Android device installs and launches that exact post-merge stable retained debug APK — **pending**.
 11. Provider-native Google authorization executes without exposing tokens or turning developer-only setup into future ordinary-user UX — **pending**.
@@ -142,7 +129,7 @@ This fixture remains the only permitted provider target for the next proof step 
 
 ## Exact next action / resume point
 
-1. Merge PR #117 only with exact expected-head protection at `5b6763249fe61eceef030eb2a1c4125e36597e8c`.
+1. Merge PR #117 only with exact expected-head protection at `16895f4b466622db1c4c37bb3b5b66d802b88c8b`.
 2. Independently read back remote `main` at the merge SHA and require post-merge CI on that exact SHA.
 3. Require the post-merge main run to retain a stable-secret artifact whose provenance binds both head/source to the merged main SHA; independently verify its APK SHA-256 and embedded signing certificate before installation.
 4. Before live authorization, verify the fixed `com.mira.deviceproof` + stable certificate SHA-1 Android OAuth/provider registration path. No suitable Google Cloud/OAuth administration connector is currently available in the connected tool set, so any required provider-console action must be narrowly scoped and evidence-driven rather than guessed.
@@ -153,4 +140,4 @@ This fixture remains the only permitted provider target for the next proof step 
 
 ## Recovery protocol
 
-Read this file first, then verify branch/head and PR #117. M2-M1-001 through M2-M1-011 and M2-G0-012 are closed and must not be repeated. The stable development signing secret is provisioned and verified without exposing or committing private key material. Final exact-head CI `33983961661` passed on `5b6763249fe61eceef030eb2a1c4125e36597e8c`; artifact `9974592159` is independently verified and live-proof eligible. The isolated disposable Workspace fixture is read-only verified intact and remains the sole permitted provider target. The next step is protected PR #117 merge, exact main/post-merge stable artifact verification, then bounded provider/device execution. Do not claim live-provider/device success until those provider and device readbacks actually occur.
+Read this file first, then verify branch/head and PR #117. M2-M1-001 through M2-M1-011 and M2-G0-012 are closed and must not be repeated. The stable development signing secret is provisioned and verified without exposing or committing private key material. Final exact-head CI `33984090401` passed on `16895f4b466622db1c4c37bb3b5b66d802b88c8b`; artifact `9974629890` is stable-secret and live-proof eligible. The isolated disposable Workspace fixture is read-only verified intact and remains the sole permitted provider target. The next step is protected PR #117 merge, exact main/post-merge stable artifact verification, then bounded provider/device execution. Do not claim live-provider/device success until those provider and device readbacks actually occur.
