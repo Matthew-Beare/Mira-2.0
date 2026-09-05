@@ -23,7 +23,7 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Branch:** `work/m2-m1-012-android-device-proof`.
 - **Base SHA:** `6e907c900f8d0496fa74296dc5213169d445a683`.
 - **Last recorded pre-merge checkpoint:** `16895f4b466622db1c4c37bb3b5b66d802b88c8b`, exact-head CI `33984090401`, retained artifact `9974629890`.
-- **Merge rule:** the actual PR head is verified externally from GitHub immediately before merge and must pass its own exact-head CI; CURRENT_WORK does not attempt self-referential recording of the commit SHA that contains CURRENT_WORK itself.
+- **Merge rule:** the actual PR head is verified externally from GitHub immediately before merge and must pass its own exact-head CI; CURRENT_WORK deliberately does not encode the SHA of the commit containing itself.
 - **Dependencies:** M2-M1-001 through M2-M1-011 and M2-G0-012 are durably closed at their recorded evidence ceilings; the existing `device-proof-app`, `core`, and `google-workspace` modules remain the proof surface.
 - **Current blocker:** repository/build/signing prerequisites are satisfied. The remaining unearned evidence begins at live provider registration/authorization and physical representative-device execution.
 - **Status:** active; stable development signing, exact APK provenance, independent binary verification, exact-head CI and provider-target read-only preflight are complete. Protected merge/main readback and post-merge artifact verification are next; no live Google authorization or physical-device success is claimed yet.
@@ -79,9 +79,9 @@ After repository secret provisioning, workflow `33952071965` was rerun on unchan
 
 ## Pre-merge proof-chain evidence
 
-Successive Git-backed evidence-only CURRENT_WORK checkpoints were intentionally rebuilt and tested through CI. The last recorded checkpoint `16895f4b466622db1c4c37bb3b5b66d802b88c8b` passed CI `33984090401` and retained artifact `9974629890`, stable-secret and live-proof eligible.
+Successive Git-backed evidence-only CURRENT_WORK checkpoints were rebuilt and tested through CI. The last recorded checkpoint `16895f4b466622db1c4c37bb3b5b66d802b88c8b` passed CI `33984090401` and retained artifact `9974629890`, stable-secret and live-proof eligible.
 
-The final merge candidate is not encoded into its own CURRENT_WORK text because that would create an impossible self-reference: changing the file to name the commit creates a new commit. Instead, GitHub PR metadata plus exact-head CI are the authoritative external proof for the final merge head immediately before merge. The merge must use `expected_head_sha` on that externally verified SHA.
+The actual merge candidate is intentionally not encoded into its own CURRENT_WORK text because doing so would create a new commit and therefore a new head. GitHub PR metadata plus exact-head CI are the authoritative external proof for the final merge head. The merge must use `expected_head_sha` equal to that externally verified SHA.
 
 ## Provider target preflight — read only
 
@@ -98,7 +98,7 @@ This fixture remains the only permitted provider target for the next proof step 
 5. Repository secret `MIRA_DEVICE_PROOF_KEYSTORE_B64` provisioned without committing private key material — **satisfied by successful redacted Actions-secret consumption**.
 6. Secret-backed CI reports `stable_secret`, expected certificate SHA-1, and `live_proof_eligible=true` — **satisfied**.
 7. Stable artifact independently downloaded and APK/checksum/provenance/signer certificate verified — **satisfied**.
-8. Final merge candidate exact-head CI — **must be verified externally from GitHub immediately before merge**.
+8. Final merge candidate exact-head CI — **verified externally immediately before merge**.
 9. Protected PR merge/readback and post-merge `main` CI stable artifact tied to exact merge SHA — **pending**.
 10. One representative Android device installs and launches that exact post-merge stable retained debug APK — **pending**.
 11. Provider-native Google authorization executes without exposing tokens or turning developer-only setup into future ordinary-user UX — **pending**.
@@ -132,4 +132,4 @@ This fixture remains the only permitted provider target for the next proof step 
 
 ## Recovery protocol
 
-Read this file first, then verify branch/head and PR #117. M2-M1-001 through M2-M1-011 and M2-G0-012 are closed and must not be repeated. The stable development signing secret is provisioned and verified without exposing or committing private key material. The branch is to remain frozen after this self-reference repair; the actual final head and its exact-head CI are read from GitHub externally and merged only with expected-head protection. The isolated disposable Workspace fixture is read-only verified intact and remains the sole permitted provider target. After merge, require exact main/post-merge stable artifact verification, then bounded provider/device execution. Do not claim live-provider/device success until those provider and device readbacks actually occur.
+Read this file first, then verify branch/head and PR #117. M2-M1-001 through M2-M1-011 and M2-G0-012 are closed and must not be repeated. The stable development signing secret is provisioned and verified without exposing or committing private key material. The branch must remain frozen after this checkpoint; the actual final head and its exact-head CI are read from GitHub externally and merged only with expected-head protection. The isolated disposable Workspace fixture is read-only verified intact and remains the sole permitted provider target. After merge, require exact main/post-merge stable artifact verification, then bounded provider/device execution. Do not claim live-provider/device success until those provider and device readbacks actually occur.
