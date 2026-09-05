@@ -69,8 +69,110 @@ jobs:
           python -m mira.code_ownership check
           python -m project.android_code_ownership check
 
+      - name: Prepare Android device proof signing
+        env:
+          STABLE_PROOF_KEYSTORE_B64: ${{ secrets.MIRA_DEVICE_PROOF_KEYSTORE_B64 }}
+        run: |
+          KEYSTORE="$RUNNER_TEMP/mira-device-proof.p12"
+          KEY_ALIAS="mira-device-proof"
+          KEYSTORE_PASSWORD="android"
+          EXPECTED_STABLE_SHA1="AF:E0:18:6B:7C:21:EA:74:D3:4C:4A:33:04:FF:B1:15:EF:DB:A5:6D"
+
+          if [ -n "${STABLE_PROOF_KEYSTORE_B64:-}" ]; then
+            printf '%s' "$STABLE_PROOF_KEYSTORE_B64" | base64 --decode > "$KEYSTORE"
+            SIGNING_MODE="stable_secret"
+          else
+            keytool -genkeypair \
+              -keystore "$KEYSTORE" \
+              -storetype PKCS12 \
+              -storepass "$KEYSTORE_PASSWORD" \
+              -keypass "$KEYSTORE_PASSWORD" \
+              -alias "$KEY_ALIAS" \
+              -dname "CN=MIRA Device Proof Ephemeral CI,O=MIRA Development,C=US" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -sigalg SHA256withRSA \
+              -validity 30 \
+              >/dev/null 2>&1
+            SIGNING_MODE="ephemeral_ci"
+          fi
+
+          KEYSTORE_CERT_SHA1="$(keytool -list -v \
+            -storetype PKCS12 \
+            -keystore "$KEYSTORE" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias "$KEY_ALIAS" \
+            | sed -n 's/^[[:space:]]*SHA1: //p' \
+            | head -n 1)"
+
+          test -n "$KEYSTORE_CERT_SHA1"
+          if [ "$SIGNING_MODE" = "stable_secret" ]; then
+            test "$KEYSTORE_CERT_SHA1" = "$EXPECTED_STABLE_SHA1"
+          fi
+
+          {
+            echo "MIRA_DEVICE_PROOF_KEYSTORE_PATH=$KEYSTORE"
+            echo "MIRA_DEVICE_PROOF_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "MIRA_DEVICE_PROOF_KEY_ALIAS=$KEY_ALIAS"
+            echo "MIRA_DEVICE_PROOF_SIGNING_MODE=$SIGNING_MODE"
+            echo "MIRA_DEVICE_PROOF_EXPECTED_CERT_SHA1=$KEYSTORE_CERT_SHA1"
+          } >> "$GITHUB_ENV"
+
+          echo "proof signing mode: $SIGNING_MODE"
+          echo "proof signing certificate SHA-1: $KEYSTORE_CERT_SHA1"
+
       - name: Android client unit tests and proof APK
         run: gradle -p android-client :core:testDebugUnitTest :google-workspace:testDebugUnitTest :device-proof-app:testDebugUnitTest :device-proof-app:assembleDebug --stacktrace
+
+      - name: Verify Android device proof APK provenance
+        run: |
+          APK="android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk"
+          PROVENANCE="android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.provenance.txt"
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          SOURCE_SHA="${{ github.sha }}"
+          CHECKED_OUT_SHA="$(git rev-parse HEAD)"
+
+          test -f "$APK"
+          test "$CHECKED_OUT_SHA" = "$SOURCE_SHA"
+          sha256sum "$APK" > "${APK}.sha256"
+          APK_SHA256="$(cut -d ' ' -f1 "${APK}.sha256")"
+          APK_CERT_SHA1="$(keytool -printcert -jarfile "$APK" \
+            | sed -n 's/^[[:space:]]*SHA1: //p' \
+            | head -n 1)"
+
+          test -n "$APK_CERT_SHA1"
+          test "$APK_CERT_SHA1" = "$MIRA_DEVICE_PROOF_EXPECTED_CERT_SHA1"
+
+          if [ "$MIRA_DEVICE_PROOF_SIGNING_MODE" = "stable_secret" ]; then
+            LIVE_PROOF_ELIGIBLE="true"
+          else
+            LIVE_PROOF_ELIGIBLE="false"
+          fi
+
+          printf '%s\n' \
+            "repository=${{ github.repository }}" \
+            "event_name=${{ github.event_name }}" \
+            "run_id=${{ github.run_id }}" \
+            "head_sha=${HEAD_SHA}" \
+            "source_sha=${SOURCE_SHA}" \
+            "apk_sha256=${APK_SHA256}" \
+            "signing_mode=${MIRA_DEVICE_PROOF_SIGNING_MODE}" \
+            "signing_cert_sha1=${APK_CERT_SHA1}" \
+            "live_proof_eligible=${LIVE_PROOF_ELIGIBLE}" \
+            > "$PROVENANCE"
+
+          cat "${APK}.sha256"
+          cat "$PROVENANCE"
+
+      - name: Retain Android device proof APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mira-device-proof-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk
+            android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.apk.sha256
+            android-client/device-proof-app/build/outputs/apk/debug/device-proof-app-debug.provenance.txt
+          if-no-files-found: error
 
       - name: Python unit tests
         run: python -m unittest discover -s tests -v
