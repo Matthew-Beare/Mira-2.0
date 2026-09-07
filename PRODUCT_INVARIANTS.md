@@ -18,6 +18,20 @@ For any optional MIRA capability or connected provider:
 
 This invariant applies across Calendar, Gmail/mail, Drive/files, Contacts, receipts, finance, automations, devices, local integrations, and future provider-backed features.
 
+## Single canonical MIRROR reality authority
+
+MIRROR is MIRA's single durable structured reality authority. Product domains may use separate schemas, tables, indexes, projections, tabs, caches, adapters, provider views, and user-facing surfaces, but they must not become independent competing databases or sources of truth for the same reality state.
+
+1. Finance, receipts, bills, subscriptions, allowances, earmarks, income, debts, assets, inventory, trips, tasks, appointments, orders, and future domains participate in one canonical MIRROR reality model through stable entities, facts/events, relationships, provenance, and authority rules.
+2. A Google Sheet, dashboard, report, chart, source-budget tab, provider response, or other projection is a view/input surface unless the Canonical Authority Registry explicitly assigns that data class to the provider. Presentation separation is allowed; authority separation is not.
+3. Domain-specific tables or services are implementation boundaries, not separate realities. They must join through stable canonical identities and relationships so MIRA can reason across domains without copying the same fact into unrelated stores.
+4. External providers remain authoritative only for the data classes explicitly assigned to them. MIRROR records the normalized observation, provenance, freshness, confidence, and relationships needed for cross-domain reasoning without silently overwriting provider truth.
+5. User-authored classifications, policies, earmarks, allowances, reconciliation decisions, and other MIRA-owned semantics belong in MIRROR and attach to the underlying canonical entities/events rather than living only in a dashboard or spreadsheet cell.
+6. Derived summaries, budgets, forecasts, charts, telemetry, and command-center views must be reproducible from canonical MIRROR state plus explicit model assumptions. They must never become an independent editable authority that can drift from the underlying records.
+7. Source-specific or scenario-specific evidence may be preserved separately for comparison, but it remains provenance-linked evidence inside the same MIRROR model. A separate tab or projection does not imply a separate database.
+8. When legacy or provider constraints temporarily require parallel storage, the separation must be explicit, bounded, provenance-linked, and treated as migration/adapter debt. MIRA must not normalize that temporary state into a permanent second source of truth.
+9. Any feature that would create a second independent canonical store for an existing MIRROR data class is rejected unless the product owner explicitly changes this invariant.
+
 ## Connection surface application
 
 `PROVIDER-002` / `PROVIDER-ONBOARD-001` must apply the intent-first rule through an obvious ordinary-user connection surface rather than treating provider authorization as documentation work for the user.
