@@ -13,9 +13,10 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
 - **Current main before this governance branch:** `2f54c2c93a4d6d435ac89772b1da5c1323f4f759`.
 - **Stable pre-Financial-Escape checkpoint:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
+- **Latest bounded Financial Escape single-MIRROR integration checkpoint:** `9c9111e728869bde3b7543ba6c6af0bf84180d69`.
 - **Current status:** active and blocked only at provider-configuration inspection. Repository/build/signing evidence, physical install/launch, Google native account chooser opening, and correct-account selection are earned. Successful Google authorization, consent, Picker display, provider registration readback, canonical binding/readback, and mutation success are not earned.
 
-The Financial Escape interruption packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries. Their private operational state remains outside public Git. Product-level finance generalization remains separate unfinished work and must reuse canonical MIRROR authority rather than create a second database.
+The Financial Escape interruption packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries. Their private operational state remains outside public Git. `M2-M1-014` closes with one logical MIRROR finance model: spending review controls are input/view surfaces, resolved spending state and review notes are carried by the integrated ledger, telemetry reads that ledger, and budget/earmark/source tabs remain projections or controls rather than co-equal databases. Product-level finance generalization remains separate unfinished work and must reuse canonical MIRROR authority rather than create a second database.
 
 ## Objective
 
