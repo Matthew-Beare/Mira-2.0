@@ -12,7 +12,7 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
 - **Stable pre-interruption checkpoint on main:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
-- **Current status:** resumed after the bounded Financial Escape priority interruption; still blocked at the same provider-configuration inspection gate because no authenticated Google Cloud OAuth/API administration capability is currently available in regular Chat and prior browser-capable provider attempts failed before provider state could be read.
+- **Current status:** resumed after the bounded Financial Escape priority interruption and its customer-directed mobile/control follow-up; still blocked at the same provider-configuration inspection gate because no authenticated Google Cloud OAuth/API administration capability is currently available in regular Chat and prior browser-capable provider attempts failed before provider state could be read.
 
 ## Objective
 
@@ -20,11 +20,11 @@ Complete the already-bounded representative Android device proof against isolate
 
 ## Financial Escape interruption checkpoint
 
-`M2-M1-013 — Financial Escape live command-center vertical` was an explicit customer-priority interruption and has now reached its bounded private first-slice evidence ceiling.
+`M2-M1-013 — Financial Escape live command-center vertical` was an explicit customer-priority interruption and has reached its bounded private live-slice evidence ceiling. A subsequent customer-directed mobile/control refinement is checkpointed in the same packet document.
 
-Earned private operational evidence is recorded in `docs/work-packets/M2-M1-013.md` without exposing private values or provider identifiers in public Git. The bounded slice includes a native private command-center projection, mobile-first executive Dashboard, current money-movement/account surface, productive-mile integration, trend charts, scenario/intervention logic, collaborator edit access, requested APR-input outreach, and Financial Escape integration into the existing AM and PM MIRA briefs.
+Earned private operational evidence is recorded in `docs/work-packets/M2-M1-013.md` without exposing private values or provider identifiers in public Git. The bounded slice now includes a two-column phone-oriented executive Dashboard, current money-movement/account surface, productive-mile integration, separate budget-vs-normalized-actual forecast bases, five trend charts, dynamic assumption controls, known one-time commitment semantics, a bounded rate-based retirement scenario, collaborator edit access, requested APR-input outreach, and Financial Escape integration into the existing AM and PM MIRA briefs.
 
-Not-yet-earned Financial Escape evidence remains explicit follow-on work rather than a hidden completion claim: the first actual post-change 2:45 AM scheduler firing/readback, user-supplied debt APRs for interest-accurate forecasting, match-preserving contribution input, countdown-mode live behavior, and a future Android Financial Escape projection. These do not block returning the active implementation slot to Android.
+Not-yet-earned Financial Escape evidence remains explicit follow-on work rather than a hidden completion claim: the first actual post-change 2:45 AM scheduler firing/readback, user-supplied debt APRs for interest-accurate forecasting, independent verification of the second driver's current retirement election/payroll realization, countdown-mode live behavior, and a future Android Financial Escape projection. These do not block returning the active implementation slot to Android.
 
 ## Session-start alignment verification — 2026-09-06 Android resumption after Financial Escape
 
@@ -101,4 +101,4 @@ A credible recovery signal means either the browser-capable provider lane is dem
 
 ## Recovery protocol
 
-Start by reading this file, then verify remote `main` and the preserved Android recovery branch. The Financial Escape interruption is separately checkpointed in `docs/work-packets/M2-M1-013.md`; do not reconstruct private financial values from public Git. Android is active again, but its next safe action remains provider inspection rather than speculative code or device work.
+Start by reading this file, then verify remote `main` and the preserved Android recovery branch. The Financial Escape interruption and its mobile/control follow-up are separately checkpointed in `docs/work-packets/M2-M1-013.md`; do not reconstruct private financial values from public Git. Android is active again, but its next safe action remains provider inspection rather than speculative code or device work.
