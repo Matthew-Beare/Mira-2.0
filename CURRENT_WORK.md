@@ -11,7 +11,7 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-014a-financial-source-truth`.
 - **Base SHA:** `f05d59d5e3204717d319059df1a4f764332b96d5`.
-- **Current status:** explicit customer-priority interruption. Establish one private evidence/reconciliation contract across Finances, receipt/order email evidence, uploaded mailbox history, Amazon history, refunds/returns and the Financial Escape projections before further visual/dashboard work.
+- **Current status:** implementation checkpoint complete. Canonical reconciliation, query surfaces, high-contrast mobile Dashboard, rolling verified net worth, Drive organization, and the active twice-daily update contract are installed. Packet remains active only until the next real scheduled run is read back successfully.
 
 ## Objective
 
@@ -32,9 +32,9 @@ Make Financial Escape trustworthy enough to drive a rapid debt-exit plan. Posted
 
 This refinement is deliberately split so the command center does not become another unbounded spreadsheet rewrite:
 
-- `M2-M1-014A` **ACTIVE** — canonical source/reconciliation, mailbox ingestion, refunds/returns, reserve-policy correction, evidence dedupe.
-- `M2-M1-014B` **QUEUED** — mobile/dark-mode visual redesign: Pig Phet glance page, monthly whole-spend pie, simple MoM category cards/graphs, removal of repetitive budget helper tables from visible surfaces.
-- `M2-M1-014C` **QUEUED** — seamless twice-daily MIRA workflow: receipt/mail refresh before briefs, idempotent upsert, live readback, first successful scheduler-fire verification.
+- `M2-M1-014A` **ACTIVE — IMPLEMENTATION COMPLETE; LIVE-FIRE VERIFICATION PENDING** — canonical source/reconciliation, mailbox ingestion, returns, reserve correction, stable-ID dedupe, query surfaces, mobile contrast repair, rolling verified net worth, canonical Drive hierarchy, and twice-daily refresh contract.
+- `M2-M1-014B` **ABSORBED BY CUSTOMER PRIORITY** — the phone-first contrast/readability repair was completed in this packet; broader visual refinements remain optional future work.
+- `M2-M1-014C` **ABSORBED BY CUSTOMER PRIORITY** — the active AM/PM jobs now carry the idempotent refresh/readback contract; only observation of the next actual scheduled firing remains.
 
 ## Displaced Android packet checkpoint
 
@@ -50,10 +50,10 @@ Do not repeat phone tests, speculative OAuth patches, or Google Cloud mutations 
 
 ## Exact next action / resume point
 
-1. Parse and fingerprint the uploaded mailbox export privately.
-2. Identify purchase, receipt, refund, return and cancellation evidence and reconcile it against existing receipt/Amazon/Finances evidence using stable message/order/transaction identities.
-3. Read current Financial Escape Sheet formulas/controls and repair reserve and return-sensitive projections only after source reconciliation is explicit.
-4. Read back the source/reconciliation surfaces before moving to `M2-M1-014B`.
+1. Observe the next real enabled AM or PM scheduled run at its configured America/New_York slot.
+2. Verify the run refreshed source coverage, upserted by stable identity, preserved one snapshot per date, rebuilt the rolling verified-net-worth projection, and read all integrity gates back successfully.
+3. If successful, record the sanitized live-fire evidence and close `M2-M1-014A`; if any gate fails, keep the packet active and report the exact fail-closed Action Required.
+4. Resume displaced Android packet `M2-M1-012` only after this finance live-fire acceptance is recorded.
 
 ## Recovery protocol
 
