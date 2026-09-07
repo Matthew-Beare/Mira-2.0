@@ -4,57 +4,43 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 
 ## Active packet
 
-### `M2-M1-012` — Android representative-device execution proof
+### `M2-M1-014` — Financial Escape budget intake and earmark reconciliation
 
-- **Primary work:** `ANDROID-CLIENT-CORE-001`.
-- **Primary features:** `CLIENT-ANDROID-001`, `API-001`.
-- **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `PROVIDER-002`, `DATA-001`, `DEV-007`.
+- **Primary work:** `FIN-BUDGET-RECON-001`, `FIN-EARMARK-001`.
+- **Related packet:** `M2-M1-013` Financial Escape private-live vertical.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
-- **Stable pre-interruption checkpoint on main:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
-- **Latest bounded Financial Escape follow-up checkpoint:** `de4099cfcf6d62763f771b8e7e0efacc8fb36cb7`.
-- **Current status:** resumed after the bounded Financial Escape priority interruption and its customer-directed private follow-ups; still blocked at the same provider-configuration inspection gate because no authenticated Google Cloud OAuth/API administration capability is currently available in regular Chat and prior browser-capable provider attempts failed before provider state could be read.
+- **Base main before interruption:** `266a9da57ebd2136c270061ea23e736d56b3d1e1`.
+- **Packet-start checkpoint:** `6faec5e62fed1ebd00b0b6509f96adc55c02fef2`.
+- **Current status:** customer-priority interruption is active. Newly shared private household budget/income evidence is being reconciled non-destructively into the existing private Financial Escape projection. Existing forecast/history state must not be overwritten merely because the new source differs.
 
 ## Objective
 
-Complete the already-bounded representative Android device proof against isolated synthetic MIRA 2.0 Google state without turning Android into a second authority, without touching legacy production state, and without expanding into unrelated Android features before the provider gate is resolved.
+Preserve the newly shared budget/income evidence as a comparison/scenario source, represent current checking earmarks and recurring allowance balances without changing provider-observed balances, update the existing protected project reserve through its established assumption path, and verify that free/discretionary cash excludes earmarked money without double counting.
 
-## Financial Escape interruption checkpoint
+## Acceptance / hold rules
 
-`M2-M1-013 — Financial Escape live command-center vertical` was an explicit customer-priority interruption and has reached its bounded private live-slice evidence ceiling. Subsequent customer-directed private follow-ups for mobile/control refinement and three-axis spending review/telemetry are checkpointed in the same packet document without changing the active Android packet.
+- The source budget/income document is read-only evidence.
+- Materially different source assumptions go into a separate private projection tab rather than overwriting the current budget basis.
+- Linked-account balances remain provider observations; earmarks are allocation semantics only.
+- Existing transaction history, daily snapshots, normalized-spend history, debt history, mileage history, and forecast history are preserved.
+- Protected reserves and checking earmarks remain separate where their funding semantics differ.
+- Current allowance balances are forward starting balances; recurring monthly additions begin on the next first-of-month boundary and do not retroactively add the current month.
+- No purchase-to-allowance debit automation is activated in this packet.
+- No private values, document IDs, spreadsheet IDs, or account identifiers are committed to public Git.
 
-Earned private operational evidence is recorded in `docs/work-packets/M2-M1-013.md` without exposing private values or provider identifiers in public Git. The bounded slice now includes a two-column phone-oriented executive Dashboard, current money-movement/account surface, productive-mile integration, separate budget-vs-normalized-actual forecast bases, five trend charts, dynamic assumption controls, known one-time commitment semantics, a bounded rate-based retirement scenario, collaborator edit access, requested APR-input outreach, Financial Escape integration into the existing AM and PM MIRA briefs, and a private three-axis spending-review surface with independent purpose-category, necessity, and allowance classification plus telemetry that distinguishes deliberately permitted discretionary spend from allowance bending.
+## Displaced packet checkpoint
 
-Not-yet-earned Financial Escape evidence remains explicit follow-on work rather than a hidden completion claim: the first actual post-change 2:45 AM scheduler firing/readback, user-supplied debt APRs for interest-accurate forecasting, independent verification of the second driver's current retirement election/payroll realization, countdown-mode live behavior, canonical normalization of the private spending-classification semantics for future generalized implementation, and a future Android Financial Escape projection. These do not block returning the active implementation slot to Android.
+### `M2-M1-012` — Android representative-device execution proof
 
-## Session-start alignment verification — 2026-09-06 Android resumption after Financial Escape
+`M2-M1-012` is displaced but fully preserved. Its scope, evidence, and exact resume point are unchanged by this Financial Escape interruption.
 
-### `FEATURES.md`
+- **Primary work:** `ANDROID-CLIENT-CORE-001`.
+- **Primary features:** `CLIENT-ANDROID-001`, `API-001`.
+- **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
+- **Stable pre-Financial-Escape checkpoint:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
+- **Status:** blocked at provider-configuration inspection because no authenticated Google Cloud OAuth/API administration capability is currently available in regular Chat and prior browser-capable provider attempts failed before provider state could be read.
 
-- `CLIENT-ANDROID-001` remains partial at live provider/device evidence even though the shared client boundary is implemented/test-verified.
-- `API-001`, `AUTH-001`, `STORE-001`, and `RECOVERY-002` still require Android to operate through the shared canonical authority with exact readback.
-- `PROVIDER-002` still requires provider-native authorization/readiness evidence; provider configuration cannot be inferred from app behavior.
-- `DATA-001` still protects legacy production state from development use.
-- Financial Escape feature IDs are preserved as a separate private-first vertical and do not make Android a second financial authority.
-
-### `BACKLOG.md`
-
-- `ANDROID-CLIENT-CORE-001` remains the unfinished prerequisite carrying the live Google authorization/provider-device and representative-device evidence gaps.
-- `ANDROID-SYNC` remains complete at deterministic integration evidence and is not reopened merely because live provider proof remains incomplete.
-- `ANDROID-NATIVE-DELIVERY-001`, `ANDROID-CAPTURE-001`, and `ANDROID-RELEASE-001` remain outside this provider-proof packet unless an acceptance blocker proves otherwise.
-- Financial Escape follow-on work remains preserved by its packet/issue evidence and must be canonically normalized into backlog work before any later Financial Escape implementation packet is activated.
-
-### `ROADMAP.md`
-
-- M2-M1 representative-device proof remains the current Android milestone gate.
-- Android remains a companion over the same canonical Personal MIRA reality and never becomes a second authority.
-- The completed bounded Financial Escape interruption does not remove the unfinished Android provider/device proof requirement.
-
-### Direction result
-
-**ALIGNED.** Resume `M2-M1-012` at its exact pre-interruption provider-inspection gate. Do not patch OAuth/result handling or repeat a phone test without provider-state evidence.
-
-## Android evidence already earned
+### Android evidence already earned
 
 1. The exact stable-development-signed proof APK installed and launched on a representative Android device.
 2. Tapping **Connect Google Workspace** opened Google's native account chooser.
@@ -67,13 +53,7 @@ Not-yet-earned Financial Escape evidence remains explicit follow-on work rather 
 
 This proves physical install/launch and native account selection only. It does not prove Google OAuth registration, Picker API configuration, provider binding, canonical readback, or app-side root cause.
 
-## Provider-inspection blocker
-
-Two prior bounded browser-capable provider attempts failed before Google provider state could be inspected. Those failures are tooling evidence only, not evidence that Google configuration is correct or incorrect.
-
-A fresh regular-Chat capability check after the Financial Escape interruption found no supported authenticated Google Cloud OAuth/credential/API administration tool. Existing Google Drive/Calendar/Contacts capabilities do not expose the Android OAuth client or Picker API configuration. Therefore there is still no credible provider-access recovery signal.
-
-## Hold rule
+### Android hold rule
 
 Until a credible provider-access recovery signal exists:
 
@@ -84,22 +64,27 @@ Until a credible provider-access recovery signal exists:
 - do **not** change Google Picker API state;
 - do **not** spend another browser-capable Work attempt merely because time passed.
 
-A credible recovery signal means either the browser-capable provider lane is demonstrably able to reach/control authenticated Google Cloud/Google Accounts again, or a supported authenticated Google Cloud administration connector becomes available that can read the existing Android OAuth client and API-enable state.
+### Exact Android resume point
 
-## Exact next action / resume point
-
-1. Hold at provider inspection until a credible recovery signal exists. No user action is required now.
-2. When the signal exists, perform exactly one bounded authenticated inspection of the existing development provider configuration:
-   - read the actual registered Android package name;
-   - read the actual signing SHA-1;
-   - compare them with the already-earned proof-artifact identity;
-   - read whether Google Picker API is enabled;
-   - enable only Google Picker API, and only if inspection proves it disabled and the packet still authorizes that one mutation;
-   - make no other provider change.
+1. Hold at provider inspection until a credible recovery signal exists.
+2. When the signal exists, perform exactly one bounded authenticated inspection of the existing development provider configuration: read the actual Android package name, signing SHA-1, and Google Picker API enablement state; compare package/SHA-1 with the already-earned proof identity; enable only Google Picker API if inspection proves it disabled and the packet still authorizes that one change.
 3. Read back the final provider state exactly.
 4. Only after successful provider readback, run one phone test using the already-installed proof APK.
 5. If that test still fails, checkpoint the exact result and only then decide whether app-side handling is the next proven dependency.
 
+## Prior Financial Escape checkpoint
+
+`M2-M1-013 — Financial Escape live command-center vertical` remains the prior private-live slice. It includes the mobile/control refinement and three-axis spending-review/telemetry follow-ups. This new packet extends private operational behavior without rewriting the earlier evidence boundary.
+
+## Exact next action / resume point
+
+1. Read exact current reserve/assumption cells and provider-observed cash balances.
+2. Build a separate private source-budget projection for materially different newly shared budget/income evidence.
+3. Add a bounded checking-earmark/allowance projection with forward monthly accrual semantics.
+4. Change the existing protected project reserve only through its established assumption cell and verify downstream formulas.
+5. Wire the minimum free-cash calculation needed to exclude checking earmarks, avoiding any second subtraction of already-protected reserves.
+6. Read back all affected formulas and outputs, then checkpoint the packet and restore `M2-M1-012` only after this bounded refinement is complete.
+
 ## Recovery protocol
 
-Start by reading this file, then verify remote `main` and the preserved Android recovery branch. The Financial Escape interruption plus its mobile/control and three-axis spending-review/telemetry follow-ups are separately checkpointed in `docs/work-packets/M2-M1-013.md`; do not reconstruct private financial values from public Git. Android is active again, but its next safe action remains provider inspection rather than speculative code or device work.
+Start by reading this file, then verify remote `main`. For private Financial Escape values, use the live connected financial/provider sources and private spreadsheet rather than public Git. Do not reconstruct private values from repository history.
