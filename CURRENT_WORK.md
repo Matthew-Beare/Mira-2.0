@@ -2,50 +2,50 @@
 
 Git is authoritative. This file identifies exactly one active/recovery packet and the exact safe resume point.
 
-## Active packet
+## Completed predecessor
 
 ### `M2-M1-017` — Protected vehicle identity migration and registration-history reconciliation
 
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-017-vehicle-migration-registration-audit`.
-- **Base / completed predecessor checkpoint:** `a7ed069495134864607ecd1472ff457ffa058059` (`M2-M1-016`).
-- **Primary work:** `ASSET-PRIVATE-BIND-001` protected migration proof plus registration-history reconciliation.
-- **Related features/work:** `ASSET-001`, `ASSET-002`, `ASSET-003`, `IDENT-001`, `EVID-001`, `FITMENT-001`, `FIN-HISTORY-001`, `FIN-PRIVATE-REF-001`, `MIRROR-001`, `AUTH-001`, `DATA-001`.
+- **Completed packet checkpoint:** `eb409d7b347a7e0cb8cc28244817a5d08c05dbe4`.
 - **Packet:** `docs/work-packets/M2-M1-017.md`.
+- **Status:** complete at bounded private-live migration/readback evidence.
 
-## Why work switched
+## M2-M1-017 closeout evidence
 
-The customer explicitly authorized migration of the existing protected vehicle identities into MIRA 2.0 and asked for a transaction/evidence audit of the last three registrations. `M2-M1-016` already proved all three household vehicles have protected legacy immutable identities and that the current MIRA 2.0 finance/MIRROR projection has no physical ASSET collision. Because legacy production state is protected, actual source-to-target writes belong in this dedicated bounded migration packet.
+The current private MIRROR projection now contains the three protected household vehicle ASSET identities with immutable legacy identity continuity, the required existing primary-person endpoint, explicit ownership relations, and one future registration planning obligation per vehicle. The protected legacy source remained unchanged and matched its pre-migration backup on direct identity-row readback.
 
-## Predecessor evidence
+Full-history connected finance data contains two standalone recent County Clerk registration renewals rather than three. The newer vehicle's initial registration is customer-confirmed as part of its purchase/title transaction, with no separate linked registration transaction and no itemized amount/date proven by the current corpus. The two standalone renewals remain historically unresolved between the two older vehicles. Prior relations that incorrectly fanned both payment events across all three plan slots were retained but inactivated.
 
-`M2-M1-016` is complete at the protected-source migration preflight boundary. Three household vehicle identities are positively supported by protected Drive/asset-registry evidence and must preserve their legacy UUIDs. Private backups of both the protected source Purchase & Receipt Archive and current target Financial Escape workbook were created before any migration write. No source-to-target migration write has occurred yet.
+Post-write diagnostics read zero duplicate Entity IDs, zero duplicate Relation IDs, and zero broken relation endpoints. A private rollback manifest identifies only the migration-created target state and the six historical relation corrections. Provider financial transactions were not mutated.
 
-Three total vehicle-registration planning obligations remain intact. Registration plan-to-vehicle assignment remains unresolved until the actual last registration payments and related evidence are audited.
+## Customer-priority next packet
+
+The customer explicitly requested a broader finance truth audit and command-center consolidation. The next bounded packet should reconcile the model against full connected financial history and the newer shared Budget and Income evidence, retire the old household budget from active use without deleting evidence, apply the customer-confirmed spouse-retirement mirror assumption, establish the final WGU term funding target, make person-routed allowances explicit, add live net-worth and monthly budget variance/carry visibility, and simplify the human-readable workbook surface without deleting canonical data.
+
+The protected full receipt/asset/identifier/fitment/evidence migration remains a separate follow-on packet after finance consolidation unless it becomes a hard prerequisite.
 
 ## Exact next action / resume point
 
-1. Read connected financial-account coverage and full available posted history.
-2. Find the most recent three actual registration/County Clerk/government vehicle payments without assuming one payment equals one distinct car.
-3. Search Gmail/Drive/receipt evidence around those dates and map payments to the three vehicles only where supported.
-4. Perform a zero-write legacy-UUID collision/dry-run against target Entity Registry/Relations.
-5. Migrate exactly the three protected vehicle identities plus minimum ownership/provenance relations, preserving UUIDs and source evidence.
-6. Link registration plan items only when supported; leave unknown assignments explicit.
-7. Read back duplicate Entity/Relation and broken-endpoint diagnostics plus source-target parity and rollback identifiers.
-
-## Explicit follow-on requests outside this packet unless a hard dependency appears
-
-The customer also requested broader finance/database reconciliation, full-history household income averaging, spouse 401(k) mirrored assumption, WGU future-term earmark, allowance-person assignment, fewer/longer spreadsheet tabs, live net worth, monthly surplus/deficit carry-forward, monthly budget freeze/variance annotation, and continuous receipt/email-to-asset enrichment. Those are valid product requirements and will be dependency-ranked after this migration proof rather than silently expanding this packet.
+1. Open the finance truth/consolidation packet from the completed `M2-M1-017` checkpoint.
+2. Re-read linked-account coverage and compute a full-history household income baseline from broad posted inflows after transfer reconciliation.
+3. Reconcile linked balances/liabilities/retirement with private plan assumptions, including the customer-confirmed spouse 401(k) mirror as non-provider evidence.
+4. Retire the older household-budget source from active projections while preserving its immutable evidence/provenance.
+5. Convert the final WGU term into an explicit time-bounded funding plan based on the customer-confirmed six-month horizon and newer source savings rate.
+6. Formalize monthly frozen-budget/variance/carry-or-trim semantics and surface live net worth plus current-month budget state on the primary dashboard.
+7. Reduce human-facing tab clutter by consolidating views/hiding or archiving redundant projections only after formulas/references are dependency-audited; canonical raw/evidence tables remain intact.
+8. Verify formula/readback integrity and checkpoint exact remaining unknowns.
 
 ## Displaced Android checkpoint
 
-`M2-M1-012` Android representative-device proof remains preserved at `9841928dfce72f516a2bfb243035e7c8f2002692`, with its provider-inspection runbook and hold rules unchanged. No Android provider/app/phone work belongs in `M2-M1-017` unless the provider gate is separately unblocked and work is explicitly reprioritized.
+`M2-M1-012` Android representative-device proof remains preserved at `9841928dfce72f516a2bfb243035e7c8f2002692`, with its provider-inspection runbook and hold rules unchanged. No Android provider/app/phone work belongs in the finance consolidation packet unless the provider gate is separately unblocked and work is explicitly reprioritized.
 
 ## Protected constraints
 
 - One logical MIRROR authority; no separate finance, vehicle, receipt, asset, registration or warranty database.
-- Existing legacy MIRA/Drive asset state is protected production data; migration writes must be bounded, backed up and reversible.
-- Canonical asset identity is immutable and evidence-bound; preserve existing UUIDs.
-- Provider-observed financial facts remain provider-owned; migrations and planning relations do not mutate account balances.
-- Private vehicle identifiers, account IDs, email contents, photos, receipts, serials/plates/VINs and household details stay out of public Git.
+- Protected legacy sources are never destructively deleted merely because a newer source supersedes them; obsolete sources may be retired from active projections while provenance remains durable.
+- Provider-observed balances/transactions remain provider-owned; user assumptions are labelled distinctly.
+- Existing vehicle UUID continuity and migration rollback evidence must not be disturbed.
+- Private financial values, account IDs, transaction IDs, receipt/email contents, personal asset identifiers and backup resource IDs stay out of public Git.
 - Unknown evidence stays unknown rather than being guessed.
