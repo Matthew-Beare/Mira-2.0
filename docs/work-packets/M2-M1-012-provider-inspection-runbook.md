@@ -36,15 +36,15 @@ Before touching provider state:
 
 ### A. Read the existing Android OAuth client
 
-1. Open Google Cloud Console → **APIs & Services** → **Credentials**.
+1. In the current Google Cloud Console navigation, open **Google Auth platform** → **Clients** for the selected project. Some older Google documentation and console surfaces still refer to **APIs & Services** → **Credentials**; use that only as a navigation fallback to the same existing OAuth client inventory.
 2. Locate the existing OAuth 2.0 client whose application type is **Android**. Do not create one.
 3. Open that client and read the registered:
    - package name;
-   - signing-certificate fingerprint / SHA-1.
+   - SHA-1 certificate fingerprint.
 4. Compare them exactly with the expected proof identity above.
 5. Record the actual provider values in private execution evidence, not public Git.
 
-Google's Android OAuth documentation treats package name and signing-certificate SHA-1 as the identifying registration fields for an Android client.
+Google's current Workspace credential documentation identifies **Google Auth platform → Clients** as the console path and treats package name plus SHA-1 certificate fingerprint as the Android-client registration fields.
 
 ### B. Stop on OAuth-registration mismatch
 
@@ -141,14 +141,14 @@ Stop without further mutation if any of these occurs:
 
 ## Official reference basis
 
-- Google Cloud / Google for Developers documentation for Android OAuth client IDs requires the Android package name and signing-certificate SHA-1 when registering an Android client.
+- Current Google Workspace credential documentation routes OAuth clients through **Google Auth platform → Clients** and requires Android package name plus SHA-1 certificate fingerprint.
 - Google Drive Picker documentation requires the Google Picker API to be enabled in the selected Cloud project.
 - Google Cloud API documentation describes enabling an API from the API Library after selecting the intended project.
 
 References checked for this runbook on 2026-09-07:
 
-- https://developers.google.com/identity/sign-in/android/legacy-gsi-start
-- https://cloud.google.com/endpoints/docs/frameworks/java/creating-client-ids
+- https://developers.google.com/workspace/guides/create-credentials
+- https://developers.google.com/android/guides/client-auth
 - https://developers.google.com/workspace/drive/picker/guides/web-picker
 - https://cloud.google.com/apis/docs/getting-started
 
