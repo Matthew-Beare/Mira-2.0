@@ -1,0 +1,1 @@
+No further M2-M1-013 direct-to-main writes are authorized. This file is intentionally the last direct-main governance marker created during recovery from the omitted-branch mistake.
