@@ -14,9 +14,10 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Current main before this governance branch:** `2f54c2c93a4d6d435ac89772b1da5c1323f4f759`.
 - **Stable pre-Financial-Escape checkpoint:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
 - **Latest bounded Financial Escape single-MIRROR integration checkpoint:** `9c9111e728869bde3b7543ba6c6af0bf84180d69`.
+- **Provider-inspection readiness runbook checkpoint:** `817cdd549bcc854c703235a9576b9846979402fb` (`docs/work-packets/M2-M1-012-provider-inspection-runbook.md`).
 - **Current status:** active and blocked only at provider-configuration inspection. Repository/build/signing evidence, physical install/launch, Google native account chooser opening, and correct-account selection are earned. Successful Google authorization, consent, Picker display, provider registration readback, canonical binding/readback, and mutation success are not earned.
 
-The Financial Escape interruption packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries. Their private operational state remains outside public Git. `M2-M1-014` closes with one logical MIRROR finance model: spending review controls are input/view surfaces, resolved spending state and review notes are carried by the integrated ledger, telemetry reads that ledger, and budget/earmark/source tabs remain projections or controls rather than co-equal databases. Product-level finance generalization remains separate unfinished work and must reuse canonical MIRROR authority rather than create a second database.
+The Financial Escape interruption packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries. Their private operational state remains outside public Git. `M2-M1-014` closes with one logical MIRROR finance model: spending review controls are input/view surfaces, resolved spending state and review notes are carried by the integrated ledger, telemetry reads that ledger, and budget/earmark/source tabs remain projections or controls rather than co-equal databases. Product-level finance generalization remains separate unfinished work and must reuse canonical MIRROR authority rather than create a second database. Sanitized follow-on IDs `FIN-BUDGET-RECON-001`, `FIN-EARMARK-001`, `FIN-SPEND-CLASSIFY-001`, and deferred `FIN-ALLOWANCE-DEBIT-001` are preserved in issue #127 pending a safe bounded `BACKLOG.md` normalization edit; they do not displace this active packet.
 
 ## Objective
 
@@ -38,6 +39,7 @@ Complete the already-bounded representative Android device proof against isolate
 - `ANDROID-CLIENT-CORE-001` remains the unfinished prerequisite carrying live Google authorization/provider-device and representative-device proof gaps.
 - `ANDROID-SYNC` remains complete at deterministic integration evidence and must not be reopened merely because live provider/device proof is incomplete.
 - Financial Escape private-live refinement is complete at its bounded evidence boundary; generalized canonical finance ingestion remains future work and does not displace this held Android packet unless explicitly reprioritized again.
+- Issue #127 now preserves stable sanitized finance follow-on work IDs until they can be safely normalized into `BACKLOG.md` without whole-file rewrite risk.
 - No newly discovered work outranks the current provider-inspection gate.
 
 ### `ROADMAP.md`
@@ -83,6 +85,8 @@ Two bounded Work-mode provider inspections failed before Google provider state c
 
 These failures are browser/network tooling evidence only. They are not evidence that any Google Cloud configuration is correct or incorrect.
 
+A bounded provider-inspection execution runbook is now durable at `docs/work-packets/M2-M1-012-provider-inspection-runbook.md`. It formalizes the exact read sequence, private evidence record, OAuth-mismatch stop conditions, and the only allowed mutation. The runbook is readiness documentation only and does not count as provider evidence.
+
 ## Current blocker and hold rule
 
 **Blocker:** the packet needs exact readback of existing Google provider configuration, but the browser-capable provider lane failed twice before inspection.
@@ -99,7 +103,7 @@ Until there is a credible provider-access recovery signal:
 - do **not** repeat M2-M1-001 publication/authorization work;
 - do **not** spend another Work-mode attempt merely because time has passed.
 
-A credible recovery signal means either the browser-capable Work lane is demonstrably able to reach authenticated Google Cloud/Google Accounts again or a supported authenticated Google Cloud administration tool becomes available that can inspect the existing Android OAuth client and Picker API state.
+A credible recovery signal means either the browser-capable Work lane is demonstrably able to reach authenticated Google Cloud/Google Accounts again or a supported authenticated Google Cloud administration tool becomes available that can inspect the existing Android OAuth client and Picker API state. Plugin-directory inspection on 2026-09-07 found no available Google Cloud/OAuth administration connector capable of satisfying this gate; BigQuery was the only Google Cloud-adjacent result and was administratively unavailable and irrelevant to OAuth/Picker administration.
 
 ## Acceptance criteria state
 
@@ -126,11 +130,12 @@ A credible recovery signal means either the browser-capable Work lane is demonst
 
 1. **Hold `M2-M1-012` at the provider-inspection gate. Nothing is required from the user now.**
 2. Wait for a credible provider-access recovery signal; do not burn another Work attempt speculatively.
-3. When that signal exists, perform exactly one bounded authenticated provider inspection against the existing development project:
+3. When that signal exists, follow `docs/work-packets/M2-M1-012-provider-inspection-runbook.md` for exactly one bounded authenticated provider inspection against the existing development project:
    - read the existing Android OAuth client's actual registered package name;
    - read its actual signing SHA-1;
    - compare those actual values to the expected proof identity above;
-   - read whether Google Picker API is enabled;
+   - if either mismatches, checkpoint the mismatch and stop with zero provider mutations;
+   - if both match, read whether Google Picker API is enabled;
    - enable **only Google Picker API**, and only if inspection proves it disabled and the packet still authorizes that one mutation;
    - make no other provider change.
 4. Read back the final provider state exactly.
@@ -140,4 +145,4 @@ A credible recovery signal means either the browser-capable Work lane is demonst
 
 ## Recovery protocol
 
-Start by reading this file and verifying remote `main` plus `work/m2-m1-012-provider-tooling-hold-2`. Financial Escape packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries; do not reopen them merely to continue Android. `M2-M1-012` is again the sole active work packet and remains on deliberate provider-tooling hold.
+Start by reading this file and verifying remote `main` plus `work/m2-m1-012-provider-tooling-hold-2`. Read the provider-inspection runbook before any recovered provider session. Financial Escape packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries; do not reopen them merely to continue Android. `M2-M1-012` is again the sole active work packet and remains on deliberate provider-tooling hold.
