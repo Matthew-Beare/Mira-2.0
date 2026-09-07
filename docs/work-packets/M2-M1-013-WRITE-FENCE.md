@@ -1,0 +1,1 @@
+WRITE FENCE: M2-M1-013 subsequent writes belong on `work/m2-m1-013-financial-escape-live` only. This marker exists because the initial checkpoint sequence accidentally wrote directly to main. No private financial state is present in these checkpoint notes.
