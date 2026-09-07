@@ -69,6 +69,13 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `REIMB-001` | Beneficiary allocation and household reimbursement reconciliation | accepted | specified | -
 - `SUB-001` | Optional subscription and free-trial tracking | proposed | not_present | -
 - `FIN-001` | Complete connected financial-account ingestion and reconciliation | proposed | not_present | -
+- `FIN-GOAL-001` | Configurable financial objective and policy model supporting debt payoff, reserve/savings targets, career-transition goals, protected-resource rules and configurable household income-unit semantics without weakening the private reference profile | required-direction | specified+private-live-partial | -
+- `FIN-HISTORY-001` | Provenance-bound dated financial observations and snapshots with freshness/confidence, preserving historical source state and distinguishing payments from actual principal movement | required | implemented+private-baseline-readback | FIN-GOAL-001,RECOVERY-002
+- `FIN-TRAJECTORY-001` | Plan-vs-actual financial trajectory engine with target balance, signed dollars/days ahead-or-behind, rolling pace, forecast movement, productive-work economics and confidence-aware correction math | required | implemented+private-live-partial | FIN-GOAL-001,FIN-HISTORY-001
+- `FIN-DASH-001` | Single primary human-readable Financial Goal Command Center projection with broad-first status, debt/cash/pace/forecast/action visibility while canonical evidence remains outside the dashboard projection | required | implemented+private-live-readback | FIN-TRAJECTORY-001
+- `FIN-SCENARIO-001` | Financial scenario and transition-decision engine covering spending, reserves, income changes, bounded retirement-contribution levers and career offers without consuming protected resources by default | required | implemented+private-live-partial | FIN-TRAJECTORY-001
+- `FIN-COUNTDOWN-001` | Near-goal daily countdown mode with higher-frequency days/weeks/debt/forecast-movement/pace/action emphasis when the configured escape horizon enters its countdown window | required-direction | specified/not_active | FIN-TRAJECTORY-001,FIN-DASH-001
+- `FIN-PRIVATE-REF-001` | Private Financial Escape reference-profile contract preserving exact coupled household-income, productive-work, reserve, staged-budget, payoff-order, contribution and career-transition semantics; private values never enter public Git and generic abstraction may not weaken this profile | required/private-reference | implemented+private-live-partial | FIN-GOAL-001,FIN-HISTORY-001,FIN-TRAJECTORY-001,FIN-DASH-001,FIN-SCENARIO-001
 - `ASSET-001` | Immutable physical asset identity and idempotent acquisition | required | test_verified | RECEIPT-001
 - `FITMENT-001` | Explicit assignment, installation and fitment relationships | required | test_verified | ASSET-001
 - `ASSET-002` | Provenance-linked asset acquisition, reference and lifecycle evidence | accepted/required-direction | partial-test/specified | ASSET-001,RECEIPT-001
@@ -137,7 +144,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - F3 Email triage | email_triage,MAIL-001,MAIL-002,MAIL-003,SERVICE-001,SERVICE-002,f-03 | -
 - F4 Orders/shipments | orders_shipments,ORDER-001,ORDER-002,ORDER-003,ORDER-005,SERVICE-001,SERVICE-002,f-04 | repair
 - F5 Receipt archive | receipt_archive,RECEIPT-001,RECEIPT-002,RECEIPT-003,SERVICE-001,SERVICE-002,f-05 | -
-- F6 Personal finance organization | finance,SERVICE-001,SERVICE-002,SPEND-001,PAYMENT-001,REIMB-001,SUB-001,FIN-001 | repair
+- F6 Personal finance organization | finance,SERVICE-001,SERVICE-002,SPEND-001,PAYMENT-001,REIMB-001,SUB-001,FIN-001,FIN-GOAL-001,FIN-HISTORY-001,FIN-TRAJECTORY-001,FIN-DASH-001,FIN-SCENARIO-001,FIN-COUNTDOWN-001,FIN-PRIVATE-REF-001 | active-private-reference-vertical
 - F7 Appointments/calendar/reminders | appointments_calendar,CAL-008,CAL-005,CAL-006,CAL-007,CAL-004,appointment_reminders,CAL-002,CAL-003,CAL-001 | repair+multisource-intake
 - F8 Administrative health organization | health_organization,HEALTH-001,SERVICE-001,SERVICE-002,medication_reminders,REMIND-001,REMIND-002 | repair
 - F9 Shopping/procurement | shopping,SHOP-001,SERVICE-001,SERVICE-002,f-09 | confirmed
