@@ -12,11 +12,13 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
 - **Stable pre-Financial-Escape checkpoint:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
-- **Latest bounded Financial Escape correction/UI checkpoint:** `cb6f56d79a8c5f76d90325942743c4cbfdaf6879` (`docs/work-packets/M2-M1-014.md`).
+- **Latest bounded Financial Escape privacy-sanitized checkpoint:** `777728702a69d87cb99c16dfadf6a75c8610bc91` (`docs/work-packets/M2-M1-014.md`).
 - **Provider-inspection readiness runbook checkpoint:** `6677397ca16307808bbcd456e0e24fb1b0838008` (`docs/work-packets/M2-M1-012-provider-inspection-runbook.md`).
 - **Current status:** active and blocked only at provider-configuration inspection.
 
-The Financial Escape interruption packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries. Their private operational state remains outside public Git. The latest correction checkpoint preserves one logical MIRROR finance model, one active network-switch earmark, three vehicle-registration planning obligations, deferred purchase-to-allowance debits, and a reduced user-facing workbook surface with backend/source sheets hidden rather than deleted. These finance corrections do not displace or expand the active Android packet.
+The Financial Escape interruption packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries. Current public packet files contain generalized product/engineering semantics only; private operational state remains outside those current files. A privacy audit found that earlier public Financial Escape commit history used some overly specific private-life descriptors even though inspected packet history did not contain the private finance amounts, balances, account IDs, provider IDs, document IDs, or spreadsheet IDs. Those current files have been sanitized. Purging historical Git objects would require an explicit destructive history rewrite and has not been performed implicitly.
+
+The latest private-live correction preserves one logical MIRROR finance model, corrected private allocation/planning cardinality, deferred purchase-to-allocation debits, and a reduced user-facing workbook surface with backend/source sheets hidden rather than deleted. These finance corrections do not displace or expand the active Android packet.
 
 ## Objective
 
@@ -92,7 +94,7 @@ A credible recovery signal means the authenticated browser-capable lane can reac
 
 - Legacy MIRA production Sheets, Drive artifacts, Apps Script projects, briefs, schedules, automations, and live state remain protected production data.
 - The existing isolated synthetic M2-M1-001 fixture remains the only permitted provider target for this proof unless fresh readback proves it unsuitable.
-- Never commit credentials, OAuth tokens, private provider identifiers, keystore material, live spreadsheet contents, email contents, or personal operational state.
+- Never commit credentials, OAuth tokens, private provider identifiers, keystore material, live spreadsheet contents, email contents, personal financial details, or personal operational state.
 - The development proof signing identity is not production release signing.
 - Provider configuration must be inspected before app-side OAuth handling is diagnosed or repaired.
 
