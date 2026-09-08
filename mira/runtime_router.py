@@ -170,9 +170,11 @@ class WorkerAdvertisement:
     Private bindings such as hostnames, IP addresses, device serials, model paths,
     shell endpoints, or credentials are intentionally absent. ``identity`` is the
     result of an external authentication boundary, not authentication material.
+    ``principal_id`` is the opaque principal this worker expects that proof to bind.
     """
 
     worker_id: str
+    principal_id: str
     identity: WorkerIdentityProof
     lane_id: str
     runtime_id: str
@@ -190,6 +192,7 @@ class WorkerAdvertisement:
 
     def __post_init__(self) -> None:
         _token(self.worker_id, "worker_id")
+        _token(self.principal_id, "principal_id")
         if not isinstance(self.identity, WorkerIdentityProof):
             raise RuntimeRouterValidationError(
                 "identity must be a WorkerIdentityProof"
@@ -361,9 +364,10 @@ def project_worker_candidate(
     """Project authenticated worker evidence into the existing runtime router.
 
     Authentication transport remains outside this module. A non-verified identity
-    therefore never creates a candidate. A stale heartbeat does create an explicit
-    fail-closed candidate so the router reports ordinary unavailable/unknown worker
-    reasons rather than accidentally reusing the last healthy state.
+    or a proof for the wrong principal never creates a candidate. A stale heartbeat
+    does create an explicit fail-closed candidate so the router reports ordinary
+    unavailable/unknown worker reasons rather than accidentally reusing the last
+    healthy state.
     """
 
     if not isinstance(advertisement, WorkerAdvertisement):
@@ -407,13 +411,16 @@ def project_worker_candidate(
     heartbeat_fresh = (
         now_dt - heartbeat_dt
     ).total_seconds() <= max_heartbeat_age_seconds
-    identity_verified = advertisement.identity.state is WorkerIdentityState.VERIFIED
     reasons: list[str] = []
 
-    if not identity_verified:
+    if advertisement.identity.principal_id != advertisement.principal_id:
+        reasons.append("worker_identity_principal_mismatch")
+    if advertisement.identity.state is not WorkerIdentityState.VERIFIED:
         reasons.append(
             f"worker_identity_{advertisement.identity.state.value}"
         )
+    identity_verified = not reasons
+    if not identity_verified:
         return WorkerCandidateProjection(
             worker_id=advertisement.worker_id,
             identity_verified=False,
