@@ -13,7 +13,7 @@ person data do not belong in public source control. Public tests use synthetic d
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import re
 from typing import Any, Mapping, Sequence
 
@@ -308,7 +308,9 @@ class CareerInteractionService:
             and not _has_inbound_after(inbound, last_outbound.occurred_at)
             and last_outbound.outcome not in {"closed", "declined"}
         )
-        state = _relationship_state(interactions, have_i_contacted, have_they_replied, awaiting_reply)
+        state = _relationship_state(
+            interactions, have_i_contacted, have_they_replied, awaiting_reply
+        )
         follow_up_due = _next_follow_up(interactions)
         last = interactions[-1]
         return RelationshipSummary(
@@ -400,7 +402,9 @@ def _view(record: Any, *, idempotent_replay: bool = False) -> InteractionView:
     )
 
 
-def _has_reply(interactions: Sequence[InteractionView], outbound: Sequence[InteractionView]) -> bool:
+def _has_reply(
+    interactions: Sequence[InteractionView], outbound: Sequence[InteractionView]
+) -> bool:
     outbound_ids = {item.interaction_id for item in outbound}
     for item in interactions:
         if item.direction != "inbound":
@@ -429,10 +433,10 @@ def _relationship_state(
         return "conversation"
     if interactions[-1].outcome in {"closed", "declined"}:
         return "closed"
-    if have_they_replied:
-        return "replied"
     if awaiting_reply:
         return "awaiting_reply"
+    if have_they_replied:
+        return "replied"
     if have_i_contacted:
         return "contacted"
     return "not_contacted"
@@ -440,7 +444,7 @@ def _relationship_state(
 
 def _next_follow_up(interactions: Sequence[InteractionView]) -> str | None:
     dated = [item.follow_up_due for item in interactions if item.follow_up_due]
-    return max(dated) if dated else None
+    return min(dated) if dated else None
 
 
 def _enum(value: object, allowed: frozenset[str], field: str) -> str:
@@ -484,7 +488,7 @@ def _timestamp(value: str, field: str) -> str:
         raise PeopleTrackerValidationError(f"{field} must be an ISO-8601 timestamp") from exc
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise PeopleTrackerValidationError(f"{field} must include a timezone")
-    return parsed.isoformat()
+    return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def _optional_date(value: object, field: str) -> str | None:
