@@ -70,9 +70,14 @@ class ComputeWorkerContractTests(unittest.TestCase):
         health: RuntimeHealth = RuntimeHealth.HEALTHY,
         interactive_lock: bool = False,
     ) -> WorkerAdvertisement:
+        resolved_identity = (
+            identity
+            if identity is not None
+            else self.proof(verified_at=heartbeat_at)
+        )
         return WorkerAdvertisement(
             worker_id="worker-synthetic-a",
-            identity=identity or self.proof(),
+            identity=resolved_identity,
             lane_id="local-worker-a",
             runtime_id="runtime-worker-a",
             service_id="ai-runtime",
