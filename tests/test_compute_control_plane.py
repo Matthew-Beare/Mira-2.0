@@ -27,7 +27,7 @@ class ComputeControlPlaneTests(unittest.TestCase):
         self.adapter = InMemoryStructuredStateAdapter(
             schema_version="1",
             resource_types=(COMPUTE_JOB_RESOURCE_TYPE,),
-            event_types=(),
+            event_types=("compute_job_test_event",),
         )
         self.control = ComputeJobControlPlane(self.adapter)
 
