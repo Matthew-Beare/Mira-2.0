@@ -7,7 +7,7 @@ Git is authoritative. This branch records exactly one active packet. Other MIRA 
 ### `M2-M1-019` — People Discovery vertical slice
 
 - **Primary work:** `PEOPLE-DISCOVERY-001`.
-- **Primary feature family:** `CAREER-001`.
+- **Primary features:** `CAREER-001`.
 - **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `MAIL-002`, `DATA-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-019-people-discovery`.
@@ -15,7 +15,7 @@ Git is authoritative. This branch records exactly one active packet. Other MIRA 
 - **Packet:** `docs/work-packets/M2-M1-019.md`.
 - **Owned implementation surfaces:** People Discovery domain/provider/tracker modules and tests; packet-specific synthetic fixtures/docs.
 - **Shared/high-contention surfaces:** `FEATURES.md`, `BACKLOG.md`, `project/code_ownership.json`, branch-local `CURRENT_WORK.md`; reconcile against then-current `main` immediately before merge.
-- **Current status:** implementation active. Candidate identity/scoring core and canonical relationship interaction/reply tracking are implemented on this branch. Provider adapter, complete Google tracker persistence/readback and live discovery proof remain open. No live third-party people data has been written and no outbound-contact action exists.
+- **Current status:** implementation active. Candidate normalization/identity/scoring/provenance core, canonical relationship interaction/reply tracking, synthetic tests and a bounded search-only People Data Labs adapter are implemented on this branch. Complete Google tracker persistence/readback, provider credential/live proof and final lifecycle reconciliation remain open. No live third-party people data has been written and no outbound-contact action exists.
 
 ## Objective
 
@@ -58,6 +58,7 @@ The tracker exposes no `send`, `send_message`, `send_email`, `connect`, `post`, 
 Official documentation was inspected for People Data Labs and Apollo during packet setup.
 
 - People Data Labs Person Search remains the leading first adapter because it supports the strongest WGU-first search dimensions: current employer, education/school, title, location, skills, work history and LinkedIn URL.
+- A bounded injected-credential PDL search adapter is now implemented with explicit per-run request/record caps, a WGU-first query phase and a broader target-employer fallback phase. It exposes search only.
 - Apollo remains a replaceable secondary adapter and is not required before independent implementation can continue.
 - The user does **not** need to connect both providers. Independent engineering proceeds first.
 - If a provider credential remains the only external boundary after implementation/CI, request the smallest single action required for the first live proof, expected to be one PDL credential/account path unless later evidence changes the adapter choice.
@@ -65,31 +66,32 @@ Official documentation was inspected for People Data Labs and Apollo during pack
 ## Acceptance state
 
 - Unique packet/branch isolated from other MIRA work: **satisfied**.
-- Existing Sheets/canonical-state architecture inspected: **in progress; reusable structured-state and Google Sheets paths confirmed**.
+- Existing Sheets/canonical-state architecture inspected: **reusable structured-state and Google Sheets paths confirmed; tracker persistence still open**.
 - Provider-neutral candidate model: **implemented**.
-- Candidate normalization: **implemented; CI coverage pending**.
-- Entity resolution/dedupe: **implemented; CI coverage pending**.
-- Relevance scoring with WGU/network/cloud/infrastructure weighting: **implemented; CI coverage pending**.
-- Provenance retention: **implemented in candidate core; CI coverage pending**.
+- Candidate normalization: **implemented; synthetic tests added; CI pending latest head**.
+- Entity resolution/dedupe: **implemented; synthetic tests added; CI pending latest head**.
+- Relevance scoring with WGU/network/cloud/infrastructure weighting: **implemented; synthetic tests added; CI pending latest head**.
+- Provenance retention: **implemented; synthetic tests added; CI pending latest head**.
 - Canonical manual interaction history: **implemented**.
-- Derived contacted/replied/awaiting-reply/follow-up state: **implemented**.
-- No outbound-send API in relationship tracker: **implemented with synthetic test**.
-- Google tracker schema with `COMPANIES` / `PEOPLE` / `INTERACTIONS` / `JOBS`: **implemented as provider-neutral projection schema; complete live persistence/readback pending**.
-- Real provider operational: **pending adapter/credential/preflight/live proof**.
-- Repeat discovery update proof: **pending**.
+- Derived contacted/replied/awaiting-reply/follow-up state: **implemented and hardened for timezone/reply-cycle/follow-up ordering**.
+- No outbound-send API in relationship tracker/provider: **implemented with synthetic tests**.
+- Google tracker schema with `COMPANIES` / `PEOPLE` / `INTERACTIONS` / `JOBS`: **implemented as provider-neutral projection schema; complete persistence/readback pending**.
+- Bounded People Data Labs provider adapter: **implemented; synthetic tests added; credential/live proof pending**.
+- Real provider operational: **pending credential/preflight/live proof**.
+- Repeat discovery update proof: **synthetic core coverage added; live proof pending**.
 - Exact live tracker readback: **pending**.
 - Manual interaction-state live write/readback: **pending**.
 - Public sanitization discipline: **implemented structurally; final branch audit pending**.
-- Relevant tests/baseline gates: **test files added; CI pending**.
+- Relevant tests/baseline gates: **tests added; prior CI failed at work-session alignment before Python tests; governance repair in progress**.
 - Remote Git/CI completion proof: **pending**.
 
 ## Exact next action / resume point
 
-1. Add/finish synthetic tests for the candidate normalization, conservative entity resolution, scoring and provenance core.
-2. Implement the injected-credential People Data Labs adapter with bounded, credit-aware employer/WGU/role/location searches and no outreach endpoints.
+1. Register `PEOPLE-DISCOVERY-001` in canonical `BACKLOG.md` and keep this packet aligned to existing `CAREER-001`; refine stable career feature semantics before merge without inventing a parallel feature authority.
+2. Re-run exact-head CI and repair any actual Python/code-ownership failures now that the work-session alignment gate can proceed.
 3. Complete canonical People Discovery persistence and Google tracker writer/readback using existing MIRA structured-state/Sheets conventions rather than a duplicate store.
-4. Reconcile `PEOPLE-DISCOVERY-001` and stable career semantics into branch-local `BACKLOG.md` / `FEATURES.md`, and update `project/code_ownership.json` only after current-main collision inspection.
-5. Open/maintain a draft PR so CI runs on the packet branch; fix exact-head failures before expanding scope.
+4. Reconcile any required `FEATURES.md` refinement and `project/code_ownership.json` change only after then-current-main collision inspection.
+5. Keep PR #134 draft until implementation tests, provider boundary and live tracker proof are earned.
 6. Perform provider capability/credential preflight only after the independent implementation is green.
 7. If the only remaining boundary is a PDL API key/account, request exactly that single user action. Apollo is optional fallback/secondary coverage, not a prerequisite.
 8. Execute real discovery, real Sheet write/readback, rerun-update proof and manual interaction/reply proof before claiming deployment.
@@ -97,6 +99,24 @@ Official documentation was inspected for People Data Labs and Apollo during pack
 ## Concurrent work / control-room rule
 
 This conversation may coordinate MIRA work generally, but implementation remains packet/branch isolated. Finance/Financial Escape, Android/provider work and other MIRA packets are not abandoned merely because this packet is active. Before switching implementation scope, checkpoint the current packet's exact remote head/resume point, then continue the next prioritized packet on its own branch. Do not mix unrelated source changes into this branch.
+
+## Session-start alignment verification — 2026-09-07
+
+### `FEATURES.md`
+
+Reviewed. Existing `CAREER-001` is the current canonical career feature anchor. `M2-M1-019` extends the user-visible career capability with People Discovery, relationship tracking and a no-automated-outreach boundary while preserving `AUTH-001`, `STORE-001`, `RECOVERY-002`, `MAIL-002` and `DATA-001`. Stable career feature wording may be refined before merge, but this packet does not create a competing feature authority.
+
+### `BACKLOG.md`
+
+Reviewed. Existing backlog did not yet contain a dedicated People Discovery work item. `PEOPLE-DISCOVERY-001` is the bounded work ID for this vertical and is being registered as part of the governance repair before CI is treated as meaningful implementation evidence.
+
+### `ROADMAP.md`
+
+Reviewed. People Discovery is a user-visible Personal MIRA career vertical built on the existing Google/Sheets and canonical-state foundations. It does not change the Personal Google architecture, require Android, authorize automated outreach or weaken public-repository privacy rules.
+
+### Direction result
+
+ALIGNED
 
 ## Recovery protocol
 
