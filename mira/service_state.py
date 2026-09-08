@@ -525,7 +525,14 @@ class WorkerRegistryService:
         interactive_lock: bool | None = None,
         load_rank: int | None = None,
     ) -> WorkerRegistryView:
-        current = self.get(worker_id)
+        worker = _token(worker_id, "worker_id")
+        try:
+            record = self._adapter.get(WORKER_RESOURCE_TYPE, worker)
+        except NotFoundError as exc:
+            raise ServiceStateValidationError(
+                f"unknown compute worker: {worker}"
+            ) from exc
+        current = _worker_view(record)
         _verify_worker_identity(
             identity,
             expected_principal_id=current.principal_id,
@@ -583,12 +590,14 @@ class WorkerRegistryService:
             cost_rank=current.cost_rank,
             heartbeat_at=heartbeat_at,
         )
+        if payload == record.payload:
+            return _worker_view(record, idempotent_replay=True)
         result = self._adapter.upsert(
             WORKER_RESOURCE_TYPE,
             current.worker_id,
             payload,
             idempotency_key=_token(idempotency_key, "idempotency_key"),
-            expected_revision=current.revision,
+            expected_revision=record.revision,
         )
         return _worker_view(
             result.record, idempotent_replay=result.idempotent_replay
