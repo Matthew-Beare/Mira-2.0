@@ -356,14 +356,15 @@ class ComputeJobControlPlane:
             raise QueueStateError("lease_expires_at must be after leased_at")
         jobs = self.list_jobs()
         for job in jobs:
+            if job.lease_id != lease or not job.active_lease:
+                continue
             if (
-                job.lease_id == lease
-                and job.lease_worker_id == worker
+                job.lease_worker_id == worker
                 and job.leased_at == leased_at
                 and job.lease_expires_at == lease_expires_at
-                and job.active_lease
             ):
                 return replace(job, idempotent_replay=True)
+            raise QueueStateError("lease_id is already active with different material")
         eligible = [
             job
             for job in jobs
