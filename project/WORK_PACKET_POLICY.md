@@ -6,34 +6,61 @@ The user is the customer/product owner. The assistant/developer owns feature dec
 
 The customer may brainstorm freely and does not need project-management syntax.
 
-## One active packet
+## Concurrent repository model
 
-There should normally be exactly one active work packet. A packet is a bounded outcome, preferably a vertical slice. If it cannot be reliably completed and verified in one working session, split it before implementation.
+Multiple MIRA development chats may work in parallel, but Git isolation is mandatory.
+
+- Each chat/session owns exactly one active work packet at a time.
+- Each packet has a unique packet ID and its own `work/...` branch.
+- Multiple packet branches may be active repository-wide at the same time.
+- `main` is the serialized integration branch and is never a shared scratch branch.
+- A packet is a bounded outcome, preferably a vertical slice. If it cannot be reliably completed and verified in one working session, split it before implementation.
+- Remote packet branches and open PRs are the repository-wide concurrency registry. Do not assume `CURRENT_WORK.md` on `main` exhaustively describes every in-flight branch.
+- `CURRENT_WORK.md` on a packet branch describes that branch's one active packet and exact safe resume point. This preserves the mechanical one-active-packet-per-branch alignment gate while allowing many branches to progress concurrently.
+
+## Collision prevention
+
+Before implementation writes, every chat must:
+
+1. read current remote `main` and verify its SHA;
+2. read `CURRENT_WORK.md`, FEATURES, BACKLOG, and ROADMAP from the relevant base/current branch;
+3. if resuming, verify the packet's remote branch head and packet document;
+4. inspect active `work/...` branches and open PRs for overlapping implementation surfaces;
+5. record owned implementation surfaces / expected touched paths in the packet document;
+6. record any shared or high-contention surfaces and the integration plan before editing them.
+
+Two packets must not intentionally modify the same implementation surface concurrently unless an explicit dependency or integration plan is recorded first.
+
+Shared governance files such as `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PROJECT_INSTRUCTIONS.md` are high-contention surfaces. Keep changes minimal, additive where practical, and reconcile them against current `main` immediately before merge.
+
+Never force-update another packet's branch or reuse it for unrelated work.
 
 ## Scope admission
 
-A newly discussed idea joins active work only when:
+A newly discussed idea joins the current chat's active work only when:
 
 1. it is required for an existing acceptance criterion;
 2. it exposes a hard dependency blocking the packet; or
-3. the customer explicitly reprioritizes current work.
+3. the customer explicitly reprioritizes that chat's current work.
 
-Otherwise capture it in FEATURES/BACKLOG and continue the active packet.
+Otherwise capture it in FEATURES/BACKLOG and continue the current packet. Reprioritizing one chat does not globally suspend unrelated non-conflicting packet branches.
 
 ## Work-session direction gate
 
 Every development work session must begin by reading and reconciling these four Git authorities before implementation continues:
 
-1. `CURRENT_WORK.md` — one active packet and exact resume point;
+1. `CURRENT_WORK.md` — this branch's one active packet and exact resume point;
 2. `FEATURES.md` — accepted semantic feature set and dependencies;
 3. `BACKLOG.md` — dependency-ranked implementation work, including displaced work;
 4. `ROADMAP.md` — milestone and product-ordering intent.
 
+Also inspect remote active packet branches/open PRs for collision risk before writes.
+
 The session-start result must be recorded in `CURRENT_WORK.md` under a heading beginning `## Session-start alignment verification`. It must explicitly cover FEATURES, BACKLOG and ROADMAP and record a direction result of `ALIGNED` before implementation proceeds.
 
-The repository CI gate `python -m mira.work_session_alignment check` must verify that the active primary work exists in `BACKLOG.md`, all declared active feature/invariant IDs exist in `FEATURES.md`, and the required authority review is present. This mechanical check supplements product judgment; it does not replace it.
+The repository CI gate `python -m mira.work_session_alignment check` verifies the active primary work exists in `BACKLOG.md`, all declared active feature/invariant IDs exist in `FEATURES.md`, and the required authority review is present. This mechanical check supplements product judgment; it does not replace it.
 
-Before a work session ends or the active branch is handed off, repeat the semantic direction check. Record any drift, newly discovered dependency, reprioritization, or exact resume point in `CURRENT_WORK.md`. A green test suite without this direction check is not a safe recovery checkpoint.
+Before a work session ends or the active branch is handed off, repeat the semantic direction check. Record any drift, newly discovered dependency, reprioritization, collision risk, or exact resume point in `CURRENT_WORK.md`. A green test suite without this direction check is not a safe recovery checkpoint.
 
 ## Feature-set alignment gate
 
@@ -43,7 +70,7 @@ Before a packet begins implementation, the assistant/developer must:
 
 1. read the current related feature IDs in `FEATURES.md` and their dependencies;
 2. read relevant roadmap/backlog mappings, including adjacent user-visible features that the packet could accidentally break or make impossible;
-3. record in `CURRENT_WORK.md` a **Feature alignment** or session-alignment section containing:
+3. record in `CURRENT_WORK.md` a feature/session-alignment section containing:
    - primary feature/work IDs;
    - user-visible behavior this packet must enable;
    - existing product invariants/features it must preserve;
@@ -57,15 +84,15 @@ Before merge/closeout, repeat the feature-alignment check. A packet may not be c
 
 ## Explicit reprioritization
 
-Before switching:
+Before one chat switches packets:
 
-1. checkpoint current work durably;
-2. write the exact resume point to CURRENT_WORK;
+1. checkpoint its current branch durably;
+2. write the exact resume point to that branch's CURRENT_WORK and packet document;
 3. confirm displaced and new work already exist in BACKLOG or add them there;
 4. commit/push and remotely read back when Git access permits;
-5. then switch scope.
+5. then switch the chat to a new or resumed packet branch.
 
-Existing backlog items do not need duplicate rows merely because their priority changes; CURRENT_WORK records the active priority and exact resume point while BACKLOG remains non-FIFO.
+Existing backlog items do not need duplicate rows merely because their priority changes. Other non-conflicting packet branches may continue.
 
 ## Packet record
 
@@ -74,9 +101,11 @@ Every packet records:
 - packet ID/name;
 - related feature/work IDs;
 - objective;
-- branch/base/head where applicable;
+- branch/base/current remote head where applicable;
 - dependencies/blockers;
-- **feature alignment:** user-visible behavior, preserved feature invariants, and explicitly deferred related features;
+- owned implementation surfaces / expected touched paths;
+- shared/high-contention surfaces and integration plan where applicable;
+- feature alignment: user-visible behavior, preserved feature invariants, and explicitly deferred related features;
 - explicit acceptance criteria;
 - completed evidence;
 - exact next action/resume point.
@@ -93,7 +122,24 @@ BACKLOG is not FIFO. Priority order:
 6. enhancements;
 7. later ideas.
 
-When the customer explicitly changes priority, that direction overrides an older milestone ordering after the displaced packet is safely checkpointed. The roadmap/backlog must not be treated as an excuse to continue lower-value work the customer has just rejected.
+When the customer explicitly changes priority in one chat, that direction overrides older ordering for that chat after its displaced packet is safely checkpointed. This does not cancel unrelated parallel work unless a shared integrity/dependency issue requires it.
+
+## Main integration discipline
+
+Parallel implementation does not permit blind parallel merges.
+
+Before any packet merges to `main`:
+
+1. re-read current remote `main` and compare it with the packet base;
+2. identify intervening merged packets and overlapping files/domains;
+3. reconcile the packet with current `main` semantically, preserving compatible newer work;
+4. never resolve a conflict by simply discarding another packet's valid newer changes;
+5. rerun required tests and affected baseline gates after reconciliation;
+6. update the packet document with reconciled head/evidence;
+7. merge through a normal PR/non-force path;
+8. read back remote `main`, merge SHA, and relevant CI/status evidence before claiming completion.
+
+If safe reconciliation cannot be proven, leave both branches intact and stop the merge. A branch that was green on an old base is not automatically safe after another packet merges.
 
 ## Completion evidence
 
@@ -105,7 +151,9 @@ Do not upgrade evidence level without the corresponding proof.
 
 ## Green before growth
 
-Do not add unrelated feature work while required baseline gates are red. Newly discovered blockers may preempt current work, but the displaced packet must retain an exact resume point.
+Do not add unrelated feature work to a packet whose required baseline gates are red. A red packet does not automatically freeze unrelated isolated branches unless it exposes a repository-wide integrity/security issue or shared hard dependency.
+
+Newly discovered blockers may preempt affected work, but every interrupted packet must retain an exact resume point.
 
 ## Recovery
 
@@ -113,7 +161,9 @@ Assume any session can terminate unexpectedly.
 
 - Commit/checkpoint frequently at meaningful boundaries.
 - Never leave the only unfinished-work description in chat.
-- On recovery, read `CURRENT_WORK.md` before relying on conversational reconstruction.
+- On recovery, read current remote `main`, then the relevant packet branch's `CURRENT_WORK.md` and packet document before relying on conversational reconstruction.
+- Verify the remote branch head.
+- Inspect other active packet branches/PRs for newly overlapping work.
 - Run the work-session direction check before continuing implementation.
 - Record the first incomplete item, not merely a percentage.
 
@@ -125,6 +175,6 @@ Legacy MIRA Google/Drive/brief/scheduler state is protected production. MIRA 2.0
 
 Every assistant response in MIRA development ends with exactly one final visible line:
 
-`PACKET: <active-packet-id>`
+`PACKET: <current-chat-packet-id>`
 
-Git remains authoritative; the tag is only a human recovery pointer.
+Use the packet owned by the current chat, not another branch's packet. Git remains authoritative; the tag is only a human recovery pointer.
