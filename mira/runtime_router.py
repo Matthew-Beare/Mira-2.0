@@ -26,6 +26,7 @@ from .service_state import (
     CapabilityGate,
     ProviderCapabilitySnapshot,
     ServiceStateValidationError,
+    WorkerRegistryView,
     evaluate_provider_capability,
 )
 
@@ -352,6 +353,54 @@ class RuntimeRouteResult:
     @property
     def selected(self) -> bool:
         return self.outcome == RouteOutcome.SELECTED
+
+
+def worker_registry_view_to_advertisement(
+    view: WorkerRegistryView,
+) -> WorkerAdvertisement:
+    """Convert validated durable worker state into the read-only routing contract."""
+
+    if not isinstance(view, WorkerRegistryView):
+        raise RuntimeRouterValidationError("view must be a WorkerRegistryView")
+    try:
+        identity_state = WorkerIdentityState(view.identity_state)
+        runtime_kind = RuntimeKind(view.runtime_kind)
+        approval_state = ApprovalState(view.approval_state)
+        local_compute_mode = LocalComputeMode(view.local_compute_mode)
+        availability = RuntimeAvailability(view.availability)
+        health = RuntimeHealth(view.health)
+    except ValueError as exc:
+        raise RuntimeRouterValidationError(
+            "worker registry view contains unsupported routing enum state"
+        ) from exc
+
+    return WorkerAdvertisement(
+        worker_id=view.worker_id,
+        principal_id=view.principal_id,
+        identity=WorkerIdentityProof(
+            principal_id=view.principal_id,
+            state=identity_state,
+            verified_at=view.identity_verified_at,
+        ),
+        lane_id=view.lane_id,
+        runtime_id=view.runtime_id,
+        service_id=view.service_id,
+        runtime_kind=runtime_kind,
+        runtime_capabilities=view.runtime_capabilities,
+        policy=RuntimePolicy(
+            policy_id=view.policy_id,
+            approval_state=approval_state,
+            allowed_data_classifications=view.allowed_data_classifications,
+            local_compute_mode=local_compute_mode,
+        ),
+        availability=availability,
+        health=health,
+        interactive_lock=view.interactive_lock,
+        priority=view.priority,
+        load_rank=view.load_rank,
+        cost_rank=view.cost_rank,
+        heartbeat_at=view.heartbeat_at,
+    )
 
 
 def project_worker_candidate(
@@ -869,4 +918,5 @@ __all__ = [
     "WorkerIdentityState",
     "project_worker_candidate",
     "route_runtime",
+    "worker_registry_view_to_advertisement",
 ]

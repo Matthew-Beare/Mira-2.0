@@ -4,63 +4,64 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ## Active packet
 
-### `M2-M1-022` — Compute worker advertisement and identity-proof contract
+### `M2-M1-023` — Durable compute worker registry
 
 - **Primary work:** `LOCAL-INTEGRATIONS`.
 - **Primary features:** `LOCAL-001`, `PROVIDER-001`.
-- **Related invariants/features:** `SOURCE-001`, `RECOVERY-002`, `DEV-004`, `API-001`.
+- **Related invariants/features:** `STORE-001`, `SOURCE-001`, `RECOVERY-002`, `DEV-004`, `API-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-022-compute-worker-registry`.
-- **Base SHA:** `0e1a1ef2d8565beacbdb8e13e8f73c97bc3d43a5`.
-- **Packet:** `docs/work-packets/M2-M1-022.md`.
-- **Owned implementation surfaces:** `mira/runtime_router.py`, `tests/test_compute_worker_contract.py`, packet doc, this branch's `CURRENT_WORK.md`.
-- **Shared/high-contention surfaces:** none modified. PR #134 changes `project/code_ownership.json`; PR #135 changes the ownership validator/fragments and Sheets surfaces. This packet avoids those files.
-- **Current status:** bounded implementation complete and CI-verified on code head; final documentation checkpoint and exact-head CI remain before merge.
+- **Branch:** `work/m2-m1-023-durable-worker-registry`.
+- **Base SHA:** `36cfc28d128c46078fa1bb082e32695a23e7f64a`.
+- **Packet:** `docs/work-packets/M2-M1-023.md`.
+- **PR:** `#138`.
+- **Owned implementation surfaces:** `mira/service_state.py`, `mira/runtime_router.py`, `tests/test_compute_worker_registry.py`, packet doc, this branch's `CURRENT_WORK.md`.
+- **Shared/high-contention surfaces:** none modified. PR #134 changes the monolithic ownership manifest; PR #135 changes ownership-fragment machinery and Sheets surfaces. This packet reuses already-owned production modules.
+- **Current status:** implementation complete on branch; CI #518 passed end-to-end on `61ebe9b597cadd7bc71304d5f994409dc6fd7b2e`. This closeout checkpoint changes the head and therefore requires one final exact-head CI before merge.
 
 ## Objective
 
-Add the secret-free worker advertisement, verified identity-proof, heartbeat freshness and runtime-candidate projection contract that the merged M2-M1-021 router needs before a durable worker registry can safely exist.
-
-The packet remains read-only and provider-neutral. It does not persist worker state, perform authentication transport, deploy an agent, expose raw inference/Python/shell, wake/shutdown machines, invent hardware thresholds, or bind private infrastructure.
+Persist secret-free worker registration and heartbeat state over STORE-001-compatible structured state with replay-safe mutations, optimistic revisions, exact readback, immutable principal binding and deterministic query semantics. Feed validated durable worker state into the M2-M1-022 projection contract without turning the registry into an authentication provider, provider-capability authority, scheduler, network listener or power controller.
 
 ## Acceptance state
 
-- M2-M1-021 merged to `main`: **verified at `0e1a1ef2d8565beacbdb8e13e8f73c97bc3d43a5`**.
-- M2-M1-021 post-merge CI #511: **PASS end-to-end**.
-- Concurrent overlap check against PR #134 / #135: **complete**.
-- New bounded packet branch: **created from exact verified main**.
-- Secret-free `WorkerIdentityProof`: **implemented**.
-- Explicit worker-to-principal binding with mismatch fail-closed behavior: **implemented**.
-- Generic `WorkerAdvertisement`: **implemented**.
-- Heartbeat UTC/freshness validation: **implemented**.
-- Stale heartbeat projection to `OFFLINE` / `UNKNOWN`: **implemented**.
-- External `ProviderCapabilitySnapshot` required; worker does not manufacture provider authorization/capability evidence: **implemented**.
-- Existing local-compute OFF, interactive-lock, data policy and runtime capability gates preserved: **verified by synthetic tests**.
-- Deterministic secret-free projection tests: **implemented in `tests/test_compute_worker_contract.py`**.
-- CI #515 on code head `b64bde1d5c3db1843452b330ee9470533d7b9e66`: **PASS end-to-end: compile, feature registry, lifecycle, starter distribution, alignment, code ownership, Android proof/provenance/retention, Python tests and Workspace Apps Script tests all succeeded**.
-- Local clone/test bench: **unavailable because the execution sandbox could not resolve GitHub; no local-test claim is made**.
+- M2-M1-021 routing foundation: **merged + post-merge CI verified**.
+- M2-M1-022 worker evidence/projection contract: **merged at `36cfc28d128c46078fa1bb082e32695a23e7f64a`; post-merge CI #517 PASS end-to-end**.
+- Concurrent overlap check against PR #134 / #135: **complete at packet start; final reconciliation still required before merge**.
+- M2-M1-023 branch: **created from exact verified main**.
+- Dedicated STORE-001 `compute_worker` resource/schema: **implemented**.
+- Replay-safe registration and exact readback: **implemented + test-verified**.
+- Principal-bound heartbeat/update with optimistic revisions: **implemented + test-verified**.
+- Exact heartbeat retry: **replay-safe no-op/readback implemented after review found that recomputing the newer expected revision would otherwise change the STORE-001 idempotency fingerprint**.
+- Reused heartbeat idempotency key with changed material: **fails closed through STORE-001; test-verified**.
+- Immutable principal binding and verified-identity-only persistence: **implemented + test-verified**.
+- Monotonic identity/heartbeat chronology: **implemented + test-verified**.
+- Deterministic query/list ordering: **implemented + test-verified**.
+- Strict secret-free persisted schema: **implemented + test-verified; unsupported/private extra fields fail readback validation**.
+- Runtime-router durable-view projection: **implemented + test-verified via `worker_registry_view_to_advertisement`**.
+- Provider capability authority separation: **preserved; externally supplied `ProviderCapabilitySnapshot` remains required**.
+- Stale durable heartbeat fail-closed behavior: **test-verified through existing projection/router path**.
+- CI #518 on `61ebe9b597cadd7bc71304d5f994409dc6fd7b2e`: **PASS end-to-end: compile, feature registry, lifecycle, starter distribution, work-session alignment, code ownership, Android proof/provenance/retention, Python unit tests and Workspace Apps Script tests**.
 - Final exact-head CI after this documentation checkpoint: **pending**.
-- Current-main reconciliation / PR merge: **pending final exact-head green**.
-- Durable STORE-001 worker registry: **not claimed; next child packet**.
-- Live worker/provider/device evidence: **not claimed**.
+- Current-main reconciliation / PR #138 merge/readback: **pending final exact-head green**.
+- Live worker/network/provider/private deployment evidence: **not claimed and out of scope**.
 
 ## Session-start alignment verification — 2026-09-08
 
 ### `FEATURES.md`
 
-Reviewed from verified `main`. `LOCAL-001` and `PROVIDER-001` require scoped, provider-neutral local/runtime capability behavior; `SOURCE-001`, `RECOVERY-002`, `DEV-004` and `API-001` preserve evidence, recovery, sanitization and bounded-interface constraints.
+Reviewed from verified `main` `36cfc28d128c46078fa1bb082e32695a23e7f64a`. `LOCAL-001`, `PROVIDER-001`, `STORE-001`, `SOURCE-001`, `RECOVERY-002`, `DEV-004` and `API-001` support durable, provider-neutral, evidence-first and sanitizable worker state.
 
 ### `BACKLOG.md`
 
-Reviewed. `LOCAL-INTEGRATIONS` remains the registered work anchor for the product-owner-reprioritized local-compute direction. This packet does not invent an unregistered work item.
+Reviewed. `LOCAL-INTEGRATIONS` remains the registered work anchor for the explicitly reprioritized local-compute direction.
 
 ### `ROADMAP.md`
 
-Reviewed. Advanced/local compute remains optional and must not become a prerequisite for ordinary Personal MIRA.
+Reviewed. Advanced/local compute remains optional and must not become an ordinary Personal prerequisite.
 
 ### Collision/concurrency review
 
-PR #134 changes People Discovery and the monolithic code-ownership manifest. PR #135 changes Sheets surfaces, the code-ownership validator and ownership fragments. M2-M1-022 avoids all of those paths by extending the already-owned runtime-routing component only.
+PR #134 owns People Discovery plus `project/code_ownership.json`. PR #135 owns Sheets plus code-ownership validator/fragment changes. M2-M1-023 avoids those files by implementing the registry inside the already-owned service-state boundary and adding only a router conversion in the already-owned runtime-router boundary.
 
 ### Direction result
 
@@ -68,12 +69,13 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Obtain one final exact-head CI on this documentation checkpoint.
-2. Re-read current `main` and PR #134 / #135 for intervening overlap.
-3. If exact-head CI is green and no semantic collision exists, mark PR #137 ready and merge using the exact expected head SHA.
-4. Read back merged `main` and post-merge CI.
-5. Start the next child packet for durable STORE-001 worker registry persistence without reopening M2-M1-022.
+1. Update `docs/work-packets/M2-M1-023.md` with the implementation/CI evidence from head `61ebe9b597cadd7bc71304d5f994409dc6fd7b2e`.
+2. Obtain one final exact-head CI for the documentation closeout head.
+3. Re-read current remote `main`, PR #138 head/mergeability, and active overlapping PRs.
+4. If the final head remains non-destructive and CI is green, mark PR #138 ready and merge using the exact expected head SHA.
+5. Read back merged `main` and post-merge CI. Record the evidence ceiling as durable registry implementation/integration verified only; do not claim live worker transport, queue, power control, model runtime or private deployment.
+6. Select the next compute-fabric child packet by dependency/integrity ranking from the M2-M1-021 decomposition.
 
 ## Recovery protocol
 
-Resume from this file plus `docs/work-packets/M2-M1-022.md`, PR #137, exact remote branch head and active PR state. M2-M1-021 is complete and merged; do not reopen it unless regression evidence requires it.
+Resume from this file plus `docs/work-packets/M2-M1-023.md`, exact remote branch head, PR #138 and active PR state. M2-M1-021 and M2-M1-022 are complete and merged; do not reopen them unless regression evidence requires it.
