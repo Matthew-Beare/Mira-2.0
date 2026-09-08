@@ -103,6 +103,23 @@ class ComputeControlPlaneTests(unittest.TestCase):
         self.assertEqual(second.attempts, 1)
         self.assertEqual(second.revision, first.revision)
 
+    def test_active_lease_id_cannot_be_reused_with_different_material(self) -> None:
+        self.submit("job-a")
+        self.submit("job-b")
+        first = self.lease(lease_id="lease-shared", key="lease-first")
+        self.assertEqual(first.job_id, "job-a")
+        with self.assertRaises(QueueStateError):
+            self.control.lease_next(
+                worker_id="worker-b",
+                worker_capabilities=("coding",),
+                lease_id="lease-shared",
+                leased_at=T2,
+                lease_expires_at=T6,
+                idempotency_key="lease-second",
+            )
+        self.assertEqual(self.control.get("job-b").state, "queued")
+        self.assertEqual(self.control.get("job-b").attempts, 0)
+
     def test_only_matching_active_lease_can_start_and_complete(self) -> None:
         self.submit()
         leased = self.lease()
