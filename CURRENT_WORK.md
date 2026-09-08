@@ -4,70 +4,61 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ## Active packet
 
-### `M2-M1-026` — Trusted self-hosted CI boundary
+### `M2-M1-027` — Compute observability foundation
 
 - **Primary work:** `LOCAL-INTEGRATIONS`.
-- **Primary features:** `LOCAL-001`, `DEV-004`.
-- **Related invariants/features:** `DEV-001`, `RECOVERY-002`, `DIST-001`, `API-001`.
+- **Primary features:** `OBS-001`, `LOCAL-001`.
+- **Related invariants/features:** `RECOVERY-002`, `PROVIDER-001`, `STORE-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-026-trusted-self-hosted-ci`.
-- **Base SHA:** `c6692b014cc17508e8334e2b524b64b428857b21`.
-- **Packet:** `docs/work-packets/M2-M1-026.md`.
-- **Pull request:** `#141`.
-- **Owned implementation surfaces:** `project/ci_trust.py`, `tests/test_ci_trust.py`, `.github/workflows/trusted-runner-gate.yml`, packet doc, branch-local `CURRENT_WORK.md`.
-- **Shared/high-contention surfaces:** no `mira/` production module, `project/code_ownership.json`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, or existing `CI` workflow modification.
-- **Current status:** deterministic trust policy, GitHub-hosted preflight workflow and adversarial tests implemented; CI #534 passed end-to-end on implementation head `e7bbdeed24485c2e9681f10c079fd97a8988e844`; trusted-observer contract is now explicit in code; final exact-head closeout CI pending.
+- **Branch:** `work/m2-m1-027-compute-observability`.
+- **Base SHA:** `d17dbed73d6fc55a7bd77dbd5bc2fa1e166b9499`.
+- **Packet:** `docs/work-packets/M2-M1-027.md`.
+- **Owned implementation surfaces:** planned `mira/compute_observability.py`, `tests/test_compute_observability.py`, `project/code_ownership.json`, packet doc, branch-local `CURRENT_WORK.md`.
+- **Shared/high-contention surfaces:** `project/code_ownership.json` requires one explicit new component entry because production-code ownership is exact-path enforced. Old draft PR #134 also changes that manifest and must reconcile later; M2-M1-027 does not consume any of #134's unfinished feature work.
+- **Current status:** packet started from live-workflow-verified M2-M1-026 main; worker/job telemetry contract implementation pending.
 
 ## Objective
 
-Implement a deterministic trust boundary that prevents arbitrary public fork/PR code from being treated as eligible for private self-hosted execution. Source/origin trust and runner isolation remain independent evidence. A trusted canonical-main source may advance only to `requires_isolation` until a restricted/isolated runner is separately proven; PR/fork code remains hosted-only even if an isolation claim is present.
+Add a provider-neutral, read-only observability projection over the existing durable worker registry and compute-job control-plane views. The first slice must produce deterministic Prometheus-compatible metrics for worker health/availability/freshness, job lifecycle state/age/duration/failure, and local-versus-hosted terminal execution use without exposing worker IDs, job IDs, principal IDs, runtime IDs, hostnames, addresses, credentials, model paths or raw task content.
 
-`RunnerIsolationEvidence` is an internal trusted-observer contract. A later private deployment must derive it from the sandbox, identity and network controls it actually enforces. Candidate source and the prospective runner must never self-report those fields as authority for private execution.
-
-This packet adds a GitHub-hosted preflight evidence workflow only. It does not target, install, register, configure, wake, or execute code on any private/self-hosted runner. It does not commit private runner labels, hostnames, addresses, credentials, LAN topology, or hardware identities.
+The packet also defines a deterministic Grafana-compatible PromQL panel plan over those metrics. It does not deploy Prometheus, Grafana, a scrape server, collectors on private machines, hardware sensor readers, private dashboards, alert delivery or safety thresholds.
 
 ## Acceptance state
 
-- M2-M1-025 worker authentication/security boundary: **merged as PR #140 at `c6692b014cc17508e8334e2b524b64b428857b21`; post-merge CI #533 PASS**.
-- M2-M1-026 ID/branch collision check: **complete; no prior M2-M1-026 branch or PR existed**.
-- Existing CI inspection: **complete; current CI is GitHub-hosted only, `contents: read`, with no self-hosted job**.
-- Existing self-hosted trust implementation search: **complete; no existing source/origin/runner trust gate found**.
-- Compute-fabric child ordering: **confirmed from `M2-M1-021`; Trusted self-hosted CI is child #4 after worker security**.
-- Deterministic source-trust and runner-isolation policy: **implemented on branch**.
-- GitHub-hosted preflight receipt workflow: **implemented on branch; never targets `self-hosted` and never executes triggering candidate source to determine trust**.
-- Adversarial trust-policy and workflow-shape tests: **PASS in full repository CI #534 on implementation head `e7bbdeed24485c2e9681f10c079fd97a8988e844`**.
-- Trusted-observer provenance rule for `RunnerIsolationEvidence`: **explicitly documented in production policy code after CI #534; no scheduling behavior added**.
-- Final closeout exact-head CI: **pending**.
-- Merge/post-merge verification: **pending**.
-- Live private runner evidence: **not claimed and out of scope**.
+- M2-M1-026 trusted self-hosted CI boundary: **merged as PR #141 at `d17dbed73d6fc55a7bd77dbd5bc2fa1e166b9499`; post-merge CI #538 PASS**.
+- M2-M1-026 live gate evidence: **Trusted Runner Gate run #1 PASS; retained receipt for upstream CI #538 reports `trusted_canonical_main`, `requires_isolation=true`, `self_hosted_execution_authorized=false`, reason `runner_isolation_missing`, source/policy SHA both `d17dbed73d6fc55a7bd77dbd5bc2fa1e166b9499`**.
+- M2-M1-027 ID/branch collision check: **complete; no prior M2-M1-027 branch or PR existed**.
+- Existing observability implementation search: **complete; no compute Prometheus/telemetry component found**.
+- Existing ownership review: **complete; no OBS-001 component exists, and exact production-path ownership requires a new manifest component for a proper standalone module**.
+- Existing state reuse review: **complete; `WorkerRegistryView` and `ComputeJobView` are the source contracts; no second worker/job authority will be created**.
+- Compute telemetry implementation/tests: **pending**.
+- Exact-head CI/merge/post-merge verification: **pending**.
+- Live Prometheus/Grafana/private sensor evidence: **not claimed and out of scope**.
 
 ## Session-start alignment verification — 2026-09-08
 
 ### `FEATURES.md`
 
-`LOCAL-001` remains the accepted optional local/private integration bridge; `DEV-004` and `DEV-001` support bounded Git-backed development and repository authority. The packet strengthens the development trust boundary without making local infrastructure a Standard-path dependency.
+`OBS-001` defines provider-neutral operational observability and read-only dashboard projection that never becomes mutable-state authority. `LOCAL-001` remains the optional local-compute integration anchor. This packet is a read-only projection over existing canonical worker/job state.
 
 ### `BACKLOG.md`
 
-`LOCAL-INTEGRATIONS` remains the existing accepted anchor explicitly reprioritized by the product owner for the compute-fabric initiative. No new backlog identity is required for this bounded child packet.
+`LOCAL-INTEGRATIONS` remains the accepted compute-fabric work anchor explicitly reprioritized by the product owner. The packet adds observability required by the compute-fabric initiative without creating a second work authority.
 
 ### `ROADMAP.md`
 
-Advanced/self-hosted infrastructure remains optional and downstream of the ordinary Personal baseline. This packet adds only reusable trust evidence and does not deploy private infrastructure.
+Advanced/self-hosted infrastructure remains optional. Metrics contracts and dashboard query plans are reusable with hosted or local lanes and do not make Prometheus/Grafana/private infrastructure a Standard-path prerequisite.
 
 ### Reuse review
 
-`.github/workflows/ci.yml` already provides GitHub-hosted exact-head CI and is intentionally left unchanged. `M2-M1-026` layers a separate GitHub-hosted `workflow_run` preflight over completed CI evidence rather than replacing CI or allowing untrusted code to schedule itself directly onto a private runner.
+- `mira/service_state.py` already owns the validated secret-free `WorkerRegistryView`.
+- `mira/command_sequencer.py` already owns `ComputeJobView` and durable lifecycle truth.
+- Observability therefore consumes those views read-only; it does not persist new worker/job state or mutate either source.
+- A separate observability module is warranted rather than adding telemetry responsibilities to routing, service-state or job-control modules.
 
-### Security result
+### Privacy/cardinality result
 
-- Source trust and runner isolation are separate facts.
-- Pull-request/fork source is never private-runner eligible.
-- A successful canonical `push` to `main` may become source-trusted but still requires independent runner isolation evidence.
-- Runner-isolation evidence must be produced by a trusted deployment observer from enforced controls, never candidate/runner self-attestation.
-- The preflight workflow itself executes only on GitHub-hosted infrastructure with read-only repository permission and no repository secrets.
-- The preflight workflow does not execute the triggering candidate source to decide whether that source is trusted; policy code is checked out from the repository default branch and its policy SHA is recorded.
-- The emitted receipt is evidence only and is never itself a scheduling credential.
+Public metric labels are restricted to bounded state dimensions such as runtime kind, availability, health, identity state, compute mode, lock state, job state and aggregate statistic. Stable worker/job/principal/runtime identifiers and private host/network/material values are never metric labels or dashboard variables in this packet.
 
 ### Direction result
 
@@ -75,12 +66,12 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Run final exact-head CI after the trusted-observer hardening and documentation closeout.
-2. Re-read remote `main`, PR #141 head/mergeability and changed-file overlap.
-3. Mark PR #141 ready and merge only if exact-head CI is green, using expected-head protection.
-4. Read back merged `main` and verify post-merge CI before claiming integration verification.
-5. After M2-M1-026 closes, select the next dependency-ranked compute-fabric child packet from current Git state rather than chat history.
+1. Implement `mira/compute_observability.py` over `WorkerRegistryView` and `ComputeJobView` with deterministic Prometheus exposition and a read-only Grafana panel query plan.
+2. Add adversarial synthetic tests for deterministic ordering, heartbeat freshness/future rejection, job lifecycle aggregation, local-versus-hosted terminal mapping, queue age, terminal duration and identifier/privacy exclusion.
+3. Add one explicit `compute-observability` ownership component referencing `OBS-001`, `LOCAL-001` and direct test verification.
+4. Open a draft PR and run exact-head CI; fix only packet-scoped failures.
+5. Merge only after current-main reconciliation and exact-head green CI, then verify post-merge CI before claiming integration verification.
 
 ## Recovery protocol
 
-Resume from current remote `main`, branch `work/m2-m1-026-trusted-self-hosted-ci`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-026.md`, PR #141, and the latest branch head. Do not reopen M2-M1-021 through M2-M1-025 unless regression evidence requires it.
+Resume from current remote `main`, branch `work/m2-m1-027-compute-observability`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-027.md`, and the latest branch head. Do not reopen M2-M1-021 through M2-M1-026 unless regression evidence requires it.
