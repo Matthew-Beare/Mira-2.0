@@ -434,3 +434,267 @@ def _validate_id(value: str, field: str) -> str:
 
 def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+# Worker authentication is intentionally distinct from ordinary API client sessions.
+# A worker credential proves a worker/principal identity over an approved secure
+# channel; it does not mint an AuthenticatedPrincipal or generic MIRROR grants.
+WORKER_CHANNEL_MUTUAL_TLS = "mutual_tls"
+WORKER_CHANNEL_WIREGUARD = "wireguard"
+WORKER_CHANNEL_AUTHENTICATED_OUTBOUND = "authenticated_outbound"
+WORKER_SECURE_CHANNELS = frozenset(
+    {
+        WORKER_CHANNEL_MUTUAL_TLS,
+        WORKER_CHANNEL_WIREGUARD,
+        WORKER_CHANNEL_AUTHENTICATED_OUTBOUND,
+    }
+)
+_DEFAULT_WORKER_CHANNEL_MAX_AGE_SECONDS = 120
+
+
+class WorkerSessionValidationError(SessionValidationError):
+    """Raised when worker credential/channel configuration is malformed."""
+
+
+class WorkerSessionAuthenticationError(SessionAuthenticationError):
+    """Raised when a worker credential cannot prove a live restricted identity."""
+
+
+@dataclass(frozen=True)
+class WorkerChannelEvidence:
+    """Secret-free observation of the secure channel used by one worker request."""
+
+    channel_kind: str
+    peer_authenticated: bool
+    confidential: bool
+    observed_at: int
+
+    def __post_init__(self) -> None:
+        if self.channel_kind not in WORKER_SECURE_CHANNELS:
+            raise WorkerSessionValidationError("unsupported worker channel kind")
+        if not isinstance(self.peer_authenticated, bool):
+            raise WorkerSessionValidationError("peer_authenticated must be boolean")
+        if not isinstance(self.confidential, bool):
+            raise WorkerSessionValidationError("confidential must be boolean")
+        _worker_epoch(self.observed_at, "observed_at")
+
+
+@dataclass(frozen=True)
+class WorkerIssuedCredential:
+    """One-time restricted credential returned only to the provisioning boundary."""
+
+    session_id: str
+    worker_id: str
+    principal_id: str
+    token: str
+    issued_at: int
+    expires_at: int
+
+
+@dataclass(frozen=True)
+class WorkerSessionMetadata:
+    """Restricted worker session state; raw credential material is absent."""
+
+    session_id: str
+    token_hash: str
+    worker_id: str
+    principal_id: str
+    allowed_channels: tuple[str, ...]
+    issued_at: int
+    expires_at: int
+    revoked_at: int | None = None
+
+
+class InMemoryWorkerSessionStore:
+    """Synthetic restricted worker authentication boundary.
+
+    The store binds one opaque credential to exactly one worker/principal pair.
+    It stores only SHA-256 token verifiers, accepts only explicit secure channel
+    classes, requires fresh authenticated+confidential channel evidence, and emits
+    the existing secret-free WorkerRegistryIdentityEvidence on success.
+    """
+
+    def __init__(
+        self,
+        *,
+        clock: Callable[[], int] | None = None,
+        token_factory: Callable[[], str] | None = None,
+        session_id_factory: Callable[[], str] | None = None,
+        max_channel_age_seconds: int = _DEFAULT_WORKER_CHANNEL_MAX_AGE_SECONDS,
+    ) -> None:
+        if (
+            not isinstance(max_channel_age_seconds, int)
+            or isinstance(max_channel_age_seconds, bool)
+            or max_channel_age_seconds < 1
+        ):
+            raise WorkerSessionValidationError(
+                "max_channel_age_seconds must be a positive integer"
+            )
+        self._clock = clock or (lambda: int(time.time()))
+        self._token_factory = token_factory or (lambda: secrets.token_urlsafe(32))
+        self._session_id_factory = session_id_factory or (lambda: str(uuid4()))
+        self._max_channel_age_seconds = max_channel_age_seconds
+        self._sessions: dict[str, WorkerSessionMetadata] = {}
+        self._token_index: dict[str, str] = {}
+
+    def provision(
+        self,
+        *,
+        worker_id: str,
+        principal_id: str,
+        allowed_channels: Iterable[str],
+        ttl_seconds: int = 3600,
+    ) -> WorkerIssuedCredential:
+        worker = _worker_id(worker_id, "worker_id")
+        principal = _worker_id(principal_id, "principal_id")
+        channels = _worker_channels(allowed_channels)
+        if (
+            not isinstance(ttl_seconds, int)
+            or isinstance(ttl_seconds, bool)
+            or not 1 <= ttl_seconds <= _MAX_SESSION_TTL_SECONDS
+        ):
+            raise WorkerSessionValidationError(
+                f"ttl_seconds must be from 1 through {_MAX_SESSION_TTL_SECONDS}"
+            )
+        now = _worker_clock_value(self._clock)
+        session_id = _worker_id(self._session_id_factory(), "session_id")
+        if session_id in self._sessions:
+            raise WorkerSessionValidationError("worker session_id collision")
+        token = self._token_factory()
+        if not isinstance(token, str) or len(token) < 32 or token != token.strip():
+            raise WorkerSessionValidationError(
+                "token factory must return a trimmed high-entropy string of at least 32 characters"
+            )
+        token_hash = _hash_token(token)
+        if token_hash in self._token_index:
+            raise WorkerSessionValidationError("worker credential collision")
+        metadata = WorkerSessionMetadata(
+            session_id=session_id,
+            token_hash=token_hash,
+            worker_id=worker,
+            principal_id=principal,
+            allowed_channels=channels,
+            issued_at=now,
+            expires_at=now + ttl_seconds,
+        )
+        self._sessions[session_id] = metadata
+        self._token_index[token_hash] = session_id
+        return WorkerIssuedCredential(
+            session_id=session_id,
+            worker_id=worker,
+            principal_id=principal,
+            token=token,
+            issued_at=metadata.issued_at,
+            expires_at=metadata.expires_at,
+        )
+
+    def authenticate(
+        self,
+        *,
+        worker_id: str,
+        token: str,
+        channel: WorkerChannelEvidence,
+    ):
+        """Return secret-free verified identity evidence for the exact bound worker."""
+
+        from .service_state import WorkerRegistryIdentityEvidence
+
+        worker = _worker_id(worker_id, "worker_id")
+        if not isinstance(token, str) or not token or token != token.strip():
+            raise WorkerSessionAuthenticationError("invalid worker credential")
+        if not isinstance(channel, WorkerChannelEvidence):
+            raise WorkerSessionAuthenticationError("invalid worker channel evidence")
+        token_hash = _hash_token(token)
+        session_id = self._token_index.get(token_hash)
+        metadata = self._sessions.get(session_id) if session_id is not None else None
+        if metadata is None or not hmac.compare_digest(metadata.token_hash, token_hash):
+            raise WorkerSessionAuthenticationError("unknown worker credential")
+        if metadata.worker_id != worker:
+            raise WorkerSessionAuthenticationError("worker credential binding mismatch")
+        if metadata.revoked_at is not None:
+            raise WorkerSessionAuthenticationError("worker session is revoked")
+        now = _worker_clock_value(self._clock)
+        if now >= metadata.expires_at:
+            raise WorkerSessionAuthenticationError("worker session is expired")
+        if channel.channel_kind not in metadata.allowed_channels:
+            raise WorkerSessionAuthenticationError("worker channel is not allowed")
+        if not channel.peer_authenticated or not channel.confidential:
+            raise WorkerSessionAuthenticationError(
+                "worker channel must be authenticated and confidential"
+            )
+        observed = _worker_epoch(channel.observed_at, "observed_at")
+        if observed > now:
+            raise WorkerSessionAuthenticationError(
+                "worker channel evidence cannot be from the future"
+            )
+        if now - observed > self._max_channel_age_seconds:
+            raise WorkerSessionAuthenticationError("worker channel evidence is stale")
+        return WorkerRegistryIdentityEvidence(
+            principal_id=metadata.principal_id,
+            state="verified",
+            verified_at=_worker_utc_text(now),
+        )
+
+    def revoke(self, session_id: str) -> WorkerSessionMetadata:
+        session = _worker_id(session_id, "session_id")
+        metadata = self._sessions.get(session)
+        if metadata is None:
+            raise WorkerSessionValidationError(f"unknown worker session_id: {session}")
+        if metadata.revoked_at is None:
+            metadata = replace(
+                metadata,
+                revoked_at=_worker_clock_value(self._clock),
+            )
+            self._sessions[session] = metadata
+        return metadata
+
+    def metadata(self, session_id: str) -> WorkerSessionMetadata:
+        session = _worker_id(session_id, "session_id")
+        metadata = self._sessions.get(session)
+        if metadata is None:
+            raise WorkerSessionValidationError(f"unknown worker session_id: {session}")
+        return replace(metadata, allowed_channels=tuple(metadata.allowed_channels))
+
+
+def _worker_id(value: object, field: str) -> str:
+    if not isinstance(value, str) or not _ID_RE.fullmatch(value):
+        raise WorkerSessionValidationError(f"{field} must match {_ID_RE.pattern}")
+    return value
+
+
+def _worker_channels(values: Iterable[str]) -> tuple[str, ...]:
+    if isinstance(values, (str, bytes)):
+        raise WorkerSessionValidationError("allowed_channels must be a collection")
+    try:
+        channels = tuple(sorted(set(values)))
+    except TypeError as exc:
+        raise WorkerSessionValidationError("allowed_channels must be iterable") from exc
+    if not channels:
+        raise WorkerSessionValidationError("allowed_channels must not be empty")
+    if any(
+        not isinstance(value, str) or value not in WORKER_SECURE_CHANNELS
+        for value in channels
+    ):
+        raise WorkerSessionValidationError("allowed_channels contains unsupported channel")
+    return channels
+
+
+def _worker_epoch(value: object, field: str) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise WorkerSessionValidationError(
+            f"{field} must be a non-negative integer epoch second"
+        )
+    return value
+
+
+def _worker_clock_value(clock: Callable[[], int]) -> int:
+    try:
+        value = clock()
+    except Exception as exc:
+        raise WorkerSessionValidationError("worker clock failed") from exc
+    return _worker_epoch(value, "clock")
+
+
+def _worker_utc_text(epoch_second: int) -> str:
+    epoch = _worker_epoch(epoch_second, "epoch_second")
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(epoch))
