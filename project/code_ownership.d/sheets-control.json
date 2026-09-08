@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "production_roots": [
+    {
+      "path": "mira",
+      "profile": "python",
+      "suffixes": [".py"]
+    }
+  ],
+  "components": [
+    {
+      "id": "sheets-control-surface",
+      "responsibility": "Provider-neutral Google Sheets operational projection, controlled-edit reconciliation, presentation metadata and public-manifest sanitization contracts over canonical MIRROR state.",
+      "why_separate": "Human spreadsheet interaction must be reusable across career, finance, vehicle, inventory and operations features without turning Google row coordinates, formulas, runtime spreadsheet IDs or domain-specific business logic into canonical authority.",
+      "owned_paths": [
+        "mira/sheets_control.py"
+      ],
+      "feature_ids": [
+        "SHEETS-001"
+      ],
+      "work_ids": [
+        "SHEETS-CONTROL-001"
+      ],
+      "verification": [
+        "tests/test_sheets_control.py"
+      ]
+    }
+  ]
+}

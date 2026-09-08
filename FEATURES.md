@@ -24,6 +24,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `API-001` | Versioned authenticated MIRROR client service boundary with bounded commands, queries, synchronization and verified mutation readback | required/foundational | specified+test-supported-boundary+candidate_unmerged | AUTH-001,STORE-001,RECOVERY-002
 - `CLIENT-ANDROID-001` | Android native client adapter using the shared API, protected client credentials, offline replay-safe sync and evidence-based device capabilities | required/M2-M1 | specified+implemented+test_verified+partial | API-001,RECOVERY-002
 - `OBS-001` | Provider-neutral operational observability and read-only dashboard projection that never becomes mutable-state authority | optional/proposed | specified/legacy-architecture | AUTH-001,RECOVERY-002
+- `SHEETS-001` | Reusable Google Sheets-first human operational control-surface contract over canonical MIRROR state, supporting read-only projections, controlled editable projections, derived analytical views, reconciliation queues and generated dashboards with stable identity, validation, provenance, conflict detection and exact write-back readback while Sheets never becomes a second authority | required-direction | specified | AUTH-001,STORE-001,RECOVERY-002
 - `LOCAL-001` | Explicit local-service integration bridge with scoped network/service permissions, verified capability/readback and no assumed cloud reachability or blanket LAN trust | optional/proposed | specified/not_present | API-001,RECOVERY-002
 - `VOICE-001` | Optional voice query and command client surface using shared API authorization with explicit confirmation for consequential actions | optional/proposed | specified/not_present | API-001
 - `ONBOARD-001` | Full-replacement instruction delivery | governance | implemented/specified | -
@@ -55,7 +56,9 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `MAIL-001` | Evidence-grounded important-mail triage | required | specified | -
 - `MAIL-002` | Explicit per-message approval for outbound contact | safety-required | specified | -
 - `MAIL-003` | Explicit archive-approval queue with repeat-on-silence | required | specified | -
-- `CAREER-001` | Optional qualified job watch with realistic fit filtering | optional | specified | -
+- `CAREER-001` | Reusable Job Search lifecycle for target employers, discovered jobs, requirements, compensation/location/work arrangement, realistic qualification matching, applications, interviews, follow-ups, stale-state detection, next actions, confidence and provenance; market-specific boards are configuration rather than forks | required-direction | specified | -
+- `CAREER-PEOPLE-001` | Legitimate-provider professional People Discovery with normalization, conservative identity resolution, enrichment, relevance scoring, provenance and relationship/interactions tracking linked to employers/jobs while automated outreach remains prohibited | required-direction | implemented+candidate_unmerged | CAREER-001,RECOVERY-002
+- `CAREER-MARKET-001` | Configurable market-board composition over the reusable Job Search lifecycle, with geography/submarkets, target employers, role families, compensation/match thresholds, remote-hybrid-onsite state and optional relocation/commute/user filters; adding a market requires configuration rather than new business logic | required-direction | specified | CAREER-001
 - `ORDER-001` | Evidence-grounded order and carrier correlation | required | test_verified | -
 - `ORDER-002` | Canonical ordered-to-delivered fulfillment lifecycle with active dedupe | required | test_verified | -
 - `ORDER-003` | Explicit cancellation, return, refund and no-settlement lifecycle | required | test_verified | -
@@ -76,6 +79,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `FIN-SCENARIO-001` | Financial scenario and transition-decision engine covering spending, reserves, income changes, bounded retirement-contribution levers and career offers without consuming protected resources by default | required | implemented+private-live-partial | FIN-TRAJECTORY-001
 - `FIN-COUNTDOWN-001` | Near-goal daily countdown mode with higher-frequency days/weeks/debt/forecast-movement/pace/action emphasis when the configured escape horizon enters its countdown window | required-direction | specified/not_active | FIN-TRAJECTORY-001,FIN-DASH-001
 - `FIN-PRIVATE-REF-001` | Private Financial Escape reference-profile contract preserving exact coupled household-income, productive-work, reserve, staged-budget, payoff-order, contribution and career-transition semantics; private values never enter public Git and generic abstraction may not weaken this profile | required/private-reference | implemented+private-live-partial | FIN-GOAL-001,FIN-HISTORY-001,FIN-TRAJECTORY-001,FIN-DASH-001,FIN-SCENARIO-001
+- `FIN-OPS-001` | Transaction-level Finance Operations telemetry and reconciliation over canonical finance evidence, including controlled classifications for both drawdown category and necessary-versus-unnecessary plus fixed/variable, recurring/one-time, person/project/vehicle/property/job-search attribution, confidence, provenance, burn/runway/change/anomaly analysis and human correction without spreadsheet formulas becoming the finance authority | required-direction | specified | FIN-HISTORY-001,SPEND-001
 - `ASSET-001` | Immutable physical asset identity and idempotent acquisition | required | test_verified | RECEIPT-001
 - `FITMENT-001` | Explicit assignment, installation and fitment relationships | required | test_verified | ASSET-001
 - `ASSET-002` | Provenance-linked asset acquisition, reference and lifecycle evidence | accepted/required-direction | partial-test/specified | ASSET-001,RECEIPT-001
@@ -85,6 +89,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `KNOW-001` | Canonical durable Knowledge source identity and retained-source lifecycle | required | test_verified+scope-refined | RECOVERY-002
 - `KNOW-002` | Provenance-bound knowledge excerpts and derived facts | required/accepted | specified/not_present | KNOW-001,RECOVERY-002
 - `SPEC-001` | Provenance-locked technical specifications with exact applicability | required | test_verified | ASSET-001,KNOW-001,EVID-001
+- `VEHICLE-OPS-001` | Reusable Vehicle Operations composition over canonical vehicle/asset identity and evidence for maintenance, repairs, modifications, parts, consumables, mileage, fluids, vendors, receipts, manuals, torque/specifications, warranties and service intervals with due-state, cost/cost-per-mile and installed-part queries | required-direction | specified | ASSET-001,ASSET-002,FITMENT-001,IDENT-001,SPEC-001
 - `SHOP-001` | Active shopping intent distinct from durable purchase history | accepted | test_verified+merged-provider-readback | RECEIPT-001,FITMENT-001
 - `INV-001` | Inventory participation reuses canonical Entity UUID identity | accepted | test_verified | ASSET-001
 - `LOC-001` | Hierarchical locations with intended placement separate from observed/last-moved state | required | test_verified | INV-001
@@ -92,6 +97,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `INV-002` | Queryable household, loft and shop inventory projection | required | test_verified+merged-provider-readback | INV-001,LOC-001,IDENT-001,ASSET-003
 - `PAR-001` | Target/par quantity with opt-in under-level notification | accepted | specified | INV-001
 - `PAR-002` | Optional scale-based passive stock sensing | optional/proposed | not_present | PAR-001
+- `INV-OPS-001` | Reusable shop/household Inventory Operations composition over canonical asset/inventory/location/par state with precise hierarchical storage, quantity/unit, minimum/reorder concepts, linked vehicle/project/vendor/purchase evidence, low-stock/unknown-location/duplicate/value views and natural-language inventory queries | required-direction | specified | INV-002,PAR-001
 - `GROCERY-001` | Grocery list, pantry and freezer stock reconciliation | accepted | test_verified+merged-provider-readback | SHOP-001,INV-001,LOC-001,RECEIPT-001
 - `RECIPE-001` | Durable recipe library with structured ingredients and provenance | required | specified | KNOW-001
 - `MEAL-001` | Dated meal planning with pantry-aware ingredient-gap and shopping reconciliation | required | specified | RECIPE-001,GROCERY-001,SHOP-001
@@ -117,6 +123,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `DIST-002` | Deterministic sanitized starter/distribution from one canonical source revision | required/release | test_verified | ONBOARD-002
 - `DEV-004` | Bounded private custom skill/feature creation with declared contracts | accepted-direction | partial-test/specified | DEV-001,DEV-002,DIST-001
 - `STUDIO-001` | Integrated MIRA Studio: a guided user-facing surface for continuously improving MIRA through bounded custom features/workflows/preferences with declared contracts, preview/test/rollback, source provenance and optional sanitized sharing of improvements with other users without silently activating imported behavior | required-direction | specified | DEV-004,DIST-001,DEV-005
+- `SHEETS-PROTOTYPE-001` | Deliberate visibly non-authoritative Sheets modelling lab for trialling tables/fields/relationships/dashboards/workflows in real use, then explicitly promoting proven structures into MIRROR through reviewed schema/version migration, data reconciliation and prototype retirement without allowing shadow schemas to become accidental authority | required-direction | specified | SHEETS-001,AUTH-001,RECOVERY-002
 - `ONBOARD-006` | Browser-only nontechnical installation with no terminal fallback | required | test_verified | DIST-002,ONBOARD-002,SOURCE-001
 - `SOURCE-001` | Independent source read, source write and remote-readback capability gates | required | test_verified | DIST-001,DEV-004
 - `PROVIDER-001` | Provider-neutral AI runtime capability routing from observed evidence | required | test_verified | SOURCE-001
@@ -137,6 +144,18 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `EDU-001` | Durable education track, academic-work and deadline identity | required | specified | TASK-001,TASK-002,ROUTINE-001,CAL-007
 - `CAL-007` | Generic source-linked Calendar projection with stable identity and provider readback | accepted/required-direction | implemented+test_verified+candidate_unmerged+synthetic-readback | RECOVERY-002,PROFILE-013
 
+## Accepted modular operational composition mappings — 2026-09-08
+
+- Sheets control surfaces | `SHEETS-001`, `AUTH-001`, `STORE-001`, `STUDIO-001`, `DIST-001`, `DIST-002` | human-visible projections/reconciliation; MIRROR remains authoritative
+- Job Search core | `CAREER-001`, `TASK-001`, `TASK-002` | reusable employer/job/application/interview/follow-up lifecycle
+- People Discovery | `CAREER-PEOPLE-001`, `CAREER-001`, `MAIL-002` | legitimate discovery/enrichment/tracking; no automated outreach
+- Market boards | `CAREER-MARKET-001`, `CAREER-001`, optional `CAREER-PEOPLE-001`, `SHEETS-001` | Dallas/DFW, Austin and RTP are configuration instances, not forks
+- Finance Operations | `FIN-OPS-001`, `FIN-HISTORY-001`, `SPEND-001`, `SHEETS-001` | drawdown + necessary/unnecessary are mandatory controlled classification dimensions
+- Vehicle Operations | `VEHICLE-OPS-001`, asset/fitment/identifier/spec/evidence primitives, optional `SHEETS-001` | reusable maintenance/parts/service/cost composition
+- Inventory Operations | `INV-OPS-001`, `INV-002`, `PAR-001`, optional `SHEETS-001` | precise location, quantities, reorder and operational views
+- MIRA Operations dashboard | `OBS-001`, optional `SHEETS-001` | read-only projection of authoritative Git/MIRROR/provider/automation state
+- Sheets modelling lab | `SHEETS-PROTOTYPE-001`, `SHEETS-001`, `STUDIO-001` | prototype explicitly non-authoritative; promotion requires reviewed reconciliation/migration
+
 ## Category-F service mappings
 
 - F1 Briefs/action digest | briefs,OPS-001,OPS-003,OPS-004,RECOVERY-001,RECOVERY-002,SERVICE-001,SERVICE-002,f-01 | repair
@@ -144,7 +163,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - F3 Email triage | email_triage,MAIL-001,MAIL-002,MAIL-003,SERVICE-001,SERVICE-002,f-03 | -
 - F4 Orders/shipments | orders_shipments,ORDER-001,ORDER-002,ORDER-003,ORDER-005,SERVICE-001,SERVICE-002,f-04 | repair
 - F5 Receipt archive | receipt_archive,RECEIPT-001,RECEIPT-002,RECEIPT-003,SERVICE-001,SERVICE-002,f-05 | -
-- F6 Personal finance organization | finance,SERVICE-001,SERVICE-002,SPEND-001,PAYMENT-001,REIMB-001,SUB-001,FIN-001,FIN-GOAL-001,FIN-HISTORY-001,FIN-TRAJECTORY-001,FIN-DASH-001,FIN-SCENARIO-001,FIN-COUNTDOWN-001,FIN-PRIVATE-REF-001 | active-private-reference-vertical
+- F6 Personal finance organization | finance,SERVICE-001,SERVICE-002,SPEND-001,PAYMENT-001,REIMB-001,SUB-001,FIN-001,FIN-GOAL-001,FIN-HISTORY-001,FIN-TRAJECTORY-001,FIN-DASH-001,FIN-SCENARIO-001,FIN-COUNTDOWN-001,FIN-PRIVATE-REF-001,FIN-OPS-001 | active-private-reference-vertical+operations-telemetry
 - F7 Appointments/calendar/reminders | appointments_calendar,CAL-008,CAL-005,CAL-006,CAL-007,CAL-004,appointment_reminders,CAL-002,CAL-003,CAL-001 | repair+multisource-intake
 - F8 Administrative health organization | health_organization,HEALTH-001,SERVICE-001,SERVICE-002,medication_reminders,REMIND-001,REMIND-002 | repair
 - F9 Shopping/procurement | shopping,SHOP-001,SERVICE-001,SERVICE-002,f-09 | confirmed
@@ -156,7 +175,7 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - F15 Parent/child school coordination | family_school,SERVICE-001,SERVICE-002,EDU-001,PROFILE-012,PROFILE-013,PROFILE-004,PROFILE-005,CAL-007 | repair
 - F16 Travel/vacation/outdoor planning | travel_planning,SERVICE-001,SERVICE-002,TRIP-001,ROUTE-001,TASK-001,TASK-002,CAL-007,WEATHER-001 | confirmed
 - F17 Work-trip/route/paid-work tracking | work_trip_tracking,TRIP-001,ROUTE-001,MILE-001,MILE-002 | multi-leg-gap
-- F18 Assets/maintenance/warranties/manuals | assets,SERVICE-001,SERVICE-002,ASSET-001,ASSET-003,FITMENT-001,IDENT-001,EVID-001,ASSET-002,KNOW-001,SPEC-001 | selected-path-repair
+- F18 Assets/maintenance/warranties/manuals | assets,SERVICE-001,SERVICE-002,ASSET-001,ASSET-003,FITMENT-001,IDENT-001,EVID-001,ASSET-002,KNOW-001,SPEC-001,VEHICLE-OPS-001 | selected-path-repair+vehicle-operations
 - F19 Personal knowledge/reference library | knowledge,SERVICE-001,SERVICE-002,KNOW-001,KNOW-002,f-19,g-17,g-18 | provider-projection-repair
 - F20 Backup/disaster recovery | recovery,SERVICE-001,SERVICE-002,BACKUP-001,f-20,g-16 | new-canonical-backup-core
 - F21 Custom skill/automation builder | STUDIO-001,DEV-004,SKILL-BUILDER-001,FEATURE-SHARE-001,DIST-001,f-21 | integrated-studio-direction
@@ -202,6 +221,10 @@ Stable semantic IDs do not change with priority, provider, backend, or display o
 - `PROVIDER-002` inherits the cross-feature connection-surface invariant: provider setup is an ordinary-language/native-Connect flow with an obvious connection surface where the client controls UI, automated post-consent discovery/binding/readback, and no avoidable manual provider-resource or developer-console work. Host UI limitations may change presentation but do not export engineering work to the user.
 - `CAL-008` makes email/photo/text appointment intake explicit rather than assuming `CAL-005` identity reconciliation magically includes evidence ingestion. Extracted provider specialty/type is durable canonical provider metadata so reminders can say useful things such as “cardiologist appointment” without repeatedly re-parsing source evidence.
 - `STUDIO-001` is the user-facing continuous-improvement layer over bounded custom feature creation and controlled sharing. Studio may generate/reconcile private changes, but imported/shared behavior never silently activates.
+- `SHEETS-001` is the shared human spreadsheet projection/reconciliation boundary; Sheets may be a rich operational console but never owns canonical identity, provenance or domain truth.
+- `CAREER-MARKET-001` makes named job markets configuration instances rather than business-logic forks; People Discovery remains separately capability-gated and never implies automated outreach.
+- `FIN-OPS-001` makes drawdown category and necessary-versus-unnecessary independent mandatory finance-classification dimensions rather than conflating them into one category tree.
+- `SHEETS-PROTOTYPE-001` requires visibly non-authoritative prototypes and explicit reviewed promotion/migration, preventing useful experiments from silently becoming shadow MIRROR schemas.
 - PR #31 and independent legacy productization code remain selective salvage only. Direct client-to-provider mutation, coarse authorization, dual writable masters, silent schedulers, path identity, collapsed intended/observed location, and CI-implied live/signing/device/provider claims remain rejected.
 
 ## Audit status
