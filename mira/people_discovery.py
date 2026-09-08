@@ -5,6 +5,11 @@ scraping, or outbound-contact actions live here. The module converts grounded
 provider/public-web observations into canonical career-networking records with
 conservative entity resolution, durable provenance, relevant-experience
 estimation, and configurable relevance scoring.
+
+Relationship/contact state deliberately does not live on ``CanonicalPerson``.
+That truth is derived from canonical interaction history in ``people_tracker`` so
+MIRA cannot maintain two conflicting answers to whether a person was contacted or
+replied.
 """
 
 from __future__ import annotations
@@ -219,22 +224,14 @@ class CanonicalPerson:
     last_verified_at: str
     priority_score: int
     priority_tier: int
-    contact_status: str = "not_contacted"
-    last_contact_at: str | None = None
-    next_action: str | None = None
-    next_action_date: str | None = None
     notes: str | None = None
     provider_ids: tuple[str, ...] = ()
     provenance: tuple[FieldObservation, ...] = ()
     identity_keys: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        if self.contact_status not in {"not_contacted", "contacted", "replied", "conversation", "referral", "do_not_contact", "rejected"}:
-            raise ValidationError("invalid contact_status")
         _timestamp(self.discovered_at)
         _timestamp(self.last_verified_at)
-        if self.last_contact_at:
-            _timestamp(self.last_contact_at)
         if not 0 <= self.confidence <= 1:
             raise ValidationError("confidence must be between 0 and 1")
         if not 0 <= self.priority_score <= 100 or self.priority_tier not in {1, 2, 3, 4, 5}:
