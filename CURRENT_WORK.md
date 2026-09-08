@@ -13,9 +13,10 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 - **Branch:** `work/m2-m1-023-durable-worker-registry`.
 - **Base SHA:** `36cfc28d128c46078fa1bb082e32695a23e7f64a`.
 - **Packet:** `docs/work-packets/M2-M1-023.md`.
+- **PR:** `#138`.
 - **Owned implementation surfaces:** `mira/service_state.py`, `mira/runtime_router.py`, `tests/test_compute_worker_registry.py`, packet doc, this branch's `CURRENT_WORK.md`.
 - **Shared/high-contention surfaces:** none modified. PR #134 changes the monolithic ownership manifest; PR #135 changes ownership-fragment machinery and Sheets surfaces. This packet reuses already-owned production modules.
-- **Current status:** active; exact verified base and bounded persistence objective recorded. Implementation pending.
+- **Current status:** implementation complete on branch; CI #518 passed end-to-end on `61ebe9b597cadd7bc71304d5f994409dc6fd7b2e`. This closeout checkpoint changes the head and therefore requires one final exact-head CI before merge.
 
 ## Objective
 
@@ -25,15 +26,24 @@ Persist secret-free worker registration and heartbeat state over STORE-001-compa
 
 - M2-M1-021 routing foundation: **merged + post-merge CI verified**.
 - M2-M1-022 worker evidence/projection contract: **merged at `36cfc28d128c46078fa1bb082e32695a23e7f64a`; post-merge CI #517 PASS end-to-end**.
-- Concurrent overlap check against PR #134 / #135: **complete**.
+- Concurrent overlap check against PR #134 / #135: **complete at packet start; final reconciliation still required before merge**.
 - M2-M1-023 branch: **created from exact verified main**.
-- Dedicated STORE-001 compute-worker resource: **pending**.
-- Replay-safe registration and exact readback: **pending**.
-- Principal-bound heartbeat/update with optimistic revisions: **pending**.
-- Deterministic query/list: **pending**.
-- Runtime-router durable-view projection: **pending**.
-- Exact-head CI: **pending**.
-- Live worker/network/provider/private deployment evidence: **not claimed**.
+- Dedicated STORE-001 `compute_worker` resource/schema: **implemented**.
+- Replay-safe registration and exact readback: **implemented + test-verified**.
+- Principal-bound heartbeat/update with optimistic revisions: **implemented + test-verified**.
+- Exact heartbeat retry: **replay-safe no-op/readback implemented after review found that recomputing the newer expected revision would otherwise change the STORE-001 idempotency fingerprint**.
+- Reused heartbeat idempotency key with changed material: **fails closed through STORE-001; test-verified**.
+- Immutable principal binding and verified-identity-only persistence: **implemented + test-verified**.
+- Monotonic identity/heartbeat chronology: **implemented + test-verified**.
+- Deterministic query/list ordering: **implemented + test-verified**.
+- Strict secret-free persisted schema: **implemented + test-verified; unsupported/private extra fields fail readback validation**.
+- Runtime-router durable-view projection: **implemented + test-verified via `worker_registry_view_to_advertisement`**.
+- Provider capability authority separation: **preserved; externally supplied `ProviderCapabilitySnapshot` remains required**.
+- Stale durable heartbeat fail-closed behavior: **test-verified through existing projection/router path**.
+- CI #518 on `61ebe9b597cadd7bc71304d5f994409dc6fd7b2e`: **PASS end-to-end: compile, feature registry, lifecycle, starter distribution, work-session alignment, code ownership, Android proof/provenance/retention, Python unit tests and Workspace Apps Script tests**.
+- Final exact-head CI after this documentation checkpoint: **pending**.
+- Current-main reconciliation / PR #138 merge/readback: **pending final exact-head green**.
+- Live worker/network/provider/private deployment evidence: **not claimed and out of scope**.
 
 ## Session-start alignment verification — 2026-09-08
 
@@ -59,12 +69,13 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Extend `mira/service_state.py` with a dedicated compute-worker resource/service without importing `runtime_router`.
-2. Add a runtime-router conversion from validated registry view to the existing worker-advertisement projection contract.
-3. Add deterministic synthetic STORE-001 tests in `tests/test_compute_worker_registry.py`.
-4. Open a draft PR and obtain exact-head CI.
-5. Reconcile current `main` and concurrent PRs before merge.
+1. Update `docs/work-packets/M2-M1-023.md` with the implementation/CI evidence from head `61ebe9b597cadd7bc71304d5f994409dc6fd7b2e`.
+2. Obtain one final exact-head CI for the documentation closeout head.
+3. Re-read current remote `main`, PR #138 head/mergeability, and active overlapping PRs.
+4. If the final head remains non-destructive and CI is green, mark PR #138 ready and merge using the exact expected head SHA.
+5. Read back merged `main` and post-merge CI. Record the evidence ceiling as durable registry implementation/integration verified only; do not claim live worker transport, queue, power control, model runtime or private deployment.
+6. Select the next compute-fabric child packet by dependency/integrity ranking from the M2-M1-021 decomposition.
 
 ## Recovery protocol
 
-Resume from this file plus `docs/work-packets/M2-M1-023.md`, exact remote branch head and active PR state. M2-M1-021 and M2-M1-022 are complete and merged; do not reopen them unless regression evidence requires it.
+Resume from this file plus `docs/work-packets/M2-M1-023.md`, exact remote branch head, PR #138 and active PR state. M2-M1-021 and M2-M1-022 are complete and merged; do not reopen them unless regression evidence requires it.
