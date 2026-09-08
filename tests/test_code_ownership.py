@@ -41,11 +41,12 @@ class RepositoryFixture:
         (self.root / "tests" / "test_example.py").write_text(
             "from mira.example import VALUE\n", encoding="utf-8"
         )
+        self.production_roots = [
+            {"path": "mira", "profile": "python", "suffixes": [".py"]}
+        ]
         self.manifest = {
             "schema_version": 1,
-            "production_roots": [
-                {"path": "mira", "profile": "python", "suffixes": [".py"]}
-            ],
+            "production_roots": self.production_roots,
             "components": [
                 {
                     "id": "example",
@@ -63,6 +64,20 @@ class RepositoryFixture:
     def write_manifest(self) -> None:
         (self.root / "project" / "code_ownership.json").write_text(
             json.dumps(self.manifest, indent=2) + "\n", encoding="utf-8"
+        )
+
+    def write_fragment(self, name: str, components, *, production_roots=None) -> None:
+        directory = self.root / "project" / "code_ownership.d"
+        directory.mkdir(exist_ok=True)
+        payload = {
+            "schema_version": 1,
+            "production_roots": (
+                self.production_roots if production_roots is None else production_roots
+            ),
+            "components": components,
+        }
+        (directory / f"{name}.json").write_text(
+            json.dumps(payload, indent=2) + "\n", encoding="utf-8"
         )
 
     def validate(self):
@@ -84,6 +99,54 @@ class CodeOwnershipTests(unittest.TestCase):
         self.assertEqual(report.component_count, 1)
         self.assertEqual(report.production_artifact_count, 1)
 
+    def test_modular_fragment_can_own_new_component(self) -> None:
+        fixture = self.fixture()
+        (fixture.root / "mira" / "extra.py").write_text("EXTRA = 2\n", encoding="utf-8")
+        (fixture.root / "tests" / "test_extra.py").write_text(
+            "from mira.extra import EXTRA\n", encoding="utf-8"
+        )
+        fixture.write_fragment(
+            "extra",
+            [
+                {
+                    "id": "extra",
+                    "responsibility": "Own one modular example component.",
+                    "why_separate": "Proves components can declare ownership without rewriting the base manifest.",
+                    "owned_paths": ["mira/extra.py"],
+                    "feature_ids": ["CORE-001"],
+                    "work_ids": ["WORK-001"],
+                    "verification": ["tests/test_extra.py"],
+                }
+            ],
+        )
+
+        report = fixture.validate()
+
+        self.assertEqual(report.component_count, 2)
+        self.assertEqual(report.production_artifact_count, 2)
+
+    def test_rejects_fragment_that_widens_production_roots(self) -> None:
+        fixture = self.fixture()
+        fixture.write_fragment(
+            "bad-roots",
+            [fixture.manifest["components"][0]],
+            production_roots=[
+                {"path": "other", "profile": "python", "suffixes": [".py"]}
+            ],
+        )
+        with self.assertRaisesRegex(
+            CodeOwnershipError, "production_roots differ from base manifest"
+        ):
+            fixture.validate()
+
+    def test_rejects_duplicate_component_id_across_fragment(self) -> None:
+        fixture = self.fixture()
+        fixture.write_fragment("duplicate-id", [fixture.manifest["components"][0]])
+        with self.assertRaisesRegex(
+            CodeOwnershipError, "duplicate component id across ownership manifests"
+        ):
+            fixture.validate()
+
     def test_rejects_unowned_production_artifact(self) -> None:
         fixture = self.fixture()
         (fixture.root / "mira" / "orphan.py").write_text("ORPHAN = True\n", encoding="utf-8")
@@ -96,6 +159,14 @@ class CodeOwnershipTests(unittest.TestCase):
         duplicate["id"] = "duplicate"
         fixture.manifest["components"].append(duplicate)
         fixture.write_manifest()
+        with self.assertRaisesRegex(CodeOwnershipError, "overlapping owners"):
+            fixture.validate()
+
+    def test_rejects_overlapping_ownership_from_fragment(self) -> None:
+        fixture = self.fixture()
+        duplicate = dict(fixture.manifest["components"][0])
+        duplicate["id"] = "fragment-overlap"
+        fixture.write_fragment("overlap", [duplicate])
         with self.assertRaisesRegex(CodeOwnershipError, "overlapping owners"):
             fixture.validate()
 
