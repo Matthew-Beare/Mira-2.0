@@ -1,0 +1,56 @@
+name: Trusted Runner Gate
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out trusted policy
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Evaluate source trust
+        env:
+          EXPECTED_REPOSITORY: ${{ github.repository }}
+          EXPECTED_BRANCH: ${{ github.event.repository.default_branch }}
+          TRIGGER_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+          TRIGGER_EVENT: ${{ github.event.workflow_run.event }}
+          TRIGGER_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          TRIGGER_WORKFLOW: ${{ github.event.workflow_run.name }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          TRIGGER_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          POLICY_SHA="$(git rev-parse HEAD)"
+          RECEIPT="$RUNNER_TEMP/mira-ci-trust-receipt.json"
+          python -m project.ci_trust evaluate \
+            --expected-repository "$EXPECTED_REPOSITORY" \
+            --expected-branch "$EXPECTED_BRANCH" \
+            --expected-workflow "CI" \
+            --trigger-repository "$TRIGGER_REPOSITORY" \
+            --trigger-event "$TRIGGER_EVENT" \
+            --trigger-branch "$TRIGGER_BRANCH" \
+            --trigger-workflow "$TRIGGER_WORKFLOW" \
+            --source-sha "$SOURCE_SHA" \
+            --conclusion "$TRIGGER_CONCLUSION" \
+            --policy-sha "$POLICY_SHA" \
+            --workflow-run-id "$WORKFLOW_RUN_ID" \
+            --output "$RECEIPT"
+          cat "$RECEIPT"
+
+      - name: Retain trust preflight receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mira-ci-trust-${{ github.event.workflow_run.id }}
+          path: ${{ runner.temp }}/mira-ci-trust-receipt.json
+          if-no-files-found: error

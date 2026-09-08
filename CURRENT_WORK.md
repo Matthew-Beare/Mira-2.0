@@ -4,68 +4,70 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ## Active packet
 
-### `M2-M1-025` — Worker authentication and secure-channel boundary
+### `M2-M1-026` — Trusted self-hosted CI boundary
 
 - **Primary work:** `LOCAL-INTEGRATIONS`.
-- **Primary features:** `LOCAL-001`, `API-001`.
-- **Related invariants/features:** `RECOVERY-002`, `STORE-001`, `PROVIDER-001`.
+- **Primary features:** `LOCAL-001`, `DEV-004`.
+- **Related invariants/features:** `DEV-001`, `RECOVERY-002`, `DIST-001`, `API-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-025-worker-auth-boundary`.
-- **Base SHA:** `28dd86679cef8f69579134b7541bcc45dad9984e`.
-- **Packet:** `docs/work-packets/M2-M1-025.md`.
-- **Pull request:** `#140`.
-- **Owned implementation surfaces:** `mira/http_transport.py`, `tests/test_compute_worker_auth.py`, packet doc, branch-local `CURRENT_WORK.md`.
-- **Shared/high-contention surfaces:** none modified. `project/code_ownership.json`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md` remain untouched.
-- **Current status:** implementation and adversarial synthetic tests complete on branch; CI #530 passed end-to-end on implementation head `879cd19516ffb235355766ca1b895e2cc5dbc49e`; documentation closeout requires one final exact-head CI before merge.
+- **Branch:** `work/m2-m1-026-trusted-self-hosted-ci`.
+- **Base SHA:** `c6692b014cc17508e8334e2b524b64b428857b21`.
+- **Packet:** `docs/work-packets/M2-M1-026.md`.
+- **Pull request:** `#141`.
+- **Owned implementation surfaces:** `project/ci_trust.py`, `tests/test_ci_trust.py`, `.github/workflows/trusted-runner-gate.yml`, packet doc, branch-local `CURRENT_WORK.md`.
+- **Shared/high-contention surfaces:** no `mira/` production module, `project/code_ownership.json`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, or existing `CI` workflow modification.
+- **Current status:** deterministic trust policy, GitHub-hosted preflight workflow and adversarial tests implemented; CI #534 passed end-to-end on implementation head `e7bbdeed24485c2e9681f10c079fd97a8988e844`; trusted-observer contract is now explicit in code; final exact-head closeout CI pending.
 
 ## Objective
 
-Implement the missing provider-neutral worker authentication boundary that converts restricted credential and trusted secure-channel evidence into the existing secret-free `WorkerRegistryIdentityEvidence` contract.
+Implement a deterministic trust boundary that prevents arbitrary public fork/PR code from being treated as eligible for private self-hosted execution. Source/origin trust and runner isolation remain independent evidence. A trusted canonical-main source may advance only to `requires_isolation` until a restricted/isolated runner is separately proven; PR/fork code remains hosted-only even if an isolation claim is present.
 
-The boundary binds one credential to one worker and principal, stores only credential verifiers, enforces expiry/revocation, rejects unapproved or unauthenticated/unconfidential channel evidence, and fails closed on stale/future channel observations. It remains separate from ordinary API client grants and exposes no execution endpoint.
+`RunnerIsolationEvidence` is an internal trusted-observer contract. A later private deployment must derive it from the sandbox, identity and network controls it actually enforces. Candidate source and the prospective runner must never self-report those fields as authority for private execution.
 
-`WorkerChannelEvidence` is an internal trusted transport observation. A later live listener must derive it from the actual authenticated connection context and must never trust worker-supplied booleans/channel labels as proof.
-
-This packet does not deploy a network listener, configure mTLS/WireGuard, bind private hosts/IPs, expose raw shell/Python/inference, execute jobs, load models, control power, or claim live worker evidence.
+This packet adds a GitHub-hosted preflight evidence workflow only. It does not target, install, register, configure, wake, or execute code on any private/self-hosted runner. It does not commit private runner labels, hostnames, addresses, credentials, LAN topology, or hardware identities.
 
 ## Acceptance state
 
-- M2-M1-024 durable control plane: **merged as PR #139 at `28dd86679cef8f69579134b7541bcc45dad9984e`; post-merge CI #529 PASS**.
-- M2-M1-025 ID/branch collision check: **complete; no prior M2-M1-025 code, PR, or branch existed**.
-- Existing identity seam inspection: **complete; `runtime_router.py` consumes secret-free external identity proof and `service_state.py` persists secret-free worker registry evidence**.
-- Existing transport/auth reuse inspection: **complete; `mira/http_transport.py` is the existing provider-neutral credential/transport boundary and is owned by the API component**.
-- Worker credential/verifier boundary: **implemented on branch**.
-- Exact worker/principal binding + TTL/revocation: **implemented and synthetically tested**.
-- Explicit secure-channel allowlist + peer-authentication/confidentiality/freshness checks: **implemented and synthetically tested**.
-- Generic API grant separation: **implemented and synthetically tested**.
-- Raw worker execution route absence: **synthetically tested**.
-- Private-host/secret-free metadata shape: **synthetically tested**.
-- CI #530 on implementation head `879cd19516ffb235355766ca1b895e2cc5dbc49e`: **PASS end-to-end**.
-- Final documentation-closeout exact-head CI: **pending**.
+- M2-M1-025 worker authentication/security boundary: **merged as PR #140 at `c6692b014cc17508e8334e2b524b64b428857b21`; post-merge CI #533 PASS**.
+- M2-M1-026 ID/branch collision check: **complete; no prior M2-M1-026 branch or PR existed**.
+- Existing CI inspection: **complete; current CI is GitHub-hosted only, `contents: read`, with no self-hosted job**.
+- Existing self-hosted trust implementation search: **complete; no existing source/origin/runner trust gate found**.
+- Compute-fabric child ordering: **confirmed from `M2-M1-021`; Trusted self-hosted CI is child #4 after worker security**.
+- Deterministic source-trust and runner-isolation policy: **implemented on branch**.
+- GitHub-hosted preflight receipt workflow: **implemented on branch; never targets `self-hosted` and never executes triggering candidate source to determine trust**.
+- Adversarial trust-policy and workflow-shape tests: **PASS in full repository CI #534 on implementation head `e7bbdeed24485c2e9681f10c079fd97a8988e844`**.
+- Trusted-observer provenance rule for `RunnerIsolationEvidence`: **explicitly documented in production policy code after CI #534; no scheduling behavior added**.
+- Final closeout exact-head CI: **pending**.
 - Merge/post-merge verification: **pending**.
-- Live worker/network/private deployment evidence: **not claimed and out of scope**.
+- Live private runner evidence: **not claimed and out of scope**.
 
 ## Session-start alignment verification — 2026-09-08
 
 ### `FEATURES.md`
 
-Reviewed from verified main. `LOCAL-001` requires scoped network/service permissions, verified capability/readback, and no assumed cloud reachability or blanket LAN trust. `API-001` already owns the authenticated provider-neutral client/service boundary. The packet adds the missing restricted worker-auth seam without changing Standard MIRA into a local-infrastructure-dependent product.
+`LOCAL-001` remains the accepted optional local/private integration bridge; `DEV-004` and `DEV-001` support bounded Git-backed development and repository authority. The packet strengthens the development trust boundary without making local infrastructure a Standard-path dependency.
 
 ### `BACKLOG.md`
 
-Reviewed from verified main. `LOCAL-INTEGRATIONS` is the existing accepted anchor for `LOCAL-001` and was explicitly reprioritized by the product owner through the compute-fabric initiative. M2-M1-025 continues that accepted work rather than inventing a second network/security backlog authority.
+`LOCAL-INTEGRATIONS` remains the existing accepted anchor explicitly reprioritized by the product owner for the compute-fabric initiative. No new backlog identity is required for this bounded child packet.
 
 ### `ROADMAP.md`
 
-Reviewed from verified main. Local/self-hosted infrastructure remains an Advanced optional lane; the ordinary Personal baseline requires no server/network administration. This packet therefore defines reusable authentication semantics only and does not make local compute a Standard-path prerequisite.
+Advanced/self-hosted infrastructure remains optional and downstream of the ordinary Personal baseline. This packet adds only reusable trust evidence and does not deploy private infrastructure.
 
 ### Reuse review
 
-`mira/http_transport.py` already owns bounded transport authentication, hashed bearer verifiers, expiry/revocation and HTTPS enforcement for ordinary clients. `mira/runtime_router.py` and `mira/service_state.py` already define the downstream secret-free worker identity contracts. M2-M1-025 extends the existing transport/auth surface rather than create a parallel authentication service.
+`.github/workflows/ci.yml` already provides GitHub-hosted exact-head CI and is intentionally left unchanged. `M2-M1-026` layers a separate GitHub-hosted `workflow_run` preflight over completed CI evidence rather than replacing CI or allowing untrusted code to schedule itself directly onto a private runner.
 
-### Collision/concurrency review
+### Security result
 
-PR #134 owns People Discovery plus the monolithic ownership manifest. PR #135 owns Sheets plus ownership-fragment machinery. Neither overlaps `mira/http_transport.py` and the dedicated worker-auth test surface. The monolithic ownership manifest is not modified.
+- Source trust and runner isolation are separate facts.
+- Pull-request/fork source is never private-runner eligible.
+- A successful canonical `push` to `main` may become source-trusted but still requires independent runner isolation evidence.
+- Runner-isolation evidence must be produced by a trusted deployment observer from enforced controls, never candidate/runner self-attestation.
+- The preflight workflow itself executes only on GitHub-hosted infrastructure with read-only repository permission and no repository secrets.
+- The preflight workflow does not execute the triggering candidate source to decide whether that source is trusted; policy code is checked out from the repository default branch and its policy SHA is recorded.
+- The emitted receipt is evidence only and is never itself a scheduling credential.
 
 ### Direction result
 
@@ -73,12 +75,12 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Run final exact-head CI after this documentation closeout.
-2. Re-read remote `main`, PR #140 head/mergeability and changed-file overlap.
-3. Mark PR #140 ready and merge only if exact-head CI is green, using expected-head protection.
+1. Run final exact-head CI after the trusted-observer hardening and documentation closeout.
+2. Re-read remote `main`, PR #141 head/mergeability and changed-file overlap.
+3. Mark PR #141 ready and merge only if exact-head CI is green, using expected-head protection.
 4. Read back merged `main` and verify post-merge CI before claiming integration verification.
-5. After M2-M1-025 closes, select the next dependency-ranked compute-fabric child packet from current Git state rather than chat history.
+5. After M2-M1-026 closes, select the next dependency-ranked compute-fabric child packet from current Git state rather than chat history.
 
 ## Recovery protocol
 
-Resume from current remote `main`, branch `work/m2-m1-025-worker-auth-boundary`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-025.md`, PR #140, and the branch head. Do not reopen M2-M1-021 through M2-M1-024 unless regression evidence requires it.
+Resume from current remote `main`, branch `work/m2-m1-026-trusted-self-hosted-ci`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-026.md`, PR #141, and the latest branch head. Do not reopen M2-M1-021 through M2-M1-025 unless regression evidence requires it.
