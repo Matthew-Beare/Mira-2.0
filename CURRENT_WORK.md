@@ -13,9 +13,9 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-015-financial-canonical-audit`.
 - **Base SHA:** `5075a23c0a3513118b0dceaf711cd041b1d3798a`.
-- **Latest sanitized packet checkpoint:** `89d65fb0a705c7d00b9fd7e60162946b42cf25ab`.
+- **Latest sanitized packet checkpoint:** `e8f19ca4dc8caab8afcd6083601f335d32213e07`.
 - **Packet:** `docs/work-packets/M2-M1-015.md`.
-- **Current status:** customer-priority override active; private-live canonical finance repair is in progress. One-authority spending integration is implemented and read back; broader retirement/confidence/cross-source evidence work remains open.
+- **Current status:** customer-priority override active; private-live canonical finance repair is in progress. One-authority spending integration plus retirement-lever/confidence repair are implemented and read back; cross-source evidence reconciliation remains open.
 
 ## Objective
 
@@ -44,10 +44,10 @@ Public Git contains only generalized product/engineering semantics and sanitized
 - Spending insights query canonical ledger rather than review input: **verified**; exact readback found zero review-sheet references in the insights projection.
 - Unknown versus explicit no-allowance semantics: **implemented and read back**.
 - Deterministic allowance debit-key uniqueness: **test-verified at zero duplicates**.
-- Person-specific allowance debit live example and matched refund/reversal proof: **pending**.
-- Public branch checkpoint for the above: **in progress until remote branch readback and merge/checkpoint reconciliation**.
-- Retirement-contribution payoff lever removed: **pending**.
-- Confidence semantics repaired: **pending**.
+- Retirement-contribution payoff lever removed: **private-live readback verified**; obsolete controls, contribution-rate scenarios, broken support formulas and retirement-cut recommendations are gone from the active payoff presentation.
+- Factual retirement assets retained only as asset/net-worth evidence: **private-live readback verified**.
+- Confidence semantics repaired: **private-live readback verified**; trajectory maturity and evidence coverage are separate concepts and no blanket confidence label remains on the main decision surfaces.
+- Person-specific allowance debit live example and matched refund/reversal proof: **pending supported live classification/reversal; do not invent an owner assignment**.
 - Connected-account comprehensive reconciliation: **pending**.
 - Supplied mail-archive end-to-end disposition audit: **pending**.
 - Connected-mail dedupe/reconciliation: **pending**.
@@ -58,13 +58,12 @@ Public Git contains only generalized product/engineering semantics and sanitized
 
 ## Exact next action / resume point
 
-1. Remotely verify the active branch checkpoint containing the one-authority spending repair and this CURRENT_WORK reconciliation.
-2. Remove the obsolete retirement-contribution reduction controls/scenarios/charts/formula dependencies from the private Financial Escape projection while retaining factual retirement assets as asset/net-worth evidence.
-3. Replace the blanket finance confidence label with precise source/data evidence and trajectory-maturity semantics.
-4. Prove replay-safe person-specific allowance debits from canonical positive economic events and a matched economic reversal restoring the allocation projection, without mutating provider cash.
-5. Parse and disposition the supplied mail archive end-to-end; reconcile transactional evidence against connected account/card activity, current connected mail and the available marketplace purchase archive.
-6. Update canonical receipt/evidence/entity relations and link supported durable physical acquisitions into the asset model with exact identifiers/manual/warranty evidence where available.
-7. Read back exact private provider/workbook state, record sanitized evidence/counts in the packet, reconcile lifecycle/backlog state and only then close or split remaining runtime work.
+1. Remotely verify the active branch checkpoint containing the retirement/confidence repair and this CURRENT_WORK reconciliation.
+2. Begin bounded cross-source reconciliation with connected-account/card coverage and freshness, then match money movement to canonical economic events without creating duplicate spend.
+3. Parse and disposition the supplied mail archive end-to-end; reconcile transactional evidence against connected account/card activity, current connected mail and the available marketplace purchase archive.
+4. Prove replay-safe person-specific allowance debits and a matched economic reversal when supported live owner/reversal evidence becomes available; do not guess an owner merely to satisfy the test.
+5. Update canonical receipt/evidence/entity relations and link supported durable physical acquisitions into the asset model with exact identifiers/manual/warranty evidence where available.
+6. Read back exact private provider/workbook state, record sanitized evidence/counts in the packet, reconcile lifecycle/backlog state and only then close or split remaining runtime work.
 
 ## Displaced packet checkpoint
 
