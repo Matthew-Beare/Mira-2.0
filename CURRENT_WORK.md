@@ -8,68 +8,72 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 
 - **Primary work:** `FIN-CANON-AUDIT-001`.
 - **Primary features:** `MIRROR-001`, `AUTH-001`, `RECEIPT-001`, `ASSET-001`.
-- **Related invariants/features:** `MIRROR-001`, `AUTH-001`, `RECEIPT-001`, `RECEIPT-002`, `ASSET-001`, `ASSET-002`, `IDENT-001`, `EVID-001`, `RECOVERY-002`.
-- **Related work:** `ASSET-SERVICE-001`, `FINANCE-CONNECTOR-001`, `SPEND-ROLLUP-001`, `FIN-EVIDENCE-RECONCILE-001`.
+- **Related features/work:** `RECEIPT-002`, `ASSET-002`, `IDENT-001`, `EVID-001`, `ASSET-SERVICE-001`, `FINANCE-CONNECTOR-001`, `SPEND-ROLLUP-001`, `FIN-EVIDENCE-RECONCILE-001`, `RECOVERY-002`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-015-financial-canonical-audit`.
 - **Base SHA:** `5075a23c0a3513118b0dceaf711cd041b1d3798a`.
-- **Latest sanitized packet checkpoint:** `e8f19ca4dc8caab8afcd6083601f335d32213e07`.
+- **Latest sanitized audit checkpoint:** `2452d3c6c64fb097ebc4125d92b1e009af9086bc`.
 - **Packet:** `docs/work-packets/M2-M1-015.md`.
-- **Current status:** customer-priority override active; private-live canonical finance repair is in progress. One-authority spending integration plus retirement-lever/confidence repair are implemented and read back; cross-source evidence reconciliation remains open.
+- **Latest audit record:** `docs/work-packets/M2-M1-015-audit-checkpoint-2026-09-07.md`.
+- **Current status:** private-live one-authority spending, retirement-lever removal, confidence repair, main-dashboard verified-net-worth visibility, current-window transaction identity reconciliation, evidence dedup/disposition invariants and bounded connected-Gmail incremental ingestion are verified. Marketplace reconciliation, full raw-mail archive disposition, pre-2026 projection backfill, allowance reversal proof and evidence-dependent asset enrichment remain open.
 
 ## Objective
 
-Make the private Financial Escape system a faithful projection over one canonical MIRROR finance/evidence/entity model, remove obsolete retirement-contribution acceleration modelling, make confidence reporting dimension-specific, activate replay-safe allowance-owner debits, and reconcile the currently available connected-account, mail, marketplace, receipt/refund and asset evidence without double-counting economic events.
+Make Financial Escape a faithful projection over one canonical MIRROR finance/evidence/entity model; reconcile currently available account, mail, marketplace, receipt/refund and asset evidence without duplicate economic effects; and leave every unresolved coverage gap explicit rather than guessed.
 
-Public Git contains only generalized product/engineering semantics and sanitized verification claims. Private amounts, account/provider identifiers, email/receipt contents, order identifiers and live document identifiers stay outside the public repository.
+Public Git contains only generalized semantics and sanitized verification claims. Private amounts, account/provider identifiers, email/receipt contents, order identifiers and live document identifiers stay outside the public repository.
 
 ## Required invariants
 
-- One canonical authority per mutable data class; spreadsheets/charts/review forms are projections or bounded input surfaces, never parallel writable truth stores.
+- One canonical authority per mutable data class; dashboards/charts/review forms are projections or bounded input surfaces, never parallel writable truth stores.
 - Provider-observed transactions represent money movement. Orders, receipts, shipments, cancellations, returns and refund notices are evidence and must not independently create duplicate spend.
-- Refunds change net economic spend only when supported by the canonical economic reversal/credit evidence.
+- Refunds change net economic spend only when supported by canonical economic reversal/credit evidence.
 - Explicit user corrections control semantic classification; unknown remains unknown when evidence is insufficient.
-- Category/purpose, necessity, and allowance are independent facts. Blank allowance input resolves to unknown; only explicit `NO ALLOWANCE` can represent no allowance, while `MATTHEW`/`JESSICA` are person assignments.
-- Retirement account value may remain factual asset/net-worth evidence, but Financial Escape must not model contribution reduction as a payoff lever.
+- Category/purpose, necessity and allowance are independent facts. Blank allowance is unknown; only explicit `NO ALLOWANCE` means no allowance, while `MATTHEW`/`JESSICA` are person assignments.
+- Retirement value may remain factual asset/net-worth evidence; contribution reduction is not a payoff lever.
 - Allowance allocation is a derived earmark over canonical events; it must not mutate provider cash and must be replay/dedup safe.
-- Durable physical acquisitions link to the existing canonical asset/evidence model with exact supported identifiers; model/serial/manual/warranty facts are never guessed.
+- Live Gmail and historical Takeout feed the same canonical evidence index. Source overlap is a dedupe problem, never a second purchase.
+- Explicit non-economic/support evidence outranks incidental order numbers or amount-like text during evidence disposition.
+- Durable physical acquisitions link to the existing canonical asset/evidence model only with supported identifiers; model/serial/manual/warranty facts are never guessed.
 - Continuous reconciliation is not claimed unless an actual scheduler/runtime is implemented and live-verified.
 
 ## Acceptance state
 
-- Customer priority override: **accepted**.
-- Governance packet specified: **satisfied** (`M2-M1-015`).
-- One-authority spending integration: **private-live readback verified**.
-- Spending review is a bounded input surface, not analytics authority: **verified**.
-- Spending insights query canonical ledger rather than review input: **verified**; exact readback found zero review-sheet references in the insights projection.
-- Unknown versus explicit no-allowance semantics: **implemented and read back**.
+- Governance packet specified: **satisfied**.
+- One-authority spending integration: **private-live verified**.
+- Spending review as bounded input surface: **verified**.
+- Spending insights read canonical ledger rather than review input: **verified**.
+- Unknown versus explicit no-allowance semantics: **verified**.
 - Deterministic allowance debit-key uniqueness: **test-verified at zero duplicates**.
-- Retirement-contribution payoff lever removed: **private-live readback verified**; obsolete controls, contribution-rate scenarios, broken support formulas and retirement-cut recommendations are gone from the active payoff presentation.
-- Factual retirement assets retained only as asset/net-worth evidence: **private-live readback verified**.
-- Confidence semantics repaired: **private-live readback verified**; trajectory maturity and evidence coverage are separate concepts and no blanket confidence label remains on the main decision surfaces.
-- Person-specific allowance debit live example and matched refund/reversal proof: **pending supported live classification/reversal; do not invent an owner assignment**.
-- Connected-account comprehensive reconciliation: **pending**.
-- Supplied mail-archive end-to-end disposition audit: **pending**.
-- Connected-mail dedupe/reconciliation: **pending**.
-- Marketplace purchase/order/refund reconciliation: **pending**.
-- Receipt/evidence relation repair: **pending**.
+- Retirement-contribution payoff lever removed: **private-live verified**.
+- Factual retirement assets retained only as asset/net-worth evidence: **private-live verified**.
+- Confidence semantics repaired: **private-live verified**.
+- Verified net worth exposed in the Dashboard one-glance panel: **private-live verified**; it references the existing verified-net-worth calculation and creates no second authority.
+- Current 2026 transaction identity reconciliation: **integration-verified**; provider transaction identities equal MIRROR transaction identities and transaction→economic-event relations in the active projection window. Economic-event count may be lower because supported reversals collapse into original event lineage.
+- Pre-2026 provider-history projection: **open historical backfill**; provider history exists but is not yet represented in the current event projection.
+- Canonical evidence dedup invariant: **test-verified**; current index has zero duplicate dedup keys.
+- Indexed evidence disposition coverage: **test-verified**; every currently indexed evidence row has one deterministic disposition and the disposition gap is zero.
+- Connected-Gmail incremental evidence path: **bounded live verification earned**; current new evidence is admitted to the same Receipt Index and explicit non-economic commerce evidence does not create spend.
+- Raw supplied mail archive end-to-end disposition: **pending**; indexed evidence does not yet prove disposition of every raw mailbox message.
+- Marketplace purchase/order/refund reconciliation: **pending and next**.
+- Person-specific allowance debit plus matched refund/reversal proof: **pending supported live evidence; do not invent an owner assignment**.
 - Durable acquisition asset linkage/manual/warranty enrichment: **pending evidence-dependent**.
-- Sanitized cross-source audit report/readback: **pending**.
+- Sanitized final cross-source report/readback: **pending**.
 
 ## Exact next action / resume point
 
-1. Remotely verify the active branch checkpoint containing the retirement/confidence repair and this CURRENT_WORK reconciliation.
-2. Begin bounded cross-source reconciliation with connected-account/card coverage and freshness, then match money movement to canonical economic events without creating duplicate spend.
-3. Parse and disposition the supplied mail archive end-to-end; reconcile transactional evidence against connected account/card activity, current connected mail and the available marketplace purchase archive.
-4. Prove replay-safe person-specific allowance debits and a matched economic reversal when supported live owner/reversal evidence becomes available; do not guess an owner merely to satisfy the test.
-5. Update canonical receipt/evidence/entity relations and link supported durable physical acquisitions into the asset model with exact identifiers/manual/warranty evidence where available.
-6. Read back exact private provider/workbook state, record sanitized evidence/counts in the packet, reconcile lifecycle/backlog state and only then close or split remaining runtime work.
+1. Reconcile the available marketplace purchase archive order-by-order against the canonical Receipt Index and provider-backed economic events without creating spend from order evidence alone.
+2. Record cancelled, returned, refunded, unmatched and ambiguous marketplace lineages explicitly. Only provider-backed credits may reverse economic spend.
+3. Recover or reconstruct the raw-mail parser/exclusion audit trail so every supplied archive message can receive a deterministic disposition, or record a deliberate durable coverage boundary if the raw source cannot be recovered.
+4. Prove a person-specific allowance debit and matched reversal only when supported live owner/reversal evidence exists.
+5. Link supported durable acquisitions into the canonical asset/evidence graph with exact identifiers/manual/warranty evidence where available.
+6. Read back exact private provider/workbook state, record sanitized counts/invariants, reconcile lifecycle/backlog state and only then close or split remaining runtime work.
 
 ## Displaced packet checkpoint
 
 ### `M2-M1-012` — Android representative-device execution proof
 
-`M2-M1-012` is intentionally displaced, not closed. Its previous evidence and hold rule remain valid.
+`M2-M1-012` is intentionally displaced, not closed.
 
 - **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
 - **Stable pre-Financial-Escape checkpoint:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
@@ -92,26 +96,8 @@ Hold until a credible authenticated provider-access recovery signal exists. Then
 8. only then run one phone test with the already-installed exact proof APK;
 9. if it still fails, checkpoint the exact live result before any app-side OAuth diagnosis.
 
-Until that recovery signal exists: do not rerun the phone flow, do not infer provider configuration, do not create/alter a Cloud project or OAuth client, do not change Picker state, and do not burn another Work-mode attempt speculatively.
-
-## Session-start alignment verification — 2026-09-07
-
-### `FEATURES.md`
-
-Reviewed before implementation. The active packet is grounded in the canonical one-authority MIRROR model, receipt/evidence provenance, canonical asset acquisition/identity semantics, and recovery/readback requirements. It does not create a finance-specific second authority or silently broaden provider permissions.
-
-### `BACKLOG.md`
-
-Reviewed before implementation. `FIN-CANON-AUDIT-001` is the active integrity blocker. Repeatable future evidence reconciliation is separately queued as `FIN-EVIDENCE-RECONCILE-001`; it is not being misrepresented as already-live background execution.
-
-### `ROADMAP.md`
-
-Reviewed before implementation. The customer-priority financial integrity repair is a bounded interruption with the exact Android M2-M1 resume point preserved. The Personal Google product direction, shared canonical state, and ordinary-user architecture remain unchanged.
-
-### Direction result
-
-**ALIGNED.** `M2-M1-015` is the sole active packet. It repairs private-live projections and reconciles evidence into existing canonical MIRROR semantics without changing the long-term authority model or erasing the displaced Android checkpoint.
+Until that recovery signal exists: do not rerun the phone flow, infer provider configuration, create/alter a Cloud project or OAuth client, change Picker state, or burn another Work-mode attempt speculatively.
 
 ## Recovery protocol
 
-Start by reading this file, `docs/work-packets/M2-M1-015.md`, and remote `main`. Verify the active packet/branch/head before writes. If `M2-M1-015` is later displaced, checkpoint its exact audit/reconciliation cursor and unresolved exception set before switching. To resume Android, use only the `M2-M1-012` exact resume point above and its provider-inspection runbook.
+Start by reading this file, `docs/work-packets/M2-M1-015.md`, `docs/work-packets/M2-M1-015-audit-checkpoint-2026-09-07.md`, and remote branch head. Verify packet/branch/head before writes. If `M2-M1-015` is displaced, checkpoint the exact reconciliation cursor and unresolved exception set first. To resume Android, use only the `M2-M1-012` resume point above and its provider-inspection runbook.
