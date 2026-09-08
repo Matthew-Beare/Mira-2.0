@@ -1,6 +1,6 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This branch records exactly one active packet. Other MIRA packets may progress independently on isolated branches under `docs/CONCURRENT_WORK_POLICY.md`.
+Git is authoritative. This branch records exactly one active/recovery packet. Other MIRA packets may progress independently on isolated branches under `docs/CONCURRENT_WORK_POLICY.md`.
 
 ## Active packet
 
@@ -13,31 +13,21 @@ Git is authoritative. This branch records exactly one active packet. Other MIRA 
 - **Branch:** `work/m2-m1-019-people-discovery`.
 - **Base SHA:** `738ebf082cd3921a0ba807604acabfa756f40c1d`.
 - **Packet:** `docs/work-packets/M2-M1-019.md`.
-- **Owned implementation surfaces:** People Discovery domain/provider/tracker modules and tests; packet-specific synthetic fixtures/docs.
+- **Owned implementation surfaces:** People Discovery domain/provider/tracker/Sheets-projection modules and tests; packet-specific synthetic fixtures/docs.
 - **Shared/high-contention surfaces:** `FEATURES.md`, `BACKLOG.md`, `project/code_ownership.json`, branch-local `CURRENT_WORK.md`; reconcile against then-current `main` immediately before merge.
-- **Current status:** implementation active. Candidate normalization/identity/scoring/provenance core, canonical relationship interaction/reply tracking, synthetic tests and a bounded search-only People Data Labs adapter are implemented on this branch. Complete Google tracker persistence/readback, provider credential/live proof and final lifecycle reconciliation remain open. No live third-party people data has been written and no outbound-contact action exists.
+- **Current status:** durable implementation checkpoint, temporarily displaced by the customer-prioritized reusable Sheets operational-control foundation packet. Candidate normalization/identity/scoring/provenance, canonical relationship interaction/reply tracking, bounded search-only People Data Labs adapter, Google tracker projection, synthetic tests, canonical backlog registration and code ownership are implemented. Exact-head CI reaches Python tests but has one scoring failure described below. No live third-party people data has been written and no outbound-contact action exists.
 
 ## Objective
 
-Deploy a first-class MIRA job-seeking feature that repeatedly discovers useful professional contacts at active target employers, with Austin and Research Triangle/Raleigh-Durham as the initial markets and WGU plus networking/cloud/infrastructure relevance strongly prioritized. Normalize, deduplicate, score and retain provenance for candidates; maintain a Google Sheets user-facing tracker; track the user's manual outreach and incoming replies/follow-ups; and never perform automated outreach.
+Deploy a first-class MIRA job-seeking feature that repeatedly discovers useful professional contacts at active target employers, with configurable market/employer/role priorities; normalize, deduplicate, score and retain provenance; maintain a Google Sheets human-facing tracker; track manual outreach and incoming replies/follow-ups; and never perform automated outreach.
 
-The feature is part of the public MIRA codebase and must remain publishable in sanitized form. Public Git contains implementation, schemas, tests and synthetic fixtures only. Private third-party people data, provider credentials, live spreadsheet identifiers, actual message contents and personal job-search state remain outside the public repository.
+The feature must remain publicly sanitizable. Public Git contains implementation, schemas, tests and synthetic fixtures only. Private third-party people data, provider credentials, live spreadsheet identifiers, actual message contents and personal job-search state remain outside the repository.
 
-Do not name or frame this feature as "2-hour job search", `2HJS`, or similar shorthand. It is MIRA career / People Discovery functionality.
+Do not name or frame this feature as "2-hour job search", `2HJS`, or similar shorthand. It is MIRA Career / People Discovery functionality.
 
 ## Relationship and messaging semantics
 
-MIRA must answer ordinary-language questions such as:
-
-- Have I contacted this person?
-- Which channel did I use?
-- When was the last interaction?
-- Did they reply?
-- Am I waiting on them or do I owe a follow-up?
-- Is there an active conversation or referral?
-- Which company/job was the interaction tied to?
-
-Canonical interaction history records channel, direction, kind, timestamp, outcome, optional private summary/source reference, reply linkage and follow-up due date. Relationship state is derived from history rather than maintained as an independent truth column.
+Canonical interaction history records channel, direction, kind, timestamp, outcome, optional private summary/source reference, reply linkage and follow-up due date. Relationship state is derived from history rather than maintained as an independent truth column. MIRA must be able to answer whether a person has been contacted, which channel was used, the last interaction, whether they replied, whether the user is awaiting a reply or owes a follow-up, and which company/job the interaction concerned.
 
 Implemented branch module: `mira/people_tracker.py`.
 
@@ -48,67 +38,71 @@ The tracker exposes no `send`, `send_message`, `send_email`, `connect`, `post`, 
 - No automated email, LinkedIn connection request/message, comment, post, or other contact action.
 - No unauthorized LinkedIn scraping, login automation, or browser scraping.
 - LinkedIn URLs may be stored when returned by legitimate providers/public sources.
-- One logical MIRROR authority. The Google tracker is a projection/bounded input surface, not a second conflicting truth store.
+- One logical MIRROR authority. Google Sheets is a projection/bounded controlled-input surface, not a second conflicting truth store.
 - Public Git contains synthetic examples only; private people/message/provider/workbook state stays private.
 - Uncertain identity matches fail closed rather than silently merging people.
 - The feature must be sanitizable and publicly publishable without leaking customer/provider data.
 
 ## Provider decision state
 
-Official documentation was inspected for People Data Labs and Apollo during packet setup.
-
-- People Data Labs Person Search remains the leading first adapter because it supports the strongest WGU-first search dimensions: current employer, education/school, title, location, skills, work history and LinkedIn URL.
-- A bounded injected-credential PDL search adapter is now implemented with explicit per-run request/record caps, a WGU-first query phase and a broader target-employer fallback phase. It exposes search only.
-- Apollo remains a replaceable secondary adapter and is not required before independent implementation can continue.
-- The user does **not** need to connect both providers. Independent engineering proceeds first.
-- If a provider credential remains the only external boundary after implementation/CI, request the smallest single action required for the first live proof, expected to be one PDL credential/account path unless later evidence changes the adapter choice.
+- People Data Labs Person Search remains the leading first adapter for the live proof because it supports employer, education/school, title, location, skills, work-history and profile dimensions needed by the current discovery strategy.
+- A bounded injected-credential PDL search adapter is implemented with explicit per-run request/record caps, a WGU-first query phase and broader target-employer fallback phase. It exposes search only.
+- Apollo remains an optional replaceable secondary adapter and is not required before independent implementation can continue.
+- The user does not need to connect both providers.
+- If a provider credential remains the only external boundary after implementation/CI, request the smallest single action required for the first live proof.
 
 ## Acceptance state
 
 - Unique packet/branch isolated from other MIRA work: **satisfied**.
-- Existing Sheets/canonical-state architecture inspected: **reusable structured-state and Google Sheets paths confirmed; tracker persistence still open**.
-- Provider-neutral candidate model: **implemented**.
-- Candidate normalization: **implemented; synthetic tests added; CI pending latest head**.
-- Entity resolution/dedupe: **implemented; synthetic tests added; CI pending latest head**.
-- Relevance scoring with WGU/network/cloud/infrastructure weighting: **implemented; synthetic tests added; CI pending latest head**.
-- Provenance retention: **implemented; synthetic tests added; CI pending latest head**.
-- Canonical manual interaction history: **implemented**.
-- Derived contacted/replied/awaiting-reply/follow-up state: **implemented and hardened for timezone/reply-cycle/follow-up ordering**.
+- Existing Sheets/canonical-state architecture inspected: **satisfied; reusable structured-state and Google Sheets gateway confirmed**.
+- Provider-neutral candidate model/normalization: **implemented**.
+- Conservative entity resolution/dedupe: **implemented**.
+- Relevance scoring with configurable employer/role/technical/WGU weighting: **implemented; one current-role relevance defect remains**.
+- Provenance retention: **implemented**.
+- Canonical manual interaction history and derived reply/follow-up state: **implemented**.
 - No outbound-send API in relationship tracker/provider: **implemented with synthetic tests**.
-- Google tracker schema with `COMPANIES` / `PEOPLE` / `INTERACTIONS` / `JOBS`: **implemented as provider-neutral projection schema; complete persistence/readback pending**.
-- Bounded People Data Labs provider adapter: **implemented; synthetic tests added; credential/live proof pending**.
+- Google tracker schema/projection for `COMPANIES` / `PEOPLE` / `INTERACTIONS` / `JOBS`: **implemented with stable-ID upsert, duplicate-ID fail-closed behavior, zero-write identical replay and exact post-write readback tests; live Sheet proof pending**.
+- Bounded People Data Labs provider adapter: **implemented; credential/live proof pending**.
+- Canonical backlog registration + production code ownership: **implemented on branch**.
 - Real provider operational: **pending credential/preflight/live proof**.
-- Repeat discovery update proof: **synthetic core coverage added; live proof pending**.
-- Exact live tracker readback: **pending**.
-- Manual interaction-state live write/readback: **pending**.
-- Public sanitization discipline: **implemented structurally; final branch audit pending**.
-- Relevant tests/baseline gates: **tests added; prior CI failed at work-session alignment before Python tests; governance repair in progress**.
-- Remote Git/CI completion proof: **pending**.
+- Exact live tracker readback and manual interaction-state live proof: **pending**.
+- Public sanitization audit: **pending final branch audit**.
+- Exact-head CI: **failing one Python test on head `ac8f06b21160c9d25f6dabbfb3e65d575cb00dfe`; all earlier CI gates pass through code ownership/Android build**.
+
+## Exact CI defect / resume point
+
+Exact-head CI run `34183687209` reaches the Python test suite and reports 491/492 passing. The only failure is:
+
+`PeopleDiscoveryCoreTests.test_unrelated_executive_is_penalized_not_promoted_by_company_alone`
+
+The synthetic candidate is currently `Chief Marketing Officer` with marketing-only current skills but a historical `Network Technician` role. `_technical_strength()` currently treats any historical technical title as current technical relevance, preventing the expected `weak technical relevance` penalty.
+
+**Exact repair:** change current technical-relevance scoring so current-role/current-skill evidence determines the `technical_relevance` factor/penalty; historical technical roles remain available for experience/progression/context but do not by themselves promote an unrelated current executive role. Re-run direct People Discovery tests, then exact-head CI.
 
 ## Exact next action / resume point
 
-1. Register `PEOPLE-DISCOVERY-001` in canonical `BACKLOG.md` and keep this packet aligned to existing `CAREER-001`; refine stable career feature semantics before merge without inventing a parallel feature authority.
-2. Re-run exact-head CI and repair any actual Python/code-ownership failures now that the work-session alignment gate can proceed.
-3. Complete canonical People Discovery persistence and Google tracker writer/readback using existing MIRA structured-state/Sheets conventions rather than a duplicate store.
-4. Reconcile any required `FEATURES.md` refinement and `project/code_ownership.json` change only after then-current-main collision inspection.
-5. Keep PR #134 draft until implementation tests, provider boundary and live tracker proof are earned.
-6. Perform provider capability/credential preflight only after the independent implementation is green.
-7. If the only remaining boundary is a PDL API key/account, request exactly that single user action. Apollo is optional fallback/secondary coverage, not a prerequisite.
-8. Execute real discovery, real Sheet write/readback, rerun-update proof and manual interaction/reply proof before claiming deployment.
+1. Apply the current-vs-historical technical-relevance scoring repair above; do not weaken the test.
+2. Re-run direct People Discovery tests and exact-head CI.
+3. Complete canonical People Discovery persistence and live Google tracker writer/readback using the shared Sheets projection/reconciliation foundation once available rather than duplicating it locally.
+4. Keep PR #134 draft until implementation tests, provider boundary and live tracker proof are earned.
+5. Perform provider capability/credential preflight only after independent implementation is green.
+6. If the only remaining boundary is a PDL API key/account, request exactly that single user action; Apollo remains optional.
+7. Execute real discovery, real Sheet write/readback, rerun-update proof and manual interaction/reply proof before claiming deployment.
+8. Reconcile shared `FEATURES.md`/`BACKLOG.md`/ownership changes against then-current `main` immediately before merge.
 
-## Concurrent work / control-room rule
+## Customer-prioritized displaced work
 
-This conversation may coordinate MIRA work generally, but implementation remains packet/branch isolated. Finance/Financial Escape, Android/provider work and other MIRA packets are not abandoned merely because this packet is active. Before switching implementation scope, checkpoint the current packet's exact remote head/resume point, then continue the next prioritized packet on its own branch. Do not mix unrelated source changes into this branch.
+The customer supplied a broader MIRA modular-life-operations / Google Sheets control-surface directive and explicitly requested that it be added to the MIRA stack, including reusable Job Search/market boards, People Discovery integration, Finance Operations, Vehicle Operations, Inventory Operations, MIRA Operations visibility, safe Sheets prototyping, Studio/public sanitization, automation and an optional local NVIDIA 49B coding-worker lane. That work belongs in a separate bounded foundation/intake packet so it does not silently expand `M2-M1-019`.
 
 ## Session-start alignment verification — 2026-09-07
 
 ### `FEATURES.md`
 
-Reviewed. Existing `CAREER-001` is the current canonical career feature anchor. `M2-M1-019` extends the user-visible career capability with People Discovery, relationship tracking and a no-automated-outreach boundary while preserving `AUTH-001`, `STORE-001`, `RECOVERY-002`, `MAIL-002` and `DATA-001`. Stable career feature wording may be refined before merge, but this packet does not create a competing feature authority.
+Reviewed. Existing `CAREER-001` is the current canonical career feature anchor. `M2-M1-019` extends the user-visible career capability with People Discovery, relationship tracking and a no-automated-outreach boundary while preserving `AUTH-001`, `STORE-001`, `RECOVERY-002`, `MAIL-002` and `DATA-001`.
 
 ### `BACKLOG.md`
 
-Reviewed. Existing backlog did not yet contain a dedicated People Discovery work item. `PEOPLE-DISCOVERY-001` is the bounded work ID for this vertical and is being registered as part of the governance repair before CI is treated as meaningful implementation evidence.
+Reviewed. `PEOPLE-DISCOVERY-001` is now registered on this branch as the bounded work ID for the vertical.
 
 ### `ROADMAP.md`
 
@@ -120,4 +114,4 @@ ALIGNED
 
 ## Recovery protocol
 
-Resume by reading current remote `main`, this branch's `CURRENT_WORK.md`, `docs/work-packets/M2-M1-019.md`, and this branch's remote head. Inspect active packet branches/PRs for overlap before shared-file writes. Do not reconstruct private people/provider/message state from public Git or chat memory.
+Resume by reading current remote `main`, this branch's `CURRENT_WORK.md`, `docs/work-packets/M2-M1-019.md`, PR #134 and this branch's remote head. Inspect active packet branches/PRs for overlap before shared-file writes. Do not reconstruct private people/provider/message state from public Git or chat memory.
