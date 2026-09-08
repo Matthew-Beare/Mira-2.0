@@ -39,10 +39,11 @@ class ComputeWorkerContractTests(unittest.TestCase):
         self,
         state: WorkerIdentityState = WorkerIdentityState.VERIFIED,
         *,
+        principal_id: str = "principal-synthetic-a",
         verified_at: str = RECENT,
     ) -> WorkerIdentityProof:
         return WorkerIdentityProof(
-            principal_id="principal-synthetic-a",
+            principal_id=principal_id,
             state=state,
             verified_at=verified_at,
         )
@@ -77,6 +78,7 @@ class ComputeWorkerContractTests(unittest.TestCase):
         )
         return WorkerAdvertisement(
             worker_id="worker-synthetic-a",
+            principal_id="principal-synthetic-a",
             identity=resolved_identity,
             lane_id="local-worker-a",
             runtime_id="runtime-worker-a",
@@ -160,6 +162,19 @@ class ComputeWorkerContractTests(unittest.TestCase):
                     f"worker_identity_{state.value}",
                     projection.reason_codes,
                 )
+
+    def test_verified_wrong_principal_never_produces_routable_candidate(self) -> None:
+        projection = self.project(
+            self.advertisement(
+                identity=self.proof(principal_id="principal-synthetic-b")
+            )
+        )
+        self.assertFalse(projection.identity_verified)
+        self.assertIsNone(projection.candidate)
+        self.assertIn(
+            "worker_identity_principal_mismatch",
+            projection.reason_codes,
+        )
 
     def test_stale_heartbeat_projects_fail_closed_without_mutating_advertisement(self) -> None:
         advertisement = self.advertisement(heartbeat_at=STALE)
