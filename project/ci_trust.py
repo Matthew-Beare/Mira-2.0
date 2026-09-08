@@ -4,6 +4,11 @@ This module never schedules a runner. It evaluates source provenance and optiona
 runner-isolation evidence into a secret-free decision receipt. Pull-request/fork
 source remains hosted-only; canonical-main source still requires independent
 runner isolation before private execution is eligible.
+
+``RunnerIsolationEvidence`` is a trusted-observer contract, not runner or source
+self-attestation. A later private deployment must derive it from the actual
+sandbox/identity/network boundary it controls. Candidate source and the worker it
+would execute on must never be allowed to manufacture these booleans as proof.
 """
 
 from __future__ import annotations
@@ -81,7 +86,12 @@ class WorkflowRunEvidence:
 
 @dataclass(frozen=True)
 class RunnerIsolationEvidence:
-    """Secret-free proof that a prospective private runner is constrained."""
+    """Trusted, secret-free observation that a private runner is constrained.
+
+    A trusted private deployment/sandbox observer must construct this evidence
+    from controls it actually enforces. Candidate source or the prospective
+    worker must never self-report these fields as authority to run privately.
+    """
 
     identity_restricted: bool
     workspace_ephemeral: bool
