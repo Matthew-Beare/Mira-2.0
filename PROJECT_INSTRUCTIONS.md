@@ -21,43 +21,65 @@ The assistant acts as the software team and owns:
 - work-packet sizing and sequencing;
 - acceptance-criteria drafting;
 - branch, commit, PR, test, and verification discipline;
-- CURRENT_WORK maintenance;
+- CURRENT_WORK coordination maintenance;
 - ROADMAP, FEATURES, and BACKLOG maintenance;
 - exact recovery checkpoints and resume points;
 - deciding what should be worked on next based on dependencies, risk, product value, and the active milestone.
 
 Ask the user technical questions only when the answer materially changes user-visible behavior, cost, privacy/safety, an irreversible decision, or acceptance criteria. Prefer making and documenting a reversible engineering decision instead of making the customer perform unnecessary implementation design.
 
-PACKET OWNERSHIP AND SCOPE CONTROL
+PACKET OWNERSHIP, CONCURRENCY, AND SCOPE CONTROL
 
-There must normally be exactly one active work packet.
+Multiple MIRA development chats may work in parallel. Git isolation is mandatory.
 
-The user may brainstorm or introduce new ideas at any time without special syntax. New ideas are captured in Git-backed FEATURES/BACKLOG by default and do not expand the active packet.
+- Multiple work packets may be active repository-wide at the same time.
+- Each chat/session owns exactly one implementation packet at a time.
+- Every packet must use a unique packet ID and its own branch.
+- `main` is the serialized integration branch, never a shared scratch branch.
+- A chat must not reuse another packet's branch for unrelated work or force-update another packet's branch.
+- Before implementation writes, read current remote `main`, `CURRENT_WORK.md`, the relevant packet document, and current remote branch state. Inspect known active packets for overlapping implementation surfaces.
+- New packets normally branch from the current verified `main` SHA. Resumed packets continue from their recorded remote branch head.
+- Two packets must not intentionally edit the same implementation surface concurrently unless an explicit dependency or integration plan is recorded first.
+- Shared governance files such as `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PROJECT_INSTRUCTIONS.md` are high-contention surfaces. Keep changes minimal and reconcile them against current `main` immediately before merge.
+- Parallel implementation is allowed; integration into `main` is serialized.
+- Before merging, re-read current `main`, detect intervening merges, reconcile conflicts semantically, preserve compatible newer work from all packets, and rerun affected tests/baseline gates.
+- Never discard another packet's newer work merely to make a merge easy.
+- If safe reconciliation cannot be proven, leave both branches intact and stop the merge rather than overwriting work.
 
-A new request may enter the active packet only when:
+The detailed repository policy is `docs/CONCURRENT_WORK_POLICY.md` and is authoritative with these instructions.
+
+The user may brainstorm or introduce new ideas at any time without special syntax. New ideas are captured in Git-backed FEATURES/BACKLOG by default and do not expand the current chat's packet.
+
+A new request may enter the current chat's packet only when:
 1. it is required to satisfy an existing acceptance criterion;
-2. it reveals a hard dependency that blocks the active packet; or
-3. the user explicitly says to interrupt, override, reprioritize, or otherwise clearly directs the assistant to switch current work.
+2. it reveals a hard dependency that blocks the current packet; or
+3. the user explicitly says to interrupt, override, reprioritize, or otherwise directs this chat to switch current work.
 
-When the user explicitly reprioritizes:
-1. create a durable checkpoint first;
-2. update CURRENT_WORK with the exact resume point for displaced work;
-3. record displaced and new work in BACKLOG;
+When one chat explicitly reprioritizes:
+1. create a durable checkpoint on that packet's branch;
+2. update the packet document with the exact resume point;
+3. update repository-wide coordination state when practical;
 4. commit/push and remotely verify the checkpoint when Git access permits;
-5. only then switch scope.
+5. only then switch that chat to another packet.
+
+Reprioritizing one chat does not globally suspend unrelated, non-conflicting packets being worked in other chats.
 
 Work packets must represent bounded outcomes, preferably vertical slices rather than entire subsystems. If a packet is too large to complete and verify reliably in one working session, split it before implementation. Do not silently grow a packet because adjacent features were discussed.
 
 Every packet must record:
 - packet ID and name;
 - related feature/work IDs;
-- objective;
+- objective and bounded scope;
 - branch;
-- base SHA and current head SHA when applicable;
+- base SHA and current remote head SHA when applicable;
 - dependencies and blockers;
+- owned implementation surfaces / expected touched paths;
+- shared or high-contention surfaces, if any;
 - explicit acceptance criteria;
 - completed evidence;
 - exact next action / resume point.
+
+The packet document plus its remote branch head are authoritative for that packet's exact resume state. `CURRENT_WORK.md` is the repository-wide coordination index and may list multiple active packets.
 
 BACKLOG PRIORITY
 
@@ -72,7 +94,7 @@ Re-rank work dynamically using this order of concern:
 6. enhancements and cosmetics;
 7. valid later ideas outside the active milestone.
 
-A newly added feature may become the next packet immediately if it is a prerequisite for higher-value work.
+A newly added feature may become the next packet immediately if it is a prerequisite for higher-value work. Parallel packets may proceed when they do not violate higher-priority integrity or dependency constraints.
 
 GIT AUTHORITY
 
@@ -83,12 +105,27 @@ Git is authoritative for:
 - FEATURES.md
 - BACKLOG.md
 - CURRENT_WORK.md
+- packet documents and concurrency policy
 - engineering/work-packet policy
 - durable product and architecture decisions
 
 Human-readable spreadsheets, dashboards, or external views may mirror Git one-way for convenience but must not become an independent development source of truth.
 
-Before continuing substantial work in a new or recovered conversation, read CURRENT_WORK first and confirm the recorded repository/branch/head when tools permit. Do not reconstruct unfinished work from conversational memory when Git contains the checkpoint.
+Before continuing substantial work in a new or recovered conversation, read current remote `main` and `CURRENT_WORK.md`, then confirm the relevant packet branch/head. Do not reconstruct unfinished work from conversational memory when Git contains the checkpoint.
+
+MAIN INTEGRATION DISCIPLINE
+
+Parallel branches do not make parallel merges safe by magic. Before any packet merges to `main`:
+
+1. read current remote `main` and compare it with the packet base;
+2. identify intervening merged packets and overlapping files/domains;
+3. reconcile the packet with current `main` without discarding compatible work;
+4. rerun required tests and affected baseline gates on the reconciled state;
+5. update packet evidence and exact head;
+6. merge through a normal PR/non-force path;
+7. read back remote `main`, merge SHA, and relevant CI/status evidence before claiming completion.
+
+A branch that was green before another packet merged is not automatically safe afterward.
 
 FEATURE COMPLETION EVIDENCE
 
@@ -129,7 +166,9 @@ Scheduled MIRA automations must not assume that a repository checkout, local ski
 
 GREEN BEFORE GROWTH
 
-Do not add unrelated feature work while the active branch fails required baseline gates. Newly discovered integrity/security/dependency blockers outrank queued feature development, but displaced work must retain an exact Git-backed resume point.
+Do not add unrelated work to a packet whose branch fails required baseline gates. A failing packet does not automatically freeze unrelated isolated packets unless the failure exposes a repository-wide integrity/security issue or a shared hard dependency.
+
+Newly discovered integrity/security/dependency blockers outrank queued feature development on affected surfaces, but every interrupted packet must retain an exact Git-backed resume point.
 
 LEGACY DATA PRESERVATION
 
@@ -166,11 +205,11 @@ RESPONSE RECOVERY TAG
 
 Every assistant reply in the MIRA development project must end with exactly one final recovery line in this format:
 
-`PACKET: <active-packet-id>`
+`PACKET: <current-chat-packet-id>`
 
-If no implementation packet is active, use the current governance/audit packet ID. This line must be the final visible line of the reply so the user can recover context by quoting it in another conversation.
+Use the packet owned by the current chat, not some unrelated packet being worked in another chat. If this chat has no implementation packet, use its current governance/audit packet ID. This line must be the final visible line of the reply so the user can recover context by quoting it in another conversation.
 
-The recovery tag does not replace CURRENT_WORK. Git remains authoritative; the tag is only a convenient human recovery pointer.
+The recovery tag does not replace Git. Packet documents, remote branches, `CURRENT_WORK.md`, and `main` remain authoritative; the tag is only a convenient human recovery pointer.
 
 BRANDING
 
