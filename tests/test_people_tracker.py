@@ -76,6 +76,98 @@ class CareerInteractionServiceTests(unittest.TestCase):
         self.assertEqual(summary.last_channel, "email")
         self.assertEqual(summary.interaction_count, 2)
 
+    def test_new_outbound_after_reply_returns_to_awaiting_reply(self) -> None:
+        self.service.record(
+            "int-001",
+            person_id="person-ada",
+            channel="linkedin",
+            direction="outbound",
+            kind="message",
+            occurred_at="2026-09-07T18:00:00-04:00",
+            outcome="sent",
+            idempotency_key="record-int-001",
+        )
+        self.service.record(
+            "int-002",
+            person_id="person-ada",
+            channel="linkedin",
+            direction="inbound",
+            kind="reply",
+            occurred_at="2026-09-08T09:00:00-04:00",
+            outcome="replied",
+            reply_to_interaction_id="int-001",
+            idempotency_key="record-int-002",
+        )
+        self.service.record(
+            "int-003",
+            person_id="person-ada",
+            channel="linkedin",
+            direction="outbound",
+            kind="follow_up",
+            occurred_at="2026-09-08T14:00:00-04:00",
+            outcome="sent",
+            follow_up_due="2026-09-13",
+            idempotency_key="record-int-003",
+        )
+        summary = self.service.relationship_summary("person-ada")
+        self.assertTrue(summary.have_they_replied)
+        self.assertTrue(summary.awaiting_reply)
+        self.assertEqual(summary.relationship_state, "awaiting_reply")
+
+    def test_timezone_normalization_orders_interactions_by_actual_instant(self) -> None:
+        self.service.record(
+            "int-later",
+            person_id="person-ada",
+            channel="email",
+            direction="outbound",
+            kind="message",
+            occurred_at="2026-09-08T09:30:00-04:00",
+            outcome="sent",
+            idempotency_key="later",
+        )
+        self.service.record(
+            "int-earlier",
+            person_id="person-ada",
+            channel="email",
+            direction="inbound",
+            kind="reply",
+            occurred_at="2026-09-08T14:00:00+01:00",
+            outcome="replied",
+            idempotency_key="earlier",
+        )
+        interactions = self.service.for_person("person-ada")
+        self.assertEqual([item.interaction_id for item in interactions], ["int-earlier", "int-later"])
+        self.assertEqual(interactions[0].occurred_at, "2026-09-08T13:00:00Z")
+        self.assertEqual(interactions[1].occurred_at, "2026-09-08T13:30:00Z")
+
+    def test_follow_up_uses_earliest_due_date(self) -> None:
+        self.service.record(
+            "int-001",
+            person_id="person-ada",
+            channel="email",
+            direction="outbound",
+            kind="message",
+            occurred_at="2026-09-07T18:00:00-04:00",
+            outcome="sent",
+            follow_up_due="2026-09-15",
+            idempotency_key="record-int-001",
+        )
+        self.service.record(
+            "int-002",
+            person_id="person-ada",
+            channel="linkedin",
+            direction="outbound",
+            kind="follow_up",
+            occurred_at="2026-09-08T18:00:00-04:00",
+            outcome="sent",
+            follow_up_due="2026-09-11",
+            idempotency_key="record-int-002",
+        )
+        self.assertEqual(
+            self.service.relationship_summary("person-ada").follow_up_due,
+            "2026-09-11",
+        )
+
     def test_conversation_and_referral_states_outrank_simple_reply(self) -> None:
         self.service.record(
             "int-001",
