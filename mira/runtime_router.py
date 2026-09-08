@@ -81,6 +81,14 @@ class RuntimeHealth(str, Enum):
     FAULTED = "faulted"
 
 
+class WorkerIdentityState(str, Enum):
+    """Result of an external worker-authentication boundary."""
+
+    UNVERIFIED = "unverified"
+    VERIFIED = "verified"
+    REVOKED = "revoked"
+
+
 class RouteOutcome(str, Enum):
     """Top-level routing result."""
 
@@ -97,6 +105,28 @@ class RouteReason(str, Enum):
     POLICY_BLOCKED = "policy_blocked"
     CAPABILITY_BLOCKED = "capability_blocked"
     NO_ELIGIBLE_LANE = "no_eligible_lane"
+
+
+@dataclass(frozen=True)
+class WorkerIdentityProof:
+    """Secret-free result from an external authenticated worker boundary.
+
+    The proof deliberately contains no credential or transport material. A later
+    worker agent/transport may use mTLS or another authenticated mechanism, but it
+    must reduce that ceremony to this bounded evidence before routing code sees it.
+    """
+
+    principal_id: str
+    state: WorkerIdentityState
+    verified_at: str
+
+    def __post_init__(self) -> None:
+        _token(self.principal_id, "principal_id")
+        if not isinstance(self.state, WorkerIdentityState):
+            raise RuntimeRouterValidationError(
+                "state must be a WorkerIdentityState"
+            )
+        _utc_timestamp(self.verified_at, "verified_at")
 
 
 @dataclass(frozen=True)
@@ -131,6 +161,68 @@ class RuntimePolicy:
             raise RuntimeRouterValidationError(
                 "local_compute_mode must be a LocalComputeMode"
             )
+
+
+@dataclass(frozen=True)
+class WorkerAdvertisement:
+    """Secret-free worker execution evidence before router-candidate projection.
+
+    Private bindings such as hostnames, IP addresses, device serials, model paths,
+    shell endpoints, or credentials are intentionally absent. ``identity`` is the
+    result of an external authentication boundary, not authentication material.
+    ``principal_id`` is the opaque principal this worker expects that proof to bind.
+    """
+
+    worker_id: str
+    principal_id: str
+    identity: WorkerIdentityProof
+    lane_id: str
+    runtime_id: str
+    service_id: str
+    runtime_kind: RuntimeKind
+    runtime_capabilities: tuple[str, ...]
+    policy: RuntimePolicy
+    availability: RuntimeAvailability
+    health: RuntimeHealth
+    interactive_lock: bool
+    priority: int
+    load_rank: int
+    cost_rank: int
+    heartbeat_at: str
+
+    def __post_init__(self) -> None:
+        _token(self.worker_id, "worker_id")
+        _token(self.principal_id, "principal_id")
+        if not isinstance(self.identity, WorkerIdentityProof):
+            raise RuntimeRouterValidationError(
+                "identity must be a WorkerIdentityProof"
+            )
+        _token(self.lane_id, "lane_id")
+        _token(self.runtime_id, "runtime_id")
+        _token(self.service_id, "service_id")
+        if not isinstance(self.runtime_kind, RuntimeKind):
+            raise RuntimeRouterValidationError(
+                "runtime_kind must be a RuntimeKind"
+            )
+        capabilities = _sorted_tokens(
+            self.runtime_capabilities,
+            "runtime_capabilities",
+        )
+        object.__setattr__(self, "runtime_capabilities", capabilities)
+        if not isinstance(self.policy, RuntimePolicy):
+            raise RuntimeRouterValidationError("policy must be a RuntimePolicy")
+        if not isinstance(self.availability, RuntimeAvailability):
+            raise RuntimeRouterValidationError(
+                "availability must be a RuntimeAvailability"
+            )
+        if not isinstance(self.health, RuntimeHealth):
+            raise RuntimeRouterValidationError("health must be a RuntimeHealth")
+        if not isinstance(self.interactive_lock, bool):
+            raise RuntimeRouterValidationError("interactive_lock must be boolean")
+        _rank(self.priority, "priority")
+        _rank(self.load_rank, "load_rank")
+        _rank(self.cost_rank, "cost_rank")
+        _utc_timestamp(self.heartbeat_at, "heartbeat_at")
 
 
 @dataclass(frozen=True)
@@ -183,6 +275,17 @@ class RuntimeLaneCandidate:
             raise RuntimeRouterValidationError("interactive_lock must be boolean")
         _rank(self.load_rank, "load_rank")
         _rank(self.cost_rank, "cost_rank")
+
+
+@dataclass(frozen=True)
+class WorkerCandidateProjection:
+    """Result of converting one authenticated worker advertisement to a lane."""
+
+    worker_id: str
+    identity_verified: bool
+    heartbeat_fresh: bool
+    reason_codes: tuple[str, ...]
+    candidate: RuntimeLaneCandidate | None
 
 
 @dataclass(frozen=True)
@@ -249,6 +352,111 @@ class RuntimeRouteResult:
     @property
     def selected(self) -> bool:
         return self.outcome == RouteOutcome.SELECTED
+
+
+def project_worker_candidate(
+    advertisement: WorkerAdvertisement,
+    capability: ProviderCapabilitySnapshot,
+    *,
+    now: str,
+    max_heartbeat_age_seconds: int,
+) -> WorkerCandidateProjection:
+    """Project authenticated worker evidence into the existing runtime router.
+
+    Authentication transport remains outside this module. A non-verified identity
+    or a proof for the wrong principal never creates a candidate. A stale heartbeat
+    does create an explicit fail-closed candidate so the router reports ordinary
+    unavailable/unknown worker reasons rather than accidentally reusing the last
+    healthy state.
+    """
+
+    if not isinstance(advertisement, WorkerAdvertisement):
+        raise RuntimeRouterValidationError(
+            "advertisement must be a WorkerAdvertisement"
+        )
+    if not isinstance(capability, ProviderCapabilitySnapshot):
+        raise RuntimeRouterValidationError(
+            "capability must be a ProviderCapabilitySnapshot"
+        )
+    if (
+        not isinstance(max_heartbeat_age_seconds, int)
+        or isinstance(max_heartbeat_age_seconds, bool)
+        or max_heartbeat_age_seconds < 1
+    ):
+        raise RuntimeRouterValidationError(
+            "max_heartbeat_age_seconds must be a positive integer"
+        )
+    if capability.service_id != advertisement.service_id:
+        raise RuntimeRouterValidationError(
+            "worker advertisement service identity does not match provider capability"
+        )
+
+    now_dt = _utc_timestamp(now, "now")
+    heartbeat_dt = _utc_timestamp(advertisement.heartbeat_at, "heartbeat_at")
+    identity_dt = _utc_timestamp(
+        advertisement.identity.verified_at,
+        "verified_at",
+    )
+    if heartbeat_dt > now_dt:
+        raise RuntimeRouterValidationError("worker heartbeat cannot be from the future")
+    if identity_dt > now_dt:
+        raise RuntimeRouterValidationError(
+            "worker identity evidence cannot be from the future"
+        )
+    if identity_dt > heartbeat_dt:
+        raise RuntimeRouterValidationError(
+            "worker heartbeat must not predate its identity verification"
+        )
+
+    heartbeat_fresh = (
+        now_dt - heartbeat_dt
+    ).total_seconds() <= max_heartbeat_age_seconds
+    reasons: list[str] = []
+
+    if advertisement.identity.principal_id != advertisement.principal_id:
+        reasons.append("worker_identity_principal_mismatch")
+    if advertisement.identity.state is not WorkerIdentityState.VERIFIED:
+        reasons.append(
+            f"worker_identity_{advertisement.identity.state.value}"
+        )
+    identity_verified = not reasons
+    if not identity_verified:
+        return WorkerCandidateProjection(
+            worker_id=advertisement.worker_id,
+            identity_verified=False,
+            heartbeat_fresh=heartbeat_fresh,
+            reason_codes=tuple(sorted(reasons)),
+            candidate=None,
+        )
+
+    availability = advertisement.availability
+    health = advertisement.health
+    if not heartbeat_fresh:
+        reasons.append("worker_heartbeat_stale")
+        availability = RuntimeAvailability.OFFLINE
+        health = RuntimeHealth.UNKNOWN
+
+    candidate = RuntimeLaneCandidate(
+        lane_id=advertisement.lane_id,
+        runtime_id=advertisement.runtime_id,
+        capability=capability,
+        policy=advertisement.policy,
+        priority=advertisement.priority,
+        runtime_kind=advertisement.runtime_kind,
+        runtime_capabilities=advertisement.runtime_capabilities,
+        availability=availability,
+        health=health,
+        interactive_lock=advertisement.interactive_lock,
+        load_rank=advertisement.load_rank,
+        cost_rank=advertisement.cost_rank,
+    )
+    return WorkerCandidateProjection(
+        worker_id=advertisement.worker_id,
+        identity_verified=True,
+        heartbeat_fresh=heartbeat_fresh,
+        reason_codes=tuple(sorted(reasons)),
+        candidate=candidate,
+    )
 
 
 def route_runtime(
@@ -655,5 +863,10 @@ __all__ = [
     "RuntimeRouteResult",
     "RuntimeRouterError",
     "RuntimeRouterValidationError",
+    "WorkerAdvertisement",
+    "WorkerCandidateProjection",
+    "WorkerIdentityProof",
+    "WorkerIdentityState",
+    "project_worker_candidate",
     "route_runtime",
 ]
