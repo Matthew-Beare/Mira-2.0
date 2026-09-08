@@ -8,7 +8,8 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 
 - **Primary work:** `FIN-CANON-AUDIT-001`.
 - **Primary features:** `MIRROR-001`, `AUTH-001`, `RECEIPT-001`, `ASSET-001`.
-- **Related features/work:** `MIRROR-001`, `AUTH-001`, `RECEIPT-001`, `RECEIPT-002`, `ASSET-001`, `ASSET-002`, `IDENT-001`, `EVID-001`, `ASSET-SERVICE-001`, `FINANCE-CONNECTOR-001`, `SPEND-ROLLUP-001`, `RECOVERY-002`.
+- **Related invariants/features:** `MIRROR-001`, `AUTH-001`, `RECEIPT-001`, `RECEIPT-002`, `ASSET-001`, `ASSET-002`, `IDENT-001`, `EVID-001`, `RECOVERY-002`.
+- **Related work:** `ASSET-SERVICE-001`, `FINANCE-CONNECTOR-001`, `SPEND-ROLLUP-001`, `FIN-EVIDENCE-RECONCILE-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-015-financial-canonical-audit`.
 - **Base SHA:** `5075a23c0a3513118b0dceaf711cd041b1d3798a`.
@@ -86,6 +87,24 @@ Hold until a credible authenticated provider-access recovery signal exists. Then
 9. if it still fails, checkpoint the exact live result before any app-side OAuth diagnosis.
 
 Until that recovery signal exists: do not rerun the phone flow, do not infer provider configuration, do not create/alter a Cloud project or OAuth client, do not change Picker state, and do not burn another Work-mode attempt speculatively.
+
+## Session-start alignment verification — 2026-09-07
+
+### `FEATURES.md`
+
+Reviewed before implementation. The active packet is grounded in the canonical one-authority MIRROR model, receipt/evidence provenance, canonical asset acquisition/identity semantics, and recovery/readback requirements. It does not create a finance-specific second authority or silently broaden provider permissions.
+
+### `BACKLOG.md`
+
+Reviewed before implementation. `FIN-CANON-AUDIT-001` is the active integrity blocker. Repeatable future evidence reconciliation is separately queued as `FIN-EVIDENCE-RECONCILE-001`; it is not being misrepresented as already-live background execution.
+
+### `ROADMAP.md`
+
+Reviewed before implementation. The customer-priority financial integrity repair is a bounded interruption with the exact Android M2-M1 resume point preserved. The Personal Google product direction, shared canonical state, and ordinary-user architecture remain unchanged.
+
+### Direction result
+
+**ALIGNED.** `M2-M1-015` is the sole active packet. It repairs private-live projections and reconciles evidence into existing canonical MIRROR semantics without changing the long-term authority model or erasing the displaced Android checkpoint.
 
 ## Recovery protocol
 
