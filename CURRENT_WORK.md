@@ -1,71 +1,89 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. Multiple packets may be active repository-wide at the same time, but each chat/session owns exactly one packet and one branch. `main` is the serialized integration branch.
+Git is authoritative. This branch records exactly one active packet. Multiple other packet branches may be active repository-wide at the same time under `docs/CONCURRENT_WORK_POLICY.md`.
 
-For exact packet recovery, the packet document plus its remote branch head are authoritative. This file is the repository-wide coordination index.
-
-See `docs/CONCURRENT_WORK_POLICY.md`.
-
-## Active packets
+## Active packet
 
 ### `M2-GOV-001` — Concurrent work-packet safety
 
-- **Chat role:** current governance packet for the People Discovery execution chat.
+- **Primary work:** `FEATURE-ALIGN-001`.
+- **Primary features:** `DEV-001`, `DEV-002`, `DEV-007`.
+- **Related invariants/features:** `DEV-003`, `DEV-005`, `RECOVERY-002`.
+- **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-gov-001-concurrent-packets`.
 - **Base SHA:** `51649d6e1987d5a0601131715732a2560b26b193`.
 - **Packet:** `docs/work-packets/M2-GOV-001.md`.
-- **Owned surfaces:** `PROJECT_INSTRUCTIONS.md`, `docs/CONCURRENT_WORK_POLICY.md`, concurrency model in `CURRENT_WORK.md`.
-- **Status:** in progress; merge/readback required before starting People Discovery.
-- **Exact next action:** open/merge the governance PR, verify remote `main`, then start the People Discovery packet from the new verified `main`.
+- **Owned surfaces:** `PROJECT_INSTRUCTIONS.md`, `project/WORK_PACKET_POLICY.md`, `docs/CONCURRENT_WORK_POLICY.md`, this branch's `CURRENT_WORK.md`.
+- **Shared/high-contention surfaces:** governance files above; reconcile against current `main` before merge.
+- **Current status:** in progress; repository governance is being changed from one-active-packet-repository-wide to one-active-packet-per-chat/branch with multiple isolated packet branches allowed concurrently.
+
+## Objective
+
+Allow multiple MIRA development chats to make durable progress in parallel without overwriting, silently invalidating, or force-replacing each other's work. Preserve the existing one-active-packet-per-branch mechanical alignment gate while using remote packet branches/open PRs as the repository-wide concurrency registry and serializing integration into `main`.
+
+## Acceptance state
+
+- Multiple active packet branches allowed repository-wide: **implemented in policy/docs on this branch**.
+- Exactly one active packet per chat/branch: **implemented**.
+- Unique branch per packet: **implemented**.
+- Remote `work/...` branches/open PRs treated as concurrency registry: **implemented**.
+- Overlap/collision inspection required before writes: **implemented**.
+- Owned/shared implementation surfaces recorded per packet: **implemented**.
+- `main` integration serialized with current-main reconciliation: **implemented**.
+- Existing finance branch preserved untouched: **verified at `04b88d027fdacb14f580fa31674c23fee1aa9d7a` at handoff**.
+- Existing Android hold checkpoint preserved: **verified from current Git record**.
+- Exact-head CI: **pending latest governance head**.
+- Merge/readback to `main`: **pending**.
+
+## Exact next action / resume point
+
+1. Make the project-instruction wording fully consistent with branch-local `CURRENT_WORK` and branch/PR concurrency discovery.
+2. Verify exact remote branch head.
+3. Wait for/check exact-head CI on the latest governance commit.
+4. Merge PR #133 only if current `main` has not introduced conflicting governance changes; otherwise reconcile first.
+5. Read back remote `main` and CI/status evidence.
+6. Start People Discovery on a fresh unique packet branch from that verified `main`.
+
+## Concurrent packet branches known at this checkpoint
 
 ### `M2-M1-015` — Canonical finance evidence audit and projection repair
 
-- **Primary work:** `FIN-CANON-AUDIT-001`.
 - **Branch:** `work/m2-m1-015-financial-canonical-audit`.
-- **Base SHA:** `5075a23c0a3513118b0dceaf711cd041b1d3798a`.
-- **Verified remote branch head at concurrency handoff:** `04b88d027fdacb14f580fa31674c23fee1aa9d7a`.
-- **Packet:** `docs/work-packets/M2-M1-015.md` on that branch.
-- **Status:** active and independently resumable; one-authority spending integration plus retirement-lever/confidence repair are implemented/read back; cross-source evidence reconciliation remains open.
-- **Exact resume:** read that branch's `CURRENT_WORK.md` and packet document, then continue the recorded cross-source reconciliation cursor. Do not reconstruct it from this summary.
-- **Concurrency note:** this packet may continue in another chat. Before its eventual merge, reconcile it with then-current `main` and preserve the concurrent-work governance rules.
+- **Verified remote head at handoff:** `04b88d027fdacb14f580fa31674c23fee1aa9d7a`.
+- **Exact resume authority:** that branch's `CURRENT_WORK.md` plus `docs/work-packets/M2-M1-015.md`.
+- **Rule:** may continue independently in another chat. Before eventual merge, reconcile with then-current `main` and preserve newer concurrency governance.
 
-## Blocked / held packets
+## Blocked / held packet
 
 ### `M2-M1-012` — Android representative-device execution proof
 
 - **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
 - **Stable pre-finance checkpoint:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
 - **Provider-inspection runbook:** `docs/work-packets/M2-M1-012-provider-inspection-runbook.md`.
-- **Earned device proof:** exact stable-development-signed APK installed/launched; native Google account chooser opened; correct account selected; app returned `authorization_cancelled`; no consent screen or Drive Picker appeared.
-- **Expected proof identity:** package `com.mira.deviceproof`; signing SHA-1 `AF:E0:18:6B:7C:21:EA:74:D3:4C:4A:33:04:FF:B1:15:EF:DB:A5:6D`.
-- **Unknown provider state:** actual Android OAuth registered package/SHA-1 and Google Picker API enabled/disabled state.
 - **Hold rule:** do not rerun the phone flow or mutate provider configuration until a credible authenticated provider-access recovery signal exists. Resume only through the recorded runbook.
 
-## Requested next packet
+## Requested next packet after governance merge
 
-### People Discovery
+People Discovery for the job search, prioritizing Austin and Research Triangle/Raleigh-Durham and strongly ranking WGU + networking/cloud/infrastructure contacts. It is not active on this branch. It must receive its own packet ID and branch from verified post-governance `main`.
 
-The product owner has explicitly requested a bounded execution packet to deploy People Discovery for the job search, with Austin and Research Triangle/Raleigh-Durham as initial markets and WGU + networking/cloud/infrastructure contacts strongly prioritized.
+## Session-start alignment verification — 2026-09-07
 
-This is intentionally **not yet marked active** until `M2-GOV-001` is merged/read back. Once governance is integrated, create a new unique packet/branch from verified `main`, inspect existing Google Workspace/Sheets and provider abstractions, then implement the end-to-end discovery vertical slice without automated outreach.
+### `FEATURES.md`
 
-## Repository-wide integration rules
+Reviewed. This governance packet strengthens `DEV-001`, `DEV-002`, and `DEV-007` without weakening product features or changing user/provider behavior.
 
-- Parallel implementation is allowed only on isolated packet branches.
-- Each chat owns one packet at a time.
-- Do not intentionally edit another active packet's owned implementation surface without an explicit dependency/integration plan.
-- High-contention governance files must be reconciled against current `main` immediately before merge.
-- Integration into `main` is serialized.
-- Before merge, detect intervening main changes, reconcile semantically, rerun affected tests, and preserve compatible newer work from all packets.
-- Never force-update `main` or another packet branch to avoid a conflict.
+### `BACKLOG.md`
+
+Reviewed. `FEATURE-ALIGN-001` is the existing work item governing packet-to-feature alignment and is the closest bounded governance work anchor for this concurrency repair. No unrelated product work is admitted to this packet.
+
+### `ROADMAP.md`
+
+Reviewed. Concurrent isolated engineering work changes development execution only; it does not alter Personal Google product direction, milestone semantics, or accepted user-facing scope.
+
+### Direction result
+
+ALIGNED
 
 ## Recovery protocol
 
-Any chat should recover by reading, in order:
-
-1. current remote `main`;
-2. this `CURRENT_WORK.md`;
-3. the relevant packet document;
-4. the relevant remote packet branch head and open PR if any.
-
-Conversation history is secondary evidence only.
+Resume this governance packet by reading current remote `main`, this branch's `CURRENT_WORK.md`, `docs/work-packets/M2-GOV-001.md`, and remote branch/PR state. Do not use this branch for People Discovery implementation.
