@@ -8,14 +8,14 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 - **Primary work:** `LOCAL-INTEGRATIONS` (explicitly reprioritized by the product owner on 2026-09-08).
 - **Primary features:** `LOCAL-001`, `PROVIDER-001`.
-- **Related features/invariants:** `SOURCE-001`, `RECOVERY-002`, `OBS-001`, `STUDIO-001`, `DEV-004`, `DIST-001`, `ONBOARD-004`, `API-001`.
+- **Related invariants/features:** `SOURCE-001`, `RECOVERY-002`, `OBS-001`, `STUDIO-001`, `DEV-004`, `DIST-001`, `ONBOARD-004`, `API-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-021-compute-fabric`.
 - **Base SHA:** `d4ede63db07de48504bbce2f0c5296c3a1614647`.
 - **Packet:** `docs/work-packets/M2-M1-021.md`.
-- **Owned implementation surfaces:** `mira/runtime_router.py`, `tests/test_runtime_router.py`, `docs/architecture/COMPUTE_FABRIC.md`, packet doc, this branch's `CURRENT_WORK.md`.
+- **Owned implementation surfaces:** `mira/runtime_router.py`, `tests/test_compute_routing.py`, `docs/architecture/COMPUTE_FABRIC.md`, packet doc, this branch's `CURRENT_WORK.md`.
 - **Shared/high-contention surfaces:** none modified by this bounded slice beyond branch-local `CURRENT_WORK.md`. PR #134 currently edits `project/code_ownership.json`; PR #135 owns Sheets/code-ownership-fragment work, so this packet avoids both surfaces and must reconcile current `main` before merge.
-- **Current status:** in progress; full compute-fabric/Studio directive is durably decomposed in the packet document, and implementation is beginning at the existing provider-neutral runtime-routing seam.
+- **Current status:** in progress; full compute-fabric/Studio directive is durably decomposed in the packet document, and the bounded execution-routing implementation is on this branch awaiting exact-head verification.
 
 ## Objective
 
@@ -29,14 +29,15 @@ This packet does not deploy workers, expose inference/Python/shell services, con
 - Exact verified public-repo `main` base recorded: **complete**.
 - Concurrency collision check against People Discovery PR #134 and Sheets PR #135: **complete**.
 - Existing runtime-router/onboarding/roadmap/features/backlog architecture reviewed: **complete**.
-- Local/hosted runtime-kind contract: **pending implementation**.
-- `off` / `normal` / `aggressive` compute policy: **pending implementation**.
-- Generic runtime capability matching: **pending implementation**.
-- Health/availability/interactive-lock fail-closed behavior: **pending implementation**.
-- Deterministic ranking with policy precedence: **pending implementation**.
-- Architecture seam documentation: **pending**.
-- Deterministic tests: **pending**.
-- Exact-head CI: **pending**.
+- Local/hosted runtime-kind contract: **implemented on branch**.
+- `off` / `normal` / `aggressive` compute policy: **implemented on branch**.
+- Generic runtime capability matching: **implemented on branch**.
+- Health/availability/interactive-lock fail-closed behavior: **implemented on branch**.
+- Deterministic ranking with policy precedence: **implemented on branch**.
+- Architecture seam documentation: **implemented on branch**.
+- Deterministic tests: **implemented in `tests/test_compute_routing.py`; exact-head execution pending**.
+- CI run #505 on head `215fad9a52bdc9db2b8aaec59237057e4af2567b`: **failed at work-session alignment before code ownership/tests because this file used the wrong machine-parsed label `Related features/invariants`; compile, feature registry, lifecycle and starter gates passed. Corrected here to canonical `Related invariants/features`.**
+- Exact-head CI after metadata correction: **pending**.
 - Current-main reconciliation / PR merge: **pending**.
 - Live worker/provider/device proof: **not claimed and out of scope**.
 
@@ -64,12 +65,12 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Add `docs/architecture/COMPUTE_FABRIC.md` defining the public/private boundary and downstream worker/control-plane seams.
-2. Extend `mira/runtime_router.py` with backward-compatible execution-lane metadata and policy.
-3. Extend `tests/test_runtime_router.py` with off/normal/aggressive, capability, health/availability, lock, policy-precedence and deterministic-selection tests.
-4. Verify remote branch head and exact-head CI.
-5. Re-read current `main`, reconcile intervening compatible work, rerun affected gates, and merge only through a normal PR path if green.
+1. Verify exact-head CI after the alignment-label correction.
+2. If any gate fails, fix only the bounded cause and rerun exact-head CI.
+3. Re-read current `main` and active PRs, reconcile intervening compatible work, and preserve any newer governance/ownership mechanism.
+4. Merge only through the normal PR path if exact-head CI is green and the branch remains non-destructive.
+5. Read back merged `main` and record the exact implementation evidence ceiling. No live worker/provider claim is permitted from this packet.
 
 ## Recovery protocol
 
-Resume by reading current remote `main`, this branch's `CURRENT_WORK.md`, `docs/work-packets/M2-M1-021.md`, the branch head, and active PRs/branches for new overlap. Do not reconstruct the directive from chat memory when the packet document exists.
+Resume by reading current remote `main`, this branch's `CURRENT_WORK.md`, `docs/work-packets/M2-M1-021.md`, PR #136, the branch head, and active PRs/branches for new overlap. Do not reconstruct the directive from chat memory when the packet document exists.
