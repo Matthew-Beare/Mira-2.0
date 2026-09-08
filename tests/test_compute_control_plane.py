@@ -103,6 +103,12 @@ class ComputeControlPlaneTests(unittest.TestCase):
         self.assertEqual(second.attempts, 1)
         self.assertEqual(second.revision, first.revision)
 
+    def test_lease_replay_binds_capability_material(self) -> None:
+        self.submit()
+        self.lease(caps=("coding", "python"), key="lease-material")
+        with self.assertRaises(QueueStateError):
+            self.lease(caps=("coding",), key="lease-material")
+
     def test_active_lease_id_cannot_be_reused_with_different_material(self) -> None:
         self.submit("job-a")
         self.submit("job-b")
@@ -227,6 +233,47 @@ class ComputeControlPlaneTests(unittest.TestCase):
         self.assertEqual(leased_again.attempts, 2)
         self.assertEqual(leased_again.checkpoint_artifact_id, "checkpoint-a")
 
+    def test_pause_replay_binds_paused_at(self) -> None:
+        self.submit()
+        self.lease()
+        self.control.start(
+            "job-a",
+            worker_id="worker-a",
+            lease_id="lease-a",
+            started_at=T2,
+            idempotency_key="start-a",
+        )
+        first = self.control.pause(
+            "job-a",
+            worker_id="worker-a",
+            lease_id="lease-a",
+            checkpoint_artifact_id="checkpoint-a",
+            checkpoint_sha256=H3,
+            paused_at=T3,
+            idempotency_key="pause-material",
+        )
+        replay = self.control.pause(
+            "job-a",
+            worker_id="worker-a",
+            lease_id="lease-a",
+            checkpoint_artifact_id="checkpoint-a",
+            checkpoint_sha256=H3,
+            paused_at=T3,
+            idempotency_key="pause-material",
+        )
+        self.assertTrue(replay.idempotent_replay)
+        self.assertEqual(replay.revision, first.revision)
+        with self.assertRaises(QueueStateError):
+            self.control.pause(
+                "job-a",
+                worker_id="worker-a",
+                lease_id="lease-a",
+                checkpoint_artifact_id="checkpoint-a",
+                checkpoint_sha256=H3,
+                paused_at=T4,
+                idempotency_key="pause-material",
+            )
+
     def test_queued_cancel_is_terminal_and_active_cancel_requires_ack(self) -> None:
         self.submit("job-queued")
         cancelled = self.control.request_cancel(
@@ -271,6 +318,46 @@ class ComputeControlPlaneTests(unittest.TestCase):
         self.assertEqual(acked.state, "cancelled")
         self.assertIsNone(acked.lease_id)
 
+    def test_cancel_request_and_ack_replay_bind_timestamps(self) -> None:
+        self.submit()
+        self.lease()
+        first = self.control.request_cancel(
+            "job-a", requested_at=T2, idempotency_key="cancel-material"
+        )
+        replay = self.control.request_cancel(
+            "job-a", requested_at=T2, idempotency_key="cancel-material"
+        )
+        self.assertTrue(replay.idempotent_replay)
+        self.assertEqual(replay.revision, first.revision)
+        with self.assertRaises(QueueStateError):
+            self.control.request_cancel(
+                "job-a", requested_at=T3, idempotency_key="cancel-material"
+            )
+        ack = self.control.acknowledge_cancel(
+            "job-a",
+            worker_id="worker-a",
+            lease_id="lease-a",
+            cancelled_at=T3,
+            idempotency_key="ack-material",
+        )
+        ack_replay = self.control.acknowledge_cancel(
+            "job-a",
+            worker_id="worker-a",
+            lease_id="lease-a",
+            cancelled_at=T3,
+            idempotency_key="ack-material",
+        )
+        self.assertTrue(ack_replay.idempotent_replay)
+        self.assertEqual(ack_replay.revision, ack.revision)
+        with self.assertRaises(QueueStateError):
+            self.control.acknowledge_cancel(
+                "job-a",
+                worker_id="worker-a",
+                lease_id="lease-a",
+                cancelled_at=T4,
+                idempotency_key="ack-material",
+            )
+
     def test_retryable_failure_requeues_until_attempt_budget_is_exhausted(self) -> None:
         self.submit(max_attempts=2)
         self.lease(lease_id="lease-1", key="lease-1-key")
@@ -303,6 +390,41 @@ class ComputeControlPlaneTests(unittest.TestCase):
         )
         self.assertEqual(failed.state, "failed")
         self.assertEqual(failed.finished_at, T4)
+
+    def test_retryable_failure_exact_replay_survives_requeue(self) -> None:
+        self.submit(max_attempts=2)
+        self.lease(lease_id="lease-1", key="lease-1-key")
+        first = self.control.fail(
+            "job-a",
+            worker_id="worker-a",
+            lease_id="lease-1",
+            error_code="worker_error",
+            failed_at=T2,
+            retryable=True,
+            idempotency_key="fail-material",
+        )
+        self.assertEqual(first.state, "queued")
+        replay = self.control.fail(
+            "job-a",
+            worker_id="worker-a",
+            lease_id="lease-1",
+            error_code="worker_error",
+            failed_at=T2,
+            retryable=True,
+            idempotency_key="fail-material",
+        )
+        self.assertTrue(replay.idempotent_replay)
+        self.assertEqual(replay.revision, first.revision)
+        with self.assertRaises(QueueStateError):
+            self.control.fail(
+                "job-a",
+                worker_id="worker-a",
+                lease_id="lease-1",
+                error_code="worker_error",
+                failed_at=T3,
+                retryable=True,
+                idempotency_key="fail-material",
+            )
 
     def test_expired_lease_requeues_or_fails_at_attempt_limit(self) -> None:
         self.submit("job-retry", max_attempts=2)
@@ -359,6 +481,7 @@ class ComputeControlPlaneTests(unittest.TestCase):
             "credentials",
             "token",
             "secret",
+            "idempotency_key",
             "shell_command",
             "python_code",
             "inference_endpoint",
