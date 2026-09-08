@@ -13,12 +13,13 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 - **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
 - **Stable pre-Financial-Escape checkpoint:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
 - **Latest bounded Financial Escape privacy-sanitized checkpoint:** `777728702a69d87cb99c16dfadf6a75c8610bc91` (`docs/work-packets/M2-M1-014.md`).
+- **Latest bounded Financial Escape chart-audit checkpoint:** `0eedc6e7f5e173bc5c37672b54da82eeb345096e` (`docs/audits/financial-escape-chart-audit-2026-09-07.md`).
 - **Provider-inspection readiness runbook checkpoint:** `6677397ca16307808bbcd456e0e24fb1b0838008` (`docs/work-packets/M2-M1-012-provider-inspection-runbook.md`).
 - **Current status:** active and blocked only at provider-configuration inspection.
 
 The Financial Escape interruption packets `M2-M1-013` and `M2-M1-014` are complete at their bounded private-live evidence boundaries. Current public packet files contain generalized product/engineering semantics only; private operational state remains outside those current files. A privacy audit found that earlier public Financial Escape commit history used some overly specific private-life descriptors even though inspected packet history did not contain the private finance amounts, balances, account IDs, provider IDs, document IDs, or spreadsheet IDs. Those current files have been sanitized. Purging historical Git objects would require an explicit destructive history rewrite and has not been performed implicitly.
 
-The latest private-live correction preserves one logical MIRROR finance model, corrected private allocation/planning cardinality, deferred purchase-to-allocation debits, and a reduced user-facing workbook surface with backend/source sheets hidden rather than deleted. These finance corrections do not displace or expand the active Android packet.
+The latest private-live correction preserves one logical MIRROR finance model, corrected private allocation/planning cardinality, deferred purchase-to-allocation debits, and a reduced user-facing workbook surface with backend/source sheets hidden rather than deleted. A customer-directed chart audit additionally restored the missing retirement-contribution trend and verified that classification-dependent spend charts read canonical effective fields so unresolved `Unknown` state changes automatically as review resolves the underlying events. These finance corrections do not displace or expand the active Android packet.
 
 ## Objective
 
