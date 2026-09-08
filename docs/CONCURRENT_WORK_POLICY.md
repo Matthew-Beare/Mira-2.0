@@ -8,6 +8,8 @@ Git is authoritative. Multiple MIRA development chats may work in parallel, but 
 - A single chat/session owns exactly one implementation packet at a time.
 - Every active packet uses its own unique packet ID and branch.
 - `main` is the integration branch and is never treated as a scratch workspace.
+- `CURRENT_WORK.md` remains one-active-packet-per-branch so the existing alignment gate stays useful.
+- Remote `work/...` branches and open PRs are the repository-wide concurrency registry.
 - Work on one packet must not silently broaden into another packet just because another chat is working nearby.
 
 ## Required packet metadata
@@ -26,18 +28,19 @@ Every packet must record:
 - completed evidence;
 - exact next action / resume point.
 
-The packet document and the remote branch head are authoritative for that packet's exact resume state. `CURRENT_WORK.md` is the repository-wide coordination index and must point to the active packet documents/branches rather than pretending only one packet can exist.
+The packet branch's `CURRENT_WORK.md`, the packet document, and the remote branch head are authoritative for that packet's exact resume state. `CURRENT_WORK.md` on `main` is not required to enumerate every in-flight packet branch.
 
 ## Starting or resuming work
 
 Before writing:
 
-1. Read `PROJECT_INSTRUCTIONS.md` and `CURRENT_WORK.md` from current remote `main`.
+1. Read `PROJECT_INSTRUCTIONS.md`, `FEATURES.md`, `BACKLOG.md`, and `ROADMAP.md` from current remote `main`.
 2. Verify the current remote `main` SHA.
-3. If resuming a packet, verify that packet's remote branch head and read its packet document before making changes.
-4. Inspect the repository-wide active-packet index for overlapping work surfaces.
+3. Inspect remote `work/...` branches and open PRs for active work that could overlap the intended packet.
+4. If resuming a packet, verify that packet's remote branch head and read that branch's `CURRENT_WORK.md` plus packet document before making changes.
 5. Start new work from current verified `main` unless a documented dependency requires another base.
 6. Create a unique branch for the packet before implementation writes.
+7. Record owned paths/surfaces and any shared/high-contention surfaces before substantial implementation begins.
 
 ## Collision prevention
 
@@ -58,7 +61,7 @@ Before merge:
 3. Reconcile the packet with current `main` rather than assuming the old base is still valid.
 4. Resolve conflicts deliberately, preserving newer compatible work from both packets.
 5. Rerun the packet's required tests and any affected baseline gates after reconciliation.
-6. Update the packet document with the reconciled head and evidence.
+6. Update the packet document and branch `CURRENT_WORK.md` with the reconciled head and evidence.
 7. Merge through a pull request or other normal non-force integration path.
 8. Read back remote `main`, verify the merge SHA, and verify relevant CI/status evidence before claiming completion.
 
@@ -71,8 +74,8 @@ A user may reprioritize one chat without globally suspending unrelated packets i
 When a chat switches packets:
 
 1. checkpoint its current packet branch;
-2. record the exact resume point in that packet document;
-3. update repository-wide coordination state when practical;
+2. record the exact resume point in that branch's `CURRENT_WORK.md` and packet document;
+3. remotely verify the checkpoint when tools permit;
 4. then start or resume the newly selected packet on its own branch.
 
 Other non-conflicting packets may continue.
@@ -90,8 +93,9 @@ A merge conflict is a coordination signal, not permission to discard somebody el
 Any chat should be able to recover by reading:
 
 1. current remote `main`;
-2. `CURRENT_WORK.md`;
+2. the relevant remote packet branch and its `CURRENT_WORK.md`;
 3. the packet's own document;
-4. the packet's remote branch head and open PR, if any.
+4. the packet's remote branch head and open PR, if any;
+5. other active packet branches/PRs when checking for newly overlapping work.
 
 Conversation history is helpful context but is never a substitute for those Git records.
