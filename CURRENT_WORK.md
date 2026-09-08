@@ -7,6 +7,7 @@ Git is authoritative. This file identifies exactly one active/recovery packet an
 ### `M2-M1-015` — Canonical finance evidence audit and projection repair
 
 - **Primary work:** `FIN-CANON-AUDIT-001`.
+- **Primary features:** `MIRROR-001`, `AUTH-001`, `RECEIPT-001`, `ASSET-001`.
 - **Related features/work:** `MIRROR-001`, `AUTH-001`, `RECEIPT-001`, `RECEIPT-002`, `ASSET-001`, `ASSET-002`, `IDENT-001`, `EVID-001`, `ASSET-SERVICE-001`, `FINANCE-CONNECTOR-001`, `SPEND-ROLLUP-001`, `RECOVERY-002`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-015-financial-canonical-audit`.
