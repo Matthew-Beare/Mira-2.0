@@ -3,11 +3,14 @@
 This module is deliberately read-only. It consumes SOURCE-001 capability evidence
 from :mod:`mira.service_state` plus explicit policy/approval inputs and selects at
 most one eligible provider/runtime lane. It performs no provider authorization,
-discovery, provider I/O, canonical-state mutation, or MIRA service activation.
+discovery, provider I/O, canonical-state mutation, worker wake/shutdown, job
+execution, or MIRA service activation.
 
 PROVIDER-001 requires routing from observed evidence rather than provider branding
-or a successful consent screen. Consequently, every requested operation carries
-its own required capability gates and every candidate is evaluated independently.
+or a successful consent screen. LOCAL-001 additionally requires local execution to
+remain policy-gated, capability-driven, and free of assumed LAN trust. Consequently,
+every requested operation carries its own capability requirements and every
+candidate is evaluated independently.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
+import re
 from typing import Iterable
 
 from .service_state import (
@@ -43,6 +47,40 @@ class ApprovalState(str, Enum):
     DENIED = "denied"
 
 
+class RuntimeKind(str, Enum):
+    """Generic execution location without naming a provider or private machine."""
+
+    HOSTED = "hosted"
+    LOCAL = "local"
+
+
+class LocalComputeMode(str, Enum):
+    """User policy for optional local execution."""
+
+    OFF = "off"
+    NORMAL = "normal"
+    AGGRESSIVE = "aggressive"
+
+
+class RuntimeAvailability(str, Enum):
+    """Observed schedulability state for one runtime lane."""
+
+    READY = "ready"
+    BUSY = "busy"
+    OFFLINE = "offline"
+    DRAINING = "draining"
+    FAULTED = "faulted"
+
+
+class RuntimeHealth(str, Enum):
+    """Observed health state used by deterministic fail-closed routing."""
+
+    HEALTHY = "healthy"
+    DEGRADED = "degraded"
+    UNKNOWN = "unknown"
+    FAULTED = "faulted"
+
+
 class RouteOutcome(str, Enum):
     """Top-level routing result."""
 
@@ -68,11 +106,15 @@ class RuntimePolicy:
     ``allowed_data_classifications`` is intentionally opaque/provider-neutral. A
     policy layer may define classifications such as ``personal`` or ``restricted``
     without making those names universal product semantics in this router.
+
+    ``local_compute_mode`` affects only candidates whose ``runtime_kind`` is
+    ``LOCAL``. Worker presence never overrides ``OFF``.
     """
 
     policy_id: str
     approval_state: ApprovalState
     allowed_data_classifications: tuple[str, ...]
+    local_compute_mode: LocalComputeMode = LocalComputeMode.NORMAL
 
     def __post_init__(self) -> None:
         _token(self.policy_id, "policy_id")
@@ -85,17 +127,34 @@ class RuntimePolicy:
             "allowed_data_classifications",
         )
         object.__setattr__(self, "allowed_data_classifications", normalized)
+        if not isinstance(self.local_compute_mode, LocalComputeMode):
+            raise RuntimeRouterValidationError(
+                "local_compute_mode must be a LocalComputeMode"
+            )
 
 
 @dataclass(frozen=True)
 class RuntimeLaneCandidate:
-    """One concrete provider/runtime lane that may satisfy a route request."""
+    """One concrete provider/runtime lane that may satisfy a route request.
+
+    The execution metadata is secret-free decision material. It deliberately does
+    not contain a hostname, IP address, credential, model secret, shell endpoint,
+    or provider access token. Later worker registries/adapters resolve private
+    runtime bindings outside this read-only router.
+    """
 
     lane_id: str
     runtime_id: str
     capability: ProviderCapabilitySnapshot
     policy: RuntimePolicy
     priority: int = 100
+    runtime_kind: RuntimeKind = RuntimeKind.HOSTED
+    runtime_capabilities: tuple[str, ...] = ()
+    availability: RuntimeAvailability = RuntimeAvailability.READY
+    health: RuntimeHealth = RuntimeHealth.HEALTHY
+    interactive_lock: bool = False
+    load_rank: int = 0
+    cost_rank: int = 100
 
     def __post_init__(self) -> None:
         _token(self.lane_id, "lane_id")
@@ -106,14 +165,24 @@ class RuntimeLaneCandidate:
             )
         if not isinstance(self.policy, RuntimePolicy):
             raise RuntimeRouterValidationError("policy must be a RuntimePolicy")
-        if (
-            not isinstance(self.priority, int)
-            or isinstance(self.priority, bool)
-            or not 0 <= self.priority <= 1_000_000
-        ):
+        _rank(self.priority, "priority")
+        if not isinstance(self.runtime_kind, RuntimeKind):
+            raise RuntimeRouterValidationError("runtime_kind must be a RuntimeKind")
+        capabilities = _sorted_tokens(
+            self.runtime_capabilities,
+            "runtime_capabilities",
+        )
+        object.__setattr__(self, "runtime_capabilities", capabilities)
+        if not isinstance(self.availability, RuntimeAvailability):
             raise RuntimeRouterValidationError(
-                "priority must be an integer from 0 through 1000000"
+                "availability must be a RuntimeAvailability"
             )
+        if not isinstance(self.health, RuntimeHealth):
+            raise RuntimeRouterValidationError("health must be a RuntimeHealth")
+        if not isinstance(self.interactive_lock, bool):
+            raise RuntimeRouterValidationError("interactive_lock must be boolean")
+        _rank(self.load_rank, "load_rank")
+        _rank(self.cost_rank, "cost_rank")
 
 
 @dataclass(frozen=True)
@@ -126,6 +195,7 @@ class RouteRequest:
     data_classification: str
     required_provider_id: str | None = None
     preferred_provider_ids: tuple[str, ...] = ()
+    required_runtime_capabilities: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         _token(self.operation_id, "operation_id")
@@ -140,6 +210,15 @@ class RouteRequest:
             "preferred_provider_ids",
         )
         object.__setattr__(self, "preferred_provider_ids", preferences)
+        runtime_capabilities = _sorted_tokens(
+            self.required_runtime_capabilities,
+            "required_runtime_capabilities",
+        )
+        object.__setattr__(
+            self,
+            "required_runtime_capabilities",
+            runtime_capabilities,
+        )
 
 
 @dataclass(frozen=True)
@@ -282,9 +361,13 @@ def _evaluate_candidate(
     if reasons:
         return _candidate_decision(candidate, reasons, None)
 
-    policy_reasons = _policy_reasons(request, candidate.policy)
+    policy_reasons = _policy_reasons(request, candidate)
     if policy_reasons:
         return _candidate_decision(candidate, policy_reasons, None)
+
+    runtime_reasons = _runtime_reasons(request, candidate)
+    if runtime_reasons:
+        return _candidate_decision(candidate, runtime_reasons, None)
 
     try:
         evaluation = evaluate_provider_capability(
@@ -314,7 +397,11 @@ def _evaluate_candidate(
     return _candidate_decision(candidate, capability_reasons, evaluation)
 
 
-def _policy_reasons(request: RouteRequest, policy: RuntimePolicy) -> list[str]:
+def _policy_reasons(
+    request: RouteRequest,
+    candidate: RuntimeLaneCandidate,
+) -> list[str]:
+    policy = candidate.policy
     reasons: list[str] = []
     if policy.approval_state in {ApprovalState.UNKNOWN, ApprovalState.REQUIRED}:
         reasons.append("policy_approval_required")
@@ -325,6 +412,38 @@ def _policy_reasons(request: RouteRequest, policy: RuntimePolicy) -> list[str]:
 
     if request.data_classification not in policy.allowed_data_classifications:
         reasons.append("policy_data_classification_not_allowed")
+
+    if candidate.runtime_kind is RuntimeKind.LOCAL:
+        if policy.local_compute_mode is LocalComputeMode.OFF:
+            reasons.append("policy_local_compute_off")
+        if candidate.interactive_lock:
+            reasons.append("policy_interactive_lock")
+    return reasons
+
+
+def _runtime_reasons(
+    request: RouteRequest,
+    candidate: RuntimeLaneCandidate,
+) -> list[str]:
+    reasons: list[str] = []
+    if candidate.runtime_kind is RuntimeKind.LOCAL:
+        if candidate.availability in {
+            RuntimeAvailability.OFFLINE,
+            RuntimeAvailability.DRAINING,
+            RuntimeAvailability.FAULTED,
+        }:
+            reasons.append(
+                f"capability_runtime_availability_{candidate.availability.value}"
+            )
+        if candidate.health in {RuntimeHealth.UNKNOWN, RuntimeHealth.FAULTED}:
+            reasons.append(f"capability_runtime_health_{candidate.health.value}")
+
+    available = set(candidate.runtime_capabilities)
+    for capability in request.required_runtime_capabilities:
+        if capability not in available:
+            reasons.append(
+                "capability_runtime_missing_" + _reason_fragment(capability)
+            )
     return reasons
 
 
@@ -388,7 +507,7 @@ def _blocked_reason(
 def _selection_rank(
     request: RouteRequest,
     candidate: RuntimeLaneCandidate,
-) -> tuple[int, int, str, str]:
+) -> tuple[int, int, int, int, int, int, int, str, str]:
     if request.preferred_provider_ids:
         try:
             preference = request.preferred_provider_ids.index(
@@ -398,7 +517,29 @@ def _selection_rank(
             preference = len(request.preferred_provider_ids)
     else:
         preference = 0
-    return (preference, candidate.priority, candidate.lane_id, candidate.runtime_id)
+
+    aggressive_local_rank = 1
+    if (
+        candidate.runtime_kind is RuntimeKind.LOCAL
+        and candidate.policy.local_compute_mode is LocalComputeMode.AGGRESSIVE
+    ):
+        aggressive_local_rank = 0
+
+    health_rank = 0 if candidate.health is RuntimeHealth.HEALTHY else 1
+    availability_rank = (
+        0 if candidate.availability is RuntimeAvailability.READY else 1
+    )
+    return (
+        preference,
+        aggressive_local_rank,
+        health_rank,
+        availability_rank,
+        candidate.priority,
+        candidate.load_rank,
+        candidate.cost_rank,
+        candidate.lane_id,
+        candidate.runtime_id,
+    )
 
 
 def _candidates(values: Iterable[RuntimeLaneCandidate]) -> tuple[RuntimeLaneCandidate, ...]:
@@ -454,6 +595,27 @@ def _ordered_unique_tokens(values: tuple[str, ...], field: str) -> tuple[str, ..
     return tuple(result)
 
 
+def _rank(value: object, field: str) -> int:
+    if (
+        not isinstance(value, int)
+        or isinstance(value, bool)
+        or not 0 <= value <= 1_000_000
+    ):
+        raise RuntimeRouterValidationError(
+            f"{field} must be an integer from 0 through 1000000"
+        )
+    return value
+
+
+def _reason_fragment(value: str) -> str:
+    fragment = re.sub(r"[^A-Za-z0-9]+", "_", value).strip("_").lower()
+    if not fragment:
+        raise RuntimeRouterValidationError(
+            "runtime capability must contain a reason-code-safe character"
+        )
+    return fragment[:80]
+
+
 def _utc_timestamp(value: object, field: str) -> datetime:
     if not isinstance(value, str) or not value.strip() or value != value.strip():
         raise RuntimeRouterValidationError(
@@ -481,9 +643,13 @@ def _token(value: object, field: str) -> str:
 __all__ = [
     "ApprovalState",
     "CandidateRouteDecision",
+    "LocalComputeMode",
     "RouteOutcome",
     "RouteReason",
     "RouteRequest",
+    "RuntimeAvailability",
+    "RuntimeHealth",
+    "RuntimeKind",
     "RuntimeLaneCandidate",
     "RuntimePolicy",
     "RuntimeRouteResult",
