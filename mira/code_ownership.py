@@ -1,9 +1,10 @@
 """Validate MIRA production component ownership and direct verification evidence.
 
-The ownership manifest is authored governance state. It maps production artifacts to
-bounded components while FEATURES.md remains feature truth and BACKLOG.md remains work
-truth. The validator fails closed on unowned/overlapping production code, dangling
-feature/work references, or verification that does not materially import owned Python
+The base ownership manifest plus optional sibling ownership fragments are authored
+governance state. They map production artifacts to bounded components while FEATURES.md
+remains feature truth and BACKLOG.md remains work truth. The validator fails closed on
+unowned/overlapping production code, dangling feature/work references, duplicate
+component identities, or verification that does not materially import owned Python
 modules.
 """
 
@@ -184,6 +185,36 @@ def load_manifest(path: str | Path) -> OwnershipManifest:
     )
 
 
+def _load_manifest_fragments(
+    manifest_file: Path, base_manifest: OwnershipManifest
+) -> tuple[ComponentOwnership, ...]:
+    """Load optional modular component manifests beside code_ownership.json.
+
+    For a base path ``project/code_ownership.json`` fragments live under
+    ``project/code_ownership.d/*.json``. Every fragment repeats the production-root
+    contract so a fragment cannot silently widen what counts as production code.
+    """
+
+    fragments_dir = manifest_file.with_suffix("")
+    fragments_dir = fragments_dir.with_name(f"{fragments_dir.name}.d")
+    if not fragments_dir.exists():
+        return ()
+    if not fragments_dir.is_dir():
+        raise CodeOwnershipError(
+            f"ownership fragments path is not a directory: {fragments_dir}"
+        )
+
+    components: list[ComponentOwnership] = []
+    for fragment_path in sorted(fragments_dir.glob("*.json")):
+        fragment = load_manifest(fragment_path)
+        if fragment.production_roots != base_manifest.production_roots:
+            raise CodeOwnershipError(
+                f"ownership fragment production_roots differ from base manifest: {fragment_path}"
+            )
+        components.extend(fragment.components)
+    return tuple(components)
+
+
 def _load_work_ids(path: Path) -> set[str]:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -197,12 +228,6 @@ def _load_work_ids(path: Path) -> set[str]:
     if not work_ids:
         raise CodeOwnershipError("BACKLOG.md contains no machine-readable work rows")
     return work_ids
-
-
-def _is_within(path: str, root: str) -> bool:
-    parts = PurePosixPath(path).parts
-    root_parts = PurePosixPath(root).parts
-    return len(parts) >= len(root_parts) and parts[: len(root_parts)] == root_parts
 
 
 def _enumerate_production_files(
@@ -266,7 +291,12 @@ def validate_repository(
 ) -> OwnershipReport:
     repo = Path(repository_root).resolve()
     manifest_file = repo / manifest_path
-    manifest = load_manifest(manifest_file)
+    base_manifest = load_manifest(manifest_file)
+    fragment_components = _load_manifest_fragments(manifest_file, base_manifest)
+    manifest = OwnershipManifest(
+        production_roots=base_manifest.production_roots,
+        components=tuple(base_manifest.components) + tuple(fragment_components),
+    )
     production_files, profiles = _enumerate_production_files(repo, manifest.production_roots)
 
     try:
@@ -276,7 +306,13 @@ def validate_repository(
     work_ids = _load_work_ids(repo / backlog_path)
 
     owner_by_path: dict[str, str] = {}
+    seen_component_ids: set[str] = set()
     for component in manifest.components:
+        if component.component_id in seen_component_ids:
+            raise CodeOwnershipError(
+                f"duplicate component id across ownership manifests: {component.component_id}"
+            )
+        seen_component_ids.add(component.component_id)
         for feature_id in component.feature_ids:
             if feature_id not in feature_ids:
                 raise CodeOwnershipError(
