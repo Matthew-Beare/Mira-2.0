@@ -15,7 +15,7 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 - **Packet:** `docs/work-packets/M2-M1-024.md`.
 - **Owned implementation surfaces:** `mira/command_sequencer.py`, `tests/test_compute_control_plane.py`, packet doc, this branch's `CURRENT_WORK.md`.
 - **Shared/high-contention surfaces:** none modified. PR #134 owns People Discovery plus the monolithic ownership manifest; PR #135 owns Sheets and ownership-fragment machinery.
-- **Current status:** implementation and synthetic tests complete on branch; PR #139 draft; CI #522 failed only at work-session alignment because the three authority reviews were collapsed under one heading; metadata corrected here.
+- **Current status:** implementation, replay hardening and adversarial synthetic tests complete on branch; PR #139 remains draft; CI #526 passed end-to-end on hardened implementation head `8916fd5476ffc85c8f97e6ef9c50ac21b4024964`; documentation closeout requires one final exact-head CI before merge.
 
 ## Objective
 
@@ -28,14 +28,20 @@ This packet does not execute jobs, authenticate workers, expose network/raw shel
 - M2-M1-021 routing foundation: **merged + post-merge CI verified**.
 - M2-M1-022 worker identity/advertisement contract: **merged + post-merge CI verified**.
 - M2-M1-023 durable worker registry: **merged at `9d7dc7b392e389b3bbcd746fd2b52d61bd8f149a`; post-merge CI #521 PASS**.
-- M2-M1-024 ID/branch collision check: **complete; no prior PR or branch exists**.
-- Current concurrent PR review: **#134 and #135 remain open; this packet avoids their files**.
-- Existing shared queue/sequencer inspection: **complete; `mira/command_sequencer.py` selected for reuse**.
+- M2-M1-024 ID/branch collision check: **complete; no prior PR or branch existed**.
+- Current concurrent PR review: **#134 and #135 remain open drafts and are now non-mergeable against newer main; this packet does not overlap their files**.
+- Existing shared queue/sequencer inspection: **complete; `mira/command_sequencer.py` reused rather than creating a duplicate scheduler**.
 - Durable compute-job implementation: **complete on branch**.
 - Synthetic lifecycle/lease/retry/cancel/preempt/resume/provenance tests: **complete on branch**.
 - Active-lease identity collision hardening + regression test: **complete on branch**.
-- CI #522 on `9fb435c954c694f5202aaf4c444c2bdef5bcbcdc`: **compile, feature registry, lifecycle and starter distribution passed; work-session alignment failed because this document used a combined authority heading; corrected without product-code change**.
-- Exact-head CI after metadata correction: **pending**.
+- STORE-001 test-harness correction: **complete; empty event registry replaced with valid synthetic event type**.
+- Transition replay hardening: **complete; durable SHA-256 receipt hashes bind idempotency identity to canonical transition material without persisting raw keys**.
+- Adversarial replay coverage: **complete; lease capability material, pause/cancel timestamps, cancellation acknowledgement and fail-after-requeue exact retry are covered**.
+- CI #522: **failed only at work-session alignment; authority headings corrected**.
+- CI #523: **reached Python tests and exposed the invalid synthetic STORE-001 event registry**.
+- CI #524: **PASS end-to-end after harness correction**.
+- CI #526 on hardened implementation head `8916fd5476ffc85c8f97e6ef9c50ac21b4024964`: **PASS end-to-end, including Python adversarial replay tests and all repository gates**.
+- Documentation closeout exact-head CI: **pending**.
 - Merge/post-merge CI: **pending**.
 - Live worker/network/model/private deployment evidence: **not claimed and out of scope**.
 
@@ -59,7 +65,7 @@ Reviewed from verified main. Advanced/self-hosted compute remains optional and d
 
 ### Collision/concurrency review
 
-PR #134 changes People Discovery and `project/code_ownership.json`. PR #135 changes Sheets plus ownership-fragment machinery. M2-M1-024 does not modify those paths and reuses an already-owned production module.
+PR #134 changes People Discovery and `project/code_ownership.json`. PR #135 changes Sheets plus ownership-fragment machinery. Both remain draft and currently non-mergeable against newer main. M2-M1-024 does not modify their paths and reuses an already-owned production module.
 
 ### Direction result
 
@@ -67,11 +73,11 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Run exact-head CI after the authority-heading metadata correction.
-2. If CI reaches product tests, fix only concrete failures on this bounded packet.
-3. Review final diff and reconcile current remote `main` plus active PR overlap.
-4. Mark PR #139 ready and merge only with exact-head green CI using expected-head protection.
-5. Read back merged `main` and post-merge CI before claiming integration verification.
+1. Run final exact-head CI after this documentation closeout and packet evidence update.
+2. Re-read remote `main`, PR #139 head/mergeability and changed-file overlap.
+3. Mark PR #139 ready and merge only if exact-head CI is green, using expected-head protection.
+4. Read back merged `main` and verify post-merge CI before claiming integration verification.
+5. After M2-M1-024 closes, select the next dependency-ranked compute-fabric child packet from current Git state rather than chat history.
 
 ## Recovery protocol
 
