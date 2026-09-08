@@ -5,6 +5,8 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
+import hashlib
+import json
 import re
 from threading import RLock
 from typing import Any, Callable, Iterable
@@ -267,6 +269,8 @@ class ComputeJobView:
     result_runtime_id: str | None
     result_attempt: int | None
     finished_at: str | None
+    last_transition_key_sha256: str | None
+    last_transition_material_sha256: str | None
     idempotent_replay: bool = False
 
     @property
@@ -298,27 +302,52 @@ class ComputeJobControlPlane:
         created_at: str,
         idempotency_key: str,
     ) -> ComputeJobView:
+        job = _token(job_id, "job_id")
+        operation = _token(operation_id, "operation_id")
+        service = _token(service_id, "service_id")
+        classification = _token(data_classification, "data_classification")
+        caps = _tokens(required_capabilities, "required_capabilities", allow_empty=False)
+        input_id = _token(input_artifact_id, "input_artifact_id")
+        input_hash = _sha256(input_sha256, "input_sha256")
+        normalized_priority = _rank(priority, "priority")
+        attempts_limit = _positive(max_attempts, "max_attempts")
+        created = _utc_text(created_at, "created_at")
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "submit",
+            "job_id": job,
+            "operation_id": operation,
+            "service_id": service,
+            "data_classification": classification,
+            "required_capabilities": list(caps),
+            "input_artifact_id": input_id,
+            "input_sha256": input_hash,
+            "priority": normalized_priority,
+            "max_attempts": attempts_limit,
+            "created_at": created,
+        }
+        key_hash, material_hash = _transition_receipt(key, material)
         payload = _job_payload(
-            job_id=_token(job_id, "job_id"),
-            operation_id=_token(operation_id, "operation_id"),
-            service_id=_token(service_id, "service_id"),
-            data_classification=_token(data_classification, "data_classification"),
-            required_capabilities=list(
-                _tokens(required_capabilities, "required_capabilities", allow_empty=False)
-            ),
-            input_artifact_id=_token(input_artifact_id, "input_artifact_id"),
-            input_sha256=_sha256(input_sha256, "input_sha256"),
-            priority=_rank(priority, "priority"),
-            max_attempts=_positive(max_attempts, "max_attempts"),
+            job_id=job,
+            operation_id=operation,
+            service_id=service,
+            data_classification=classification,
+            required_capabilities=list(caps),
+            input_artifact_id=input_id,
+            input_sha256=input_hash,
+            priority=normalized_priority,
+            max_attempts=attempts_limit,
             state="queued",
             attempts=0,
-            created_at=_utc_text(created_at, "created_at"),
+            created_at=created,
+            last_transition_key_sha256=key_hash,
+            last_transition_material_sha256=material_hash,
         )
         result = self._adapter.upsert(
             COMPUTE_JOB_RESOURCE_TYPE,
             payload["job_id"],
             payload,
-            idempotency_key=_token(idempotency_key, "idempotency_key"),
+            idempotency_key=key,
             expected_revision=0,
         )
         return _job_view(result.record, idempotent_replay=result.idempotent_replay)
@@ -350,41 +379,50 @@ class ComputeJobControlPlane:
         idempotency_key: str,
     ) -> ComputeJobView | None:
         worker = _token(worker_id, "worker_id")
+        caps_tuple = _tokens(worker_capabilities, "worker_capabilities", allow_empty=False)
+        caps = set(caps_tuple)
         lease = _token(lease_id, "lease_id")
-        caps = set(_tokens(worker_capabilities, "worker_capabilities", allow_empty=False))
-        if _utc(lease_expires_at, "lease_expires_at") <= _utc(leased_at, "leased_at"):
+        leased = _utc_text(leased_at, "leased_at")
+        expires = _utc_text(lease_expires_at, "lease_expires_at")
+        if _utc(expires, "lease_expires_at") <= _utc(leased, "leased_at"):
             raise QueueStateError("lease_expires_at must be after leased_at")
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "lease_next",
+            "worker_id": worker,
+            "worker_capabilities": list(caps_tuple),
+            "lease_id": lease,
+            "leased_at": leased,
+            "lease_expires_at": expires,
+        }
         jobs = self.list_jobs()
-        for job in jobs:
-            if job.lease_id != lease or not job.active_lease:
-                continue
-            if (
-                job.lease_worker_id == worker
-                and job.leased_at == leased_at
-                and job.lease_expires_at == lease_expires_at
-            ):
-                return replace(job, idempotent_replay=True)
-            raise QueueStateError("lease_id is already active with different material")
+        replay = self._find_transition_replay(jobs, key, material)
+        if replay is not None:
+            return replay
+        for candidate in jobs:
+            if candidate.lease_id == lease and candidate.active_lease:
+                raise QueueStateError("lease_id is already active with different material")
         eligible = [
-            job
-            for job in jobs
-            if job.state == "queued"
-            and not job.cancel_requested
-            and job.attempts < job.max_attempts
-            and set(job.required_capabilities).issubset(caps)
+            candidate
+            for candidate in jobs
+            if candidate.state == "queued"
+            and not candidate.cancel_requested
+            and candidate.attempts < candidate.max_attempts
+            and set(candidate.required_capabilities).issubset(caps)
         ]
         if not eligible:
             return None
         selected = min(eligible, key=ComputeJobView.queue_sort_key)
         return self._mutate(
             selected.job_id,
-            idempotency_key,
+            key,
+            material,
             state="leased",
             attempts=selected.attempts + 1,
             lease_worker_id=worker,
             lease_id=lease,
-            leased_at=_utc_text(leased_at, "leased_at"),
-            lease_expires_at=_utc_text(lease_expires_at, "lease_expires_at"),
+            leased_at=leased,
+            lease_expires_at=expires,
             started_at=None,
             error_code=None,
             finished_at=None,
@@ -400,18 +438,26 @@ class ComputeJobControlPlane:
         idempotency_key: str,
     ) -> ComputeJobView:
         current = self.get(job_id)
-        if current.state == "running" and current.started_at == started_at:
-            _lease(current, worker_id, lease_id)
-            return replace(current, idempotent_replay=True)
-        _lease(current, worker_id, lease_id)
+        worker = _token(worker_id, "worker_id")
+        lease = _token(lease_id, "lease_id")
+        started = _utc_text(started_at, "started_at")
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "start",
+            "job_id": current.job_id,
+            "worker_id": worker,
+            "lease_id": lease,
+            "started_at": started,
+        }
+        replay = _transition_replay(current, key, material)
+        if replay is not None:
+            return replay
+        _lease(current, worker, lease)
         if current.state != "leased":
             raise QueueStateError(f"cannot start compute job in state {current.state}")
-        _within_lease(current, started_at, "started_at")
+        _within_lease(current, started, "started_at")
         return self._mutate(
-            current.job_id,
-            idempotency_key,
-            state="running",
-            started_at=_utc_text(started_at, "started_at"),
+            current.job_id, key, material, state="running", started_at=started
         )
 
     def request_cancel(
@@ -423,14 +469,24 @@ class ComputeJobControlPlane:
     ) -> ComputeJobView:
         current = self.get(job_id)
         when = _utc_text(requested_at, "requested_at")
-        if current.state == "cancelled":
-            return replace(current, idempotent_replay=True)
-        if current.state in {"succeeded", "failed"}:
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "request_cancel",
+            "job_id": current.job_id,
+            "requested_at": when,
+        }
+        replay = _transition_replay(current, key, material)
+        if replay is not None:
+            return replay
+        if current.state in {"succeeded", "failed", "cancelled"}:
             raise QueueStateError(f"cannot cancel terminal compute job in state {current.state}")
+        if current.cancel_requested:
+            raise QueueStateError("cancellation has already been requested")
         if current.state in {"queued", "paused"}:
             return self._mutate(
                 current.job_id,
-                idempotency_key,
+                key,
+                material,
                 state="cancelled",
                 cancel_requested=True,
                 lease_worker_id=None,
@@ -440,9 +496,7 @@ class ComputeJobControlPlane:
                 started_at=None,
                 finished_at=when,
             )
-        if current.cancel_requested:
-            return replace(current, idempotent_replay=True)
-        return self._mutate(current.job_id, idempotency_key, cancel_requested=True)
+        return self._mutate(current.job_id, key, material, cancel_requested=True)
 
     def acknowledge_cancel(
         self,
@@ -454,22 +508,37 @@ class ComputeJobControlPlane:
         idempotency_key: str,
     ) -> ComputeJobView:
         current = self.get(job_id)
+        worker = _token(worker_id, "worker_id")
+        lease = _token(lease_id, "lease_id")
+        cancelled = _utc_text(cancelled_at, "cancelled_at")
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "acknowledge_cancel",
+            "job_id": current.job_id,
+            "worker_id": worker,
+            "lease_id": lease,
+            "cancelled_at": cancelled,
+        }
+        replay = _transition_replay(current, key, material)
+        if replay is not None:
+            return replay
         if current.state == "cancelled":
-            return replace(current, idempotent_replay=True)
-        _lease(current, worker_id, lease_id)
+            raise QueueStateError("compute job is already cancelled")
+        _lease(current, worker, lease)
         if not current.cancel_requested:
             raise QueueStateError("cancellation has not been requested")
-        _within_lease(current, cancelled_at, "cancelled_at")
+        _within_lease(current, cancelled, "cancelled_at")
         return self._mutate(
             current.job_id,
-            idempotency_key,
+            key,
+            material,
             state="cancelled",
             lease_worker_id=None,
             lease_id=None,
             leased_at=None,
             lease_expires_at=None,
             started_at=None,
-            finished_at=_utc_text(cancelled_at, "cancelled_at"),
+            finished_at=cancelled,
         )
 
     def pause(
@@ -484,38 +553,56 @@ class ComputeJobControlPlane:
         idempotency_key: str,
     ) -> ComputeJobView:
         current = self.get(job_id)
-        if (
-            current.state == "paused"
-            and current.checkpoint_artifact_id == checkpoint_artifact_id
-            and current.checkpoint_sha256 == checkpoint_sha256
-        ):
-            return replace(current, idempotent_replay=True)
-        _lease(current, worker_id, lease_id)
+        worker = _token(worker_id, "worker_id")
+        lease = _token(lease_id, "lease_id")
+        checkpoint_id = _token(checkpoint_artifact_id, "checkpoint_artifact_id")
+        checkpoint_hash = _sha256(checkpoint_sha256, "checkpoint_sha256")
+        paused = _utc_text(paused_at, "paused_at")
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "pause",
+            "job_id": current.job_id,
+            "worker_id": worker,
+            "lease_id": lease,
+            "checkpoint_artifact_id": checkpoint_id,
+            "checkpoint_sha256": checkpoint_hash,
+            "paused_at": paused,
+        }
+        replay = _transition_replay(current, key, material)
+        if replay is not None:
+            return replay
+        _lease(current, worker, lease)
         if current.state != "running":
             raise QueueStateError(f"cannot pause compute job in state {current.state}")
         if current.cancel_requested:
             raise QueueStateError("cancel-requested job must acknowledge cancellation")
-        _within_lease(current, paused_at, "paused_at")
+        _within_lease(current, paused, "paused_at")
         return self._mutate(
             current.job_id,
-            idempotency_key,
+            key,
+            material,
             state="paused",
             lease_worker_id=None,
             lease_id=None,
             leased_at=None,
             lease_expires_at=None,
             started_at=None,
-            checkpoint_artifact_id=_token(checkpoint_artifact_id, "checkpoint_artifact_id"),
-            checkpoint_sha256=_sha256(checkpoint_sha256, "checkpoint_sha256"),
+            checkpoint_artifact_id=checkpoint_id,
+            checkpoint_sha256=checkpoint_hash,
         )
 
     def resume(self, job_id: str, *, idempotency_key: str) -> ComputeJobView:
         current = self.get(job_id)
-        if current.state == "queued" and current.checkpoint_artifact_id is not None:
-            return replace(current, idempotent_replay=True)
+        key = _token(idempotency_key, "idempotency_key")
+        material = {"operation": "resume", "job_id": current.job_id}
+        replay = _transition_replay(current, key, material)
+        if replay is not None:
+            return replay
         if current.state != "paused":
             raise QueueStateError(f"cannot resume compute job in state {current.state}")
-        return self._mutate(current.job_id, idempotency_key, state="queued", error_code=None)
+        return self._mutate(
+            current.job_id, key, material, state="queued", error_code=None
+        )
 
     def complete(
         self,
@@ -530,37 +617,50 @@ class ComputeJobControlPlane:
         idempotency_key: str,
     ) -> ComputeJobView:
         current = self.get(job_id)
+        worker = _token(worker_id, "worker_id")
+        lease = _token(lease_id, "lease_id")
+        runtime = _token(runtime_id, "runtime_id")
+        result_id = _token(result_artifact_id, "result_artifact_id")
+        result_hash = _sha256(result_sha256, "result_sha256")
+        completed = _utc_text(completed_at, "completed_at")
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "complete",
+            "job_id": current.job_id,
+            "worker_id": worker,
+            "lease_id": lease,
+            "runtime_id": runtime,
+            "result_artifact_id": result_id,
+            "result_sha256": result_hash,
+            "completed_at": completed,
+        }
+        replay = _transition_replay(current, key, material)
+        if replay is not None:
+            return replay
         if current.state == "succeeded":
-            if (
-                current.result_worker_id == worker_id
-                and current.result_runtime_id == runtime_id
-                and current.result_artifact_id == result_artifact_id
-                and current.result_sha256 == result_sha256
-                and current.finished_at == completed_at
-            ):
-                return replace(current, idempotent_replay=True)
-            raise QueueStateError("succeeded job already has different result provenance")
-        _lease(current, worker_id, lease_id)
+            raise QueueStateError("compute job already has a successful result")
+        _lease(current, worker, lease)
         if current.state != "running":
             raise QueueStateError(f"cannot complete compute job in state {current.state}")
         if current.cancel_requested:
             raise QueueStateError("cancel-requested job cannot succeed")
-        _within_lease(current, completed_at, "completed_at")
+        _within_lease(current, completed, "completed_at")
         return self._mutate(
             current.job_id,
-            idempotency_key,
+            key,
+            material,
             state="succeeded",
             lease_worker_id=None,
             lease_id=None,
             leased_at=None,
             lease_expires_at=None,
             started_at=None,
-            result_artifact_id=_token(result_artifact_id, "result_artifact_id"),
-            result_sha256=_sha256(result_sha256, "result_sha256"),
-            result_worker_id=_token(worker_id, "worker_id"),
-            result_runtime_id=_token(runtime_id, "runtime_id"),
+            result_artifact_id=result_id,
+            result_sha256=result_hash,
+            result_worker_id=worker,
+            result_runtime_id=runtime,
             result_attempt=current.attempts,
-            finished_at=_utc_text(completed_at, "completed_at"),
+            finished_at=completed,
             error_code=None,
         )
 
@@ -576,42 +676,75 @@ class ComputeJobControlPlane:
         idempotency_key: str,
     ) -> ComputeJobView:
         current = self.get(job_id)
-        _lease(current, worker_id, lease_id)
-        if current.state not in {"leased", "running"}:
-            raise QueueStateError(f"cannot fail compute job in state {current.state}")
+        worker = _token(worker_id, "worker_id")
+        lease = _token(lease_id, "lease_id")
+        error = _token(error_code, "error_code")
+        failed = _utc_text(failed_at, "failed_at")
         if not isinstance(retryable, bool):
             raise QueueStateError("retryable must be boolean")
-        _within_lease(current, failed_at, "failed_at")
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "fail",
+            "job_id": current.job_id,
+            "worker_id": worker,
+            "lease_id": lease,
+            "error_code": error,
+            "failed_at": failed,
+            "retryable": retryable,
+        }
+        replay = _transition_replay(current, key, material)
+        if replay is not None:
+            return replay
+        _lease(current, worker, lease)
+        if current.state not in {"leased", "running"}:
+            raise QueueStateError(f"cannot fail compute job in state {current.state}")
+        _within_lease(current, failed, "failed_at")
         terminal = not retryable or current.attempts >= current.max_attempts
-        state = "cancelled" if current.cancel_requested else ("failed" if terminal else "queued")
+        state = (
+            "cancelled"
+            if current.cancel_requested
+            else ("failed" if terminal else "queued")
+        )
         return self._mutate(
             current.job_id,
-            idempotency_key,
+            key,
+            material,
             state=state,
             lease_worker_id=None,
             lease_id=None,
             leased_at=None,
             lease_expires_at=None,
             started_at=None,
-            error_code=_token(error_code, "error_code"),
-            finished_at=_utc_text(failed_at, "failed_at") if state in COMPUTE_JOB_TERMINAL_STATES else None,
+            error_code=error,
+            finished_at=failed if state in COMPUTE_JOB_TERMINAL_STATES else None,
         )
 
     def reap_expired(self, *, now: str) -> tuple[ComputeJobView, ...]:
-        now_dt = _utc(now, "now")
+        now_text = _utc_text(now, "now")
+        now_dt = _utc(now_text, "now")
         changed: list[ComputeJobView] = []
         for current in self.list_jobs():
             if not current.active_lease:
                 continue
             if _utc(current.lease_expires_at, "lease_expires_at") >= now_dt:
                 continue
-            state = "cancelled" if current.cancel_requested else (
-                "failed" if current.attempts >= current.max_attempts else "queued"
+            state = (
+                "cancelled"
+                if current.cancel_requested
+                else ("failed" if current.attempts >= current.max_attempts else "queued")
             )
+            key = f"compute-job-reap:{current.job_id}:{current.lease_id}"
+            material = {
+                "operation": "reap_expired",
+                "job_id": current.job_id,
+                "lease_id": current.lease_id,
+                "now": now_text,
+            }
             changed.append(
                 self._mutate(
                     current.job_id,
-                    f"compute-job-reap:{current.job_id}:{current.lease_id}",
+                    key,
+                    material,
                     state=state,
                     lease_worker_id=None,
                     lease_id=None,
@@ -619,24 +752,52 @@ class ComputeJobControlPlane:
                     lease_expires_at=None,
                     started_at=None,
                     error_code="lease_expired",
-                    finished_at=now if state in COMPUTE_JOB_TERMINAL_STATES else None,
+                    finished_at=(
+                        now_text if state in COMPUTE_JOB_TERMINAL_STATES else None
+                    ),
                 )
             )
         changed.sort(key=lambda job: job.job_id)
         return tuple(changed)
 
-    def _mutate(self, job_id: str, idempotency_key: str, **changes: Any) -> ComputeJobView:
-        record = self._adapter.get(COMPUTE_JOB_RESOURCE_TYPE, _token(job_id, "job_id"))
+    def _find_transition_replay(
+        self,
+        jobs: Iterable[ComputeJobView],
+        idempotency_key: str,
+        material: dict[str, Any],
+    ) -> ComputeJobView | None:
+        for job in jobs:
+            replay = _transition_replay(job, idempotency_key, material)
+            if replay is not None:
+                return replay
+        return None
+
+    def _mutate(
+        self,
+        job_id: str,
+        idempotency_key: str,
+        transition_material: dict[str, Any],
+        **changes: Any,
+    ) -> ComputeJobView:
+        key = _token(idempotency_key, "idempotency_key")
+        record = self._adapter.get(
+            COMPUTE_JOB_RESOURCE_TYPE, _token(job_id, "job_id")
+        )
+        current = _job_view(record)
+        replay = _transition_replay(current, key, transition_material)
+        if replay is not None:
+            return replay
+        key_hash, material_hash = _transition_receipt(key, transition_material)
         payload = deepcopy(record.payload)
         payload.update(changes)
+        payload["last_transition_key_sha256"] = key_hash
+        payload["last_transition_material_sha256"] = material_hash
         _validate_job_payload(payload, expected_job_id=record.resource_id)
-        if payload == record.payload:
-            return _job_view(record, idempotent_replay=True)
         result = self._adapter.upsert(
             COMPUTE_JOB_RESOURCE_TYPE,
             record.resource_id,
             payload,
-            idempotency_key=_token(idempotency_key, "idempotency_key"),
+            idempotency_key=key,
             expected_revision=record.revision,
         )
         return _job_view(result.record, idempotent_replay=result.idempotent_replay)
@@ -662,11 +823,15 @@ def _job_payload(**base: Any) -> dict[str, Any]:
         "result_attempt": None,
         "finished_at": None,
     }
+    payload.setdefault("last_transition_key_sha256", None)
+    payload.setdefault("last_transition_material_sha256", None)
     _validate_job_payload(payload, expected_job_id=payload["job_id"])
     return payload
 
 
-def _job_view(record: ResourceRecord, *, idempotent_replay: bool = False) -> ComputeJobView:
+def _job_view(
+    record: ResourceRecord, *, idempotent_replay: bool = False
+) -> ComputeJobView:
     p = deepcopy(record.payload)
     _validate_job_payload(p, expected_job_id=record.resource_id)
     return ComputeJobView(
@@ -698,27 +863,62 @@ def _job_view(record: ResourceRecord, *, idempotent_replay: bool = False) -> Com
         result_runtime_id=p["result_runtime_id"],
         result_attempt=p["result_attempt"],
         finished_at=p["finished_at"],
+        last_transition_key_sha256=p["last_transition_key_sha256"],
+        last_transition_material_sha256=p["last_transition_material_sha256"],
         idempotent_replay=idempotent_replay,
     )
 
 
 def _validate_job_payload(p: dict[str, Any], *, expected_job_id: str) -> None:
     expected = {
-        "schema_version", "job_id", "operation_id", "service_id", "data_classification",
-        "required_capabilities", "input_artifact_id", "input_sha256", "priority",
-        "max_attempts", "state", "attempts", "created_at", "cancel_requested",
-        "lease_worker_id", "lease_id", "leased_at", "lease_expires_at", "started_at",
-        "checkpoint_artifact_id", "checkpoint_sha256", "error_code", "result_artifact_id",
-        "result_sha256", "result_worker_id", "result_runtime_id", "result_attempt", "finished_at",
+        "schema_version",
+        "job_id",
+        "operation_id",
+        "service_id",
+        "data_classification",
+        "required_capabilities",
+        "input_artifact_id",
+        "input_sha256",
+        "priority",
+        "max_attempts",
+        "state",
+        "attempts",
+        "created_at",
+        "cancel_requested",
+        "lease_worker_id",
+        "lease_id",
+        "leased_at",
+        "lease_expires_at",
+        "started_at",
+        "checkpoint_artifact_id",
+        "checkpoint_sha256",
+        "error_code",
+        "result_artifact_id",
+        "result_sha256",
+        "result_worker_id",
+        "result_runtime_id",
+        "result_attempt",
+        "finished_at",
+        "last_transition_key_sha256",
+        "last_transition_material_sha256",
     }
     if not isinstance(p, dict) or set(p) != expected:
         raise QueueStateError("compute-job payload fields do not match the supported schema")
     if p["schema_version"] != COMPUTE_JOB_SCHEMA_VERSION or p["job_id"] != expected_job_id:
         raise QueueStateError("compute-job schema/identity mismatch")
-    for field in ("job_id", "operation_id", "service_id", "data_classification", "input_artifact_id"):
+    for field in (
+        "job_id",
+        "operation_id",
+        "service_id",
+        "data_classification",
+        "input_artifact_id",
+    ):
         _token(p[field], field)
     caps = p["required_capabilities"]
-    if not isinstance(caps, list) or list(_tokens(caps, "required_capabilities", allow_empty=False)) != caps:
+    if (
+        not isinstance(caps, list)
+        or list(_tokens(caps, "required_capabilities", allow_empty=False)) != caps
+    ):
         raise QueueStateError("required_capabilities must be a sorted unique list")
     _sha256(p["input_sha256"], "input_sha256")
     _rank(p["priority"], "priority")
@@ -730,17 +930,39 @@ def _validate_job_payload(p: dict[str, Any], *, expected_job_id: str) -> None:
     created = _utc(p["created_at"], "created_at")
     if not isinstance(p["cancel_requested"], bool):
         raise QueueStateError("cancel_requested must be boolean")
-    for field in ("lease_worker_id", "lease_id", "checkpoint_artifact_id", "error_code", "result_artifact_id", "result_worker_id", "result_runtime_id"):
+    for field in (
+        "lease_worker_id",
+        "lease_id",
+        "checkpoint_artifact_id",
+        "error_code",
+        "result_artifact_id",
+        "result_worker_id",
+        "result_runtime_id",
+    ):
         if p[field] is not None:
             _token(p[field], field)
-    for field in ("checkpoint_sha256", "result_sha256"):
+    for field in (
+        "checkpoint_sha256",
+        "result_sha256",
+        "last_transition_key_sha256",
+        "last_transition_material_sha256",
+    ):
         if p[field] is not None:
             _sha256(p[field], field)
+    if (p["last_transition_key_sha256"] is None) != (
+        p["last_transition_material_sha256"] is None
+    ):
+        raise QueueStateError("transition receipt hashes must appear together")
     for field in ("leased_at", "lease_expires_at", "started_at", "finished_at"):
         if p[field] is not None:
             _utc(p[field], field)
     active = state in {"leased", "running"}
-    lease_fields = (p["lease_worker_id"], p["lease_id"], p["leased_at"], p["lease_expires_at"])
+    lease_fields = (
+        p["lease_worker_id"],
+        p["lease_id"],
+        p["leased_at"],
+        p["lease_expires_at"],
+    )
     if active and any(value is None for value in lease_fields):
         raise QueueStateError("active compute job requires complete lease state")
     if not active and any(value is not None for value in lease_fields):
@@ -763,8 +985,11 @@ def _validate_job_payload(p: dict[str, Any], *, expected_job_id: str) -> None:
     if (p["checkpoint_artifact_id"] is None) != (p["checkpoint_sha256"] is None):
         raise QueueStateError("checkpoint ID/hash must appear together")
     result_values = (
-        p["result_artifact_id"], p["result_sha256"], p["result_worker_id"],
-        p["result_runtime_id"], p["result_attempt"],
+        p["result_artifact_id"],
+        p["result_sha256"],
+        p["result_worker_id"],
+        p["result_runtime_id"],
+        p["result_attempt"],
     )
     if state == "succeeded":
         if any(value is None for value in result_values) or p["finished_at"] is None:
@@ -784,16 +1009,55 @@ def _validate_job_payload(p: dict[str, Any], *, expected_job_id: str) -> None:
         raise QueueStateError("queued/paused job cannot retain cancel_requested=true")
 
 
+def _transition_receipt(
+    idempotency_key: str, material: dict[str, Any]
+) -> tuple[str, str]:
+    key = _token(idempotency_key, "idempotency_key")
+    try:
+        normalized = json.dumps(
+            material,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        )
+    except (TypeError, ValueError) as exc:
+        raise QueueStateError("transition material must be canonical JSON data") from exc
+    return (
+        hashlib.sha256(key.encode("utf-8")).hexdigest(),
+        hashlib.sha256(normalized.encode("utf-8")).hexdigest(),
+    )
+
+
+def _transition_replay(
+    job: ComputeJobView, idempotency_key: str, material: dict[str, Any]
+) -> ComputeJobView | None:
+    key_hash, material_hash = _transition_receipt(idempotency_key, material)
+    if job.last_transition_key_sha256 != key_hash:
+        return None
+    if job.last_transition_material_sha256 != material_hash:
+        raise QueueStateError(
+            "idempotency key was already used with different transition material"
+        )
+    return replace(job, idempotent_replay=True)
+
+
 def _lease(job: ComputeJobView, worker_id: str, lease_id: str) -> None:
     if not job.active_lease:
         raise QueueStateError(f"compute job has no active lease in state {job.state}")
-    if job.lease_worker_id != _token(worker_id, "worker_id") or job.lease_id != _token(lease_id, "lease_id"):
+    if (
+        job.lease_worker_id != _token(worker_id, "worker_id")
+        or job.lease_id != _token(lease_id, "lease_id")
+    ):
         raise QueueStateError("compute-job lease ownership mismatch")
 
 
 def _within_lease(job: ComputeJobView, value: str, field: str) -> None:
     when = _utc(value, field)
-    if when < _utc(job.leased_at, "leased_at") or when > _utc(job.lease_expires_at, "lease_expires_at"):
+    if (
+        when < _utc(job.leased_at, "leased_at")
+        or when > _utc(job.lease_expires_at, "lease_expires_at")
+    ):
         raise QueueStateError(f"{field} must fall within active lease")
 
 
