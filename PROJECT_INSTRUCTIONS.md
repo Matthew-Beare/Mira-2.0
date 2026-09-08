@@ -21,7 +21,7 @@ The assistant acts as the software team and owns:
 - work-packet sizing and sequencing;
 - acceptance-criteria drafting;
 - branch, commit, PR, test, and verification discipline;
-- CURRENT_WORK coordination maintenance;
+- CURRENT_WORK maintenance on each packet branch;
 - ROADMAP, FEATURES, and BACKLOG maintenance;
 - exact recovery checkpoints and resume points;
 - deciding what should be worked on next based on dependencies, risk, product value, and the active milestone.
@@ -32,21 +32,24 @@ PACKET OWNERSHIP, CONCURRENCY, AND SCOPE CONTROL
 
 Multiple MIRA development chats may work in parallel. Git isolation is mandatory.
 
-- Multiple work packets may be active repository-wide at the same time.
-- Each chat/session owns exactly one implementation packet at a time.
-- Every packet must use a unique packet ID and its own branch.
+- Each chat/session owns exactly one active work packet at a time.
+- Each packet must have a unique packet ID and its own `work/...` branch.
+- Multiple packet branches may be active repository-wide at the same time.
+- `CURRENT_WORK.md` remains one-active-packet-per-branch so each branch has one exact recovery point and the existing alignment gate remains mechanically useful.
+- Remote `work/...` branches and open PRs are the repository-wide concurrency registry. Do not assume `CURRENT_WORK.md` on `main` exhaustively describes every in-flight branch.
 - `main` is the serialized integration branch, never a shared scratch branch.
-- A chat must not reuse another packet's branch for unrelated work or force-update another packet's branch.
-- Before implementation writes, read current remote `main`, `CURRENT_WORK.md`, the relevant packet document, and current remote branch state. Inspect known active packets for overlapping implementation surfaces.
-- New packets normally branch from the current verified `main` SHA. Resumed packets continue from their recorded remote branch head.
+- A chat must not reuse another packet's branch for unrelated work, force-update another packet's branch, or force-update `main` to avoid a conflict.
+- New packets normally branch from current verified `main`. Resumed packets continue from their recorded remote branch head.
+- Before implementation writes, inspect current remote `main`, the relevant packet branch, and active remote packet branches/open PRs for overlapping implementation surfaces.
 - Two packets must not intentionally edit the same implementation surface concurrently unless an explicit dependency or integration plan is recorded first.
+- Every packet must declare owned implementation surfaces / expected touched paths and any shared/high-contention surfaces before substantial implementation begins.
 - Shared governance files such as `CURRENT_WORK.md`, `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, and `PROJECT_INSTRUCTIONS.md` are high-contention surfaces. Keep changes minimal and reconcile them against current `main` immediately before merge.
 - Parallel implementation is allowed; integration into `main` is serialized.
 - Before merging, re-read current `main`, detect intervening merges, reconcile conflicts semantically, preserve compatible newer work from all packets, and rerun affected tests/baseline gates.
-- Never discard another packet's newer work merely to make a merge easy.
+- Never discard another packet's newer valid work merely to make a merge easy.
 - If safe reconciliation cannot be proven, leave both branches intact and stop the merge rather than overwriting work.
 
-The detailed repository policy is `docs/CONCURRENT_WORK_POLICY.md` and is authoritative with these instructions.
+The detailed repository policy is `docs/CONCURRENT_WORK_POLICY.md` and `project/WORK_PACKET_POLICY.md`.
 
 The user may brainstorm or introduce new ideas at any time without special syntax. New ideas are captured in Git-backed FEATURES/BACKLOG by default and do not expand the current chat's packet.
 
@@ -57,10 +60,9 @@ A new request may enter the current chat's packet only when:
 
 When one chat explicitly reprioritizes:
 1. create a durable checkpoint on that packet's branch;
-2. update the packet document with the exact resume point;
-3. update repository-wide coordination state when practical;
-4. commit/push and remotely verify the checkpoint when Git access permits;
-5. only then switch that chat to another packet.
+2. update that branch's `CURRENT_WORK.md` and packet document with the exact resume point;
+3. commit/push and remotely verify the checkpoint when Git access permits;
+4. only then switch that chat to another packet branch.
 
 Reprioritizing one chat does not globally suspend unrelated, non-conflicting packets being worked in other chats.
 
@@ -79,7 +81,7 @@ Every packet must record:
 - completed evidence;
 - exact next action / resume point.
 
-The packet document plus its remote branch head are authoritative for that packet's exact resume state. `CURRENT_WORK.md` is the repository-wide coordination index and may list multiple active packets.
+The packet branch's `CURRENT_WORK.md`, packet document, remote branch head, and open PR state are authoritative for that packet's exact resume state.
 
 BACKLOG PRIORITY
 
@@ -104,14 +106,14 @@ Git is authoritative for:
 - ROADMAP.md
 - FEATURES.md
 - BACKLOG.md
-- CURRENT_WORK.md
+- CURRENT_WORK.md on each packet branch
 - packet documents and concurrency policy
 - engineering/work-packet policy
 - durable product and architecture decisions
 
 Human-readable spreadsheets, dashboards, or external views may mirror Git one-way for convenience but must not become an independent development source of truth.
 
-Before continuing substantial work in a new or recovered conversation, read current remote `main` and `CURRENT_WORK.md`, then confirm the relevant packet branch/head. Do not reconstruct unfinished work from conversational memory when Git contains the checkpoint.
+Before continuing substantial work in a new or recovered conversation, read current remote `main`, identify the relevant packet branch, then read that branch's `CURRENT_WORK.md` and packet document and verify its remote head. Do not reconstruct unfinished work from conversational memory when Git contains the checkpoint.
 
 MAIN INTEGRATION DISCIPLINE
 
@@ -209,7 +211,7 @@ Every assistant reply in the MIRA development project must end with exactly one 
 
 Use the packet owned by the current chat, not some unrelated packet being worked in another chat. If this chat has no implementation packet, use its current governance/audit packet ID. This line must be the final visible line of the reply so the user can recover context by quoting it in another conversation.
 
-The recovery tag does not replace Git. Packet documents, remote branches, `CURRENT_WORK.md`, and `main` remain authoritative; the tag is only a convenient human recovery pointer.
+The recovery tag does not replace Git. Packet branches, packet documents, remote heads, and `CURRENT_WORK.md` remain authoritative; the tag is only a convenient human recovery pointer.
 
 BRANDING
 
