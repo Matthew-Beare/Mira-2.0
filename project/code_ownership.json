@@ -297,6 +297,25 @@
       "verification": ["tests/test_provider_onboarding.py"]
     },
     {
+      "id": "career-people-discovery",
+      "responsibility": "Provider-neutral professional people discovery, conservative identity/scoring/provenance, bounded search-provider integration, canonical manual relationship/reply tracking, and stable-ID Google tracker projection with exact readback.",
+      "why_separate": "Career discovery composes canonical storage and Google projection primitives but must keep provider observations, relationship history, spreadsheet views and human-performed outreach distinct so no provider or tracker becomes a second authority or automated messaging surface.",
+      "owned_paths": [
+        "mira/people_discovery.py",
+        "mira/people_providers.py",
+        "mira/people_tracker.py",
+        "mira/people_sheet_projection.py"
+      ],
+      "feature_ids": ["CAREER-001", "AUTH-001", "STORE-001", "MAIL-002", "DATA-001", "RECOVERY-002"],
+      "work_ids": ["PEOPLE-DISCOVERY-001"],
+      "verification": [
+        "tests/test_people_discovery.py",
+        "tests/test_people_providers.py",
+        "tests/test_people_tracker.py",
+        "tests/test_people_sheet_projection.py"
+      ]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",

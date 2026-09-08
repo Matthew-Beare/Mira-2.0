@@ -1,84 +1,112 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This branch records exactly one active packet. Multiple other packet branches may be active repository-wide at the same time under `docs/CONCURRENT_WORK_POLICY.md`.
+Git is authoritative. This branch records exactly one active/recovery packet. Other MIRA packets may progress independently on isolated branches under `docs/CONCURRENT_WORK_POLICY.md`.
 
 ## Active packet
 
-### `M2-GOV-001` — Concurrent work-packet safety
+### `M2-M1-019` — People Discovery vertical slice
 
-- **Primary work:** `FEATURE-ALIGN-001`.
-- **Primary features:** `DEV-001`, `DEV-002`, `DEV-007`.
-- **Related invariants/features:** `DEV-003`, `DEV-005`, `RECOVERY-002`.
+- **Primary work:** `PEOPLE-DISCOVERY-001`.
+- **Primary features:** `CAREER-001`.
+- **Related invariants/features:** `AUTH-001`, `STORE-001`, `RECOVERY-002`, `MAIL-002`, `DATA-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-gov-001-concurrent-packets`.
-- **Base SHA:** `51649d6e1987d5a0601131715732a2560b26b193`.
-- **Packet:** `docs/work-packets/M2-GOV-001.md`.
-- **Owned surfaces:** `PROJECT_INSTRUCTIONS.md`, `project/WORK_PACKET_POLICY.md`, `docs/CONCURRENT_WORK_POLICY.md`, this branch's `CURRENT_WORK.md`.
-- **Shared/high-contention surfaces:** governance files above; reconcile against current `main` before merge.
-- **Current status:** in progress; repository governance is being changed from one-active-packet-repository-wide to one-active-packet-per-chat/branch with multiple isolated packet branches allowed concurrently.
+- **Branch:** `work/m2-m1-019-people-discovery`.
+- **Base SHA:** `738ebf082cd3921a0ba807604acabfa756f40c1d`.
+- **Packet:** `docs/work-packets/M2-M1-019.md`.
+- **Owned implementation surfaces:** People Discovery domain/provider/tracker/Sheets-projection modules and tests; packet-specific synthetic fixtures/docs.
+- **Shared/high-contention surfaces:** `FEATURES.md`, `BACKLOG.md`, `project/code_ownership.json`, branch-local `CURRENT_WORK.md`; reconcile against then-current `main` immediately before merge.
+- **Current status:** durable implementation checkpoint, temporarily displaced by the customer-prioritized reusable Sheets operational-control foundation packet. Candidate normalization/identity/scoring/provenance, canonical relationship interaction/reply tracking, bounded search-only People Data Labs adapter, Google tracker projection, synthetic tests, canonical backlog registration and code ownership are implemented. Exact-head CI reaches Python tests but has one scoring failure described below. No live third-party people data has been written and no outbound-contact action exists.
 
 ## Objective
 
-Allow multiple MIRA development chats to make durable progress in parallel without overwriting, silently invalidating, or force-replacing each other's work. Preserve the existing one-active-packet-per-branch mechanical alignment gate while using remote packet branches/open PRs as the repository-wide concurrency registry and serializing integration into `main`.
+Deploy a first-class MIRA job-seeking feature that repeatedly discovers useful professional contacts at active target employers, with configurable market/employer/role priorities; normalize, deduplicate, score and retain provenance; maintain a Google Sheets human-facing tracker; track manual outreach and incoming replies/follow-ups; and never perform automated outreach.
+
+The feature must remain publicly sanitizable. Public Git contains implementation, schemas, tests and synthetic fixtures only. Private third-party people data, provider credentials, live spreadsheet identifiers, actual message contents and personal job-search state remain outside the repository.
+
+Do not name or frame this feature as "2-hour job search", `2HJS`, or similar shorthand. It is MIRA Career / People Discovery functionality.
+
+## Relationship and messaging semantics
+
+Canonical interaction history records channel, direction, kind, timestamp, outcome, optional private summary/source reference, reply linkage and follow-up due date. Relationship state is derived from history rather than maintained as an independent truth column. MIRA must be able to answer whether a person has been contacted, which channel was used, the last interaction, whether they replied, whether the user is awaiting a reply or owes a follow-up, and which company/job the interaction concerned.
+
+Implemented branch module: `mira/people_tracker.py`.
+
+The tracker exposes no `send`, `send_message`, `send_email`, `connect`, `post`, or `comment` operation. Human-performed outreach may be recorded after it happens; incoming replies may be recorded or later observed through an authorized provider path.
+
+## Hard boundaries
+
+- No automated email, LinkedIn connection request/message, comment, post, or other contact action.
+- No unauthorized LinkedIn scraping, login automation, or browser scraping.
+- LinkedIn URLs may be stored when returned by legitimate providers/public sources.
+- One logical MIRROR authority. Google Sheets is a projection/bounded controlled-input surface, not a second conflicting truth store.
+- Public Git contains synthetic examples only; private people/message/provider/workbook state stays private.
+- Uncertain identity matches fail closed rather than silently merging people.
+- The feature must be sanitizable and publicly publishable without leaking customer/provider data.
+
+## Provider decision state
+
+- People Data Labs Person Search remains the leading first adapter for the live proof because it supports employer, education/school, title, location, skills, work-history and profile dimensions needed by the current discovery strategy.
+- A bounded injected-credential PDL search adapter is implemented with explicit per-run request/record caps, a WGU-first query phase and broader target-employer fallback phase. It exposes search only.
+- Apollo remains an optional replaceable secondary adapter and is not required before independent implementation can continue.
+- The user does not need to connect both providers.
+- If a provider credential remains the only external boundary after implementation/CI, request the smallest single action required for the first live proof.
 
 ## Acceptance state
 
-- Multiple active packet branches allowed repository-wide: **implemented in policy/docs on this branch**.
-- Exactly one active packet per chat/branch: **implemented**.
-- Unique branch per packet: **implemented**.
-- Remote `work/...` branches/open PRs treated as concurrency registry: **implemented**.
-- Overlap/collision inspection required before writes: **implemented**.
-- Owned/shared implementation surfaces recorded per packet: **implemented**.
-- `main` integration serialized with current-main reconciliation: **implemented**.
-- Existing finance branch preserved untouched: **verified at `04b88d027fdacb14f580fa31674c23fee1aa9d7a` at handoff**.
-- Existing Android hold checkpoint preserved: **verified from current Git record**.
-- Exact-head CI: **pending latest governance head**.
-- Merge/readback to `main`: **pending**.
+- Unique packet/branch isolated from other MIRA work: **satisfied**.
+- Existing Sheets/canonical-state architecture inspected: **satisfied; reusable structured-state and Google Sheets gateway confirmed**.
+- Provider-neutral candidate model/normalization: **implemented**.
+- Conservative entity resolution/dedupe: **implemented**.
+- Relevance scoring with configurable employer/role/technical/WGU weighting: **implemented; one current-role relevance defect remains**.
+- Provenance retention: **implemented**.
+- Canonical manual interaction history and derived reply/follow-up state: **implemented**.
+- No outbound-send API in relationship tracker/provider: **implemented with synthetic tests**.
+- Google tracker schema/projection for `COMPANIES` / `PEOPLE` / `INTERACTIONS` / `JOBS`: **implemented with stable-ID upsert, duplicate-ID fail-closed behavior, zero-write identical replay and exact post-write readback tests; live Sheet proof pending**.
+- Bounded People Data Labs provider adapter: **implemented; credential/live proof pending**.
+- Canonical backlog registration + production code ownership: **implemented on branch**.
+- Real provider operational: **pending credential/preflight/live proof**.
+- Exact live tracker readback and manual interaction-state live proof: **pending**.
+- Public sanitization audit: **pending final branch audit**.
+- Exact-head CI: **failing one Python test on head `ac8f06b21160c9d25f6dabbfb3e65d575cb00dfe`; all earlier CI gates pass through code ownership/Android build**.
+
+## Exact CI defect / resume point
+
+Exact-head CI run `34183687209` reaches the Python test suite and reports 491/492 passing. The only failure is:
+
+`PeopleDiscoveryCoreTests.test_unrelated_executive_is_penalized_not_promoted_by_company_alone`
+
+The synthetic candidate is currently `Chief Marketing Officer` with marketing-only current skills but a historical `Network Technician` role. `_technical_strength()` currently treats any historical technical title as current technical relevance, preventing the expected `weak technical relevance` penalty.
+
+**Exact repair:** change current technical-relevance scoring so current-role/current-skill evidence determines the `technical_relevance` factor/penalty; historical technical roles remain available for experience/progression/context but do not by themselves promote an unrelated current executive role. Re-run direct People Discovery tests, then exact-head CI.
 
 ## Exact next action / resume point
 
-1. Make the project-instruction wording fully consistent with branch-local `CURRENT_WORK` and branch/PR concurrency discovery.
-2. Verify exact remote branch head.
-3. Wait for/check exact-head CI on the latest governance commit.
-4. Merge PR #133 only if current `main` has not introduced conflicting governance changes; otherwise reconcile first.
-5. Read back remote `main` and CI/status evidence.
-6. Start People Discovery on a fresh unique packet branch from that verified `main`.
+1. Apply the current-vs-historical technical-relevance scoring repair above; do not weaken the test.
+2. Re-run direct People Discovery tests and exact-head CI.
+3. Complete canonical People Discovery persistence and live Google tracker writer/readback using the shared Sheets projection/reconciliation foundation once available rather than duplicating it locally.
+4. Keep PR #134 draft until implementation tests, provider boundary and live tracker proof are earned.
+5. Perform provider capability/credential preflight only after independent implementation is green.
+6. If the only remaining boundary is a PDL API key/account, request exactly that single user action; Apollo remains optional.
+7. Execute real discovery, real Sheet write/readback, rerun-update proof and manual interaction/reply proof before claiming deployment.
+8. Reconcile shared `FEATURES.md`/`BACKLOG.md`/ownership changes against then-current `main` immediately before merge.
 
-## Concurrent packet branches known at this checkpoint
+## Customer-prioritized displaced work
 
-### `M2-M1-015` — Canonical finance evidence audit and projection repair
-
-- **Branch:** `work/m2-m1-015-financial-canonical-audit`.
-- **Verified remote head at handoff:** `04b88d027fdacb14f580fa31674c23fee1aa9d7a`.
-- **Exact resume authority:** that branch's `CURRENT_WORK.md` plus `docs/work-packets/M2-M1-015.md`.
-- **Rule:** may continue independently in another chat. Before eventual merge, reconcile with then-current `main` and preserve newer concurrency governance.
-
-## Blocked / held packet
-
-### `M2-M1-012` — Android representative-device execution proof
-
-- **Recovery branch:** `work/m2-m1-012-provider-tooling-hold-2`.
-- **Stable pre-finance checkpoint:** `6e715159feed0b044e3ef3ef610916903e2deb09`.
-- **Provider-inspection runbook:** `docs/work-packets/M2-M1-012-provider-inspection-runbook.md`.
-- **Hold rule:** do not rerun the phone flow or mutate provider configuration until a credible authenticated provider-access recovery signal exists. Resume only through the recorded runbook.
-
-## Requested next packet after governance merge
-
-People Discovery for the job search, prioritizing Austin and Research Triangle/Raleigh-Durham and strongly ranking WGU + networking/cloud/infrastructure contacts. It is not active on this branch. It must receive its own packet ID and branch from verified post-governance `main`.
+The customer supplied a broader MIRA modular-life-operations / Google Sheets control-surface directive and explicitly requested that it be added to the MIRA stack, including reusable Job Search/market boards, People Discovery integration, Finance Operations, Vehicle Operations, Inventory Operations, MIRA Operations visibility, safe Sheets prototyping, Studio/public sanitization, automation and an optional local NVIDIA 49B coding-worker lane. That work belongs in a separate bounded foundation/intake packet so it does not silently expand `M2-M1-019`.
 
 ## Session-start alignment verification — 2026-09-07
 
 ### `FEATURES.md`
 
-Reviewed. This governance packet strengthens `DEV-001`, `DEV-002`, and `DEV-007` without weakening product features or changing user/provider behavior.
+Reviewed. Existing `CAREER-001` is the current canonical career feature anchor. `M2-M1-019` extends the user-visible career capability with People Discovery, relationship tracking and a no-automated-outreach boundary while preserving `AUTH-001`, `STORE-001`, `RECOVERY-002`, `MAIL-002` and `DATA-001`.
 
 ### `BACKLOG.md`
 
-Reviewed. `FEATURE-ALIGN-001` is the existing work item governing packet-to-feature alignment and is the closest bounded governance work anchor for this concurrency repair. No unrelated product work is admitted to this packet.
+Reviewed. `PEOPLE-DISCOVERY-001` is now registered on this branch as the bounded work ID for the vertical.
 
 ### `ROADMAP.md`
 
-Reviewed. Concurrent isolated engineering work changes development execution only; it does not alter Personal Google product direction, milestone semantics, or accepted user-facing scope.
+Reviewed. People Discovery is a user-visible Personal MIRA career vertical built on the existing Google/Sheets and canonical-state foundations. It does not change the Personal Google architecture, require Android, authorize automated outreach or weaken public-repository privacy rules.
 
 ### Direction result
 
@@ -86,4 +114,4 @@ ALIGNED
 
 ## Recovery protocol
 
-Resume this governance packet by reading current remote `main`, this branch's `CURRENT_WORK.md`, `docs/work-packets/M2-GOV-001.md`, and remote branch/PR state. Do not use this branch for People Discovery implementation.
+Resume by reading current remote `main`, this branch's `CURRENT_WORK.md`, `docs/work-packets/M2-M1-019.md`, PR #134 and this branch's remote head. Inspect active packet branches/PRs for overlap before shared-file writes. Do not reconstruct private people/provider/message state from public Git or chat memory.
