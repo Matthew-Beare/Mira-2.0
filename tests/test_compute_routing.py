@@ -359,7 +359,12 @@ class ComputeRoutingTests(unittest.TestCase):
                 interactive_lock=1,  # type: ignore[arg-type]
             )
         with self.assertRaises(RuntimeRouterValidationError):
-            self.policy("aggressive")  # type: ignore[arg-type]
+            RuntimePolicy(
+                policy_id="invalid-mode",
+                approval_state=ApprovalState.APPROVED,
+                allowed_data_classifications=("personal",),
+                local_compute_mode="aggressive",  # type: ignore[arg-type]
+            )
 
         candidate = self.candidate(
             "local",
