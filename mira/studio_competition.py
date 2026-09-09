@@ -218,6 +218,7 @@ class StudioCompetitionDecision:
     packet_id: str
     work_id: str
     base_sha: str
+    feature_ids: tuple[str, ...]
     evaluations: tuple[CandidateEvaluation, ...]
     eligible_candidate_ids: tuple[str, ...]
     integration_plan: IntegrationPlan | None
@@ -226,6 +227,7 @@ class StudioCompetitionDecision:
         _token(self.packet_id, "packet_id")
         _token(self.work_id, "work_id")
         _sha(self.base_sha, "base_sha")
+        _sorted_tokens(self.feature_ids, "feature_ids", allow_empty=False)
         if not isinstance(self.evaluations, tuple) or not self.evaluations:
             raise StudioCompetitionError("evaluations must be a non-empty tuple")
         if any(
@@ -512,6 +514,7 @@ def evaluate_studio_competition(
         packet_id=spec.packet_id,
         work_id=spec.work_id,
         base_sha=spec.base_sha,
+        feature_ids=spec.feature_ids,
         evaluations=evaluations,
         eligible_candidate_ids=eligible,
         integration_plan=plan,
@@ -685,6 +688,10 @@ def _reviewed_integration_plan(
     if contract.work_id != competition_decision.work_id:
         raise StudioCompetitionError(
             "staged contract work_id must match reviewed competition decision"
+        )
+    if contract.feature_ids != competition_decision.feature_ids:
+        raise StudioCompetitionError(
+            "staged contract feature_ids must match reviewed competition decision"
         )
     if integration_plan.base_sha != competition_decision.base_sha:
         raise StudioCompetitionError(
