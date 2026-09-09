@@ -297,6 +297,15 @@
       "verification": ["tests/test_provider_onboarding.py"]
     },
     {
+      "id": "compute-observability",
+      "responsibility": "Provider-neutral read-only aggregate compute-worker and compute-job observability with deterministic Prometheus exposition and Grafana-compatible query planning.",
+      "why_separate": "Operational telemetry composes existing worker-registry and compute-job truth but must remain a nonauthoritative projection, must not mutate routing or durable control-plane state, and must not turn stable worker/job/private deployment identifiers into telemetry dimensions.",
+      "owned_paths": ["mira/compute_observability.py"],
+      "feature_ids": ["OBS-001", "LOCAL-001"],
+      "work_ids": ["LOCAL-INTEGRATIONS"],
+      "verification": ["tests/test_compute_observability.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
