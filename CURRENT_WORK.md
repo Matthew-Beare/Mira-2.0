@@ -13,38 +13,37 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 - **Branch:** `work/m2-m1-030-model-profiles`.
 - **Base SHA:** `c87fe4bd8a2e9925ea31c6af888213dab36827ff`.
 - **Packet:** `docs/work-packets/M2-M1-030.md`.
-- **Owned implementation surfaces:** planned `mira/model_profiles.py`, `tests/test_model_profiles.py`, `project/code_ownership.json`, packet doc, branch-local `CURRENT_WORK.md`.
-- **Shared/high-contention surfaces:** `project/code_ownership.json` requires exactly one new model-profile component entry. Existing runtime routing/worker registry/lifecycle boundaries are dependencies and must not be duplicated.
-- **Current status:** packet started from integration-verified M2-M1-029 main; capability/profile/benchmark implementation pending.
+- **Pull request:** `#145`.
+- **Owned implementation surfaces:** `mira/model_profiles.py`, `tests/test_model_profiles.py`, `project/code_ownership.json`, packet doc, branch-local `CURRENT_WORK.md`.
+- **Shared/high-contention surfaces:** `project/code_ownership.json` contains exactly one new `compute-model-profiles` entry. Existing runtime routing, worker registry and lifecycle boundaries were not duplicated or mutated.
+- **Current status:** implementation, adversarial tests and exact production ownership complete; CI #552 passed end-to-end on exact implementation head `583fdaef8bb110001d7deab5f5b67b0c9e58b19e`; final documentation-closeout exact-head CI pending before merge.
 
 ## Objective
 
-Implement a provider-neutral, secret-free model-profile and benchmark-evidence boundary for optional compute runtimes. Explicit profile facts plus explicit benchmark requirements must produce deterministic eligibility and selection evidence without hard-coding model families, hardware, private paths, benchmark thresholds, quality claims or deployment topology.
+Implement a provider-neutral, secret-free model-profile and benchmark-evidence boundary for optional compute runtimes. Explicit profile facts plus explicit benchmark requirements produce deterministic eligibility and selection evidence without hard-coding model families, hardware, private paths, benchmark thresholds, quality claims or deployment topology.
 
 This packet does not install/load a model, execute inference, benchmark real hardware, choose private hosts, alter worker routing, expose raw inference/Python/shell endpoints, or claim live model quality/performance.
-
-## Required semantics
-
-- Model profiles declare only logical IDs, runtime IDs, artifact identity/digest, generic capabilities and explicit context/output capacities.
-- Benchmark observations are evidence with benchmark/version/capability/metric identity, value/unit, UTC time, sample count, evidence kind and provenance digest.
-- Selection requirements explicitly define capability/context/output minima and zero or more benchmark threshold requirements; public code supplies no numeric benchmark defaults.
-- Benchmark requirements specify comparator, threshold, unit, freshness and allowed evidence kinds.
-- Missing, stale, unit-mismatched, disallowed-kind or threshold-failing benchmark evidence blocks that profile for that requirement.
-- Future benchmark evidence fails closed.
-- Extra benchmark observations do not acquire selection authority.
-- Optional ordered preferred profile IDs are policy input; otherwise eligible profiles use stable logical profile-ID tie-breaking, never an inferred quality ranking.
-- Result ordering is deterministic and contains no hostnames, IP/MAC addresses, credentials, model paths, shell commands or private provider resource IDs.
 
 ## Acceptance state
 
 - M2-M1-029 power/lifecycle planner: **merged as PR #144 at `c87fe4bd8a2e9925ea31c6af888213dab36827ff`; post-merge CI #551 PASS**.
 - M2-M1-030 ID/branch collision check: **complete; no prior packet doc or branch existed**.
-- Existing model-profile/benchmark implementation search: **complete; no existing current-main authority found under model-profile/benchmark/local-model terms**.
-- Hard-coded model family search: **complete; no Qwen/gpt-oss/local-inference implementation found on current main**.
-- Deterministic profile/benchmark implementation/tests: **pending**.
-- Exact production ownership: **pending**.
-- Exact-head CI/merge/post-merge verification: **pending**.
-- Live model/runtime/benchmark evidence: **not claimed and out of scope**.
+- Existing model-profile/benchmark implementation search: **complete; no prior current-main authority found**.
+- Hard-coded Qwen/gpt-oss/local-inference implementation search: **complete; none found on packet base**.
+- Capability/profile/benchmark evaluator: **implemented in `mira/model_profiles.py`**.
+- Capability/context/output gates: **implemented and synthetically tested**.
+- Explicit benchmark comparator/threshold/unit/freshness/evidence-kind gates: **implemented and synthetically tested**.
+- Exact `at_least` / `at_most` equality boundaries: **synthetically tested**.
+- Missing/stale/future/unit-mismatched/disallowed/duplicate/threshold-failing evidence: **fails closed and synthetically tested**.
+- Extra unrequested evidence non-authority: **synthetically tested**.
+- Explicit preferred-profile ordering and stable ID-only fallback tie-break: **synthetically tested**.
+- Input-order determinism and private-field exclusion: **synthetically tested**.
+- Exact production ownership: **registered as one `compute-model-profiles` component; code-ownership gate PASS in CI #552**.
+- Base→implementation diff: **exactly five intended files; ownership manifest +9/-0**.
+- CI #552 on exact implementation head `583fdaef8bb110001d7deab5f5b67b0c9e58b19e`: **PASS end-to-end including compile, feature registry, lifecycle ledger, starter distribution, work-session alignment, code ownership, Android proof/provenance/retention, Python unit tests and Workspace Apps Script tests**.
+- Final documentation-closeout exact-head CI: **pending**.
+- Merge/post-merge verification: **pending**.
+- Live model/runtime/benchmark/private-deployment evidence: **not claimed and out of scope**.
 
 ## Session-start alignment verification — 2026-09-09
 
@@ -58,14 +57,14 @@ This packet does not install/load a model, execute inference, benchmark real har
 
 ### `ROADMAP.md`
 
-Advanced/local compute remains optional. Standard users must not need a local model, accelerator or self-hosted runtime.
+Advanced/local compute remains optional. Standard users do not need a local model, accelerator or self-hosted runtime.
 
 ### Reuse and boundary review
 
 - `mira.runtime_router` remains runtime/provider selection authority.
 - `mira.service_state.WorkerRegistryView` remains worker capability/health/availability authority.
 - `mira.compute_lifecycle` remains lifecycle lock/power planning authority.
-- `mira.model_profiles` will only evaluate model-level capability/capacity and benchmark evidence; it will not select workers or execute inference.
+- `mira.model_profiles` evaluates only model-level capability/capacity and explicit benchmark evidence; it does not select workers or execute inference.
 - Named model families and private hardware bindings remain configuration/deployment choices outside public feature dependencies.
 
 ### Direction result
@@ -74,13 +73,13 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Implement immutable profile, benchmark observation, benchmark requirement and selection-decision contracts in `mira/model_profiles.py`.
-2. Add adversarial synthetic tests for exact thresholds, freshness, units, evidence kinds, duplicates, extra evidence, capability/capacity gates, preference/tie-breaking, determinism and privacy.
-3. Add exactly one `compute-model-profiles` production ownership component with direct verification.
-4. Diff from exact base and verify only intended files changed.
-5. Open a draft PR and run full CI; fix only packet-scoped failures.
-6. Merge only after exact-head green CI and current-main reconciliation; verify post-merge main CI before integration verification.
+1. Run final exact-head CI on the documentation-closeout head.
+2. Re-read remote `main`, PR #145 exact head/mergeability and changed-file overlap.
+3. Mark PR #145 ready and merge only if final exact-head CI is green, using expected-head protection.
+4. Read back merged remote `main` and verify post-merge push CI before claiming integration verification.
+5. Preserve the evidence ceiling: policy/profile/evidence evaluation only; no live model/runtime/benchmark/private deployment claim.
+6. Select the next dependency-ranked compute-fabric child packet from current Git state rather than chat history.
 
 ## Recovery protocol
 
-Resume from remote `main`, branch `work/m2-m1-030-model-profiles`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-030.md`, and the latest branch head. Do not reopen M2-M1-021 through M2-M1-029 unless regression evidence requires it.
+Resume from remote `main`, branch `work/m2-m1-030-model-profiles`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-030.md`, PR #145, and the latest branch head. Do not reopen M2-M1-021 through M2-M1-029 unless regression evidence requires it.
