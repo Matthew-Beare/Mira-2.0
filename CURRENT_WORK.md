@@ -4,68 +4,69 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ## Active packet
 
-### `M2-M1-030` — Capability-based local model profiles and benchmark evidence
+### `M2-M1-031` — Studio competitive development evidence and integration planning
 
-- **Primary work:** `LOCAL-INTEGRATIONS`.
-- **Primary features:** `LOCAL-001`.
-- **Related invariants/features:** `PROVIDER-001`, `SOURCE-001`, `RECOVERY-002`, `OBS-001`, `API-001`.
+- **Primary work:** `SKILL-BUILDER-001`.
+- **Primary features:** `STUDIO-001`, `DEV-004`.
+- **Related invariants/features:** `DEV-001`, `DEV-002`, `DEV-005`, `DEV-006`, `DIST-001`, `LOCAL-001`, `PROVIDER-001`, `RECOVERY-002`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-030-model-profiles`.
-- **Base SHA:** `c87fe4bd8a2e9925ea31c6af888213dab36827ff`.
-- **Packet:** `docs/work-packets/M2-M1-030.md`.
-- **Pull request:** `#145`.
-- **Owned implementation surfaces:** `mira/model_profiles.py`, `tests/test_model_profiles.py`, `project/code_ownership.json`, packet doc, branch-local `CURRENT_WORK.md`.
-- **Shared/high-contention surfaces:** `project/code_ownership.json` contains exactly one new `compute-model-profiles` entry. Existing runtime routing, worker registry and lifecycle boundaries were not duplicated or mutated.
-- **Current status:** implementation, adversarial tests and exact production ownership complete; CI #552 passed end-to-end on exact implementation head `583fdaef8bb110001d7deab5f5b67b0c9e58b19e`; final documentation-closeout exact-head CI pending before merge.
+- **Branch:** `work/m2-m1-031-studio-competitive-dev`.
+- **Base SHA:** `e0359ec6a65773c8d01b7a5208f8eb255b093c30`.
+- **Packet:** `docs/work-packets/M2-M1-031.md`.
+- **Owned implementation surfaces:** planned `mira/studio_competition.py`, `tests/test_studio_competition.py`, `project/code_ownership.json`, packet doc, branch-local `CURRENT_WORK.md`.
+- **Shared/high-contention surfaces:** `project/code_ownership.json` requires exactly one new Studio competitive-development component. Existing CI trust, runtime routing, source gates, feature registry and Git governance remain separate authorities.
+- **Current status:** packet started from integration-verified M2-M1-030 main; implementation pending.
 
 ## Objective
 
-Implement a provider-neutral, secret-free model-profile and benchmark-evidence boundary for optional compute runtimes. Explicit profile facts plus explicit benchmark requirements produce deterministic eligibility and selection evidence without hard-coding model families, hardware, private paths, benchmark thresholds, quality claims or deployment topology.
+Implement the provider-neutral evidence contract MIRA Studio can use when multiple independent implementers produce candidate solutions for the same bounded work packet. The contract must preserve branch/base/head provenance, deterministic acceptance/verification evidence, independent critique and explicit reviewer selection without executing code, calling a model/provider, mutating Git, or auto-integrating a subjective winner.
 
-This packet does not install/load a model, execute inference, benchmark real hardware, choose private hosts, alter worker routing, expose raw inference/Python/shell endpoints, or claim live model quality/performance.
+## Required semantics
+
+- Every candidate is bound to the same explicit packet/work/base SHA and its own unique branch/head SHA.
+- Candidate provenance contains only logical producer/candidate IDs, branch/base/head SHA, declared acceptance-criterion coverage and source/artifact digest.
+- Required verification suites are explicit policy input. Evidence must target the exact candidate head SHA and pass; a green check on another SHA has no authority.
+- Optional independent-critique policy can require at least one critique whose critic identity differs from the candidate producer.
+- Open blocking critique makes a candidate not integration-ready. Resolved or explicitly accepted-risk critique retains provenance but no longer blocks.
+- Missing declared acceptance-criterion coverage fails closed.
+- Candidate/input order cannot change eligibility or output ordering.
+- Multiple eligible candidates do not trigger automatic subjective ranking. Explicit reviewer selection is required before an integration plan exists.
+- Reviewer selection must name an integration-ready candidate and is bound to that candidate's exact head SHA.
+- The result is a plan/evidence object only. It does not merge branches, execute tests, invoke local/hosted models, or authorize private-runner execution.
 
 ## Acceptance state
 
-- M2-M1-029 power/lifecycle planner: **merged as PR #144 at `c87fe4bd8a2e9925ea31c6af888213dab36827ff`; post-merge CI #551 PASS**.
-- M2-M1-030 ID/branch collision check: **complete; no prior packet doc or branch existed**.
-- Existing model-profile/benchmark implementation search: **complete; no prior current-main authority found**.
-- Hard-coded Qwen/gpt-oss/local-inference implementation search: **complete; none found on packet base**.
-- Capability/profile/benchmark evaluator: **implemented in `mira/model_profiles.py`**.
-- Capability/context/output gates: **implemented and synthetically tested**.
-- Explicit benchmark comparator/threshold/unit/freshness/evidence-kind gates: **implemented and synthetically tested**.
-- Exact `at_least` / `at_most` equality boundaries: **synthetically tested**.
-- Missing/stale/future/unit-mismatched/disallowed/duplicate/threshold-failing evidence: **fails closed and synthetically tested**.
-- Extra unrequested evidence non-authority: **synthetically tested**.
-- Explicit preferred-profile ordering and stable ID-only fallback tie-break: **synthetically tested**.
-- Input-order determinism and private-field exclusion: **synthetically tested**.
-- Exact production ownership: **registered as one `compute-model-profiles` component; code-ownership gate PASS in CI #552**.
-- Base→implementation diff: **exactly five intended files; ownership manifest +9/-0**.
-- CI #552 on exact implementation head `583fdaef8bb110001d7deab5f5b67b0c9e58b19e`: **PASS end-to-end including compile, feature registry, lifecycle ledger, starter distribution, work-session alignment, code ownership, Android proof/provenance/retention, Python unit tests and Workspace Apps Script tests**.
-- Final documentation-closeout exact-head CI: **pending**.
-- Merge/post-merge verification: **pending**.
-- Live model/runtime/benchmark/private-deployment evidence: **not claimed and out of scope**.
+- M2-M1-030 model profiles/benchmark evidence: **merged as PR #145 at `e0359ec6a65773c8d01b7a5208f8eb255b093c30`; post-merge CI #555 PASS**.
+- M2-M1-031 ID/branch collision check: **complete; no prior packet doc or branch existed**.
+- Canonical Studio direction: **confirmed; STUDIO-001 requires bounded preview/test/rollback/provenance and no silent imported activation**.
+- Backlog anchor: **SKILL-BUILDER-001 queued beneath MIRA Studio; FEATURE-SHARE-001 remains a separate later hardening path**.
+- Trusted private CI dependency: **M2-M1-026 remains the source-trust/isolation boundary; this packet will not weaken it or add self-hosted execution**.
+- Competitive candidate implementation/tests: **pending**.
+- Exact production ownership: **pending**.
+- Exact-head CI/merge/post-merge verification: **pending**.
+- Live model/Git/private-runner/integration execution evidence: **not claimed and out of scope**.
 
 ## Session-start alignment verification — 2026-09-09
 
 ### `FEATURES.md`
 
-`LOCAL-001` remains the optional local-service bridge. Model profiles describe generic capabilities available behind that bridge rather than making a named model or accelerator into a feature dependency.
+`STUDIO-001` is the integrated user-facing continuous-improvement layer over bounded custom feature creation and controlled sharing. Preview/test/rollback, source provenance and no silent activation are required semantics.
 
 ### `BACKLOG.md`
 
-`LOCAL-INTEGRATIONS` remains the accepted compute-fabric work anchor explicitly reprioritized by the product owner.
+`SKILL-BUILDER-001` is the bounded engine beneath Studio. `MIRA-STUDIO-001` remains a later user-facing vertical and `FEATURE-SHARE-001` remains separate sharing/import hardening. This packet advances the engine only.
 
 ### `ROADMAP.md`
 
-Advanced/local compute remains optional. Standard users do not need a local model, accelerator or self-hosted runtime.
+Competitive development may use local or hosted implementers, but local compute remains optional. No Standard-path local infrastructure dependency may be introduced.
 
 ### Reuse and boundary review
 
-- `mira.runtime_router` remains runtime/provider selection authority.
-- `mira.service_state.WorkerRegistryView` remains worker capability/health/availability authority.
-- `mira.compute_lifecycle` remains lifecycle lock/power planning authority.
-- `mira.model_profiles` evaluates only model-level capability/capacity and explicit benchmark evidence; it does not select workers or execute inference.
-- Named model families and private hardware bindings remain configuration/deployment choices outside public feature dependencies.
+- Git/packet policy remains branch/work authority.
+- `project/ci_trust.py` remains private-runner source-trust/isolation authority.
+- Feature registry/alignment gates remain canonical feature/work validation authority.
+- `mira.studio_competition` will only validate candidate provenance/evidence and produce explicit integration-readiness/planning output.
+- GitHub/provider/model invocation, branch creation, test execution, merge execution and private runner scheduling remain outside this module.
 
 ### Direction result
 
@@ -73,13 +74,13 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Run final exact-head CI on the documentation-closeout head.
-2. Re-read remote `main`, PR #145 exact head/mergeability and changed-file overlap.
-3. Mark PR #145 ready and merge only if final exact-head CI is green, using expected-head protection.
-4. Read back merged remote `main` and verify post-merge push CI before claiming integration verification.
-5. Preserve the evidence ceiling: policy/profile/evidence evaluation only; no live model/runtime/benchmark/private deployment claim.
-6. Select the next dependency-ranked compute-fabric child packet from current Git state rather than chat history.
+1. Implement immutable work-spec, candidate, verification, critique, reviewer-selection and integration-plan contracts in `mira/studio_competition.py`.
+2. Add adversarial tests for cross-branch/base/head binding, exact-SHA verification, criterion coverage, independent critique, blocking finding resolution, deterministic ordering and explicit reviewer selection.
+3. Add exactly one `studio-competitive-development` production ownership component with direct tests.
+4. Diff from exact base and verify only intended files changed.
+5. Open a draft PR and run full CI; fix only packet-scoped failures.
+6. Merge only after exact-head green CI and current-main reconciliation; verify post-merge main CI before integration verification.
 
 ## Recovery protocol
 
-Resume from remote `main`, branch `work/m2-m1-030-model-profiles`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-030.md`, PR #145, and the latest branch head. Do not reopen M2-M1-021 through M2-M1-029 unless regression evidence requires it.
+Resume from remote `main`, branch `work/m2-m1-031-studio-competitive-dev`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-031.md`, and the latest branch head. Do not reopen completed compute packets unless regression evidence requires it.
