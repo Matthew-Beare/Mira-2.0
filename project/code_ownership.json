@@ -315,6 +315,15 @@
       "verification": ["tests/test_compute_safety.py"]
     },
     {
+      "id": "compute-power-lifecycle",
+      "responsibility": "Provider-neutral deterministic compute power/lifecycle planning over worker state, durable assigned jobs, explicit locks, generic power observations, and deterministic hardware-safety requirements.",
+      "why_separate": "Lifecycle reconciliation must compose worker/job/safety authorities without becoming a second scheduler, worker registry, sensor authority, private power adapter or hardware executor. Keeping it separate preserves do-not-wake/do-not-shutdown and interactive/maintenance policy while provider-specific WOL/shutdown remains private deployment work.",
+      "owned_paths": ["mira/compute_lifecycle.py"],
+      "feature_ids": ["LOCAL-001", "RECOVERY-002"],
+      "work_ids": ["LOCAL-INTEGRATIONS"],
+      "verification": ["tests/test_compute_lifecycle.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
