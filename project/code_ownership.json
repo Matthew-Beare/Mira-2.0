@@ -333,6 +333,15 @@
       "verification": ["tests/test_model_profiles.py"]
     },
     {
+      "id": "studio-competitive-development",
+      "responsibility": "Provider-neutral competitive MIRA Studio candidate evidence evaluation and explicit reviewed integration planning over exact Git provenance, acceptance coverage, verification and critique state.",
+      "why_separate": "Competitive candidate comparison must preserve exact branch/base/head and review evidence without becoming a Git executor, model/provider runtime, source-trust authority, feature registry or automatic subjective winner selector. Keeping it separate lets Studio consume multiple candidate implementations while preserving human-reviewed integration authority.",
+      "owned_paths": ["mira/studio_competition.py"],
+      "feature_ids": ["STUDIO-001", "DEV-004", "DEV-002", "RECOVERY-002"],
+      "work_ids": ["SKILL-BUILDER-001"],
+      "verification": ["tests/test_studio_competition.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
