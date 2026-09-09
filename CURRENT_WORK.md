@@ -7,7 +7,7 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 ### `M2-M1-028` — Deterministic compute hardware-safety policy
 
 - **Primary work:** `LOCAL-INTEGRATIONS`.
-- **Primary feature:** `LOCAL-001`.
+- **Primary features:** `LOCAL-001`.
 - **Related invariants/features:** `OBS-001`, `RECOVERY-002`, `API-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-028-hardware-safety`.
