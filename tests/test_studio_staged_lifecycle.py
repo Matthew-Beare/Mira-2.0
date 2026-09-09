@@ -53,6 +53,7 @@ def competition_decision(**changes):
         packet_id="M2-M1-032",
         work_id="SKILL-BUILDER-001",
         base_sha=BASE,
+        feature_ids=("DEV-004", "STUDIO-001"),
         evaluations=(
             CandidateEvaluation(
                 candidate_id="candidate-a",
@@ -222,6 +223,14 @@ class StudioStagedLifecycleTests(unittest.TestCase):
             evaluate_staged_change(
                 competition_decision(),
                 contract(work_id="OTHER-WORK-001"),
+                preview(),
+                tests(),
+                rollback(),
+            )
+        with self.assertRaises(StudioCompetitionError):
+            evaluate_staged_change(
+                competition_decision(),
+                contract(feature_ids=("DEV-004",)),
                 preview(),
                 tests(),
                 rollback(),
