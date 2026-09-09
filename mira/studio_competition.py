@@ -1,9 +1,9 @@
 """Deterministic evidence planning for competitive MIRA Studio development.
 
 This module does not create Git branches, invoke models/providers, execute tests,
-schedule private runners, merge code, or activate features. It validates supplied
-packet/candidate/verification/critique evidence and, only after explicit reviewer
-selection, emits an immutable integration plan bound to one exact candidate SHA.
+schedule private runners, merge code, activate features, or execute rollback. It
+validates supplied development evidence and emits immutable reviewed plans bound
+to exact source provenance.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ _DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 class StudioCompetitionError(Exception):
-    """Raised when competitive-development evidence is malformed or ambiguous."""
+    """Raised when Studio development evidence is malformed or ambiguous."""
 
 
 class VerificationOutcome(str, Enum):
@@ -38,6 +38,12 @@ class CritiqueResolution(str, Enum):
     OPEN = "open"
     RESOLVED = "resolved"
     ACCEPTED_RISK = "accepted_risk"
+
+
+class StudioChangeKind(str, Enum):
+    FEATURE = "feature"
+    WORKFLOW = "workflow"
+    PREFERENCE = "preference"
 
 
 @dataclass(frozen=True)
@@ -228,7 +234,9 @@ class StudioCompetitionDecision:
             raise StudioCompetitionError(
                 "evaluations must contain CandidateEvaluation values"
             )
-        if tuple(sorted(self.evaluations, key=lambda item: item.candidate_id)) != self.evaluations:
+        if tuple(
+            sorted(self.evaluations, key=lambda item: item.candidate_id)
+        ) != self.evaluations:
             raise StudioCompetitionError("evaluations must be sorted by candidate_id")
         _sorted_tokens(
             self.eligible_candidate_ids,
@@ -250,6 +258,191 @@ class StudioCompetitionDecision:
             if self.integration_plan.candidate_id not in self.eligible_candidate_ids:
                 raise StudioCompetitionError(
                     "integration plan candidate must be integration-ready"
+                )
+
+
+@dataclass(frozen=True)
+class StudioChangeContract:
+    change_id: str
+    packet_id: str
+    work_id: str
+    kind: StudioChangeKind
+    base_sha: str
+    proposed_sha: str
+    source_sha256: str
+    feature_ids: tuple[str, ...]
+    declared_contract_ids: tuple[str, ...]
+    required_test_suites: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        _token(self.change_id, "change_id")
+        _token(self.packet_id, "packet_id")
+        _token(self.work_id, "work_id")
+        if not isinstance(self.kind, StudioChangeKind):
+            raise StudioCompetitionError("kind must be a StudioChangeKind")
+        _sha(self.base_sha, "base_sha")
+        _sha(self.proposed_sha, "proposed_sha")
+        if self.base_sha == self.proposed_sha:
+            raise StudioCompetitionError("proposed_sha must differ from base_sha")
+        _digest(self.source_sha256, "source_sha256")
+        _sorted_tokens(self.feature_ids, "feature_ids", allow_empty=False)
+        _sorted_tokens(
+            self.declared_contract_ids, "declared_contract_ids", allow_empty=False
+        )
+        _sorted_tokens(
+            self.required_test_suites, "required_test_suites", allow_empty=False
+        )
+
+
+@dataclass(frozen=True)
+class StudioPreviewEvidence:
+    change_id: str
+    proposed_sha: str
+    source_sha256: str
+    preview_sha256: str
+    covered_contract_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        _token(self.change_id, "change_id")
+        _sha(self.proposed_sha, "proposed_sha")
+        _digest(self.source_sha256, "source_sha256")
+        _digest(self.preview_sha256, "preview_sha256")
+        _sorted_tokens(
+            self.covered_contract_ids, "covered_contract_ids", allow_empty=True
+        )
+
+
+@dataclass(frozen=True)
+class StudioTestEvidence:
+    change_id: str
+    proposed_sha: str
+    suite_id: str
+    outcome: VerificationOutcome
+    evidence_sha256: str
+
+    def __post_init__(self) -> None:
+        _token(self.change_id, "change_id")
+        _sha(self.proposed_sha, "proposed_sha")
+        _token(self.suite_id, "suite_id")
+        if not isinstance(self.outcome, VerificationOutcome):
+            raise StudioCompetitionError(
+                "test outcome must be a VerificationOutcome"
+            )
+        _digest(self.evidence_sha256, "evidence_sha256")
+
+
+@dataclass(frozen=True)
+class StudioRollbackAnchor:
+    change_id: str
+    base_sha: str
+    prior_revision_id: str
+    prior_state_sha256: str
+    evidence_sha256: str
+
+    def __post_init__(self) -> None:
+        _token(self.change_id, "change_id")
+        _sha(self.base_sha, "base_sha")
+        _token(self.prior_revision_id, "prior_revision_id")
+        _digest(self.prior_state_sha256, "prior_state_sha256")
+        _digest(self.evidence_sha256, "evidence_sha256")
+
+
+@dataclass(frozen=True)
+class StudioActivationApproval:
+    approver_id: str
+    change_id: str
+    proposed_sha: str
+    preview_sha256: str
+    evidence_sha256: str
+
+    def __post_init__(self) -> None:
+        _token(self.approver_id, "approver_id")
+        _token(self.change_id, "change_id")
+        _sha(self.proposed_sha, "proposed_sha")
+        _digest(self.preview_sha256, "preview_sha256")
+        _digest(self.evidence_sha256, "evidence_sha256")
+
+
+@dataclass(frozen=True)
+class StudioActivationPlan:
+    approver_id: str
+    change_id: str
+    packet_id: str
+    work_id: str
+    kind: StudioChangeKind
+    base_sha: str
+    proposed_sha: str
+    source_sha256: str
+    preview_sha256: str
+    upstream_evidence_sha256s: tuple[str, ...]
+    test_evidence_sha256s: tuple[str, ...]
+    rollback_revision_id: str
+    rollback_state_sha256: str
+    rollback_evidence_sha256: str
+    approval_evidence_sha256: str
+
+    def __post_init__(self) -> None:
+        _token(self.approver_id, "approver_id")
+        _token(self.change_id, "change_id")
+        _token(self.packet_id, "packet_id")
+        _token(self.work_id, "work_id")
+        if not isinstance(self.kind, StudioChangeKind):
+            raise StudioCompetitionError("kind must be a StudioChangeKind")
+        _sha(self.base_sha, "base_sha")
+        _sha(self.proposed_sha, "proposed_sha")
+        _digest(self.source_sha256, "source_sha256")
+        _digest(self.preview_sha256, "preview_sha256")
+        _sorted_digests(
+            self.upstream_evidence_sha256s, "upstream_evidence_sha256s"
+        )
+        _sorted_digests(self.test_evidence_sha256s, "test_evidence_sha256s")
+        _token(self.rollback_revision_id, "rollback_revision_id")
+        _digest(self.rollback_state_sha256, "rollback_state_sha256")
+        _digest(self.rollback_evidence_sha256, "rollback_evidence_sha256")
+        _digest(self.approval_evidence_sha256, "approval_evidence_sha256")
+
+
+@dataclass(frozen=True)
+class StudioStagedChangeDecision:
+    change_id: str
+    proposed_sha: str
+    preview_ready: bool
+    review_ready: bool
+    blockers: tuple[str, ...]
+    verified_suite_ids: tuple[str, ...]
+    activation_plan: StudioActivationPlan | None
+
+    def __post_init__(self) -> None:
+        _token(self.change_id, "change_id")
+        _sha(self.proposed_sha, "proposed_sha")
+        if not isinstance(self.preview_ready, bool):
+            raise StudioCompetitionError("preview_ready must be boolean")
+        if not isinstance(self.review_ready, bool):
+            raise StudioCompetitionError("review_ready must be boolean")
+        _sorted_tokens(self.blockers, "blockers", allow_empty=True)
+        _sorted_tokens(
+            self.verified_suite_ids, "verified_suite_ids", allow_empty=True
+        )
+        if self.review_ready != (not self.blockers):
+            raise StudioCompetitionError(
+                "review_ready must exactly reflect blocker absence"
+            )
+        if self.activation_plan is not None:
+            if not isinstance(self.activation_plan, StudioActivationPlan):
+                raise StudioCompetitionError(
+                    "activation_plan must be a StudioActivationPlan or None"
+                )
+            if not self.review_ready:
+                raise StudioCompetitionError(
+                    "activation_plan requires review-ready evidence"
+                )
+            if self.activation_plan.change_id != self.change_id:
+                raise StudioCompetitionError(
+                    "activation_plan change_id must match decision"
+                )
+            if self.activation_plan.proposed_sha != self.proposed_sha:
+                raise StudioCompetitionError(
+                    "activation_plan proposed_sha must match decision"
                 )
 
 
@@ -325,6 +518,172 @@ def evaluate_studio_competition(
     )
 
 
+def evaluate_staged_change(
+    integration_plan: IntegrationPlan,
+    contract: StudioChangeContract,
+    preview: StudioPreviewEvidence,
+    tests: Iterable[StudioTestEvidence],
+    rollback: StudioRollbackAnchor | None,
+    *,
+    approval: StudioActivationApproval | None = None,
+) -> StudioStagedChangeDecision:
+    """Evaluate preview/test/rollback evidence and emit an approval-bound plan only.
+
+    The returned activation plan is inert planning material. This function never
+    merges source, activates behavior, mutates provider/runtime state, or executes
+    a rollback.
+    """
+
+    if not isinstance(integration_plan, IntegrationPlan):
+        raise StudioCompetitionError("integration_plan must be an IntegrationPlan")
+    if not isinstance(contract, StudioChangeContract):
+        raise StudioCompetitionError("contract must be a StudioChangeContract")
+    if not isinstance(preview, StudioPreviewEvidence):
+        raise StudioCompetitionError("preview must be StudioPreviewEvidence")
+    test_items = _materialize(
+        tests, StudioTestEvidence, "tests", allow_empty=True
+    )
+    if rollback is not None and not isinstance(rollback, StudioRollbackAnchor):
+        raise StudioCompetitionError(
+            "rollback must be a StudioRollbackAnchor or None"
+        )
+    if approval is not None and not isinstance(approval, StudioActivationApproval):
+        raise StudioCompetitionError(
+            "approval must be a StudioActivationApproval or None"
+        )
+
+    _require_contract_matches_integration(integration_plan, contract)
+    for item in test_items:
+        if item.change_id != contract.change_id:
+            raise StudioCompetitionError(
+                f"test evidence references another change: {item.change_id}"
+            )
+
+    blockers: set[str] = set()
+    preview_blockers: set[str] = set()
+
+    if preview.change_id != contract.change_id:
+        preview_blockers.add("preview:change_mismatch")
+    if preview.proposed_sha != contract.proposed_sha:
+        preview_blockers.add("preview:head_mismatch")
+    if preview.source_sha256 != contract.source_sha256:
+        preview_blockers.add("preview:source_mismatch")
+    for contract_id in set(contract.declared_contract_ids) - set(
+        preview.covered_contract_ids
+    ):
+        preview_blockers.add(f"preview:contract:{contract_id}:missing")
+    blockers.update(preview_blockers)
+
+    verified_suites: set[str] = set()
+    for suite_id in contract.required_test_suites:
+        evidence = tuple(item for item in test_items if item.suite_id == suite_id)
+        if not evidence:
+            blockers.add(f"test:{suite_id}:missing")
+            continue
+        if len(evidence) != 1:
+            blockers.add(f"test:{suite_id}:duplicate")
+            continue
+        item = evidence[0]
+        if item.proposed_sha != contract.proposed_sha:
+            blockers.add(f"test:{suite_id}:head_mismatch")
+            continue
+        if item.outcome != VerificationOutcome.PASSED:
+            blockers.add(f"test:{suite_id}:failed")
+            continue
+        verified_suites.add(suite_id)
+
+    if rollback is None:
+        blockers.add("rollback:missing")
+    else:
+        if rollback.change_id != contract.change_id:
+            blockers.add("rollback:change_mismatch")
+        if rollback.base_sha != contract.base_sha:
+            blockers.add("rollback:base_mismatch")
+
+    blocker_tuple = tuple(sorted(blockers))
+    review_ready = not blocker_tuple
+    activation_plan: StudioActivationPlan | None = None
+
+    if approval is not None:
+        if not review_ready:
+            raise StudioCompetitionError(
+                "approval cannot override staged-change evidence blockers"
+            )
+        if approval.change_id != contract.change_id:
+            raise StudioCompetitionError(
+                "approval change_id does not match staged change"
+            )
+        if approval.proposed_sha != contract.proposed_sha:
+            raise StudioCompetitionError(
+                "approval proposed_sha does not match staged change"
+            )
+        if approval.preview_sha256 != preview.preview_sha256:
+            raise StudioCompetitionError(
+                "approval preview_sha256 does not match exact preview evidence"
+            )
+        assert rollback is not None
+        required_suites = set(contract.required_test_suites)
+        test_digests = tuple(
+            sorted(
+                item.evidence_sha256
+                for item in test_items
+                if item.suite_id in required_suites
+                and item.proposed_sha == contract.proposed_sha
+                and item.outcome == VerificationOutcome.PASSED
+            )
+        )
+        upstream_digests = tuple(
+            sorted(
+                integration_plan.verification_evidence_sha256s
+                + integration_plan.critique_evidence_sha256s
+            )
+        )
+        activation_plan = StudioActivationPlan(
+            approver_id=approval.approver_id,
+            change_id=contract.change_id,
+            packet_id=contract.packet_id,
+            work_id=contract.work_id,
+            kind=contract.kind,
+            base_sha=contract.base_sha,
+            proposed_sha=contract.proposed_sha,
+            source_sha256=contract.source_sha256,
+            preview_sha256=preview.preview_sha256,
+            upstream_evidence_sha256s=upstream_digests,
+            test_evidence_sha256s=test_digests,
+            rollback_revision_id=rollback.prior_revision_id,
+            rollback_state_sha256=rollback.prior_state_sha256,
+            rollback_evidence_sha256=rollback.evidence_sha256,
+            approval_evidence_sha256=approval.evidence_sha256,
+        )
+
+    return StudioStagedChangeDecision(
+        change_id=contract.change_id,
+        proposed_sha=contract.proposed_sha,
+        preview_ready=not preview_blockers,
+        review_ready=review_ready,
+        blockers=blocker_tuple,
+        verified_suite_ids=tuple(sorted(verified_suites)),
+        activation_plan=activation_plan,
+    )
+
+
+def _require_contract_matches_integration(
+    integration_plan: IntegrationPlan, contract: StudioChangeContract
+) -> None:
+    if contract.base_sha != integration_plan.base_sha:
+        raise StudioCompetitionError(
+            "staged contract base_sha must match reviewed integration plan"
+        )
+    if contract.proposed_sha != integration_plan.head_sha:
+        raise StudioCompetitionError(
+            "staged contract proposed_sha must match reviewed integration plan head"
+        )
+    if contract.source_sha256 != integration_plan.source_sha256:
+        raise StudioCompetitionError(
+            "staged contract source_sha256 must match reviewed integration plan"
+        )
+
+
 def _evaluate_candidate(
     spec: StudioWorkSpec,
     candidate: StudioCandidate,
@@ -370,7 +729,9 @@ def _evaluate_candidate(
     )
     finding_counts: dict[str, int] = {}
     for critique in candidate_critiques:
-        finding_counts[critique.finding_id] = finding_counts.get(critique.finding_id, 0) + 1
+        finding_counts[critique.finding_id] = (
+            finding_counts.get(critique.finding_id, 0) + 1
+        )
     for finding_id, count in finding_counts.items():
         if count > 1:
             blockers.add(f"critique:{finding_id}:duplicate")
