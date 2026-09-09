@@ -519,7 +519,7 @@ def evaluate_studio_competition(
 
 
 def evaluate_staged_change(
-    integration_plan: IntegrationPlan,
+    competition_decision: StudioCompetitionDecision,
     contract: StudioChangeContract,
     preview: StudioPreviewEvidence,
     tests: Iterable[StudioTestEvidence],
@@ -534,8 +534,10 @@ def evaluate_staged_change(
     a rollback.
     """
 
-    if not isinstance(integration_plan, IntegrationPlan):
-        raise StudioCompetitionError("integration_plan must be an IntegrationPlan")
+    if not isinstance(competition_decision, StudioCompetitionDecision):
+        raise StudioCompetitionError(
+            "competition_decision must be a StudioCompetitionDecision"
+        )
     if not isinstance(contract, StudioChangeContract):
         raise StudioCompetitionError("contract must be a StudioChangeContract")
     if not isinstance(preview, StudioPreviewEvidence):
@@ -552,7 +554,7 @@ def evaluate_staged_change(
             "approval must be a StudioActivationApproval or None"
         )
 
-    _require_contract_matches_integration(integration_plan, contract)
+    integration_plan = _reviewed_integration_plan(competition_decision, contract)
     for item in test_items:
         if item.change_id != contract.change_id:
             raise StudioCompetitionError(
@@ -667,12 +669,50 @@ def evaluate_staged_change(
     )
 
 
-def _require_contract_matches_integration(
-    integration_plan: IntegrationPlan, contract: StudioChangeContract
-) -> None:
-    if contract.base_sha != integration_plan.base_sha:
+def _reviewed_integration_plan(
+    competition_decision: StudioCompetitionDecision,
+    contract: StudioChangeContract,
+) -> IntegrationPlan:
+    integration_plan = competition_decision.integration_plan
+    if integration_plan is None:
         raise StudioCompetitionError(
-            "staged contract base_sha must match reviewed integration plan"
+            "competition decision must contain an explicit reviewed integration plan"
+        )
+    if contract.packet_id != competition_decision.packet_id:
+        raise StudioCompetitionError(
+            "staged contract packet_id must match reviewed competition decision"
+        )
+    if contract.work_id != competition_decision.work_id:
+        raise StudioCompetitionError(
+            "staged contract work_id must match reviewed competition decision"
+        )
+    if integration_plan.base_sha != competition_decision.base_sha:
+        raise StudioCompetitionError(
+            "reviewed integration plan base_sha must match competition decision"
+        )
+    evaluation = next(
+        (
+            item
+            for item in competition_decision.evaluations
+            if item.candidate_id == integration_plan.candidate_id
+        ),
+        None,
+    )
+    if evaluation is None or not evaluation.integration_ready:
+        raise StudioCompetitionError(
+            "reviewed integration plan must target an integration-ready evaluation"
+        )
+    if (
+        evaluation.producer_id != integration_plan.producer_id
+        or evaluation.branch != integration_plan.branch
+        or evaluation.head_sha != integration_plan.head_sha
+    ):
+        raise StudioCompetitionError(
+            "reviewed integration plan must match exact candidate evaluation provenance"
+        )
+    if contract.base_sha != competition_decision.base_sha:
+        raise StudioCompetitionError(
+            "staged contract base_sha must match reviewed competition decision"
         )
     if contract.proposed_sha != integration_plan.head_sha:
         raise StudioCompetitionError(
@@ -682,6 +722,7 @@ def _require_contract_matches_integration(
         raise StudioCompetitionError(
             "staged contract source_sha256 must match reviewed integration plan"
         )
+    return integration_plan
 
 
 def _evaluate_candidate(
