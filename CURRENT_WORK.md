@@ -13,15 +13,16 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 - **Branch:** `work/m2-m1-027-compute-observability`.
 - **Base SHA:** `d17dbed73d6fc55a7bd77dbd5bc2fa1e166b9499`.
 - **Packet:** `docs/work-packets/M2-M1-027.md`.
-- **Owned implementation surfaces:** planned `mira/compute_observability.py`, `tests/test_compute_observability.py`, `project/code_ownership.json`, packet doc, branch-local `CURRENT_WORK.md`.
-- **Shared/high-contention surfaces:** `project/code_ownership.json` requires one explicit new component entry because production-code ownership is exact-path enforced. Old draft PR #134 also changes that manifest and must reconcile later; M2-M1-027 does not consume any of #134's unfinished feature work.
-- **Current status:** packet started from live-workflow-verified M2-M1-026 main; worker/job telemetry contract implementation pending.
+- **Pull request:** `#142`.
+- **Owned implementation surfaces:** `mira/compute_observability.py`, `tests/test_compute_observability.py`, `project/code_ownership.json`, packet doc, branch-local `CURRENT_WORK.md`.
+- **Shared/high-contention surfaces:** `project/code_ownership.json` contains one explicit new `compute-observability` component entry. Old draft PR #134 also changes that manifest and must reconcile later; M2-M1-027 does not consume any of #134's unfinished feature work.
+- **Current status:** implementation, adversarial synthetic tests and exact production ownership are complete; CI #539 passed end-to-end on implementation head `cd22c1e1b715575fbd9df28b8e9dc52c5ba5e31e`; this documentation closeout requires one final exact-head CI before merge.
 
 ## Objective
 
-Add a provider-neutral, read-only observability projection over the existing durable worker registry and compute-job control-plane views. The first slice must produce deterministic Prometheus-compatible metrics for worker health/availability/freshness, job lifecycle state/age/duration/failure, and local-versus-hosted terminal execution use without exposing worker IDs, job IDs, principal IDs, runtime IDs, hostnames, addresses, credentials, model paths or raw task content.
+Add a provider-neutral, read-only observability projection over the existing durable worker registry and compute-job control-plane views. The bounded slice produces deterministic Prometheus-compatible metrics for worker health/availability/freshness, job lifecycle state/age/duration/failure, and local-versus-hosted terminal execution use without exposing worker IDs, job IDs, principal IDs, runtime IDs, hostnames, addresses, credentials, model paths or raw task content.
 
-The packet also defines a deterministic Grafana-compatible PromQL panel plan over those metrics. It does not deploy Prometheus, Grafana, a scrape server, collectors on private machines, hardware sensor readers, private dashboards, alert delivery or safety thresholds.
+It also defines a deterministic Grafana-compatible PromQL panel plan over those metrics. It does not deploy Prometheus, Grafana, a scrape server, collectors on private machines, hardware sensor readers, private dashboards, alert delivery or safety thresholds.
 
 ## Acceptance state
 
@@ -29,13 +30,22 @@ The packet also defines a deterministic Grafana-compatible PromQL panel plan ove
 - M2-M1-026 live gate evidence: **Trusted Runner Gate run #1 PASS; retained receipt for upstream CI #538 reports `trusted_canonical_main`, `requires_isolation=true`, `self_hosted_execution_authorized=false`, reason `runner_isolation_missing`, source/policy SHA both `d17dbed73d6fc55a7bd77dbd5bc2fa1e166b9499`**.
 - M2-M1-027 ID/branch collision check: **complete; no prior M2-M1-027 branch or PR existed**.
 - Existing observability implementation search: **complete; no compute Prometheus/telemetry component found**.
-- Existing ownership review: **complete; no OBS-001 component exists, and exact production-path ownership requires a new manifest component for a proper standalone module**.
-- Existing state reuse review: **complete; `WorkerRegistryView` and `ComputeJobView` are the source contracts; no second worker/job authority will be created**.
-- Compute telemetry implementation/tests: **pending**.
-- Exact-head CI/merge/post-merge verification: **pending**.
+- Existing state reuse review: **complete; `WorkerRegistryView` and `ComputeJobView` remain source contracts; no second worker/job authority exists**.
+- Compute telemetry projection: **implemented in `mira/compute_observability.py`**.
+- Prometheus deterministic renderer: **implemented and synthetically tested**.
+- Grafana-compatible read-only panel query plan: **implemented and synthetically tested**.
+- Worker freshness/future timestamp validation: **implemented and synthetically tested**.
+- Job lifecycle/queue-age/attempt/duration aggregation: **implemented and synthetically tested**.
+- Local/hosted/unknown terminal result reconciliation: **implemented and synthetically tested**.
+- Stable/private identifier exclusion: **synthetically tested in Prometheus and Grafana material**.
+- Duplicate worker/job ID fail-closed behavior: **synthetically tested**.
+- Exact production ownership: **registered as one `compute-observability` component; code-ownership gate passed in CI #539**.
+- CI #539 on implementation head `cd22c1e1b715575fbd9df28b8e9dc52c5ba5e31e`: **PASS end-to-end**.
+- Final documentation-closeout exact-head CI: **pending**.
+- Merge/post-merge verification: **pending**.
 - Live Prometheus/Grafana/private sensor evidence: **not claimed and out of scope**.
 
-## Session-start alignment verification — 2026-09-08
+## Session-start alignment verification — 2026-09-09
 
 ### `FEATURES.md`
 
@@ -51,10 +61,10 @@ Advanced/self-hosted infrastructure remains optional. Metrics contracts and dash
 
 ### Reuse review
 
-- `mira/service_state.py` already owns the validated secret-free `WorkerRegistryView`.
-- `mira/command_sequencer.py` already owns `ComputeJobView` and durable lifecycle truth.
-- Observability therefore consumes those views read-only; it does not persist new worker/job state or mutate either source.
-- A separate observability module is warranted rather than adding telemetry responsibilities to routing, service-state or job-control modules.
+- `mira/service_state.py` owns the validated secret-free `WorkerRegistryView`.
+- `mira.command_sequencer.py` owns `ComputeJobView` and durable lifecycle truth.
+- `mira.compute_observability.py` consumes those views read-only and does not persist replacement worker/job state.
+- A separate observability component keeps telemetry out of routing, service-state and job-control responsibilities.
 
 ### Privacy/cardinality result
 
@@ -66,12 +76,12 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Implement `mira/compute_observability.py` over `WorkerRegistryView` and `ComputeJobView` with deterministic Prometheus exposition and a read-only Grafana panel query plan.
-2. Add adversarial synthetic tests for deterministic ordering, heartbeat freshness/future rejection, job lifecycle aggregation, local-versus-hosted terminal mapping, queue age, terminal duration and identifier/privacy exclusion.
-3. Add one explicit `compute-observability` ownership component referencing `OBS-001`, `LOCAL-001` and direct test verification.
-4. Open a draft PR and run exact-head CI; fix only packet-scoped failures.
-5. Merge only after current-main reconciliation and exact-head green CI, then verify post-merge CI before claiming integration verification.
+1. Run final exact-head CI on the latest documentation-closeout head.
+2. Re-read remote `main`, PR #142 head/mergeability and changed-file overlap.
+3. Mark PR #142 ready and merge only if final exact-head CI is green, using expected-head protection.
+4. Read back merged remote `main` and verify post-merge CI before claiming integration verification.
+5. After M2-M1-027 closes, select the next dependency-ranked compute-fabric child packet from current Git state rather than chat history.
 
 ## Recovery protocol
 
-Resume from current remote `main`, branch `work/m2-m1-027-compute-observability`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-027.md`, and the latest branch head. Do not reopen M2-M1-021 through M2-M1-026 unless regression evidence requires it.
+Resume from current remote `main`, branch `work/m2-m1-027-compute-observability`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-027.md`, PR #142, and the latest branch head. Do not reopen M2-M1-021 through M2-M1-026 unless regression evidence requires it.
