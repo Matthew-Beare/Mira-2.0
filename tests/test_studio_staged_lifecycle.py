@@ -2,11 +2,13 @@ import dataclasses
 import unittest
 
 from mira.studio_competition import (
+    CandidateEvaluation,
     IntegrationPlan,
     StudioActivationApproval,
     StudioActivationPlan,
     StudioChangeContract,
     StudioChangeKind,
+    StudioCompetitionDecision,
     StudioCompetitionError,
     StudioPreviewEvidence,
     StudioRollbackAnchor,
@@ -44,6 +46,30 @@ def integration_plan(**changes):
     )
     values.update(changes)
     return IntegrationPlan(**values)
+
+
+def competition_decision(**changes):
+    values = dict(
+        packet_id="M2-M1-032",
+        work_id="SKILL-BUILDER-001",
+        base_sha=BASE,
+        evaluations=(
+            CandidateEvaluation(
+                candidate_id="candidate-a",
+                producer_id="producer-a",
+                branch="studio/candidate-a",
+                head_sha=HEAD,
+                integration_ready=True,
+                blockers=(),
+                verified_suite_ids=("ci", "unit"),
+                critique_finding_ids=("finding-a",),
+            ),
+        ),
+        eligible_candidate_ids=("candidate-a",),
+        integration_plan=integration_plan(),
+    )
+    values.update(changes)
+    return StudioCompetitionDecision(**values)
 
 
 def contract(**changes):
@@ -121,7 +147,7 @@ def approval(**changes):
 class StudioStagedLifecycleTests(unittest.TestCase):
     def test_complete_evidence_is_review_ready_but_not_silently_approved(self):
         decision = evaluate_staged_change(
-            integration_plan(), contract(), preview(), tests(), rollback()
+            competition_decision(), contract(), preview(), tests(), rollback()
         )
         self.assertIsInstance(decision, StudioStagedChangeDecision)
         self.assertTrue(decision.preview_ready)
@@ -132,7 +158,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
 
     def test_explicit_approval_emits_inert_plan_with_exact_provenance(self):
         decision = evaluate_staged_change(
-            integration_plan(),
+            competition_decision(),
             contract(),
             preview(),
             tests(),
@@ -159,10 +185,10 @@ class StudioStagedLifecycleTests(unittest.TestCase):
         self.assertEqual(plan.rollback_evidence_sha256, ROLLBACK_EVIDENCE)
         self.assertEqual(plan.approval_evidence_sha256, APPROVAL)
 
-    def test_contract_must_match_reviewed_integration_plan(self):
+    def test_contract_must_match_reviewed_competition_decision(self):
         with self.assertRaises(StudioCompetitionError):
             evaluate_staged_change(
-                integration_plan(),
+                competition_decision(),
                 contract(base_sha="4" * 40),
                 preview(),
                 tests(),
@@ -170,7 +196,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
             )
         with self.assertRaises(StudioCompetitionError):
             evaluate_staged_change(
-                integration_plan(),
+                competition_decision(),
                 contract(proposed_sha=OLD_HEAD),
                 preview(),
                 tests(),
@@ -178,8 +204,42 @@ class StudioStagedLifecycleTests(unittest.TestCase):
             )
         with self.assertRaises(StudioCompetitionError):
             evaluate_staged_change(
-                integration_plan(),
+                competition_decision(),
                 contract(source_sha256="4" * 64),
+                preview(),
+                tests(),
+                rollback(),
+            )
+        with self.assertRaises(StudioCompetitionError):
+            evaluate_staged_change(
+                competition_decision(),
+                contract(packet_id="M2-M1-999"),
+                preview(),
+                tests(),
+                rollback(),
+            )
+        with self.assertRaises(StudioCompetitionError):
+            evaluate_staged_change(
+                competition_decision(),
+                contract(work_id="OTHER-WORK-001"),
+                preview(),
+                tests(),
+                rollback(),
+            )
+        with self.assertRaises(StudioCompetitionError):
+            evaluate_staged_change(
+                competition_decision(integration_plan=None),
+                contract(),
+                preview(),
+                tests(),
+                rollback(),
+            )
+        with self.assertRaises(StudioCompetitionError):
+            evaluate_staged_change(
+                competition_decision(
+                    integration_plan=integration_plan(producer_id="producer-b")
+                ),
+                contract(),
                 preview(),
                 tests(),
                 rollback(),
@@ -187,7 +247,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
 
     def test_missing_preview_contract_coverage_blocks_review(self):
         decision = evaluate_staged_change(
-            integration_plan(),
+            competition_decision(),
             contract(),
             preview(covered_contract_ids=("contract-api",)),
             tests(),
@@ -201,7 +261,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
 
     def test_extra_preview_contract_does_not_gain_authority(self):
         decision = evaluate_staged_change(
-            integration_plan(),
+            competition_decision(),
             contract(),
             preview(
                 covered_contract_ids=(
@@ -223,7 +283,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
         ):
             with self.subTest(expected=expected):
                 decision = evaluate_staged_change(
-                    integration_plan(), contract(), changed_preview, tests(), rollback()
+                    competition_decision(), contract(), changed_preview, tests(), rollback()
                 )
                 self.assertIn(expected, decision.blockers)
 
@@ -255,7 +315,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
         for evidence, expected in cases:
             with self.subTest(expected=expected):
                 decision = evaluate_staged_change(
-                    integration_plan(), contract(), preview(), evidence, rollback()
+                    competition_decision(), contract(), preview(), evidence, rollback()
                 )
                 self.assertFalse(decision.review_ready)
                 self.assertIn(expected, decision.blockers)
@@ -266,7 +326,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
             test_evidence("benchmark", extra_digest, proposed_sha=OLD_HEAD),
         )
         decision = evaluate_staged_change(
-            integration_plan(),
+            competition_decision(),
             contract(),
             preview(),
             evidence,
@@ -278,27 +338,22 @@ class StudioStagedLifecycleTests(unittest.TestCase):
     def test_test_evidence_for_another_change_is_rejected(self):
         with self.assertRaises(StudioCompetitionError):
             evaluate_staged_change(
-                integration_plan(),
+                competition_decision(),
                 contract(),
                 preview(),
-                tests()
-                + (
-                    test_evidence(
-                        "benchmark", "8" * 64, change_id="change-b"
-                    ),
-                ),
+                tests() + (test_evidence("benchmark", "8" * 64, change_id="change-b"),),
                 rollback(),
             )
 
     def test_rollback_is_mandatory_and_bound_to_change_and_base(self):
         decision = evaluate_staged_change(
-            integration_plan(), contract(), preview(), tests(), None
+            competition_decision(), contract(), preview(), tests(), None
         )
         self.assertIn("rollback:missing", decision.blockers)
         self.assertFalse(decision.review_ready)
 
         decision = evaluate_staged_change(
-            integration_plan(),
+            competition_decision(),
             contract(),
             preview(),
             tests(),
@@ -310,7 +365,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
     def test_approval_cannot_override_blockers(self):
         with self.assertRaises(StudioCompetitionError):
             evaluate_staged_change(
-                integration_plan(),
+                competition_decision(),
                 contract(),
                 preview(covered_contract_ids=("contract-api",)),
                 tests(),
@@ -327,7 +382,7 @@ class StudioStagedLifecycleTests(unittest.TestCase):
             with self.subTest(approval=changed_approval):
                 with self.assertRaises(StudioCompetitionError):
                     evaluate_staged_change(
-                        integration_plan(),
+                        competition_decision(),
                         contract(),
                         preview(),
                         tests(),
@@ -337,10 +392,10 @@ class StudioStagedLifecycleTests(unittest.TestCase):
 
     def test_test_input_order_does_not_change_decision(self):
         first = evaluate_staged_change(
-            integration_plan(), contract(), preview(), tests(), rollback()
+            competition_decision(), contract(), preview(), tests(), rollback()
         )
         second = evaluate_staged_change(
-            integration_plan(),
+            competition_decision(),
             contract(),
             preview(),
             tuple(reversed(tests())),
