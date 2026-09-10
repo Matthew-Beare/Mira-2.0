@@ -351,6 +351,15 @@
       "verification": ["tests/test_studio_activation.py"]
     },
     {
+      "id": "feature-share-package",
+      "responsibility": "Provider-neutral deterministic sanitized feature-share package construction, independent validation, compatibility/dependency inspection, and inert import review readiness.",
+      "why_separate": "Feature sharing is a distribution boundary distinct from private Studio ownership, candidate selection, provider publication, source mutation, install, approval and activation. Keeping it separate lets improvements carry provenance and compatibility without allowing imported material to manufacture execution authority.",
+      "owned_paths": ["mira/feature_share.py"],
+      "feature_ids": ["DIST-001", "STUDIO-001", "DEV-004", "RECOVERY-002"],
+      "work_ids": ["FEATURE-SHARE-001"],
+      "verification": ["tests/test_feature_share.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
