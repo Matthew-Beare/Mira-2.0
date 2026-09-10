@@ -12,8 +12,9 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 - **Branch:** `work/m2-m1-035-feature-share-transport`.
 - **Base SHA:** `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`.
 - **Packet:** `docs/work-packets/M2-M1-035.md`.
-- **Current status:** packet opened from exact integration-verified M2-M1-034 merge; transport implementation pending.
-- **Owned implementation surfaces:** new `mira/feature_share_transport.py`, new `tests/test_feature_share_transport.py`, packet doc, branch-local `CURRENT_WORK.md`, and only the narrow code-ownership registration required for the new module.
+- **Pull request:** `#150` (draft).
+- **Current status:** transport implementation, 20 adversarial tests, and bounded code ownership are committed; exact-head repository CI is pending.
+- **Owned implementation surfaces:** new `mira/feature_share_transport.py`, new `tests/test_feature_share_transport.py`, packet doc, branch-local `CURRENT_WORK.md`, and narrow `feature-share-transport` registration in `project/code_ownership.json`.
 - **Shared/high-contention surfaces:** no Google Workspace/Sheets, finance, Android, People Discovery, final Studio UX, source mutation, provider-specific registry or live publication resource is owned by this packet.
 
 ## Prior packet closeout
@@ -29,11 +30,19 @@ This packet does not activate imported behavior, mutate MIRA source, install art
 ## Acceptance state
 
 - M2-M1-034 sanitized package/inert inspection seam: **merged and exact-merge-SHA CI verified**.
-- `FEATURE-SHARE-001` backlog requirement remains **partial** because its optional sanitized publication/import path is not yet implemented.
-- `MIRA-STUDIO-001` remains blocked from honest completion by unfinished `FEATURE-SHARE-001` transport composition. fileciteturn93file0
+- `FEATURE-SHARE-001` remains **partial** until this publication/import transport seam is repository-verified and merged.
+- `MIRA-STUDIO-001` remains blocked from honest completion until `FEATURE-SHARE-001` transport composition is complete.
 - Branch created from exact remote `main` `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`.
-- Transport implementation/tests/ownership: **pending**.
-- Exact-head CI: **pending**.
+- Explicit publication authorization bound to exact package ID and symbolic destination namespace: **implemented**.
+- Raw private publisher identity is reduced to a one-way domain-separated fingerprint in transport receipts: **implemented**.
+- Injected provider-neutral share store with exact preflight/readback semantics and no public provider credentials/endpoints: **implemented**.
+- Existing byte-identical remote package resolves as deterministic zero-write replay; conflicting bytes under the same package ID fail closed: **implemented**.
+- Provider write exception/unknown outcome or failed/mismatched post-write readback produces recovery-required evidence rather than fabricated success: **implemented**.
+- Import treats remote bytes as untrusted, independently validates package schema/privacy/digests/identity/canonical bytes, then performs compatibility/dependency inspection: **implemented**.
+- Publication and import receipts explicitly carry no install, source-mutation or activation authority: **implemented**.
+- Direct adversarial transport suite: **20 test methods committed; repository Python gate pending**.
+- Code ownership: **one bounded `feature-share-transport` component registered**.
+- Exact-head repository CI: **pending**.
 - Live provider publication/import/activation: **not claimed**.
 
 ## Session-start alignment verification — 2026-09-10
@@ -44,11 +53,11 @@ This packet does not activate imported behavior, mutate MIRA source, install art
 
 ### `BACKLOG.md`
 
-`FEATURE-SHARE-001` explicitly requires an optional sanitized publication/import path with provenance, dependencies and compatibility, and `MIRA-STUDIO-001` depends on it. M2-M1-034 covered package semantics only, so a bounded transport/reconciliation packet is the next hard dependency rather than prematurely starting final Studio UX. fileciteturn93file0
+`FEATURE-SHARE-001` explicitly requires an optional sanitized publication/import path with provenance, dependencies and compatibility, and `MIRA-STUDIO-001` depends on it. M2-M1-034 covered package semantics only, so this bounded transport/reconciliation packet is the next hard dependency rather than prematurely starting final Studio UX.
 
 ### `ROADMAP.md`
 
-The roadmap requires repeated bounded vertical progress on the ordinary no-app Personal product while preserving browser-only defaults and provider-neutral semantics. This packet adds no server, terminal, paid model API, hard-coded provider or Android dependency; it keeps sharing optional and inert until separately reviewed/activated. fileciteturn95file0
+The roadmap requires repeated bounded vertical progress on the ordinary no-app Personal product while preserving browser-only defaults and provider-neutral semantics. This packet adds no server, terminal, paid model API, hard-coded provider or Android dependency; it keeps sharing optional and inert until separately reviewed/activated.
 
 ### Reuse and boundary review
 
@@ -56,7 +65,7 @@ The roadmap requires repeated bounded vertical progress on the ordinary no-app P
 - `mira.studio_competition` owns reviewed candidate provenance/selection.
 - `mira.studio_activation` owns explicit approved source mutation/rollback execution.
 - Existing source/provider capability modules remain authority for provider/source evidence; this packet cannot manufacture that evidence.
-- `mira.feature_share_transport` will own only explicit publication authorization, injected store I/O reconciliation, exact readback and inert import retrieval.
+- `mira.feature_share_transport` owns only explicit publication authorization, injected store I/O reconciliation, exact readback and inert import retrieval.
 
 ### Direction result
 
@@ -64,16 +73,17 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Implement `mira/feature_share_transport.py` with explicit package/destination-bound publication authorization, injected provider-neutral store, exact pre/post-readback reconciliation, zero-write replay, uncertain-outcome recovery state, and inert untrusted import retrieval.
-2. Add adversarial `tests/test_feature_share_transport.py` covering success, replay, stale/foreign authorization, read/write failure, mismatch/tamper, malformed import, compatibility/dependency findings and no authority escalation.
-3. Add exactly one bounded code-ownership component if required.
-4. Run exact-head repository CI and repair only packet-owned failures.
-5. Close/merge only from green exact-head evidence and verify exact post-merge CI.
+1. Run exact-head repository CI on the current implementation/ownership head.
+2. Repair only packet-owned failures; do not weaken repository gates.
+3. If exact-head CI is green, record closeout evidence and re-read remote `main` plus PR #150 mergeability/overlap.
+4. Merge only with expected-head protection, then verify exact post-merge CI before claiming integration verification.
+5. Reconcile `FEATURE-SHARE-001` lifecycle status only after merged evidence proves the transport seam.
+6. Preserve the evidence ceiling: no live provider publication/import/install/source mutation/activation claim.
 
 ## Evidence ceiling
 
-M2-M1-035 is specified and branch-open only. No publication/import transport, provider integration, installation, source mutation or activation is yet claimed.
+M2-M1-035 is implemented and ownership-registered but not yet repository-test verified. No live publication/import transport, provider integration, installation, source mutation or activation is claimed.
 
 ## Recovery protocol
 
-Resume from remote `main` `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`, branch `work/m2-m1-035-feature-share-transport`, this file and `docs/work-packets/M2-M1-035.md`. Git, not chat, is authoritative.
+Resume from remote `main` `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`, branch `work/m2-m1-035-feature-share-transport`, PR #150, this file and `docs/work-packets/M2-M1-035.md`. Git, not chat, is authoritative.
