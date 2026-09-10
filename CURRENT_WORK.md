@@ -4,76 +4,77 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ## Active packet
 
-### `M2-M1-032` — Studio staged preview, approval and rollback planning
+### `M2-M1-033` — Studio approved activation and rollback execution boundary
 
 - **Primary work:** `SKILL-BUILDER-001`.
 - **Primary features:** `STUDIO-001`, `DEV-004`.
-- **Related invariants/features:** `DEV-001`, `DEV-002`, `DEV-005`, `DEV-006`, `DIST-001`, `SOURCE-001`, `RECOVERY-002`.
+- **Related invariants/features:** `SOURCE-001`, `PROVIDER-001`, `DEV-001`, `DEV-002`, `DEV-005`, `DEV-006`, `DIST-001`, `RECOVERY-002`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-032-studio-staged-lifecycle`.
-- **Base SHA:** `be38234a49c60fa28d478dc64132531767cb73c1`.
-- **Exact implementation head:** `ebc2bbdddc0b63b54fa51be2803518a2c42276f0`.
-- **Packet:** `docs/work-packets/M2-M1-032.md`.
-- **Pull request:** `#147` (draft pending final documentation-closeout CI).
-- **Owned implementation surfaces:** `mira/studio_competition.py`, `tests/test_studio_staged_lifecycle.py`, packet doc, branch-local `CURRENT_WORK.md`.
-- **Shared/high-contention surfaces:** `mira/studio_competition.py` is the existing `studio-competitive-development` component merged by M2-M1-031. No active open PR owns that implementation path. No `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, `PROJECT_INSTRUCTIONS.md`, Google Workspace/Sheets, People Discovery, provider, private-runner or local-compute implementation surface is modified by this packet.
-- **Current status:** implementation and adversarial tests complete; exact implementation-head CI #566 / run `34417064924` PASS end-to-end; final documentation closeout now requires its own exact-head CI before merge.
+- **Branch:** `work/m2-m1-033-studio-activation-execution`.
+- **Base SHA:** `344b58b8332751e42a8d30cd62ffee3539714d6c`.
+- **Exact implementation head:** `1723b7d2297a3e39d927cb54e967393be30fa1ac`.
+- **Packet:** `docs/work-packets/M2-M1-033.md`.
+- **Pull request:** `#148` (draft pending final documentation-closeout CI).
+- **Owned implementation surfaces:** new `mira/studio_activation.py`, new `tests/test_studio_activation.py`, packet doc, branch-local `CURRENT_WORK.md`, and the narrow `project/code_ownership.json` registration required for the new production module.
+- **Shared/high-contention surfaces:** no Google Workspace/Sheets, People Discovery, finance, Android, private-runner, feature-sharing/import or final Studio UX implementation surface is owned by this packet.
+- **Current status:** implementation and direct adversarial tests complete; exact implementation-head CI #570 / run `34518411189` PASS end-to-end; final documentation closeout now requires its own exact-head CI before merge.
 
 ## Objective
 
-Extend the provider-neutral Studio development engine with a fail-closed staged-change lifecycle that binds a reviewed proposal to its packet/work identity, reviewed feature scope, exact candidate provenance, declared contracts, preview evidence, exact-proposal test evidence, a deterministic rollback anchor and explicit human approval before producing any activation plan. The packet plans activation/rollback material only. It does not activate a feature, mutate runtime state, execute rollback, call a provider/model, merge Git, publish/import a feature or create final Studio UX.
+Close the remaining bounded `SKILL-BUILDER-001` execution seam without inventing provider-specific Git policy. Consume an explicit `StudioActivationPlan` from M2-M1-032, require independently verified source READ, WRITE and REMOTE_READBACK capability, preflight exact current source state, call only an injected source-mutation adapter, require exact post-write remote readback, emit deterministic activation evidence, and support explicit rollback to the recorded prior revision/state with the same stale-state and readback protections.
+
+This packet does not choose a source lane, invoke a model, create candidate code, publish/import a feature, implement final Studio UX, bypass branch protection, execute arbitrary shell, or claim live provider mutation.
 
 ## Acceptance state
 
-- M2-M1-031 competitive development evidence/planning: **merged at `be38234a49c60fa28d478dc64132531767cb73c1`; exact-merge CI checks PASS**.
-- SKILL-BUILDER prerequisites `FEATURE-REGISTRY-001` and `SOURCE-GATES-001`: **complete/CI-enforced**.
-- M2-M1-032 branch: **created from exact verified main `be38234a49c60fa28d478dc64132531767cb73c1`**.
-- Declared staged-change contract bound to reviewed packet/work identity, reviewed feature scope and exact base/proposed/source provenance: **implemented and adversarially tested**.
-- Reviewed competition decision required before staging; absent or candidate-provenance-mismatched integration plans fail closed: **implemented and adversarially tested**.
-- Feature-scope relabelling fails closed because the competition decision preserves the originating `feature_ids` and the staged contract must match them exactly: **implemented and adversarially tested**.
-- Preview evidence bound to exact change/proposed SHA/source digest with declared-contract coverage: **implemented and adversarially tested**.
-- Missing declared preview coverage blocks while extra undeclared preview coverage gains no authority: **implemented and adversarially tested**.
-- Required exact-proposal test evidence with missing/failed/stale/duplicate fail-closed behavior: **implemented and adversarially tested**.
-- Extra unrequired test evidence excluded from activation authority: **implemented and adversarially tested**.
-- Deterministic rollback anchor bound to exact change/base plus prior revision and pre-change state digest: **implemented and adversarially tested**.
-- Missing/mismatched rollback material blocks review readiness: **implemented and adversarially tested**.
-- Explicit approval required before any activation plan exists: **implemented and adversarially tested**.
-- Approval is exact change/head/preview-bound and cannot override failed/missing preview, test or rollback evidence: **implemented and adversarially tested**.
-- Approved output preserves upstream competition evidence plus exact source/preview/test/rollback/approval provenance while remaining inert planning material: **implemented and adversarially tested**.
-- Deterministic evidence ordering: **implemented and adversarially tested**.
-- Public staged-lifecycle contract excludes credentials, provider endpoints, host/network identities, model paths, shell commands, runner labels and execution controls: **implemented and adversarially tested**.
-- Targeted `tests/test_studio_staged_lifecycle.py`: **15/15 PASS locally on exact implementation content**.
-- Synthetic end-to-end competition → reviewed selection → staging → approval chain: **PASS locally**.
-- Exact implementation-head repository CI #566 / run `34417064924` on `ebc2bbdddc0b63b54fa51be2803518a2c42276f0`: **PASS end-to-end**, including compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android unit/proof build/provenance/retention, Python unit tests and Workspace Apps Script tests.
-- Base→implementation diff: **exactly four declared files; ten commits ahead, zero behind at implementation-head check**.
-- Review finding 1: initial staging API accepted only nested `IntegrationPlan`, which left packet/work relabelling insufficiently bound downstream. Fixed before release by requiring the full `StudioCompetitionDecision` and exact selected candidate-evaluation provenance; regression tests added.
-- Review finding 2: the reviewed decision initially omitted the originating `feature_ids`, which could have allowed a correct source proposal to be relabelled onto a different feature scope downstream. Fixed before release by carrying exact feature IDs in `StudioCompetitionDecision` and requiring staged-contract equality; regression coverage added.
+- M2-M1-032 staged preview/test/rollback plus explicit approval planning: **merged at `344b58b8332751e42a8d30cd62ffee3539714d6c`; post-merge CI #569 PASS**.
+- `SOURCE-GATES-001`: **complete/test-verified provider-neutral capability evidence authority; no live mutation implied**.
+- Provider-neutral `StudioSourceAdapter` protocol plus explicit source target/state/mutation result contracts: **implemented**.
+- Activation requires an existing `StudioActivationPlan`; this boundary creates no approval authority: **implemented and directly tested**.
+- Independent READ, WRITE and REMOTE_READBACK gates plus provider/service identity must all pass before preflight: **implemented and directly tested**.
+- Missing/denied/ambiguous capability evidence blocks with zero source access or mutation: **implemented and directly tested**.
+- Exact preflight revision and recorded rollback-state digest are checked before mutation; stale state blocks with zero write: **implemented and directly tested**.
+- Adapter receives exact change ID, expected current revision, reviewed proposal revision and reviewed source digest: **implemented and directly tested**.
+- Adapter exceptions after a mutation attempt become `recovery_required` with unknown outcome rather than fabricated clean failure: **implemented and directly tested**.
+- Mutation/readback evidence distinguishes `not_attempted`, `performed`, and `unknown`: **implemented and directly tested**.
+- Activation succeeds only after exact remote readback matches the adapter-returned applied revision/source/state and the source digest matches the approved source digest: **implemented and directly tested**.
+- Applied target revision is intentionally distinct from reviewed proposal revision because merge/cherry-pick adapters may create a new target commit; exact proposal SHA/source digest are still passed to the adapter and the approved source digest remains success authority: **reviewed and preserved intentionally**.
+- Verified activation replay is zero-write when current remote state exactly matches the prior successful receipt: **implemented and directly tested**.
+- Rollback is explicit only; successful activation does not auto-rollback: **implemented**.
+- Explicit rollback requires a successful matching activation receipt, current applied state equality, verified capability and the original plan rollback anchor: **implemented and directly tested**.
+- Rollback stale state blocks with zero write; write/readback uncertainty becomes recovery-required rather than success: **implemented and directly tested**.
+- Activation/rollback receipts are deterministic and preserve bounded packet/work/change/approver/source-target/revision/digest evidence without credentials or private execution material: **implemented and directly tested**.
+- Public execution contracts exclude credentials, tokens, provider endpoints, host/IP/network identities, shell commands, runner labels and model paths: **implemented and directly tested**.
+- Direct adversarial suite: **20 test methods in `tests/test_studio_activation.py`; repository Python unit-test gate PASS on exact implementation head**.
+- Code ownership: **new `studio-activation-execution` component registered; ownership gate PASS on exact implementation head**.
+- Base→implementation diff: **exactly five declared files; five commits ahead and zero behind at implementation-head reconciliation**.
+- Exact implementation-head repository CI #570 / run `34518411189` on `1723b7d2297a3e39d927cb54e967393be30fa1ac`: **PASS end-to-end**, including compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android unit/proof build/provenance/retention, Python unit tests and Workspace Apps Script tests.
 - Final documentation-closeout exact-head CI: **pending**.
 - Merge/post-merge integration verification: **pending**.
-- Live feature activation or rollback: **not claimed and out of scope**.
+- Live Git/provider activation or rollback: **not claimed and out of scope**.
 
-## Session-start alignment verification — 2026-09-09
+## Session-start alignment verification — 2026-09-10
 
 ### `FEATURES.md`
 
-`DEV-004` requires bounded private custom skill/feature creation with declared contracts. `STUDIO-001` requires guided bounded improvement with preview/test/rollback, source provenance and no silent activation. This packet advances those engine semantics without claiming final Studio UX.
+`DEV-004` requires bounded custom feature creation; `STUDIO-001` requires preview/test/rollback, source provenance and no silent activation. M2-M1-031 and M2-M1-032 established reviewed candidate selection and explicit approval. M2-M1-033 adds the bounded execution seam beneath Studio without expanding into final UX or sharing.
 
 ### `BACKLOG.md`
 
-`SKILL-BUILDER-001` is queued as the engine beneath MIRA Studio and explicitly requires declared contracts, preview/test evidence and rollback. Its prerequisites `FEATURE-REGISTRY-001` and `SOURCE-GATES-001` are complete. `FEATURE-SHARE-001` and `MIRA-STUDIO-001` remain separate later work.
+`SKILL-BUILDER-001` remains queued until this execution seam is merged and post-merge verified. `FEATURE-SHARE-001` and `MIRA-STUDIO-001` remain later dependencies; their work is not pulled into this packet.
 
 ### `ROADMAP.md`
 
-The packet preserves provider-neutral API/authority semantics, requires no local infrastructure, does not alter the ordinary Personal Google baseline, and remains a bounded development-engine child rather than expanding into the whole product.
+The packet preserves provider-neutral source semantics and the default Personal no-server path. It adds no local infrastructure requirement and does not change canonical MIRROR data authorities.
 
 ### Reuse and boundary review
 
-- M2-M1-031 `mira.studio_competition` remains the exact candidate provenance/evidence and explicit reviewer-selection authority.
-- M2-M1-032 extends that same bounded Studio-development component rather than creating duplicate development state.
-- Staging consumes the full reviewed competition decision so packet/work identity, originating feature scope and exact candidate evaluation provenance cannot be detached from the selected source.
-- Feature registry and source gates remain their existing authorities; this packet consumes logical IDs/digests only.
-- Git/provider/model/test execution, runtime activation, rollback execution, publication/import and final Studio UX remain outside this module.
-- Open People Discovery PR #134 and Sheets control-surface PR #135 own unrelated surfaces and are not touched.
+- `mira.studio_competition` remains the authority for reviewed candidate provenance, staged preview/test/rollback evidence and explicit approval.
+- `mira.service_state` remains the authority for SOURCE-001 capability evidence and independent READ / WRITE / REMOTE_READBACK gates.
+- `mira.studio_activation` composes those authorities through an injected adapter rather than duplicating them.
+- Source-lane selection remains separate under `SOURCE-LANES-001`; no GitHub/personal/organization/managed/no-Git selection policy is hard-coded here.
+- Real Git/provider credentials, branch policies, provider endpoints and private resource bindings remain outside public contracts.
+- Open People Discovery PR #134 and Sheets control-surface PR #135 own unrelated surfaces and are untouched.
 
 ### Direction result
 
@@ -81,14 +82,18 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Commit this final packet documentation closeout without changing implementation semantics.
-2. Run final CI on the resulting exact documentation-closeout head.
-3. Re-read remote `main`, PR #147 exact head/mergeability and changed-file overlap.
-4. Mark PR #147 ready and merge only if final exact-head CI is green, using expected-head protection.
-5. Read back merged remote `main` and verify post-merge exact-SHA CI before claiming integration verification.
-6. Preserve the evidence ceiling: staged evidence/planning only; no live activation/rollback/provider/model/Git-execution claim.
-7. After integration verification, select the next dependency-ranked Studio child packet from current Git rather than chat history.
+1. Commit the packet documentation closeout without changing implementation semantics.
+2. Run final exact-head CI on the documentation-closeout head.
+3. Re-read current remote `main`, PR #148 exact head/mergeability and changed-file overlap.
+4. If final exact-head CI is green and no incompatible main movement appeared, mark PR #148 ready and merge using expected-head protection.
+5. Read back merged remote `main` and verify post-merge CI on the exact merge SHA before claiming integration verification.
+6. Only after integration verification reconcile whether `SKILL-BUILDER-001` is complete enough to unblock `FEATURE-SHARE-001` and final `MIRA-STUDIO-001`.
+7. Preserve the evidence ceiling: provider-neutral synthetic/source-adapter execution semantics only; no live Git/provider mutation claim.
+
+## Evidence ceiling
+
+Implemented and exact implementation-head repository-test verified only. The packet provides provider-neutral activation/rollback execution semantics over an injected adapter. No live Git/provider source mutation, feature activation, rollback, model invocation, feature publication/import, final Studio UX or private-runner execution is claimed.
 
 ## Recovery protocol
 
-Resume from remote `main`, branch `work/m2-m1-032-studio-staged-lifecycle`, this `CURRENT_WORK.md`, `docs/work-packets/M2-M1-032.md`, PR #147, and the latest branch head. Do not reconstruct implementation state from chat when Git records it.
+Resume from remote `main`, branch `work/m2-m1-033-studio-activation-execution`, this file, `docs/work-packets/M2-M1-033.md`, PR #148, and the latest remote branch head. Do not reconstruct implementation state from chat when Git records it.
