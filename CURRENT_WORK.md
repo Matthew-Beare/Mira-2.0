@@ -12,24 +12,25 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-032-studio-staged-lifecycle`.
 - **Base SHA:** `be38234a49c60fa28d478dc64132531767cb73c1`.
-- **Exact implementation head:** `8a025b9c59a18a9795b878d2bb15336575ca5c75`.
+- **Exact implementation head:** `ebc2bbdddc0b63b54fa51be2803518a2c42276f0`.
 - **Packet:** `docs/work-packets/M2-M1-032.md`.
-- **Pull request:** `#147` (draft pending documentation-closeout CI).
+- **Pull request:** `#147` (draft pending final documentation-closeout CI).
 - **Owned implementation surfaces:** `mira/studio_competition.py`, `tests/test_studio_staged_lifecycle.py`, packet doc, branch-local `CURRENT_WORK.md`.
 - **Shared/high-contention surfaces:** `mira/studio_competition.py` is the existing `studio-competitive-development` component merged by M2-M1-031. No active open PR owns that implementation path. No `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, `PROJECT_INSTRUCTIONS.md`, Google Workspace/Sheets, People Discovery, provider, private-runner or local-compute implementation surface is modified by this packet.
-- **Current status:** implementation and adversarial tests complete; exact implementation-head CI #562 / run `34416322201` PASS end-to-end; documentation closeout is being committed and requires its own final exact-head CI before merge.
+- **Current status:** implementation and adversarial tests complete; exact implementation-head CI #566 / run `34417064924` PASS end-to-end; final documentation closeout now requires its own exact-head CI before merge.
 
 ## Objective
 
-Extend the provider-neutral Studio development engine with a fail-closed staged-change lifecycle that binds a reviewed proposal to its packet/work identity, exact candidate provenance, declared contracts, preview evidence, exact-proposal test evidence, a deterministic rollback anchor and explicit human approval before producing any activation plan. The packet plans activation/rollback material only. It does not activate a feature, mutate runtime state, execute rollback, call a provider/model, merge Git, publish/import a feature or create final Studio UX.
+Extend the provider-neutral Studio development engine with a fail-closed staged-change lifecycle that binds a reviewed proposal to its packet/work identity, reviewed feature scope, exact candidate provenance, declared contracts, preview evidence, exact-proposal test evidence, a deterministic rollback anchor and explicit human approval before producing any activation plan. The packet plans activation/rollback material only. It does not activate a feature, mutate runtime state, execute rollback, call a provider/model, merge Git, publish/import a feature or create final Studio UX.
 
 ## Acceptance state
 
 - M2-M1-031 competitive development evidence/planning: **merged at `be38234a49c60fa28d478dc64132531767cb73c1`; exact-merge CI checks PASS**.
 - SKILL-BUILDER prerequisites `FEATURE-REGISTRY-001` and `SOURCE-GATES-001`: **complete/CI-enforced**.
 - M2-M1-032 branch: **created from exact verified main `be38234a49c60fa28d478dc64132531767cb73c1`**.
-- Declared staged-change contract bound to reviewed packet/work identity and exact base/proposed/source provenance: **implemented and adversarially tested**.
+- Declared staged-change contract bound to reviewed packet/work identity, reviewed feature scope and exact base/proposed/source provenance: **implemented and adversarially tested**.
 - Reviewed competition decision required before staging; absent or candidate-provenance-mismatched integration plans fail closed: **implemented and adversarially tested**.
+- Feature-scope relabelling fails closed because the competition decision preserves the originating `feature_ids` and the staged contract must match them exactly: **implemented and adversarially tested**.
 - Preview evidence bound to exact change/proposed SHA/source digest with declared-contract coverage: **implemented and adversarially tested**.
 - Missing declared preview coverage blocks while extra undeclared preview coverage gains no authority: **implemented and adversarially tested**.
 - Required exact-proposal test evidence with missing/failed/stale/duplicate fail-closed behavior: **implemented and adversarially tested**.
@@ -43,9 +44,10 @@ Extend the provider-neutral Studio development engine with a fail-closed staged-
 - Public staged-lifecycle contract excludes credentials, provider endpoints, host/network identities, model paths, shell commands, runner labels and execution controls: **implemented and adversarially tested**.
 - Targeted `tests/test_studio_staged_lifecycle.py`: **15/15 PASS locally on exact implementation content**.
 - Synthetic end-to-end competition → reviewed selection → staging → approval chain: **PASS locally**.
-- Exact implementation-head repository CI #562 / run `34416322201` on `8a025b9c59a18a9795b878d2bb15336575ca5c75`: **PASS end-to-end**, including compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android unit/proof build/provenance/retention, Python unit tests and Workspace Apps Script tests.
-- Base→implementation diff: **exactly four declared files; six commits ahead, zero behind at implementation-head check**.
-- Review finding: initial staging API accepted only nested `IntegrationPlan`, which left packet/work relabelling insufficiently bound downstream. Fixed before release by requiring the full `StudioCompetitionDecision` and exact selected candidate-evaluation provenance; regression tests added and CI #562 passed after the fix.
+- Exact implementation-head repository CI #566 / run `34417064924` on `ebc2bbdddc0b63b54fa51be2803518a2c42276f0`: **PASS end-to-end**, including compile, feature registry, product lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android unit/proof build/provenance/retention, Python unit tests and Workspace Apps Script tests.
+- Base→implementation diff: **exactly four declared files; ten commits ahead, zero behind at implementation-head check**.
+- Review finding 1: initial staging API accepted only nested `IntegrationPlan`, which left packet/work relabelling insufficiently bound downstream. Fixed before release by requiring the full `StudioCompetitionDecision` and exact selected candidate-evaluation provenance; regression tests added.
+- Review finding 2: the reviewed decision initially omitted the originating `feature_ids`, which could have allowed a correct source proposal to be relabelled onto a different feature scope downstream. Fixed before release by carrying exact feature IDs in `StudioCompetitionDecision` and requiring staged-contract equality; regression coverage added.
 - Final documentation-closeout exact-head CI: **pending**.
 - Merge/post-merge integration verification: **pending**.
 - Live feature activation or rollback: **not claimed and out of scope**.
@@ -68,7 +70,7 @@ The packet preserves provider-neutral API/authority semantics, requires no local
 
 - M2-M1-031 `mira.studio_competition` remains the exact candidate provenance/evidence and explicit reviewer-selection authority.
 - M2-M1-032 extends that same bounded Studio-development component rather than creating duplicate development state.
-- Staging now consumes the full reviewed competition decision so packet/work identity and exact candidate evaluation provenance cannot be detached from the selected source.
+- Staging consumes the full reviewed competition decision so packet/work identity, originating feature scope and exact candidate evaluation provenance cannot be detached from the selected source.
 - Feature registry and source gates remain their existing authorities; this packet consumes logical IDs/digests only.
 - Git/provider/model/test execution, runtime activation, rollback execution, publication/import and final Studio UX remain outside this module.
 - Open People Discovery PR #134 and Sheets control-surface PR #135 own unrelated surfaces and are not touched.
@@ -79,7 +81,7 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Commit the packet documentation closeout without changing implementation semantics.
+1. Commit this final packet documentation closeout without changing implementation semantics.
 2. Run final CI on the resulting exact documentation-closeout head.
 3. Re-read remote `main`, PR #147 exact head/mergeability and changed-file overlap.
 4. Mark PR #147 ready and merge only if final exact-head CI is green, using expected-head protection.
