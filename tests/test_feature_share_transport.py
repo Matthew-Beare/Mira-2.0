@@ -8,7 +8,6 @@ import unittest
 from mira.feature_share import build_feature_share_package
 from mira.feature_share_transport import (
     FeatureShareTransportError,
-    SharePublicationAuthorization,
     ShareWriteResult,
     authorize_feature_share_publication,
     import_feature_share,
@@ -48,6 +47,7 @@ class MemoryShareStore:
         self.write_calls = 0
         self.read_calls = 0
         self.write_exception = False
+        self.write_before_exception = False
         self.read_exception_at: int | None = None
         self.write_outcome = "performed"
         self.remote_revision = "rev-1"
@@ -62,13 +62,14 @@ class MemoryShareStore:
 
     def write_package(self, *, destination: str, package_id: str, payload: bytes):
         self.write_calls += 1
+        stored = self.tamper_after_write if self.tamper_after_write is not None else payload
+        if self.write_before_exception:
+            self.data[(destination, package_id)] = stored
         if self.write_exception:
             raise RuntimeError("write failed after unknown provider outcome")
+        self.data[(destination, package_id)] = stored
         if self.malformed_write_result:
             return {"outcome": "performed"}
-        self.data[(destination, package_id)] = (
-            self.tamper_after_write if self.tamper_after_write is not None else payload
-        )
         return ShareWriteResult(
             outcome=self.write_outcome,
             remote_revision=self.remote_revision,
@@ -99,8 +100,7 @@ class FeatureShareTransportTests(unittest.TestCase):
     def test_identical_remote_package_is_zero_write_replay(self):
         package = build_package()
         store = MemoryShareStore()
-        key = ("community/stable", package.package_id)
-        store.data[key] = package.canonical_bytes()
+        store.data[("community/stable", package.package_id)] = package.canonical_bytes()
         receipt = publish_feature_share(
             package.projection(), authorization=authorization(package.package_id), store=store
         )
@@ -154,7 +154,7 @@ class FeatureShareTransportTests(unittest.TestCase):
             )
         self.assertEqual(store.write_calls, 0)
 
-    def test_write_exception_becomes_recovery_required(self):
+    def test_write_exception_without_exact_remote_state_requires_recovery(self):
         package = build_package()
         store = MemoryShareStore()
         store.write_exception = True
@@ -165,10 +165,34 @@ class FeatureShareTransportTests(unittest.TestCase):
         self.assertTrue(receipt.recovery_required)
         self.assertEqual(receipt.write_state, "unknown")
 
-    def test_unknown_write_outcome_becomes_recovery_required(self):
+    def test_write_exception_after_actual_write_is_reconciled_by_exact_readback(self):
+        package = build_package()
+        store = MemoryShareStore()
+        store.write_before_exception = True
+        store.write_exception = True
+        receipt = publish_feature_share(
+            package.projection(), authorization=authorization(package.package_id), store=store
+        )
+        self.assertTrue(receipt.verified)
+        self.assertFalse(receipt.recovery_required)
+        self.assertEqual(receipt.write_state, "unknown")
+
+    def test_unknown_write_outcome_is_reconciled_by_exact_readback(self):
         package = build_package()
         store = MemoryShareStore()
         store.write_outcome = "unknown"
+        receipt = publish_feature_share(
+            package.projection(), authorization=authorization(package.package_id), store=store
+        )
+        self.assertTrue(receipt.verified)
+        self.assertFalse(receipt.recovery_required)
+        self.assertEqual(receipt.write_state, "unknown")
+
+    def test_unknown_write_outcome_with_mismatch_requires_recovery(self):
+        package = build_package()
+        store = MemoryShareStore()
+        store.write_outcome = "unknown"
+        store.tamper_after_write = b"tampered\n"
         receipt = publish_feature_share(
             package.projection(), authorization=authorization(package.package_id), store=store
         )
@@ -268,8 +292,7 @@ class FeatureShareTransportTests(unittest.TestCase):
     def test_import_noncanonical_json_fails(self):
         package = build_package()
         store = MemoryShareStore()
-        material = package.projection()
-        noncanonical = json.dumps(material, indent=2, sort_keys=False).encode("utf-8")
+        noncanonical = json.dumps(package.projection(), indent=2, sort_keys=False).encode("utf-8")
         store.data[("community/stable", package.package_id)] = noncanonical
         with self.assertRaisesRegex(FeatureShareTransportError, "not canonical"):
             import_feature_share(
