@@ -8,12 +8,13 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 - **Primary work:** `FEATURE-SHARE-001`.
 - **Primary features:** `DIST-001`, `STUDIO-001`, `DEV-004`, `SOURCE-001`.
+- **Related invariants/features:** `RECOVERY-002`, `PROVIDER-001`, `DEV-005`, `DEV-006`, `DEV-007`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-035-feature-share-transport`.
 - **Base SHA:** `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`.
 - **Packet:** `docs/work-packets/M2-M1-035.md`.
 - **Pull request:** `#150` (draft).
-- **Current status:** transport implementation, 20 adversarial tests, and bounded code ownership are committed; exact-head repository CI is pending.
+- **Current status:** transport implementation, 22 adversarial tests, and bounded code ownership are committed. CI #584 reached and passed compile/feature-registry/product-ledger/distribution, then correctly stopped at work-session alignment because this active-packet block omitted the required Related invariants/features field; this checkpoint repairs that field before another exact-head run.
 - **Owned implementation surfaces:** new `mira/feature_share_transport.py`, new `tests/test_feature_share_transport.py`, packet doc, branch-local `CURRENT_WORK.md`, and narrow `feature-share-transport` registration in `project/code_ownership.json`.
 - **Shared/high-contention surfaces:** no Google Workspace/Sheets, finance, Android, People Discovery, final Studio UX, source mutation, provider-specific registry or live publication resource is owned by this packet.
 
@@ -37,12 +38,14 @@ This packet does not activate imported behavior, mutate MIRA source, install art
 - Raw private publisher identity is reduced to a one-way domain-separated fingerprint in transport receipts: **implemented**.
 - Injected provider-neutral share store with exact preflight/readback semantics and no public provider credentials/endpoints: **implemented**.
 - Existing byte-identical remote package resolves as deterministic zero-write replay; conflicting bytes under the same package ID fail closed: **implemented**.
-- Provider write exception/unknown outcome or failed/mismatched post-write readback produces recovery-required evidence rather than fabricated success: **implemented**.
+- Provider write exception or unknown write outcome is reconciled by an exact post-attempt read when possible; only exact canonical readback clears recovery-required state: **implemented**.
+- Failed/mismatched post-write readback preserves recovery-required state rather than fabricating success: **implemented**.
 - Import treats remote bytes as untrusted, independently validates package schema/privacy/digests/identity/canonical bytes, then performs compatibility/dependency inspection: **implemented**.
 - Publication and import receipts explicitly carry no install, source-mutation or activation authority: **implemented**.
-- Direct adversarial transport suite: **20 test methods committed; repository Python gate pending**.
+- Direct adversarial transport suite: **22 test methods committed; repository Python gate pending**.
 - Code ownership: **one bounded `feature-share-transport` component registered**.
-- Exact-head repository CI: **pending**.
+- CI #584 / run `34523138751` on `1666b3f31a79ae46286c91cf4a5e9cd79b6d4742`: compile, feature registry, product lifecycle ledger and Personal starter distribution **PASS**; work-session alignment **FAIL** only because the required Related invariants/features field was absent; later gates skipped.
+- Exact-head repository CI after checkpoint repair: **pending**.
 - Live provider publication/import/activation: **not claimed**.
 
 ## Session-start alignment verification — 2026-09-10
@@ -73,7 +76,7 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Run exact-head repository CI on the current implementation/ownership head.
+1. Run exact-head repository CI on the repaired checkpoint head.
 2. Repair only packet-owned failures; do not weaken repository gates.
 3. If exact-head CI is green, record closeout evidence and re-read remote `main` plus PR #150 mergeability/overlap.
 4. Merge only with expected-head protection, then verify exact post-merge CI before claiming integration verification.
