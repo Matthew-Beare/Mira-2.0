@@ -2,7 +2,7 @@
 
 The transport deliberately owns only package movement and exact remote readback.
 It does not own package construction, feature approval, installation, source
-mutation, or activation.  Provider implementations are injected behind the
+mutation, or activation. Provider implementations are injected behind the
 ``FeatureShareStore`` protocol and receive symbolic namespaces rather than
 credentials or provider endpoints through this public contract.
 """
@@ -139,9 +139,10 @@ def publish_feature_share(
 ) -> SharePublicationReceipt:
     """Publish one validated package and require exact remote readback.
 
-    Existing byte-identical material is a zero-write replay.  Any write whose
-    outcome or readback cannot be proven exact returns a recovery-required
-    receipt instead of fabricated success.
+    Existing byte-identical material is a zero-write replay. If the provider
+    reports an uncertain write outcome or raises during the write call, an exact
+    post-attempt readback may reconcile the final remote state. Otherwise the
+    receipt remains recovery-required rather than fabricating success.
     """
 
     package = _validated_package(material)
@@ -151,11 +152,12 @@ def publish_feature_share(
 
     try:
         before = store.read_package(destination=destination, package_id=package.package_id)
-    except Exception as exc:  # provider outcome is unavailable, not clean absence
+    except Exception as exc:
         raise FeatureShareTransportError("preflight remote read failed") from exc
 
     if before is not None:
         if before == expected:
+            _require_exact_package_bytes(before, package.package_id)
             return _publication_receipt(
                 authorization=authorization,
                 write_state="not_attempted",
@@ -175,68 +177,27 @@ def publish_feature_share(
             payload=expected,
         )
     except Exception:
-        return _publication_receipt(
+        return _reconcile_uncertain_write(
+            store=store,
             authorization=authorization,
-            write_state="unknown",
+            expected=expected,
             remote_revision=None,
-            replay=False,
-            verified=False,
-            recovery_required=True,
         )
 
     _validate_write_result(write_result)
     if write_result.outcome == "unknown":
-        return _publication_receipt(
+        return _reconcile_uncertain_write(
+            store=store,
             authorization=authorization,
-            write_state="unknown",
+            expected=expected,
             remote_revision=write_result.remote_revision,
-            replay=False,
-            verified=False,
-            recovery_required=True,
         )
 
-    try:
-        after = store.read_package(destination=destination, package_id=package.package_id)
-    except Exception:
-        return _publication_receipt(
-            authorization=authorization,
-            write_state="performed",
-            remote_revision=write_result.remote_revision,
-            replay=False,
-            verified=False,
-            recovery_required=True,
-        )
-
-    if after != expected:
-        return _publication_receipt(
-            authorization=authorization,
-            write_state="performed",
-            remote_revision=write_result.remote_revision,
-            replay=False,
-            verified=False,
-            recovery_required=True,
-        )
-
-    # Re-parse the remote bytes rather than trusting byte equality alone to keep
-    # the transport boundary independently fail-closed against malformed stores.
-    remote_package = _package_from_bytes(after)
-    if remote_package.package_id != package.package_id:
-        return _publication_receipt(
-            authorization=authorization,
-            write_state="performed",
-            remote_revision=write_result.remote_revision,
-            replay=False,
-            verified=False,
-            recovery_required=True,
-        )
-
-    return _publication_receipt(
+    return _verify_performed_write(
+        store=store,
         authorization=authorization,
-        write_state="performed",
+        expected=expected,
         remote_revision=write_result.remote_revision,
-        replay=False,
-        verified=True,
-        recovery_required=False,
     )
 
 
@@ -259,33 +220,94 @@ def import_feature_share(
     if payload is None:
         raise FeatureShareTransportError("requested feature-share package was not found")
 
-    parsed = _package_from_bytes(payload)
-    if parsed.package_id != package:
-        raise FeatureShareTransportError("remote package identity does not match request")
+    parsed = _require_exact_package_bytes(payload, package)
 
     try:
         material = json.loads(payload.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise FeatureShareTransportError("remote package is not canonical UTF-8 JSON") from exc
-    try:
         inspection = inspect_feature_share_import(
             material,
             runtime_schema=runtime_schema,
             available_feature_ids=available_feature_ids,
         )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FeatureShareTransportError("remote package is not canonical UTF-8 JSON") from exc
     except FeatureShareError as exc:
         raise FeatureShareTransportError(str(exc)) from exc
 
-    canonical = parsed.canonical_bytes()
-    if payload != canonical:
-        raise FeatureShareTransportError("remote package bytes are not canonical")
-
     return ImportedFeatureShare(
         destination=namespace,
-        package_id=package,
+        package_id=parsed.package_id,
         inspection=inspection,
-        canonical_bytes=canonical,
+        canonical_bytes=parsed.canonical_bytes(),
     )
+
+
+def _verify_performed_write(
+    *,
+    store: FeatureShareStore,
+    authorization: SharePublicationAuthorization,
+    expected: bytes,
+    remote_revision: str | None,
+) -> SharePublicationReceipt:
+    try:
+        after = store.read_package(
+            destination=authorization.destination,
+            package_id=authorization.package_id,
+        )
+    except Exception:
+        after = None
+    if after == expected:
+        try:
+            _require_exact_package_bytes(after, authorization.package_id)
+        except FeatureShareTransportError:
+            after = None
+    return _publication_receipt(
+        authorization=authorization,
+        write_state="performed",
+        remote_revision=remote_revision,
+        replay=False,
+        verified=after == expected,
+        recovery_required=after != expected,
+    )
+
+
+def _reconcile_uncertain_write(
+    *,
+    store: FeatureShareStore,
+    authorization: SharePublicationAuthorization,
+    expected: bytes,
+    remote_revision: str | None,
+) -> SharePublicationReceipt:
+    try:
+        after = store.read_package(
+            destination=authorization.destination,
+            package_id=authorization.package_id,
+        )
+    except Exception:
+        after = None
+    if after == expected:
+        try:
+            _require_exact_package_bytes(after, authorization.package_id)
+        except FeatureShareTransportError:
+            after = None
+    exact = after == expected
+    return _publication_receipt(
+        authorization=authorization,
+        write_state="unknown",
+        remote_revision=remote_revision,
+        replay=False,
+        verified=exact,
+        recovery_required=not exact,
+    )
+
+
+def _require_exact_package_bytes(payload: bytes, expected_package_id: str):
+    parsed = _package_from_bytes(payload)
+    if parsed.package_id != expected_package_id:
+        raise FeatureShareTransportError("remote package identity does not match request")
+    if payload != parsed.canonical_bytes():
+        raise FeatureShareTransportError("remote package bytes are not canonical")
+    return parsed
 
 
 def _validated_package(material: Mapping[str, Any]):
