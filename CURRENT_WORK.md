@@ -4,73 +4,70 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ## Active packet
 
-### `M2-M1-036` — Studio guided user-facing orchestration surface
+### `M2-M1-037` — Studio lifecycle reconciliation and next-child selection
 
 - **Primary work:** `MIRA-STUDIO-001`.
 - **Primary features:** `STUDIO-001`, `DEV-004`, `DIST-001`.
-- **Related invariants/features:** `DEV-002`, `DEV-005`, `DEV-006`, `DEV-007`, `SOURCE-001`, `PROVIDER-001`, `RECOVERY-002`.
+- **Related invariants/features:** `DEV-002`, `DEV-005`, `DEV-007`, `SOURCE-001`, `RECOVERY-002`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-036-studio-guided-surface`.
-- **Base SHA:** `16c5646e05edb62b3878ade602a3287d12c064f4`.
-- **Exact implementation/ownership head:** `811c66302c1ad37af6e6ab187c2d8a77b4bf1f0c`.
-- **Packet:** `docs/work-packets/M2-M1-036.md`.
-- **Pull request:** `#151` (draft pending final documentation-closeout CI).
-- **Current status:** implementation, 21 direct adversarial tests, bounded ownership and repository-wide exact-head CI are green. Documentation closeout has been recorded and therefore requires one final exact-head CI before merge.
-- **Owned implementation surfaces:** `mira/studio.py`, `tests/test_studio.py`, packet doc, branch-local `CURRENT_WORK.md`, and bounded `studio-guided-surface` registration in `project/code_ownership.json`.
-- **Shared/high-contention surfaces:** no Google Workspace/Sheets, finance, Android, People Discovery, provider credentials/endpoints, live source adapter, live share registry or `BACKLOG.md` row is mutated by this packet.
+- **Branch:** `work/m2-m1-037-studio-lifecycle-reconcile`.
+- **Base SHA:** `d2b89625313b8741ee7d0b5f6d45fe863ba90011`.
+- **Implementation/reconciliation head:** `c6a94b692132472659108bbc09b8ba06b2ef75c9`.
+- **Packet:** `docs/work-packets/M2-M1-037.md`.
+- **Pull request:** `#152` (draft pending final documentation-closeout CI).
+- **Current status:** lifecycle reconciliation and next-child selection are complete and exact implementation-head CI is green; documentation closeout now requires one final exact-head CI before merge.
+- **Owned surfaces:** `CURRENT_WORK.md`, `BACKLOG.md`, packet documentation only.
+- **Shared/high-contention surfaces:** no runtime code, Google Workspace/Sheets, finance, Android, People Discovery, provider state, feature publication registry, source adapter or live user data is owned by this packet.
 
 ## Prior packet closeout
 
-`M2-M1-035` / `FEATURE-SHARE-001` merged through PR #150 at exact merge SHA `16c5646e05edb62b3878ade602a3287d12c064f4`. Post-merge CI #588 / run `34561318036` passed end-to-end, and exact merge-SHA `python` plus trusted-runner `preflight` checks passed. M2-M1-034 + M2-M1-035 therefore integration-verify the provider-neutral sanitized package and optional publication/import transport seams. No live provider publication/import or imported activation is claimed.
+`M2-M1-036` / first guided `MIRA-STUDIO-001` surface merged through PR #151 at exact merge SHA `d2b89625313b8741ee7d0b5f6d45fe863ba90011`. Post-merge CI #593 / run `34562376624` passed end-to-end. No separate trusted-runner/preflight check was surfaced for that merge SHA, so none is claimed.
 
-`M2-M1-031` through `M2-M1-033` provide the bounded Studio skill-builder engine: competitive candidate evidence/review planning, staged preview/test/rollback/approval planning, and explicit approved activation/rollback execution through injected source adapters. Exact live model invocation and provider-specific source mutation remain separate evidence.
+The merged Studio foundation before this packet is M2-M1-031/032/033 for the bounded Skill Builder engine, M2-M1-034/035 for sanitized Feature Share package/transport boundaries, and M2-M1-036 for deterministic user-facing Studio lifecycle projection/orchestration.
 
 ## Objective
 
-Create the first integrated user-facing MIRA Studio orchestration surface over the already-merged skill-builder, activation and sharing boundaries. The surface makes one bounded change's current state and next permissible user action explicit while preserving hard separation among preview/review, explicit activation approval, execution/rollback evidence and optional inert sharing/import review.
+Reconcile stale Studio lifecycle truth from merged evidence and choose the next bounded user-visible Studio child without pre-crediting its implementation.
 
-This packet does not invoke a model, create Git branches, choose a provider, call a live source/share store, install imported behavior, silently activate anything, infer approval, or implement final graphical/browser UX.
+`SKILL-BUILDER-001` and `FEATURE-SHARE-001` are now complete at their bounded provider-neutral evidence ceilings. `MIRA-STUDIO-001` is partial after M2-M1-036. The selected next child is `STUDIO-INTAKE-001`: an ordinary-language stock-ChatGPT/no-app Studio front door that turns customer intent into one bounded reviewable draft while keeping internal packet/work/change IDs, Git branches, providers and implementation details out of the customer interaction.
+
+This packet does not implement that child.
 
 ## Acceptance state
 
-- Exact bounded Studio session identity and change kind/objective/feature/dependency context: **implemented**.
-- Deterministic lifecycle phase, blockers, readiness and one next action: **implemented**.
-- Existing `studio_competition.evaluate_staged_change()` remains readiness/approval authority: **implemented/reused**.
-- Review-ready but unapproved changes remain approval-gated: **implemented**.
-- Activation/rollback receipts bind back to exact approved plan and project APPLIED/BLOCKED/RECOVERY truthfully: **implemented**.
-- Sharing remains optional and separate from activation: **implemented**.
-- Imported material remains inert review-only material with install/source-mutation/activation authority false: **implemented**.
-- Provider/runtime-sensitive execution fields are absent from the public product surface: **implemented/tested**.
-- Deterministic replay of identical evidence: **implemented/tested**.
-- Direct adversarial Studio surface suite: **21 tests committed**.
-- Code ownership: **one bounded `studio-guided-surface` component registered and ownership gate verified**.
-- CI #590 / run `34562064822` on exact implementation/ownership head `811c66302c1ad37af6e6ab187c2d8a77b4bf1f0c`: **PASS end-to-end**, including repository Python tests, work-session alignment and code-ownership gates.
-- PR #151 at initial implementation review changed exactly five declared files: `CURRENT_WORK.md`, packet doc, `mira/studio.py`, `project/code_ownership.json`, and `tests/test_studio.py`.
-- `BACKLOG.md` lifecycle rows for `SKILL-BUILDER-001`, `FEATURE-SHARE-001`, and `MIRA-STUDIO-001` remain stale and intentionally unmodified until M2-M1-036 has exact merged evidence; the next governance/Studio-selection packet owns that reconciliation rather than pre-crediting integration.
-- Final documentation-closeout exact-head CI: **pending after this checkpoint commit**.
-- Live model/provider/source/share execution and final graphical UX: **not claimed**.
+- M2-M1-036 exact merge SHA `d2b89625313b8741ee7d0b5f6d45fe863ba90011`: **verified on remote `main`**.
+- M2-M1-036 post-merge CI #593 / run `34562376624`: **PASS end-to-end**.
+- `SKILL-BUILDER-001`: **reconciled complete** at the merged/test-verified M2-M1-031/032/033 provider-neutral engine boundary; live model/provider-specific execution remains separate evidence.
+- `FEATURE-SHARE-001`: **reconciled complete** at the merged/test-verified M2-M1-034/035 sanitized package + optional transport boundary; live provider registry execution remains separate evidence.
+- `MIRA-STUDIO-001`: **reconciled partial** after M2-M1-036; ordinary-language intake/refinement and live model/provider/source/share execution remain open.
+- `STUDIO-INTAKE-001`: **added exactly once and selected as next Studio child**.
+- Base-to-implementation diff: **three files only**. `BACKLOG.md` is exactly +7/-3 and contains only intended Studio lifecycle/selection edits.
+- Exact implementation-head CI #594 / run `34562882769` on `c6a94b692132472659108bbc09b8ba06b2ef75c9`: **PASS end-to-end**.
+- Product lifecycle ledger and work-session alignment with `STUDIO-INTAKE-001`: **PASS**.
+- Runtime/provider/user-data mutation by M2-M1-037: **none**.
+- Final documentation-closeout exact-head CI: **pending on the current docs head**.
 
 ## Session-start alignment verification — 2026-09-11
 
 ### `FEATURES.md`
 
-`STUDIO-001` requires an integrated guided user-facing surface over bounded custom features/workflows/preferences with preview/test/rollback, source provenance and optional sanitized sharing without silent imported activation. `DEV-004` and `DIST-001` provide the bounded creation and controlled-sharing foundations.
+`STUDIO-001` requires an integrated user-facing Studio for continuously improving MIRA through bounded preferences, workflows and features with preview/test/rollback, source provenance and optional sanitized sharing without silent imported activation. M2-M1-036 provides lifecycle projection but assumes technical session/change identity already exists. `DEV-004` and `DIST-001` provide the merged builder/share foundations.
 
 ### `BACKLOG.md`
 
-`MIRA-STUDIO-001` is the user-visible vertical depending on `SKILL-BUILDER-001` and `FEATURE-SHARE-001`. Their implementation evidence is merged/test-verified but lifecycle text is stale. M2-M1-036 earns only the first integrated guided-surface slice; it does not pre-credit complete Studio UX.
+The stale Studio rows have now been reconciled from exact merged evidence. The next selected child is `STUDIO-INTAKE-001`, which advances the user-facing Studio vertical rather than reopening already-complete Skill Builder or Feature Share foundations.
 
 ### `ROADMAP.md`
 
-The roadmap requires repeated bounded user-visible progress rather than another infrastructure mega-packet. This packet composes already-proven provider-neutral seams into a truthful Studio product surface without introducing local/server/provider prerequisites.
+The roadmap prioritizes repeated bounded user-visible no-app Personal progress. Ordinary-language Studio intake removes engineering identifiers from the customer interaction without introducing a server, terminal, Android dependency, hard-coded provider or silent execution path.
 
 ### Reuse and boundary review
 
-- `mira.studio_competition` remains authority for candidate/staged-change evidence evaluation and approval-bound activation planning.
-- `mira.studio_activation` remains authority for approved activation/rollback execution receipts through injected source adapters.
-- `mira.feature_share` remains authority for sanitized package validation and inert import inspection.
-- `mira.feature_share_transport` remains authority for optional publication/import transport with exact readback.
-- `mira.studio` owns only deterministic product-level lifecycle projection/orchestration over those existing contracts.
+- `mira.studio` remains deterministic lifecycle projection/orchestration.
+- `mira.studio_competition` remains reviewed candidate/staged-change evidence authority.
+- `mira.studio_activation` remains explicit approved source mutation/rollback execution authority.
+- `mira.feature_share` and `mira.feature_share_transport` remain sanitized sharing/import authorities.
+- `STUDIO-INTAKE-001` will bridge ordinary-language intent into a validated bounded draft contract; it must not duplicate lower-level execution authority.
 
 ### Direction result
 
@@ -78,17 +75,16 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Run final exact-head repository CI on the documentation-closeout head created by this checkpoint.
-2. Re-read current remote `main`, PR #151 exact head/mergeability and changed-file overlap.
-3. If final exact-head CI is green and no incompatible main movement appeared, mark PR #151 ready and merge using expected-head protection.
-4. Read back merged remote `main` and verify exact post-merge CI plus trusted-runner/preflight on the merge SHA before claiming integration verification.
-5. Start the next bounded Studio/governance packet from that exact merge SHA to reconcile backlog lifecycle state and select the next user-visible Studio child.
-6. Preserve the evidence ceiling: no live model invocation, provider/source/share execution, import install/activation or final graphical UX claim.
+1. Let PR #152 run final exact-head repository CI on the current documentation-closeout head.
+2. Re-read current remote `main`, PR #152 exact head/mergeability, and base-to-head changed-file overlap.
+3. If final exact-head CI is green and `main` has no incompatible movement, mark PR #152 ready and merge using expected-head protection.
+4. Verify post-merge CI on the exact merge SHA before claiming M2-M1-037 integration verification.
+5. Only after that verification, open the next bounded implementation packet for `STUDIO-INTAKE-001` from the exact verified merge SHA.
 
 ## Evidence ceiling
 
-Implemented and repository-test verified at exact implementation/ownership head `811c66302c1ad37af6e6ab187c2d8a77b4bf1f0c`. Documentation-closeout exact-head CI and exact post-merge verification remain pending. No live model/provider/source/share execution, imported installation/activation or final graphical/browser UX is claimed.
+M2-M1-037 reconciles lifecycle documentation and selects the next child only. It does not implement Studio intake, invoke a model, create source changes, execute provider I/O, publish/import against a live provider, install imported behavior, activate anything, or claim final graphical/browser Studio UX.
 
 ## Recovery protocol
 
-Resume from remote `main` `16c5646e05edb62b3878ade602a3287d12c064f4`, branch `work/m2-m1-036-studio-guided-surface`, PR #151, this file and `docs/work-packets/M2-M1-036.md`. Git, not chat, is authoritative.
+Resume from remote `main` `d2b89625313b8741ee7d0b5f6d45fe863ba90011`, branch `work/m2-m1-037-studio-lifecycle-reconcile`, PR #152, this file, `BACKLOG.md`, and `docs/work-packets/M2-M1-037.md`. Git, not chat, is authoritative.
