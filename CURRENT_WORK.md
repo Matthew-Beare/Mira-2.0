@@ -12,9 +12,10 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-035-feature-share-transport`.
 - **Base SHA:** `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`.
+- **Exact implementation/ownership head:** `adfd8b4ef64058e3ef06f1bdf32f4fa5e7267f02`.
 - **Packet:** `docs/work-packets/M2-M1-035.md`.
-- **Pull request:** `#150` (draft).
-- **Current status:** transport implementation, 22 adversarial tests, and bounded code ownership are committed. CI #584 reached and passed compile/feature-registry/product-ledger/distribution, then correctly stopped at work-session alignment because this active-packet block omitted the required Related invariants/features field; this checkpoint repairs that field before another exact-head run.
+- **Pull request:** `#150` (draft pending final documentation-closeout CI).
+- **Current status:** transport implementation, 22 adversarial tests, bounded code ownership and repository-wide exact-head CI are green. PR #150 is mergeable against unchanged `main`; this checkpoint records closeout evidence and therefore requires its own exact-head CI before merge.
 - **Owned implementation surfaces:** new `mira/feature_share_transport.py`, new `tests/test_feature_share_transport.py`, packet doc, branch-local `CURRENT_WORK.md`, and narrow `feature-share-transport` registration in `project/code_ownership.json`.
 - **Shared/high-contention surfaces:** no Google Workspace/Sheets, finance, Android, People Discovery, final Studio UX, source mutation, provider-specific registry or live publication resource is owned by this packet.
 
@@ -31,8 +32,8 @@ This packet does not activate imported behavior, mutate MIRA source, install art
 ## Acceptance state
 
 - M2-M1-034 sanitized package/inert inspection seam: **merged and exact-merge-SHA CI verified**.
-- `FEATURE-SHARE-001` remains **partial** until this publication/import transport seam is repository-verified and merged.
-- `MIRA-STUDIO-001` remains blocked from honest completion until `FEATURE-SHARE-001` transport composition is complete.
+- `FEATURE-SHARE-001` remains **partial until M2-M1-035 merges and exact post-merge CI verifies integration**.
+- `MIRA-STUDIO-001` remains blocked from honest completion until `FEATURE-SHARE-001` transport composition is integration-verified.
 - Branch created from exact remote `main` `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`.
 - Explicit publication authorization bound to exact package ID and symbolic destination namespace: **implemented**.
 - Raw private publisher identity is reduced to a one-way domain-separated fingerprint in transport receipts: **implemented**.
@@ -42,10 +43,13 @@ This packet does not activate imported behavior, mutate MIRA source, install art
 - Failed/mismatched post-write readback preserves recovery-required state rather than fabricating success: **implemented**.
 - Import treats remote bytes as untrusted, independently validates package schema/privacy/digests/identity/canonical bytes, then performs compatibility/dependency inspection: **implemented**.
 - Publication and import receipts explicitly carry no install, source-mutation or activation authority: **implemented**.
-- Direct adversarial transport suite: **22 test methods committed; repository Python gate pending**.
-- Code ownership: **one bounded `feature-share-transport` component registered**.
-- CI #584 / run `34523138751` on `1666b3f31a79ae46286c91cf4a5e9cd79b6d4742`: compile, feature registry, product lifecycle ledger and Personal starter distribution **PASS**; work-session alignment **FAIL** only because the required Related invariants/features field was absent; later gates skipped.
-- Exact-head repository CI after checkpoint repair: **pending**.
+- Direct adversarial transport suite: **22 test methods committed and repository Python gate verified**.
+- Code ownership: **one bounded `feature-share-transport` component registered and ownership gate verified**.
+- CI #584 / run `34523138751` on `1666b3f31a79ae46286c91cf4a5e9cd79b6d4742`: compile, feature registry, product lifecycle ledger and Personal starter distribution **PASS**; work-session alignment correctly failed because the required Related invariants/features field was absent; later gates skipped.
+- CI #585 / run `34523304065` on `adfd8b4ef64058e3ef06f1bdf32f4fa5e7267f02`: **PASS end-to-end** after repairing the alignment checkpoint, including repository Python tests and bounded ownership checks.
+- Remote `main` re-read after green CI: **unchanged at packet base `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`**.
+- PR #150 re-read after green CI: **mergeable=true**, head `adfd8b4ef64058e3ef06f1bdf32f4fa5e7267f02`, exactly five changed files, all within declared packet ownership/high-contention documentation surfaces.
+- Final documentation-closeout exact-head CI: **pending because this checkpoint changes branch documentation after CI #585**.
 - Live provider publication/import/activation: **not claimed**.
 
 ## Session-start alignment verification — 2026-09-10
@@ -76,16 +80,16 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Run exact-head repository CI on the repaired checkpoint head.
-2. Repair only packet-owned failures; do not weaken repository gates.
-3. If exact-head CI is green, record closeout evidence and re-read remote `main` plus PR #150 mergeability/overlap.
-4. Merge only with expected-head protection, then verify exact post-merge CI before claiming integration verification.
-5. Reconcile `FEATURE-SHARE-001` lifecycle status only after merged evidence proves the transport seam.
+1. Run final exact-head repository CI on the documentation-closeout head created by this checkpoint.
+2. Re-read current remote `main`, PR #150 exact head/mergeability and changed-file overlap.
+3. If final exact-head CI is green and no incompatible main movement appeared, mark PR #150 ready and merge using expected-head protection.
+4. Read back merged remote `main` and verify exact post-merge CI on the merge SHA before claiming integration verification.
+5. Reconcile `FEATURE-SHARE-001` lifecycle status only after merged evidence proves the transport seam, then select the next dependency-ranked Studio packet.
 6. Preserve the evidence ceiling: no live provider publication/import/install/source mutation/activation claim.
 
 ## Evidence ceiling
 
-M2-M1-035 is implemented and ownership-registered but not yet repository-test verified. No live publication/import transport, provider integration, installation, source mutation or activation is claimed.
+Implemented and repository-test verified at exact implementation/ownership head `adfd8b4ef64058e3ef06f1bdf32f4fa5e7267f02`. Documentation-closeout exact-head CI and post-merge verification remain pending. No live publication/import transport, provider integration, installation, source mutation or activation is claimed.
 
 ## Recovery protocol
 
