@@ -6,7 +6,9 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ### `M2-M1-039` — Financial Escape twice-daily refresh reliability repair
 
-- **Primary work:** restore trustworthy twice-daily Financial Escape refresh/readback for the 02:45 and 14:45 America/New_York brief cycle.
+- **Primary work:** `FIN-EVIDENCE-RECONCILE-001`.
+- **Primary features:** `FIN-HISTORY-001`, `FIN-TRAJECTORY-001`, `FIN-DASH-001`, `FIN-PRIVATE-REF-001`.
+- **Related invariants/features:** `FIN-GOAL-001`, `RECOVERY-002`, `OPS-001`, `OPS-003`, `OPS-004`, `DEV-002`, `DEV-007`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-039-financial-escape-refresh-repair`.
 - **Base SHA:** `57f9cfab2976be1d93ccae41d07b497354511552`.
@@ -54,12 +56,38 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 9. Exact live workbook readback demonstrates repaired current-date state. **PASS.**
 10. After closeout, resume `M2-M1-038` at its preserved first implementation step. **PENDING packet merge/closeout only.**
 
+## Session-start alignment verification — 2026-09-11
+
+### `FEATURES.md`
+
+`FIN-HISTORY-001` requires provenance-bound dated financial observations with freshness/confidence and historical source preservation. `FIN-TRAJECTORY-001` and `FIN-DASH-001` require current plan-vs-actual projections and broad-first human-readable status. `FIN-PRIVATE-REF-001` preserves the private Financial Escape reference contract without leaking private values into public Git. The repair directly restores those requirements after stale live-state evidence and does not broaden finance semantics.
+
+### `BACKLOG.md`
+
+`FIN-EVIDENCE-RECONCILE-001` is the accepted repeatable reconciliation/runtime work for newly available financial evidence with replay dedupe, exception handling, exact readback, and no claim of continuous operation until a real scheduler/runtime is live-verified. M2-M1-039 is a bounded reliability child of that work: it repairs the private live refresh/readback path and installs a fail-closed twice-daily pre-brief verification contract without claiming the entire backlog item complete.
+
+### `ROADMAP.md`
+
+The roadmap keeps finance/reconciliation as accepted Personal work while requiring bounded, user-visible progress and preserving canonical Authority/readback semantics. This repair was a customer-priority integrity interruption, not a roadmap expansion: it restores trustworthy existing Personal behavior, records the displaced Studio resume point, and returns to `STUDIO-INTAKE-001` after closeout.
+
+### Reuse and boundary review
+
+- Existing Financial Escape Sheets remain projection/control surfaces; no second finance authority was created.
+- Live Finances/account evidence remains money authority; sheet refresh logic reconciles and projects rather than inventing economic events.
+- Existing Ops Brief cadence remains 02:45/14:45 America/New_York; the 02:35/14:35 refresh is a prerequisite verification run, not a duplicate brief.
+- `M2-M1-038` remains checkpointed and displaced rather than being reconstructed or silently expanded.
+
+### Direction result
+
+ALIGNED
+
 ## Exact next action / resume point
 
-1. Commit this exact live evidence closeout documentation.
-2. Run normal repository/PR closeout gates for this docs-only packet and merge if green.
-3. Verify exact post-merge CI; do not overclaim future provider success beyond the fail-closed contract.
-4. Resume `M2-M1-038` from checkpoint commit `3f8d52b2904891b5b9677ec26d64978afb4e4afa` and its first implementation step.
+1. Re-run normal repository/PR closeout gates after the work-session alignment repair.
+2. Re-read current remote `main`, PR #154 exact head/mergeability, and base-to-head changed-file overlap.
+3. If exact-head CI is green and `main` has no incompatible movement, merge PR #154 using expected-head protection.
+4. Verify exact post-merge CI; do not overclaim future provider success beyond the fail-closed contract.
+5. Resume `M2-M1-038` from checkpoint commit `3f8d52b2904891b5b9677ec26d64978afb4e4afa` and its first implementation step.
 
 ## Evidence ceiling
 
