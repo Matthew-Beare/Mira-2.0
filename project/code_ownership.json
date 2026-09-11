@@ -127,7 +127,7 @@
     },
     {
       "id": "personal-ops-brief",
-      "responsibility": "Deterministic twice-daily task-centered Personal Ops Brief slot/run composition, immutable composed checkpointing and optional bounded progressive-discovery prompt insertion.",
+      "responsibility": "Deterministic twice-daily task-centered Personal Ops Brief slot/run composition, immutable run checkpointing and optional bounded progressive-discovery prompt insertion.",
       "why_separate": "Brief composition is a user-visible projection over canonical task/onboarding state and must stay distinct from task authority, scheduler delivery, weather/order/calendar integrations and platform notification claims.",
       "owned_paths": ["mira/ops_brief.py"],
       "feature_ids": ["OPS-001", "OPS-003", "OPS-004", "TASK-001", "TASK-002", "RECOVERY-001", "RECOVERY-002", "ONBOARD-004"],
