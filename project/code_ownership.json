@@ -369,6 +369,15 @@
       "verification": ["tests/test_feature_share_transport.py"]
     },
     {
+      "id": "studio-guided-surface",
+      "responsibility": "Deterministic user-facing MIRA Studio lifecycle projection and next-action orchestration over reviewed change evidence, activation and rollback receipts, and inert shared-import inspection.",
+      "why_separate": "The product surface composes existing Studio and sharing authorities without becoming a model runner, source adapter, publication transport, activation executor, or second readiness engine.",
+      "owned_paths": ["mira/studio.py"],
+      "feature_ids": ["STUDIO-001", "DEV-004", "DIST-001", "RECOVERY-002"],
+      "work_ids": ["MIRA-STUDIO-001"],
+      "verification": ["tests/test_studio.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
