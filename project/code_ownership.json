@@ -66,19 +66,10 @@
       "id": "cloud-run-deployment",
       "responsibility": "Cloud Run service identity, restart-stable injected bearer authentication, HTTPS proxy adaptation, rate/audit controls, and live Google deployment composition for the bounded M2-M0 proof.",
       "why_separate": "Cloud-specific identity and hosting behavior must remain outside provider-neutral API/runtime semantics while still being directly tested and fail-closed before live provider writes.",
-      "owned_paths": [
-        "mira/cloud_run.py",
-        "mira/cloud_run_entrypoint.py",
-        "mira/google_runtime_auth.py",
-        "mira/managed_auth.py"
-      ],
+      "owned_paths": ["mira/cloud_run.py", "mira/cloud_run_entrypoint.py", "mira/google_runtime_auth.py", "mira/managed_auth.py"],
       "feature_ids": ["API-001", "STORE-001"],
       "work_ids": ["API-DEPLOYMENT-001"],
-      "verification": [
-        "tests/test_cloud_run.py",
-        "tests/test_google_runtime_auth.py",
-        "tests/test_managed_auth.py"
-      ]
+      "verification": ["tests/test_cloud_run.py", "tests/test_google_runtime_auth.py", "tests/test_managed_auth.py"]
     },
     {
       "id": "workspace-first-run",
@@ -136,7 +127,7 @@
     },
     {
       "id": "personal-ops-brief",
-      "responsibility": "Deterministic twice-daily task-centered Personal Ops Brief slot/run composition, immutable run checkpointing and optional bounded progressive-discovery prompt insertion.",
+      "responsibility": "Deterministic twice-daily task-centered Personal Ops Brief slot/run composition, immutable composed checkpointing and optional bounded progressive-discovery prompt insertion.",
       "why_separate": "Brief composition is a user-visible projection over canonical task/onboarding state and must stay distinct from task authority, scheduler delivery, weather/order/calendar integrations and platform notification claims.",
       "owned_paths": ["mira/ops_brief.py"],
       "feature_ids": ["OPS-001", "OPS-003", "OPS-004", "TASK-001", "TASK-002", "RECOVERY-001", "RECOVERY-002", "ONBOARD-004"],
@@ -378,23 +369,22 @@
       "verification": ["tests/test_studio.py"]
     },
     {
+      "id": "studio-intake",
+      "responsibility": "Deterministic ordinary-language MIRA Studio intake validation, canonical feature-registry grounding, dependency derivation, generated draft identity, explicit customer-constraint versus model-assumption separation, and review-readiness/clarification state.",
+      "why_separate": "Intent intake is the user-facing boundary before a Studio implementation packet exists. Keeping it separate prevents natural-language interpretation from becoming source mutation, approval, activation, provider selection, feature-share publication, or a second feature-registry authority.",
+      "owned_paths": ["mira/studio_intake.py"],
+      "feature_ids": ["STUDIO-001", "DEV-004", "DEV-005"],
+      "work_ids": ["STUDIO-INTAKE-001"],
+      "verification": ["tests/test_studio_intake.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
-      "owned_paths": [
-        "mira/feature_registry.py",
-        "mira/product_ledger.py",
-        "mira/code_ownership.py",
-        "mira/work_session_alignment.py"
-      ],
+      "owned_paths": ["mira/feature_registry.py", "mira/product_ledger.py", "mira/code_ownership.py", "mira/work_session_alignment.py"],
       "feature_ids": ["DEV-005", "DEV-006", "DEV-007"],
       "work_ids": ["FEATURE-REGISTRY-001", "CODE-OWNERSHIP-001", "FEATURE-ALIGN-001"],
-      "verification": [
-        "tests/test_feature_registry.py",
-        "tests/test_product_ledger.py",
-        "tests/test_code_ownership.py",
-        "tests/test_work_session_alignment.py"
-      ]
+      "verification": ["tests/test_feature_registry.py", "tests/test_product_ledger.py", "tests/test_code_ownership.py", "tests/test_work_session_alignment.py"]
     }
   ]
 }
