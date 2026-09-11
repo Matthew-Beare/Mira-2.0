@@ -360,6 +360,15 @@
       "verification": ["tests/test_feature_share.py"]
     },
     {
+      "id": "feature-share-transport",
+      "responsibility": "Provider-neutral explicit-authorized feature-share publication, exact remote readback/replay reconciliation, recovery-required uncertainty handling, and inert untrusted import retrieval.",
+      "why_separate": "Moving an already-sanitized package across an optional provider boundary is distinct from package construction, provider selection, source mutation, installation and activation. Keeping transport separate preserves exact publication evidence without allowing provider possession of a package to manufacture execution authority.",
+      "owned_paths": ["mira/feature_share_transport.py"],
+      "feature_ids": ["DIST-001", "STUDIO-001", "DEV-004", "SOURCE-001", "RECOVERY-002"],
+      "work_ids": ["FEATURE-SHARE-001"],
+      "verification": ["tests/test_feature_share_transport.py"]
+    },
+    {
       "id": "repository-integrity",
       "responsibility": "Machine validation and machine-readable projection of canonical feature dependencies, backlog lifecycle state, work-session direction, and production component ownership/evidence coverage.",
       "why_separate": "Repository integrity gates govern source growth, lifecycle reconciliation and CI evidence rather than participating in mutable product-state authority or runtime provider behavior.",
