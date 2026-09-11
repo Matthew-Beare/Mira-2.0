@@ -4,75 +4,66 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ## Active packet
 
-### `M2-M1-035` — Feature-share publication/import transport
+### `M2-M1-036` — Studio guided user-facing orchestration surface
 
-- **Primary work:** `FEATURE-SHARE-001`.
-- **Primary features:** `DIST-001`, `STUDIO-001`, `DEV-004`, `SOURCE-001`.
-- **Related invariants/features:** `RECOVERY-002`, `PROVIDER-001`, `DEV-005`, `DEV-006`, `DEV-007`.
+- **Primary work:** `MIRA-STUDIO-001`.
+- **Primary features:** `STUDIO-001`, `DEV-004`, `DIST-001`.
+- **Related invariants/features:** `DEV-002`, `DEV-005`, `DEV-006`, `DEV-007`, `SOURCE-001`, `PROVIDER-001`, `RECOVERY-002`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-035-feature-share-transport`.
-- **Base SHA:** `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`.
-- **Exact implementation/ownership head:** `adfd8b4ef64058e3ef06f1bdf32f4fa5e7267f02`.
-- **Packet:** `docs/work-packets/M2-M1-035.md`.
-- **Pull request:** `#150` (draft pending final documentation-closeout CI).
-- **Current status:** transport implementation, 22 adversarial tests, bounded code ownership and repository-wide exact-head CI are green. PR #150 is mergeable against unchanged `main`; this checkpoint records closeout evidence and therefore requires its own exact-head CI before merge.
-- **Owned implementation surfaces:** new `mira/feature_share_transport.py`, new `tests/test_feature_share_transport.py`, packet doc, branch-local `CURRENT_WORK.md`, and narrow `feature-share-transport` registration in `project/code_ownership.json`.
-- **Shared/high-contention surfaces:** no Google Workspace/Sheets, finance, Android, People Discovery, final Studio UX, source mutation, provider-specific registry or live publication resource is owned by this packet.
+- **Branch:** `work/m2-m1-036-studio-guided-surface`.
+- **Base SHA:** `16c5646e05edb62b3878ade602a3287d12c064f4`.
+- **Packet:** `docs/work-packets/M2-M1-036.md`.
+- **Current status:** active implementation packet. M2-M1-035 is integration-verified on exact merge SHA; this packet begins the first bounded user-facing Studio composition seam.
+- **Owned implementation surfaces:** new `mira/studio.py`, new `tests/test_studio.py`, packet doc, branch-local `CURRENT_WORK.md`, and one narrow code-ownership registration.
+- **Shared/high-contention surfaces:** `BACKLOG.md` lifecycle reconciliation may be updated narrowly; no Google Workspace/Sheets, finance, Android, People Discovery, provider credentials/endpoints, live source adapter, or live share registry is owned here.
 
 ## Prior packet closeout
 
-`M2-M1-034` / first `FEATURE-SHARE-001` seam merged through PR #149 at `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`. Exact post-merge CI #579 / run `34522059866` passed end-to-end. It proves deterministic sanitized package construction, privacy/integrity validation, and inert import inspection. It deliberately does not prove publication/import transport or activation.
+`M2-M1-035` / `FEATURE-SHARE-001` merged through PR #150 at exact merge SHA `16c5646e05edb62b3878ade602a3287d12c064f4`. Post-merge CI #588 / run `34561318036` passed end-to-end, and exact merge-SHA `python` plus trusted-runner `preflight` checks both passed. M2-M1-034 + M2-M1-035 therefore integration-verify the provider-neutral sanitized package and optional publication/import transport seams. No live provider publication/import or imported activation is claimed.
+
+`M2-M1-031` through `M2-M1-033` implemented the bounded Studio skill-builder engine: competitive candidate evidence/review planning, preview/test/rollback/approval planning, and explicit approved activation/rollback execution through injected source adapters. Exact live model invocation and provider-specific source mutation remain separate evidence.
 
 ## Objective
 
-Close the remaining bounded `FEATURE-SHARE-001` transport seam without choosing or hard-coding a provider. Add an injected share-store boundary that publishes an already-validated sanitized package only under explicit user authorization bound to exact package/destination identity, requires exact remote readback, supports zero-write replay, retrieves imported bytes as untrusted material, independently revalidates them, and returns inert review findings only.
+Create the first integrated user-facing MIRA Studio orchestration surface over the already-merged skill-builder, activation and sharing boundaries. The surface must make the user's current Studio state and next permissible action explicit for preference/workflow/feature changes while preserving hard separation between preview/review, activation approval, rollback and optional sharing/import review.
 
-This packet does not activate imported behavior, mutate MIRA source, install artifacts, choose a public registry, expose provider credentials/endpoints, infer approval from publication, invoke a model, or implement final Studio UX.
+This packet must not invoke a model, create Git branches, select a provider, call a live source/share store, install imported behavior, silently activate anything, infer approval, or expand into final graphical/browser UX. It is a provider-neutral product orchestration/state surface that composes existing proven contracts and remains fully deterministic/testable with supplied evidence.
 
-## Acceptance state
+## Acceptance criteria
 
-- M2-M1-034 sanitized package/inert inspection seam: **merged and exact-merge-SHA CI verified**.
-- `FEATURE-SHARE-001` remains **partial until M2-M1-035 merges and exact post-merge CI verifies integration**.
-- `MIRA-STUDIO-001` remains blocked from honest completion until `FEATURE-SHARE-001` transport composition is integration-verified.
-- Branch created from exact remote `main` `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`.
-- Explicit publication authorization bound to exact package ID and symbolic destination namespace: **implemented**.
-- Raw private publisher identity is reduced to a one-way domain-separated fingerprint in transport receipts: **implemented**.
-- Injected provider-neutral share store with exact preflight/readback semantics and no public provider credentials/endpoints: **implemented**.
-- Existing byte-identical remote package resolves as deterministic zero-write replay; conflicting bytes under the same package ID fail closed: **implemented**.
-- Provider write exception or unknown write outcome is reconciled by an exact post-attempt read when possible; only exact canonical readback clears recovery-required state: **implemented**.
-- Failed/mismatched post-write readback preserves recovery-required state rather than fabricating success: **implemented**.
-- Import treats remote bytes as untrusted, independently validates package schema/privacy/digests/identity/canonical bytes, then performs compatibility/dependency inspection: **implemented**.
-- Publication and import receipts explicitly carry no install, source-mutation or activation authority: **implemented**.
-- Direct adversarial transport suite: **22 test methods committed and repository Python gate verified**.
-- Code ownership: **one bounded `feature-share-transport` component registered and ownership gate verified**.
-- CI #584 / run `34523138751` on `1666b3f31a79ae46286c91cf4a5e9cd79b6d4742`: compile, feature registry, product lifecycle ledger and Personal starter distribution **PASS**; work-session alignment correctly failed because the required Related invariants/features field was absent; later gates skipped.
-- CI #585 / run `34523304065` on `adfd8b4ef64058e3ef06f1bdf32f4fa5e7267f02`: **PASS end-to-end** after repairing the alignment checkpoint, including repository Python tests and bounded ownership checks.
-- Remote `main` re-read after green CI: **unchanged at packet base `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`**.
-- PR #150 re-read after green CI: **mergeable=true**, head `adfd8b4ef64058e3ef06f1bdf32f4fa5e7267f02`, exactly five changed files, all within declared packet ownership/high-contention documentation surfaces.
-- Final documentation-closeout exact-head CI: **pending because this checkpoint changes branch documentation after CI #585**.
-- Live provider publication/import/activation: **not claimed**.
+1. A bounded Studio session identifies one exact packet/work/change and one change kind, with a human-readable objective and declared feature/dependency context.
+2. The surface deterministically reports lifecycle phase, blockers, readiness and exactly the next user-visible action from supplied evidence.
+3. Preview/test/rollback evidence is evaluated through the existing `studio_competition` staged-change boundary rather than duplicated.
+4. Activation is never offered as executable authority without an explicit exact approval-bound `StudioActivationPlan`.
+5. Applied/blocked/recovery-required activation and rollback receipts map to truthful user-visible state without manufacturing success.
+6. Optional sharing remains separate from activation. Share/import material cannot grant install/source-mutation/activation authority.
+7. Imported feature material always enters a review-required state and cannot silently become an activation plan.
+8. The surface contains no provider credentials/endpoints, shell commands, model paths, private runner labels or raw private identities.
+9. Deterministic replay of the same supplied evidence yields the same surface state and next-action decision.
+10. Direct adversarial tests cover phase transitions, missing/failed evidence, stale approval, activation recovery, rollback readiness, sharing separation and inert import review.
+11. Code ownership remains bounded and repository CI must pass at exact head before merge.
 
-## Session-start alignment verification — 2026-09-10
+## Session-start alignment verification — 2026-09-11
 
 ### `FEATURES.md`
 
-`DIST-001` requires controlled upstream feature sharing; `DEV-004` requires bounded private custom feature creation; `STUDIO-001` requires optional sanitized sharing without silent activation; `SOURCE-001` requires independent source read/write/readback capability boundaries. M2-M1-035 composes those requirements at the share transport boundary without creating source-mutation authority.
+`STUDIO-001` requires an integrated guided user-facing surface over bounded custom features/workflows/preferences with preview/test/rollback, source provenance and optional sanitized sharing without silent imported activation. `DEV-004` and `DIST-001` provide the bounded creation and controlled-sharing foundations.
 
 ### `BACKLOG.md`
 
-`FEATURE-SHARE-001` explicitly requires an optional sanitized publication/import path with provenance, dependencies and compatibility, and `MIRA-STUDIO-001` depends on it. M2-M1-034 covered package semantics only, so this bounded transport/reconciliation packet is the next hard dependency rather than prematurely starting final Studio UX.
+`MIRA-STUDIO-001` is the user-visible vertical depending on `SKILL-BUILDER-001` and `FEATURE-SHARE-001`. M2-M1-031 through M2-M1-033 integration-verify the bounded skill-builder seams, while M2-M1-034 through M2-M1-035 integration-verify sanitized share packaging and transport. Their backlog lifecycle text is stale and will be reconciled narrowly in this packet.
 
 ### `ROADMAP.md`
 
-The roadmap requires repeated bounded vertical progress on the ordinary no-app Personal product while preserving browser-only defaults and provider-neutral semantics. This packet adds no server, terminal, paid model API, hard-coded provider or Android dependency; it keeps sharing optional and inert until separately reviewed/activated.
+The roadmap requires repeated bounded user-visible progress rather than another infrastructure mega-packet. This packet composes already-proven provider-neutral seams into a truthful Studio product surface without introducing local/server/provider prerequisites.
 
 ### Reuse and boundary review
 
-- `mira.feature_share` owns sanitized package construction, independent validation and inert compatibility/dependency inspection.
-- `mira.studio_competition` owns reviewed candidate provenance/selection.
-- `mira.studio_activation` owns explicit approved source mutation/rollback execution.
-- Existing source/provider capability modules remain authority for provider/source evidence; this packet cannot manufacture that evidence.
-- `mira.feature_share_transport` owns only explicit publication authorization, injected store I/O reconciliation, exact readback and inert import retrieval.
+- `mira.studio_competition` remains authority for candidate/staged-change evidence evaluation and approval-bound activation planning.
+- `mira.studio_activation` remains authority for approved activation/rollback execution receipts through injected source adapters.
+- `mira.feature_share` remains authority for sanitized package validation and inert import inspection.
+- `mira.feature_share_transport` remains authority for optional publication/import transport with exact readback.
+- `mira.studio` will own only the guided product-level lifecycle projection/orchestration over those existing contracts.
 
 ### Direction result
 
@@ -80,17 +71,16 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Run final exact-head repository CI on the documentation-closeout head created by this checkpoint.
-2. Re-read current remote `main`, PR #150 exact head/mergeability and changed-file overlap.
-3. If final exact-head CI is green and no incompatible main movement appeared, mark PR #150 ready and merge using expected-head protection.
-4. Read back merged remote `main` and verify exact post-merge CI on the merge SHA before claiming integration verification.
-5. Reconcile `FEATURE-SHARE-001` lifecycle status only after merged evidence proves the transport seam, then select the next dependency-ranked Studio packet.
-6. Preserve the evidence ceiling: no live provider publication/import/install/source mutation/activation claim.
+1. Add the deterministic Studio session/surface model and adversarial tests.
+2. Register one bounded `studio-guided-surface` ownership component.
+3. Reconcile `SKILL-BUILDER-001` and `FEATURE-SHARE-001` lifecycle status in `BACKLOG.md`, and mark `MIRA-STUDIO-001` active only within this packet.
+4. Run repository CI at exact branch head.
+5. Review diff/overlap, close documentation, rerun exact-head CI, then merge only with expected-head protection and verify exact post-merge CI.
 
 ## Evidence ceiling
 
-Implemented and repository-test verified at exact implementation/ownership head `adfd8b4ef64058e3ef06f1bdf32f4fa5e7267f02`. Documentation-closeout exact-head CI and post-merge verification remain pending. No live publication/import transport, provider integration, installation, source mutation or activation is claimed.
+M2-M1-036 begins from integration-verified main `16c5646e05edb62b3878ade602a3287d12c064f4`. No user-facing Studio composition implementation evidence is claimed yet.
 
 ## Recovery protocol
 
-Resume from remote `main` `b792d11f6717f6aefe9edabcf65ed2fcc9a36492`, branch `work/m2-m1-035-feature-share-transport`, PR #150, this file and `docs/work-packets/M2-M1-035.md`. Git, not chat, is authoritative.
+Resume from branch `work/m2-m1-036-studio-guided-surface`, base `16c5646e05edb62b3878ade602a3287d12c064f4`, this file and `docs/work-packets/M2-M1-036.md`. Git, not chat, is authoritative.
