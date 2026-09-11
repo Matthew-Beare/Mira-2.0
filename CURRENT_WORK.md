@@ -4,87 +4,59 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 
 ## Active packet
 
-### `M2-M1-037` — Studio lifecycle reconciliation and next-child selection
+### `M2-M1-039` — Financial Escape twice-daily refresh reliability repair
 
-- **Primary work:** `MIRA-STUDIO-001`.
-- **Primary features:** `STUDIO-001`, `DEV-004`, `DIST-001`.
-- **Related invariants/features:** `DEV-002`, `DEV-005`, `DEV-007`, `SOURCE-001`, `RECOVERY-002`.
+- **Primary work:** restore trustworthy twice-daily Financial Escape refresh/readback for the 02:45 and 14:45 America/New_York brief cycle.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-037-studio-lifecycle-reconcile`.
-- **Base SHA:** `d2b89625313b8741ee7d0b5f6d45fe863ba90011`.
-- **Implementation/reconciliation head:** `c6a94b692132472659108bbc09b8ba06b2ef75c9`.
-- **Packet:** `docs/work-packets/M2-M1-037.md`.
-- **Pull request:** `#152` (draft pending final documentation-closeout CI).
-- **Current status:** lifecycle reconciliation and next-child selection are complete and exact implementation-head CI is green; documentation closeout now requires one final exact-head CI before merge.
-- **Owned surfaces:** `CURRENT_WORK.md`, `BACKLOG.md`, packet documentation only.
-- **Shared/high-contention surfaces:** no runtime code, Google Workspace/Sheets, finance, Android, People Discovery, provider state, feature publication registry, source adapter or live user data is owned by this packet.
+- **Branch:** `work/m2-m1-039-financial-escape-refresh-repair`.
+- **Base SHA:** `57f9cfab2976be1d93ccae41d07b497354511552`.
+- **Packet:** `docs/work-packets/M2-M1-039.md`.
+- **Displaced work:** `M2-M1-038` / `STUDIO-INTAKE-001`, checkpointed on its branch at commit `3f8d52b2904891b5b9677ec26d64978afb4e4afa`; no implementation had begun. Resume from its existing first implementation step after this packet closes.
+- **Current status:** active live-state repair. The scheduler is firing, but the Financial Escape workbook has stale live-view/snapshot state; user requested repair before Studio work resumes.
+- **Owned live surfaces:** Financial Escape dashboard freshness/audit cells, twice-daily Financial Escape refresh verification behavior, and bounded refresh/readback evidence.
+- **Out of scope:** changing debt strategy assumptions without evidence, rewriting historical production evidence without an explicit correction record, or expanding unrelated MIRA features.
 
-## Prior packet closeout
+## Failure evidence captured 2026-09-11
 
-`M2-M1-036` / first guided `MIRA-STUDIO-001` surface merged through PR #151 at exact merge SHA `d2b89625313b8741ee7d0b5f6d45fe863ba90011`. Post-merge CI #593 / run `34562376624` passed end-to-end. No separate trusted-runner/preflight check was surfaced for that merge SHA, so none is claimed.
-
-The merged Studio foundation before this packet is M2-M1-031/032/033 for the bounded Skill Builder engine, M2-M1-034/035 for sanitized Feature Share package/transport boundaries, and M2-M1-036 for deterministic user-facing Studio lifecycle projection/orchestration.
+- Enabled AM brief schedule: 02:45 America/New_York daily; last scheduler invocation was 2026-09-11.
+- Enabled PM brief schedule: 14:45 America/New_York daily.
+- Financial Escape `Today & Accounts` was still as-of 2026-09-07.
+- Latest `Daily Snapshots` row was still 2026-09-07.
+- Last `FIN-LIVE-VERIFY-001 COMPLETE` provenance evidence was 2026-09-07.
+- Therefore scheduler invocation did not prove successful Financial Escape refresh/readback.
+- Dashboard now contains a visible fail-closed freshness indicator and an UPDATE AUDIT block; stale live/snapshot dates render red.
+- Current linked-account evidence already differs materially from the stale workbook, including HELOC and cash/card balances, so stale finance output cannot be presented as current.
 
 ## Objective
 
-Reconcile stale Studio lifecycle truth from merged evidence and choose the next bounded user-visible Studio child without pre-crediting its implementation.
+Make Financial Escape self-auditing and operationally trustworthy: every twice-daily cycle must either (a) refresh authoritative sources, update the workbook, read back the expected current-date state, and record durable success evidence, or (b) surface an explicit stale/action-required state and avoid presenting stale finance values as current.
 
-`SKILL-BUILDER-001` and `FEATURE-SHARE-001` are now complete at their bounded provider-neutral evidence ceilings. `MIRA-STUDIO-001` is partial after M2-M1-036. The selected next child is `STUDIO-INTAKE-001`: an ordinary-language stock-ChatGPT/no-app Studio front door that turns customer intent into one bounded reviewable draft while keeping internal packet/work/change IDs, Git branches, providers and implementation details out of the customer interaction.
+## Acceptance criteria
 
-This packet does not implement that child.
-
-## Acceptance state
-
-- M2-M1-036 exact merge SHA `d2b89625313b8741ee7d0b5f6d45fe863ba90011`: **verified on remote `main`**.
-- M2-M1-036 post-merge CI #593 / run `34562376624`: **PASS end-to-end**.
-- `SKILL-BUILDER-001`: **reconciled complete** at the merged/test-verified M2-M1-031/032/033 provider-neutral engine boundary; live model/provider-specific execution remains separate evidence.
-- `FEATURE-SHARE-001`: **reconciled complete** at the merged/test-verified M2-M1-034/035 sanitized package + optional transport boundary; live provider registry execution remains separate evidence.
-- `MIRA-STUDIO-001`: **reconciled partial** after M2-M1-036; ordinary-language intake/refinement and live model/provider/source/share execution remain open.
-- `STUDIO-INTAKE-001`: **added exactly once and selected as next Studio child**.
-- Base-to-implementation diff: **three files only**. `BACKLOG.md` is exactly +7/-3 and contains only intended Studio lifecycle/selection edits.
-- Exact implementation-head CI #594 / run `34562882769` on `c6a94b692132472659108bbc09b8ba06b2ef75c9`: **PASS end-to-end**.
-- Product lifecycle ledger and work-session alignment with `STUDIO-INTAKE-001`: **PASS**.
-- Runtime/provider/user-data mutation by M2-M1-037: **none**.
-- Final documentation-closeout exact-head CI: **pending on the current docs head**.
-
-## Session-start alignment verification — 2026-09-11
-
-### `FEATURES.md`
-
-`STUDIO-001` requires an integrated user-facing Studio for continuously improving MIRA through bounded preferences, workflows and features with preview/test/rollback, source provenance and optional sanitized sharing without silent imported activation. M2-M1-036 provides lifecycle projection but assumes technical session/change identity already exists. `DEV-004` and `DIST-001` provide the merged builder/share foundations.
-
-### `BACKLOG.md`
-
-The stale Studio rows have now been reconciled from exact merged evidence. The next selected child is `STUDIO-INTAKE-001`, which advances the user-facing Studio vertical rather than reopening already-complete Skill Builder or Feature Share foundations.
-
-### `ROADMAP.md`
-
-The roadmap prioritizes repeated bounded user-visible no-app Personal progress. Ordinary-language Studio intake removes engineering identifiers from the customer interaction without introducing a server, terminal, Android dependency, hard-coded provider or silent execution path.
-
-### Reuse and boundary review
-
-- `mira.studio` remains deterministic lifecycle projection/orchestration.
-- `mira.studio_competition` remains reviewed candidate/staged-change evidence authority.
-- `mira.studio_activation` remains explicit approved source mutation/rollback execution authority.
-- `mira.feature_share` and `mira.feature_share_transport` remain sanitized sharing/import authorities.
-- `STUDIO-INTAKE-001` will bridge ordinary-language intent into a validated bounded draft contract; it must not duplicate lower-level execution authority.
-
-### Direction result
-
-ALIGNED
+1. Dashboard visibly shows current-vs-stale state without relying on chat claims.
+2. Dashboard exposes last live-view date, latest daily snapshot date, last successful verification, expected twice-daily cadence, and a fail-closed status.
+3. AM owns insert-or-update of exactly one snapshot row for the America/New_York date; PM may update the same row but never create a duplicate.
+4. A scheduler invocation alone is never treated as success; success requires workbook readback for the intended date.
+5. Live provider/account evidence is reconciled before debt/cash/net-worth projections are described as current; source freshness=unknown remains explicitly unknown.
+6. Historical evidence is not silently rewritten. Corrections use explicit provenance.
+7. Linked retirement value is treated consistently with the canonical verified-net-worth formula when that formula says it is included; any methodology correction is recorded rather than hidden.
+8. If the current-date refresh cannot be verified, the user-facing brief must say Financial Escape is stale/action-required rather than repeat stale status as if current.
+9. Exact live workbook readback demonstrates the repaired current-date state before this packet closes.
+10. After closeout, resume `M2-M1-038` at its preserved first implementation step.
 
 ## Exact next action / resume point
 
-1. Let PR #152 run final exact-head repository CI on the current documentation-closeout head.
-2. Re-read current remote `main`, PR #152 exact head/mergeability, and base-to-head changed-file overlap.
-3. If final exact-head CI is green and `main` has no incompatible movement, mark PR #152 ready and merge using expected-head protection.
-4. Verify post-merge CI on the exact merge SHA before claiming M2-M1-037 integration verification.
-5. Only after that verification, open the next bounded implementation packet for `STUDIO-INTAKE-001` from the exact verified merge SHA.
+1. Refresh current Financial Escape source evidence and reconcile current balances/activity into the live workbook.
+2. Repair today/snapshot/provenance state without duplicating transactions or snapshots.
+3. Add or harden durable per-run success evidence so AM/PM readback is independently auditable.
+4. Verify the dashboard turns CURRENT only when both live-view and snapshot dates are current.
+5. Record exact readback evidence here and close the packet only after current-date verification.
+6. Resume `M2-M1-038` from commit `3f8d52b2904891b5b9677ec26d64978afb4e4afa` and its first implementation step.
 
 ## Evidence ceiling
 
-M2-M1-037 reconciles lifecycle documentation and selects the next child only. It does not implement Studio intake, invoke a model, create source changes, execute provider I/O, publish/import against a live provider, install imported behavior, activate anything, or claim final graphical/browser Studio UX.
+This packet may claim only the live Financial Escape repair actually read back from the workbook and connected sources. It does not claim that every future provider call will succeed, and it does not treat task scheduler execution as financial refresh proof.
 
 ## Recovery protocol
 
-Resume from remote `main` `d2b89625313b8741ee7d0b5f6d45fe863ba90011`, branch `work/m2-m1-037-studio-lifecycle-reconcile`, PR #152, this file, `BACKLOG.md`, and `docs/work-packets/M2-M1-037.md`. Git, not chat, is authoritative.
+Resume from branch `work/m2-m1-039-financial-escape-refresh-repair`, base `57f9cfab2976be1d93ccae41d07b497354511552`, this file and `docs/work-packets/M2-M1-039.md`. `M2-M1-038` is preserved separately and must not be reconstructed from chat.
