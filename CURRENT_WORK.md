@@ -13,7 +13,7 @@ Git is authoritative. This branch records exactly one active packet. Multiple ot
 - **Branch:** `work/m2-m1-038-studio-intake`.
 - **Base SHA:** `57f9cfab2976be1d93ccae41d07b497354511552`.
 - **Packet:** `docs/work-packets/M2-M1-038.md`.
-- **Current status:** packet opened from exact integration-verified M2-M1-037 merge; intake implementation pending.
+- **Current status:** PAUSED by explicit customer reprioritization on 2026-09-11 for Financial Escape freshness/reliability repair. No intake implementation has begun; packet-owned runtime files remain uncreated.
 - **Owned implementation surfaces:** new `mira/studio_intake.py`, new `tests/test_studio_intake.py`, packet doc, branch-local `CURRENT_WORK.md`, and only the narrow code-ownership registration required for the new module.
 - **Shared/high-contention surfaces:** no Google Workspace/Sheets, finance, Android, People Discovery, live provider/source/share adapter, `FEATURES.md`, final graphical Studio UX, or live user data is owned by this packet.
 
@@ -68,6 +68,10 @@ The roadmap prioritizes bounded no-app Personal usefulness. Ordinary-language St
 ### Direction result
 
 ALIGNED
+
+## Displacement checkpoint — 2026-09-11
+
+Customer explicitly reprioritized Financial Escape reliability/freshness before continuing Studio. This packet is intentionally paused without implementation changes. The replacement repair packet is `M2-M1-039`. Resume this packet only after that repair is closed or the customer reprioritizes again.
 
 ## Exact next action / resume point
 
