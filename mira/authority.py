@@ -2,11 +2,16 @@
 
 The registry persists authority metadata and one binding per mutable data class.
 Runtime adapter objects are mounted explicitly and are never themselves authority.
+This module also contains provider-neutral fail-closed evidence policy for mutable
+current-state facts and durable-purchase commit readiness. These helpers decide
+whether evidence is strong enough to be presented or committed; provider adapters
+still perform the actual reads and writes.
 """
 
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, replace
+from enum import Enum
 import re
 from typing import Mapping
 
@@ -75,6 +80,182 @@ class AuthorityRoute:
     authority: StoredAuthority
     binding: AuthorityBinding
     adapter: StructuredStateAdapter
+
+
+class VerificationStatus(str, Enum):
+    """Verification ceiling for a mutable current-state fact."""
+
+    VERIFIED = "verified"
+    USER_REPORTED = "user_reported"
+    UNVERIFIED = "unverified"
+
+
+class AuthoritySource(str, Enum):
+    """Evidence source classes used by fail-closed mutable-fact policy."""
+
+    CARRIER = "carrier"
+    USER = "user"
+    VENDOR = "vendor"
+    WORKSPACE = "workspace"
+    PROVIDER = "provider"
+
+
+@dataclass(frozen=True)
+class MutableFactResult:
+    value: str | None
+    status: VerificationStatus
+    authority: AuthoritySource | None
+    reason: str
+
+
+def resolve_shipment_fact(
+    *,
+    tracking_number: str | None,
+    carrier_lookup_attempted: bool,
+    carrier_value: str | None,
+    user_value: str | None = None,
+    vendor_value: str | None = None,
+) -> MutableFactResult:
+    """Resolve shipment state without allowing secondary evidence to impersonate carrier state.
+
+    Once a tracking number exists, the live carrier is canonical for ETA,
+    progress, exception, out-for-delivery and delivered state. A user statement
+    or vendor email can identify the shipment, but cannot be promoted to live
+    carrier truth merely because it is newer than a cached projection.
+    """
+
+    if not isinstance(carrier_lookup_attempted, bool):
+        raise TypeError("carrier_lookup_attempted must be boolean")
+
+    tracking = _clean_optional_text(tracking_number)
+    carrier = _clean_optional_text(carrier_value)
+    user = _clean_optional_text(user_value)
+    vendor = _clean_optional_text(vendor_value)
+
+    if tracking:
+        if carrier_lookup_attempted and carrier:
+            return MutableFactResult(
+                value=carrier,
+                status=VerificationStatus.VERIFIED,
+                authority=AuthoritySource.CARRIER,
+                reason="live carrier readback",
+            )
+        return MutableFactResult(
+            value=None,
+            status=VerificationStatus.UNVERIFIED,
+            authority=AuthoritySource.CARRIER,
+            reason="tracking exists; live carrier readback is required",
+        )
+
+    if user:
+        return MutableFactResult(
+            value=user,
+            status=VerificationStatus.USER_REPORTED,
+            authority=AuthoritySource.USER,
+            reason="no tracking authority is available; value is explicitly user-reported",
+        )
+
+    if vendor:
+        return MutableFactResult(
+            value=vendor,
+            status=VerificationStatus.UNVERIFIED,
+            authority=AuthoritySource.VENDOR,
+            reason="vendor evidence is secondary and no live carrier authority is available",
+        )
+
+    return MutableFactResult(
+        value=None,
+        status=VerificationStatus.UNVERIFIED,
+        authority=None,
+        reason="no authoritative shipment evidence is available",
+    )
+
+
+class AcquisitionState(str, Enum):
+    """Commit readiness for receipt-linked durable purchase ingestion."""
+
+    COMMITTED = "committed"
+    NEEDS_REVIEW = "needs_review"
+    NOT_INVENTORIED_CONSUMABLE = "not_inventoried_consumable"
+
+
+@dataclass(frozen=True)
+class DurablePurchaseEvidence:
+    """Evidence required before a durable owned purchase is fully ingested."""
+
+    consumable: bool
+    ownership_confirmed: bool
+    receipt_evidence_id: str | None
+    archived_receipt_link: str | None
+    category: str | None
+    canonical_record_id: str | None
+    canonical_record_receipt_link: str | None
+    readback_confirmed: bool
+
+
+@dataclass(frozen=True)
+class AcquisitionResult:
+    state: AcquisitionState
+    missing: tuple[str, ...]
+
+
+def evaluate_durable_purchase(evidence: DurablePurchaseEvidence) -> AcquisitionResult:
+    """Require the full evidence -> archive -> inventory -> link -> readback chain.
+
+    Receipt or order email is evidence, not proof that the inventory side effect
+    succeeded. Durable non-consumables fail closed until the canonical record is
+    linked back to the archived receipt and read back successfully.
+    """
+
+    if not isinstance(evidence, DurablePurchaseEvidence):
+        raise TypeError("evidence must be DurablePurchaseEvidence")
+    if not isinstance(evidence.consumable, bool):
+        raise TypeError("consumable must be boolean")
+    if not isinstance(evidence.ownership_confirmed, bool):
+        raise TypeError("ownership_confirmed must be boolean")
+    if not isinstance(evidence.readback_confirmed, bool):
+        raise TypeError("readback_confirmed must be boolean")
+
+    if evidence.consumable:
+        return AcquisitionResult(
+            state=AcquisitionState.NOT_INVENTORIED_CONSUMABLE,
+            missing=(),
+        )
+
+    receipt_evidence_id = _clean_optional_text(evidence.receipt_evidence_id)
+    archived_receipt_link = _clean_optional_text(evidence.archived_receipt_link)
+    category = _clean_optional_text(evidence.category)
+    canonical_record_id = _clean_optional_text(evidence.canonical_record_id)
+    canonical_record_receipt_link = _clean_optional_text(
+        evidence.canonical_record_receipt_link
+    )
+
+    missing: list[str] = []
+    if not evidence.ownership_confirmed:
+        missing.append("ownership_confirmed")
+    if not receipt_evidence_id:
+        missing.append("receipt_evidence_id")
+    if not archived_receipt_link:
+        missing.append("archived_receipt_link")
+    if not category:
+        missing.append("category")
+    if not canonical_record_id:
+        missing.append("canonical_record_id")
+    if not canonical_record_receipt_link:
+        missing.append("canonical_record_receipt_link")
+    if (
+        archived_receipt_link
+        and canonical_record_receipt_link
+        and archived_receipt_link != canonical_record_receipt_link
+    ):
+        missing.append("receipt_link_readback_mismatch")
+    if not evidence.readback_confirmed:
+        missing.append("readback_confirmed")
+
+    return AcquisitionResult(
+        state=AcquisitionState.COMMITTED if not missing else AcquisitionState.NEEDS_REVIEW,
+        missing=tuple(missing),
+    )
 
 
 class AuthorityRegistry:
@@ -293,3 +474,12 @@ def _validate_token(value: object, field: str) -> str:
     if len(value) > 128:
         raise AuthorityRegistryError(f"{field} must be at most 128 characters")
     return value
+
+
+def _clean_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise TypeError("text evidence values must be strings or None")
+    stripped = value.strip()
+    return stripped or None
