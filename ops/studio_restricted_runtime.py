@@ -118,10 +118,11 @@ class RestrictedRuntimePolicy:
 
 @dataclass(frozen=True)
 class StudioExecutionPermit:
-    """Short-lived secret-free admission receipt bound to one exact manifest."""
+    """Short-lived secret-free admission receipt bound to exact controller policy."""
 
     permit_id: str
     policy_id: str
+    policy_sha256: str
     job_id: str
     lease_id: str
     worker_id: str
@@ -136,6 +137,7 @@ class StudioExecutionPermit:
 
     def __post_init__(self) -> None:
         _sha256(self.permit_id, "permit_id")
+        _sha256(self.policy_sha256, "policy_sha256")
         for field_name in (
             "policy_id",
             "job_id",
@@ -161,13 +163,15 @@ def manifest_sha256(manifest: WorkerManifest) -> str:
     if not isinstance(manifest, WorkerManifest):
         raise RestrictedRuntimeError("manifest must be a WorkerManifest")
     manifest.validate()
-    material = json.dumps(
-        asdict(manifest),
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
-    return hashlib.sha256(material).hexdigest()
+    return _object_sha256(asdict(manifest))
+
+
+def runtime_policy_sha256(policy: RestrictedRuntimePolicy) -> str:
+    """Hash the complete controller-owned restricted-runtime policy."""
+
+    if not isinstance(policy, RestrictedRuntimePolicy):
+        raise RestrictedRuntimeError("policy must be RestrictedRuntimePolicy")
+    return _object_sha256(asdict(policy))
 
 
 def issue_execution_permit(
@@ -200,6 +204,7 @@ def issue_execution_permit(
 
     material = {
         "policy_id": policy.policy_id,
+        "policy_sha256": context["policy_sha256"],
         "job_id": job.job_id,
         "lease_id": job.lease_id,
         "worker_id": worker.worker_id,
@@ -212,9 +217,7 @@ def issue_execution_permit(
         "issued_at": _utc_text(issued),
         "expires_at": _utc_text(expires),
     }
-    permit_id = hashlib.sha256(
-        json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    permit_id = _object_sha256(material)
     return StudioExecutionPermit(permit_id=permit_id, **material)
 
 
@@ -241,25 +244,54 @@ def validate_execution_permit(
         now=now,
     )
     current = context["now"]
-    if current < _utc(permit.issued_at, "permit.issued_at"):
+    issued = _utc(permit.issued_at, "permit.issued_at")
+    expires = _utc(permit.expires_at, "permit.expires_at")
+    if current < issued:
         raise RestrictedRuntimeError("current time predates permit issuance")
-    if current > _utc(permit.expires_at, "permit.expires_at"):
+    if current > expires:
         raise RestrictedRuntimeError("Studio execution permit has expired")
 
-    expected = issue_execution_permit(
-        manifest=manifest,
-        job=job,
-        worker=worker,
-        isolation=isolation,
-        policy=policy,
-        now=permit.issued_at,
-    )
-    if permit != expected:
-        raise RestrictedRuntimeError(
-            "Studio execution permit does not match current restricted-runtime context"
-        )
-    if permit.manifest_sha256 != context["manifest_sha256"]:
-        raise RestrictedRuntimeError("Studio execution manifest changed after admission")
+    expected_fields = {
+        "policy_id": policy.policy_id,
+        "policy_sha256": context["policy_sha256"],
+        "job_id": job.job_id,
+        "lease_id": job.lease_id,
+        "worker_id": worker.worker_id,
+        "principal_id": worker.principal_id,
+        "runtime_id": worker.runtime_id,
+        "draft_id": manifest.draft_id,
+        "manifest_sha256": context["manifest_sha256"],
+        "isolation_provenance_sha256": isolation.provenance_sha256,
+        "attestation_kind": isolation.attestation_kind,
+    }
+    for field_name, expected in expected_fields.items():
+        if getattr(permit, field_name) != expected:
+            raise RestrictedRuntimeError(
+                f"Studio execution permit field mismatch: {field_name}"
+            )
+
+    if expires > context["lease_expires"]:
+        raise RestrictedRuntimeError("Studio execution permit exceeds current lease expiry")
+    if expires > issued + timedelta(seconds=policy.permit_ttl_seconds):
+        raise RestrictedRuntimeError("Studio execution permit exceeds current policy TTL")
+
+    material = {
+        "policy_id": permit.policy_id,
+        "policy_sha256": permit.policy_sha256,
+        "job_id": permit.job_id,
+        "lease_id": permit.lease_id,
+        "worker_id": permit.worker_id,
+        "principal_id": permit.principal_id,
+        "runtime_id": permit.runtime_id,
+        "draft_id": permit.draft_id,
+        "manifest_sha256": permit.manifest_sha256,
+        "isolation_provenance_sha256": permit.isolation_provenance_sha256,
+        "attestation_kind": permit.attestation_kind,
+        "issued_at": permit.issued_at,
+        "expires_at": permit.expires_at,
+    }
+    if permit.permit_id != _object_sha256(material):
+        raise RestrictedRuntimeError("Studio execution permit integrity check failed")
 
 
 def run_authorized_manifest(
@@ -304,6 +336,7 @@ def _validate_context(
     if not isinstance(policy, RestrictedRuntimePolicy):
         raise RestrictedRuntimeError("policy must be RestrictedRuntimePolicy")
     fingerprint = manifest_sha256(manifest)
+    policy_digest = runtime_policy_sha256(policy)
     now_dt = _utc(now, "now")
 
     if job.operation_id != policy.required_operation_id:
@@ -400,7 +433,18 @@ def _validate_context(
         "now": now_dt,
         "lease_expires": lease_expires,
         "manifest_sha256": fingerprint,
+        "policy_sha256": policy_digest,
     }
+
+
+def _object_sha256(value: object) -> str:
+    payload = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _token(value: object, field: str) -> str:
