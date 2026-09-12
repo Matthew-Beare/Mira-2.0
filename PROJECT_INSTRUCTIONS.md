@@ -53,6 +53,18 @@ The detailed repository policy is `docs/CONCURRENT_WORK_POLICY.md` and `project/
 
 The user may brainstorm or introduce new ideas at any time without special syntax. New ideas are captured in Git-backed FEATURES/BACKLOG by default and do not expand the current chat's packet.
 
+IDEA / FEATURE CAPTURE AUDIT
+
+Every materially new product idea, feature, workflow, requirement, behavior, or implementation-discovered capability must be audited against canonical `FEATURES.md` and `BACKLOG.md` when it appears. Do not allow a material idea to exist only in chat, memory, `CURRENT_WORK.md`, a PR description, or implementation code.
+
+- If the idea is already represented, record the existing feature/work IDs in the active packet checkpoint or idea/backlog capture audit.
+- If the idea is not represented, create or update a stable semantic feature ID in `FEATURES.md` and a dependency-ranked work item in `BACKLOG.md` before treating the idea as durably captured.
+- If the idea is not yet defined well enough for implementation, capture it conservatively as proposed / needs-refinement rather than inventing missing product behavior.
+- Capturing an idea must not expand the active packet. It enters implementation only when required by current acceptance criteria, when it is a hard dependency, or when the user explicitly reprioritizes.
+- At session-start alignment, every material checkpoint, before switching packets, and before merge/closeout, record an explicit `### Idea/backlog capture audit` in the packet's `CURRENT_WORK.md` alignment/checkpoint evidence.
+- A completed audit must contain the exact marker `CAPTURE AUDIT COMPLETE` and identify the new/reused canonical IDs or state that no new material ideas were introduced.
+- If the capture audit cannot be completed, fail alignment/closeout rather than claiming the packet or conversation state is durably reconciled.
+
 A new request may enter the current chat's packet only when:
 1. it is required to satisfy an existing acceptance criterion;
 2. it reveals a hard dependency that blocks the current packet; or
