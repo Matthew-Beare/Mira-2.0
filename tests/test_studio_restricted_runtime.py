@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import replace
 import unittest
 from unittest.mock import patch
 
@@ -137,6 +136,7 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
             "required_worker_capabilities": ("restricted_runtime",),
             "allowed_attestation_kinds": ("trusted_host_policy",),
             "max_evidence_age_seconds": 60,
+            "max_worker_heartbeat_age_seconds": 60,
             "permit_ttl_seconds": 120,
             "required_network_mode": "loopback_only",
             "bind_job_input_to_draft": True,
@@ -244,6 +244,31 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
                         now=NOW,
                     )
 
+    def test_worker_identity_and_heartbeat_must_be_current(self):
+        cases = (
+            (self.worker(heartbeat_at="2026-09-12T20:28:59Z"), "heartbeat is stale"),
+            (self.worker(heartbeat_at="2026-09-12T20:30:01Z"), "heartbeat cannot be from the future"),
+            (
+                self.worker(identity_verified_at="2026-09-12T20:29:45Z", heartbeat_at="2026-09-12T20:29:30Z"),
+                "predates identity",
+            ),
+            (
+                self.worker(identity_verified_at="2026-09-12T20:30:01Z", heartbeat_at="2026-09-12T20:30:01Z"),
+                "identity verification cannot be from the future",
+            ),
+        )
+        for worker, message in cases:
+            with self.subTest(message=message):
+                with self.assertRaisesRegex(RestrictedRuntimeError, message):
+                    issue_execution_permit(
+                        manifest=self.manifest(),
+                        job=self.job(),
+                        worker=worker,
+                        isolation=self.isolation(),
+                        policy=self.policy(),
+                        now=NOW,
+                    )
+
     def test_data_classification_and_capabilities_fail_closed(self):
         cases = (
             (
@@ -280,6 +305,7 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
     def test_isolation_must_be_fresh_trusted_and_complete(self):
         cases = (
             (self.isolation(observed_at="2026-09-12T20:28:44Z"), self.policy(), "stale"),
+            (self.isolation(observed_at="2026-09-12T20:30:01Z"), self.policy(), "future"),
             (self.isolation(attestation_kind="self_report"), self.policy(), "attestation"),
             (self.isolation(restricted_identity=False), self.policy(), "restricted_identity"),
             (self.isolation(filesystem_isolation=False), self.policy(), "filesystem_isolation"),
