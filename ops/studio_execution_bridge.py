@@ -1,8 +1,9 @@
-"""Trusted bridge from review-ready Studio intake to the local worker manifest.
+"""Trusted bridge from review-ready Studio intake to bounded local execution.
 
 Customer intent remains customer intent. Technical execution policy remains owned by
 MIRA's trusted controller. This bridge binds the two without asking the customer to
-copy Git SHAs, paths, test commands, model endpoints, or worker budgets by hand.
+copy Git SHAs, paths, test commands, model endpoints, worker budgets, compute leases,
+or runtime-isolation details by hand.
 """
 
 from __future__ import annotations
@@ -10,11 +11,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 
+from mira.command_sequencer import ComputeJobView
+from mira.service_state import WorkerRegistryView
 from mira.studio_intake import (
     StudioIntakeDraft,
     StudioIntakeNextAction,
 )
-from ops.studio_local_worker import StudioWorkerError, WorkerManifest
+from ops.studio_local_worker import StudioWorkerError, WorkerManifest, WorkerResult
+from ops.studio_restricted_runtime import (
+    RestrictedRuntimePolicy,
+    RuntimeIsolationEvidence,
+    StudioExecutionPermit,
+    issue_execution_permit,
+    run_authorized_manifest,
+)
 
 
 @dataclass(frozen=True)
@@ -32,6 +42,14 @@ class StudioLocalExecutionPolicy:
     wall_timeout_seconds: int = 900
     test_timeout_seconds: int = 180
     model_timeout_seconds: int = 180
+
+
+@dataclass(frozen=True)
+class RestrictedStudioExecutionResult:
+    """Admission receipt plus lower-worker evidence for one restricted run."""
+
+    permit: StudioExecutionPermit
+    worker_result: WorkerResult
 
 
 def manifest_from_review_ready_intake(
@@ -91,3 +109,45 @@ def manifest_from_review_ready_intake(
     )
     manifest.validate()
     return manifest
+
+
+def run_review_ready_intake_restricted(
+    draft: StudioIntakeDraft,
+    execution_policy: StudioLocalExecutionPolicy,
+    *,
+    job: ComputeJobView,
+    worker: WorkerRegistryView,
+    isolation: RuntimeIsolationEvidence,
+    runtime_policy: RestrictedRuntimePolicy,
+    now: str,
+) -> RestrictedStudioExecutionResult:
+    """Execute one review-ready intake only after restricted-runtime admission.
+
+    This is the controller-facing safe path. The durable compute job must already
+    hold a live lease for the exact worker. Worker identity, approval, capability,
+    data-classification policy, health/locks and trusted host-isolation evidence
+    are revalidated immediately before the lower Studio worker is entered.
+    """
+
+    manifest = manifest_from_review_ready_intake(draft, execution_policy)
+    permit = issue_execution_permit(
+        manifest=manifest,
+        job=job,
+        worker=worker,
+        isolation=isolation,
+        policy=runtime_policy,
+        now=now,
+    )
+    worker_result = run_authorized_manifest(
+        permit=permit,
+        manifest=manifest,
+        job=job,
+        worker=worker,
+        isolation=isolation,
+        policy=runtime_policy,
+        now=now,
+    )
+    return RestrictedStudioExecutionResult(
+        permit=permit,
+        worker_result=worker_result,
+    )

@@ -4,100 +4,140 @@ Git is authoritative. This branch records exactly one active packet.
 
 ## Active packet
 
-### `M2-M1-041` — Studio local execution vertical
+### `M2-M1-042` — Restricted Studio runtime admission
 
-- **Primary work:** `MIRA-STUDIO-001`.
-- **Primary features:** `STUDIO-001`, `DEV-004`, `SOURCE-001`, `PROVIDER-001`, `RECOVERY-002`.
-- **Related invariants/features:** `DEV-005`, `DEV-008`, `AUTH-001`.
+- **Primary work:** `LOCAL-INTEGRATIONS`.
+- **Primary features:** `LOCAL-001`, `STUDIO-001`, `DEV-004`, `RECOVERY-002`.
+- **Related invariants/features:** `API-001`, `PROVIDER-001`, `SOURCE-001`, `DEV-008`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-041-studio-execution-vertical`.
-- **Base SHA:** `9303431bb3e573f2a241f6796a2d3da2918527fc`.
-- **Packet:** `docs/work-packets/M2-M1-041.md`.
+- **Branch:** `work/m2-m1-042-restricted-studio-runtime`.
+- **Base SHA:** `41550d60c92e692528b3de4b1deae6020d405011`.
+- **Packet:** `docs/work-packets/M2-M1-042.md`.
+- **Pull request:** `#158`.
 
 ## Customer outcome
 
-Move MIRA Studio from reviewed data structures to an executable software-engineering loop. Ordinary-language customer intent can now cross a trusted bridge into controller-owned execution policy and drive an isolated local implementation worker without requiring the customer to supply Git SHAs, paths, test commands, model endpoints, or worker budgets.
+Make the executable MIRA Studio path fail closed unless it is bound to an exact durable compute lease, a verified/approved healthy unlocked worker, allowed data classification/capabilities and fresh trusted host-isolation evidence. The customer still supplies ordinary-language product intent; MIRA owns the engineering plumbing.
 
-The customer remains product owner. MIRA owns implementation choices unless they materially change user-visible behavior, privacy/safety, cost, irreversible state, or acceptance criteria.
+The resulting short-lived permit is cryptographically bound to the complete Studio worker manifest and complete restricted-runtime policy so changes to repository/base/branch, editable paths, tests, model endpoint/model, budgets, customer objective, capability/isolation requirements, freshness limits or network policy invalidate admission before execution.
 
 ## Prior packet closeout
 
-`M2-M1-038` / PR #153 merged to `main` at `9303431bb3e573f2a241f6796a2d3da2918527fc`. Exact post-merge CI #618 completed successfully on that exact SHA. Ordinary-language Studio intake is therefore integration-verified at its stated evidence ceiling.
+`M2-M1-041` / PR #157 merged to `main` at `41550d60c92e692528b3de4b1deae6020d405011`. Exact post-merge CI #626 completed successfully on that exact SHA. The executable Studio worker/intake bridge is therefore integration-verified at its stated evidence ceiling. Host-level restricted runtime containment was explicitly left unverified and is the dependency addressed here.
 
-## Implemented vertical
+## Existing authority reused
 
-- `ops/studio_execution_bridge.py` binds only review-ready `StudioIntakeDraft` evidence to trusted controller-owned execution policy. Customer request, desired outcome, explicit constraints, assumptions, feature/dependency scope and intake projection identity are preserved; technical policy cannot rewrite them.
-- `ops/studio_local_worker.py` validates an exact clean Git root/base SHA, creates an isolated worktree/branch, calls only an explicit loopback OpenAI-compatible model endpoint, accepts only strict JSON complete-file replacements for a canonical allowlist, and runs only fixed controller-owned test argv with `shell=False` and timeouts.
-- Candidate changes are committed only on the isolated branch. The source checkout/main remain untouched. The worker has no merge, push, publish, install or activation authority and no hosted fallback.
-- Repair is bounded by round and wall-clock ceilings and records baseline/per-round test evidence, model-response digest, changed paths, candidate SHA and stop reason.
-- Adversarial handling covers non-loopback endpoints, dirty repositories, path traversal/noncanonical allowlists, model-selected outside paths, markdown/non-JSON output, stagnation, baseline regressions, round ceilings, direct symlinks and symlinked parent directories.
-- Pre-merge review found and repaired a real path-safety flaw: recursive parent creation could follow a repository directory symlink and mutate its external target before validation rejected the escape. Parent components are now checked one at a time before creation, containment is reverified after each component, and replacement uses the same gate. The regression test requires the external symlink target to remain unmodified.
+- `ComputeJobView` / durable compute control plane remains job, lease, cancellation and capability-requirement authority.
+- `WorkerRegistryView` remains worker identity, principal/runtime binding, approval, data-classification, local-compute policy, health/availability and interactive-lock authority.
+- M2-M1-025 remains the authenticated worker/channel boundary; this packet does not mint generic API authority or trust LAN presence.
+- M2-M1-028/029 remain deterministic safety/lifecycle policy boundaries.
+- `WorkerManifest` remains controller-owned Studio execution policy and the lower `run_manifest()` worker remains isolated Git/model/test execution machinery.
 
-## CI / integration evidence
+No second scheduler, worker registry, authentication service, local-compute policy or Studio intake model is introduced.
 
-- CI #620 passed on exact head `7982c7c45cf792fd402a19acd5c7d70af8ff9315` after work-session metadata repair.
-- CI #622 passed on exact head `a8a65af6792308c740b3d50a8bc41468c3fc30bb` after adding the review-ready-intake execution bridge.
-- CI #624 passed on exact head `1a64e984734ec4c46a39de636c9f660aa741f81f` after symlink-parent hardening and its adversarial regression test. Compile, feature registry, lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android proof, Python unit tests and Workspace tests all passed.
-- This checkpoint itself changes the branch head, so one final exact-head CI run is mandatory before merge. Prior green runs are evidence, not permission to skip the final-head gate.
+## Implemented behavior
 
-## Acceptance criteria
+- `ops/studio_restricted_runtime.py` adds trusted `RuntimeIsolationEvidence`, controller-owned `RestrictedRuntimePolicy`, short-lived `StudioExecutionPermit`, exact whole-manifest and whole-policy SHA-256 binding, deterministic admission validation and a revalidating `run_authorized_manifest()` entrypoint.
+- Admission requires an active unexpired durable lease for the exact worker, correct operation/service, no cancellation request, optional draft-input binding, verified/approved worker identity, local compute enabled, ready/busy availability, healthy state, no interactive lock, allowed data classification and complete capabilities.
+- Worker identity/health/lock evidence is freshness-bounded by an explicit heartbeat-age policy; future or stale heartbeat state fails closed.
+- Trusted isolation evidence must match worker/principal/runtime identity, use an allowlisted attestation kind, be fresh/not future-dated, prove restricted identity/filesystem/process-tree/credential/resource isolation, and match explicit network-mode policy.
+- Permit expiry is bounded by both controller TTL and durable lease expiry. Permit integrity is independently rechecked before execution.
+- Revalidation accepts legitimate newer heartbeat/isolation observations while requiring the permit's original manifest/policy/job/lease/worker/principal/runtime/draft/isolation provenance bindings to remain valid.
+- Permit material contains only logical IDs/digests/timestamps/attestation kind. It excludes repository path, model endpoint/model, tests, credentials, hostnames/IPs/MACs/hardware IDs and raw source/customer text.
+- `ops/studio_execution_bridge.py` provides `run_review_ready_intake_restricted()` as the controller-facing safe path: review-ready intake → manifest → permit → revalidation → lower worker.
+- Direct tests cover the admission policy and the bridge composition, including proof that failed admission never enters the lower worker.
 
-1. Worker executes end to end against a temporary real Git repository and fake loopback OpenAI-compatible model server. **PASS — CI #620/#622/#624.**
-2. Base/clean-repo, non-loopback, invalid branch/path, direct symlink and symlink-parent escape gates fail closed. **PASS — adversarial tests; symlink-parent external target remains unmodified in CI #624.**
-3. Model cannot choose commands, tests, repo, branch, endpoint or paths outside the allowlist. **PASS — worker schema/policy separation plus tests.**
-4. Tests execute with `shell=False`, timeout, captured stdout/stderr and candidate identity. **PASS.**
-5. Repair records each tested candidate and stops on pass, stagnation, regression, malformed output, round ceiling or wall-clock ceiling. **PASS for deterministic testable paths; wall-clock guard implemented and bounded.**
-6. Successful candidate remains isolated for Studio review with no merge/push/activation. **PASS in real-Git integration test.**
-7. Review-ready ordinary-language intake binds to execution without asking the customer for engineering plumbing. **PASS — execution bridge and tests in CI #622/#624.**
-8. Existing full repository CI remains green. **PASS through CI #624; final checkpoint head pending.**
-9. Exact-head and post-merge CI/readback gates are satisfied before closure. **PENDING final checkpoint CI + post-merge readback.**
+## Owned implementation surfaces
+
+- `ops/studio_restricted_runtime.py`
+- `ops/studio_execution_bridge.py`
+- `tests/test_studio_restricted_runtime.py`
+- `tests/test_studio_execution_bridge.py`
+- `docs/work-packets/M2-M1-042.md`
+- branch-local `CURRENT_WORK.md`
 
 ## Session-start alignment verification — 2026-09-12
 
 ### `FEATURES.md`
 
-This packet advances existing `STUDIO-001` / `DEV-004`; it does not invent a new product vertical. `SOURCE-001` and `PROVIDER-001` already require verified source/runtime capability boundaries. The missing value was executable composition of those accepted requirements.
+`LOCAL-001` already requires scoped local-service permissions/capability verification and rejects blanket LAN trust. `STUDIO-001` / `DEV-004` already own bounded Studio implementation. No new feature vertical is required.
 
 ### `BACKLOG.md`
 
-`MIRA-STUDIO-001` is the existing user-facing Studio vertical. `SKILL-BUILDER-001` already supplied staged preview/test/rollback/approval machinery and `STUDIO-INTAKE-001` supplied the ordinary-language front door. This packet fills the next vertical gap by making review-ready intent executable on an isolated local branch rather than adding another review-only abstraction.
+`LOCAL-INTEGRATIONS` is the existing accepted work family for local compute/runtime integration. Earlier M2-M1-021 through M2-M1-030 already implemented the compute fabric/control/identity/safety/lifecycle/model-profile foundations. M2-M1-041 explicitly identified restricted worker identity/runtime isolation as the remaining hard gate before production-safe autonomous local Studio execution.
 
 ### `ROADMAP.md`
 
-Direction is unchanged: finish infrastructure sufficiently to support a usable Studio vertical. This packet prioritizes executable end-to-end leverage over architecture-only decomposition.
+Direction is unchanged: finish the smallest safe infrastructure needed for a usable Studio/local-compute vertical, then prove real provider/runtime execution separately. This packet closes the admission-policy gap without pretending synthetic CI is live host containment.
 
 ### Idea/backlog capture audit
 
 CAPTURE AUDIT COMPLETE
 
-- No novel product vertical was introduced. The customer reiterated the already-canonical `STUDIO-001` outcome: MIRA acts as the software team and turns ordinary-language intent into bounded implementation work.
-- Existing canonical disposition remains `MIRA-STUDIO-001` / `STUDIO-001` / `DEV-004`.
-- Implementation-discovered requirement: generated code/tests must not be treated as safe to run with ambient host privileges. This is not silently admitted into this packet. Restricted worker identity/runtime isolation remains a hard infrastructure gate before production autonomous local execution can be live-verified.
-- The current packet remains bounded to the execution protocol, real Git isolation, controller/model authority split and deterministic evidence.
+- Reused existing `LOCAL-001` / `LOCAL-INTEGRATIONS` rather than manufacturing a duplicate restricted-runtime feature/work ID.
+- Reused `STUDIO-001` / `DEV-004` for the executable Studio path.
+- No unrelated product idea entered this packet.
+- Provider/OS-specific live isolation attestation remains separate deployment evidence and is not silently absorbed.
 
 ### Direction result
 
 ALIGNED
 
-## Pre-merge checkpoint — 2026-09-12
+## Semantic/adversarial review
 
-### Idea/backlog capture audit
+Review found and corrected three security/integrity defects before closeout:
+
+1. Stored worker health/lock state initially had no heartbeat freshness gate. Admission now rejects stale/future heartbeat evidence and invalid identity-verification/heartbeat ordering.
+2. Permit revalidation originally reconstructed a permit using the original issue time plus current worker evidence, which could falsely reject a legitimate newer heartbeat. Revalidation now checks current context independently and validates the original permit material/integrity directly.
+3. Permit binding initially carried only the runtime policy ID. It now binds the complete controller-owned restricted-runtime policy with `policy_sha256`, so a changed capability, freshness, network or draft-binding policy invalidates the permit.
+
+Bridge composition also received a direct test proving permit issuance precedes the authorized lower-worker entrypoint.
+
+No further blocking semantic defect was identified in the bounded packet review. The durable compute job already retains its input SHA-256; this packet binds the exact content-derived Studio draft ID plus the complete worker manifest and does not invent a second artifact-store contract.
+
+## Verification evidence
+
+- PR #158 is open as the packet draft PR.
+- CI #632 passed end to end on exact implementation head `3c8bcb86e1e40c000f69e33cbef5ab14ab135855` after the semantic fixes and adversarial tests.
+- Passing gates included compile, feature registry, lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android unit/proof/provenance gates, Python unit tests and Workspace Apps Script tests.
+- This documentation closeout changes the branch head, so one final exact-head CI run remains mandatory before merge.
+
+## Acceptance criteria
+
+1. Whole-manifest digest binds every `WorkerManifest` field. **PASS — implementation + CI #632.**
+2. Whole-policy digest and permit bind exact policy/job/lease/worker/principal/runtime/draft/manifest/isolation provenance. **PASS — implementation + CI #632.**
+3. Lease mismatch/cancellation/expiry fail closed. **PASS — adversarial tests + CI #632.**
+4. Worker identity/approval/local mode/health/availability/interactive lock and heartbeat freshness fail closed. **PASS — adversarial tests + CI #632.**
+5. Data-classification/capability mismatch fail closed. **PASS — adversarial tests + CI #632.**
+6. Isolation identity/attestation/freshness/property/network mismatches fail closed. **PASS — adversarial tests + CI #632.**
+7. Manifest or runtime-policy mutation and permit expiry prevent lower-worker entry. **PASS — adversarial tests + CI #632.**
+8. Controller-facing Studio bridge gates execution through permit issuance/revalidation before lower-worker entry. **PASS — direct composition test + CI #632.**
+9. Permit excludes private endpoint/path/credential material. **PASS — direct privacy test + CI #632.**
+10. Existing full repository CI remains green on implementation head. **PASS — CI #632.**
+11. Exact documentation-head + post-merge CI/readback complete before closure. **PENDING.**
+12. No live host/LM Studio/private-hardware containment claim from synthetic CI. **PRESERVED.**
+
+## Concurrency state
+
+At packet start, remote `main` was `41550d60c92e692528b3de4b1deae6020d405011`. Old draft PR #135 for Sheets control-surface work remains stale relative to current main and does not own this packet's `ops/studio_*` or direct test surfaces. No `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md` or monolithic ownership-manifest edit is required because existing IDs and repository ownership boundaries already cover this work.
+
+## Pre-merge capture audit
 
 CAPTURE AUDIT COMPLETE
 
-- Studio intake-to-execution glue was required to satisfy the packet's customer-facing vertical outcome and remains inside existing `MIRA-STUDIO-001` scope.
-- The symlink-parent flaw was a safety defect inside this packet and was repaired rather than deferred.
-- Host-level restricted worker isolation is deliberately not claimed or implemented here; it is the next infrastructure dependency before private live-model execution is considered production-safe.
+- All implementation changes remain inside existing `LOCAL-001` / `LOCAL-INTEGRATIONS` and `STUDIO-001` / `DEV-004` scope.
+- The heartbeat-freshness, permit-revalidation and full-policy-binding repairs are defects/integrity requirements inside this packet, not new product scope.
+- Live host attestation and provider/OS-specific containment remain explicitly deferred evidence and are not claimed by CI.
 - No unrelated feature work was admitted.
-
-## Exact next action / resume point
-
-1. Require final exact-head CI green on this checkpoint commit.
-2. Re-read remote `main` and PR #157 head/mergeability immediately before merge.
-3. Mark PR #157 ready and merge only with expected-head protection if the exact head is green and `main` remains compatible.
-4. Read back exact post-merge `main` and require post-merge CI success before closing M2-M1-041.
-5. Then rank the next Studio/infrastructure packet around restricted local worker identity/runtime isolation and existing compute-control-plane integration before any claim of production-safe autonomous LM Studio execution.
 
 ## Evidence ceiling
 
-Passing CI proves the executable worker protocol, ordinary-language-intake bridge, real Git/worktree behavior, strict loopback/model-output boundary and deterministic test/evidence behavior in CI. It does not prove the user's private LM Studio instance, private hardware, credentials, provider-specific production mutation, or host-level containment of arbitrary generated code. Those require later restricted-runtime implementation and live verification and must not be inferred from this packet.
+CI proves deterministic admission/binding, permit integrity, freshness/policy enforcement, bridge composition and repository compatibility. It does not prove that a private machine is actually sandboxed, that LM Studio is loaded, or that generated code executed on user hardware under a restricted OS identity. A live host/runtime adapter must later produce trustworthy isolation evidence from the actual containment boundary before MIRA may claim production-safe local execution.
+
+## Exact next action / resume point
+
+1. Require final exact-head CI green on this documentation-closeout commit.
+2. Re-read current remote `main`, PR #158 exact head/mergeability and concurrent changed-file overlap.
+3. If compatible, mark PR #158 ready and merge only with exact expected-head protection.
+4. Read back the exact merged `main` SHA and require post-merge CI success before closing M2-M1-042.
+5. Select the next Studio/local-compute child from current Git state rather than chat history.
