@@ -1,118 +1,103 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This branch records exactly one active packet. Multiple other packet branches may be active repository-wide under `docs/CONCURRENT_WORK_POLICY.md`.
+Git is authoritative. This branch records exactly one active packet.
 
 ## Active packet
 
-### `M2-M1-038` — Ordinary-language Studio intake
+### `M2-M1-041` — Studio local execution vertical
 
-- **Primary work:** `STUDIO-INTAKE-001`.
-- **Primary features:** `STUDIO-001`, `DEV-004`.
-- **Related invariants/features:** `DEV-005`, `DEV-007`, `DEV-008`, `DIST-001`, `SOURCE-001`, `RECOVERY-002`.
+- **Primary work:** `MIRA-STUDIO-001`.
+- **Primary features:** `STUDIO-001`, `DEV-004`, `SOURCE-001`, `PROVIDER-001`, `RECOVERY-002`.
+- **Related invariants/features:** `DEV-005`, `DEV-008`, `AUTH-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-038-studio-intake`.
-- **Current reconciliation base:** `2cd46d95bb7aeb1b732753707ba61bf9667346f4` (`main` after M2-GOV-002).
-- **Preserved pre-repair checkpoint:** `3f8d52b2904891b5b9677ec26d64978afb4e4afa` on `checkpoint/m2-m1-038-pre-financial-repair`.
-- **Preserved pre-reconciliation implementation head:** `f3d22a1b8451fd0092c926776a106715926c8f8f`.
-- **Packet:** `docs/work-packets/M2-M1-038.md`.
-- **Pull request:** `#153`.
-- **Current status:** ACTIVE. Deterministic Studio intake implementation and adversarial tests already exist on the preserved branch. This checkpoint reconciles that work onto the current verified `main` without force-rewriting history; exact-head CI on the reconciled merge state is still required.
-- **Owned implementation surfaces:** `mira/studio_intake.py`, `tests/test_studio_intake.py`, packet doc, branch-local `CURRENT_WORK.md`, and one bounded `studio-intake` code-ownership registration.
-- **Shared/high-contention surfaces:** `CURRENT_WORK.md` and `project/code_ownership.json`; no Google Workspace/Sheets, finance, Android, People Discovery, live provider/source/share adapter, final graphical Studio UX, or live user data is owned by this packet.
+- **Branch:** `work/m2-m1-041-studio-execution-vertical`.
+- **Base SHA:** `9303431bb3e573f2a241f6796a2d3da2918527fc`.
+- **Packet:** `docs/work-packets/M2-M1-041.md`.
 
-## Intervening packet closure evidence
+## Customer outcome
 
-The packet was interrupted by reliability/governance work and is resumed only after exact integration verification:
+Move MIRA Studio from reviewed data structures to an executable software-engineering loop. Ordinary-language customer intent can now cross a trusted bridge into controller-owned execution policy and drive an isolated local implementation worker without requiring the customer to supply Git SHAs, paths, test commands, model endpoints, or worker budgets.
 
-- `M2-M1-039` / PR #154 merged at `6551691c7836a9c70a8be080cd11bb2ee18536d2`; its Financial Escape repair remains fail-closed beyond verified provider/readback evidence.
-- `M2-M1-040` / PR #155 merged at `e6e6135837278b094de6ceb495736010a650af52`; post-merge CI #612 passed. Mutable shipment facts now require live fact-specific authority when reachable and durable non-consumables use a fail-closed receipt-to-inventory completion contract.
-- `M2-GOV-002` / PR #156 merged at `2cd46d95bb7aeb1b732753707ba61bf9667346f4`; exact post-merge CI #615 passed. `DEV-008` / `IDEA-CAPTURE-AUDIT-001` now require explicit durable idea/backlog capture audits and fail work-session alignment closed when the audit evidence is absent or incomplete.
+The customer remains product owner. MIRA owns implementation choices unless they materially change user-visible behavior, privacy/safety, cost, irreversible state, or acceptance criteria.
 
-The original Studio implementation head `f3d22a1b8451fd0092c926776a106715926c8f8f` is preserved as a parent of the reconciliation merge. No Studio implementation is reconstructed from chat.
+## Prior packet closeout
 
-## Objective
+`M2-M1-038` / PR #153 merged to `main` at `9303431bb3e573f2a241f6796a2d3da2918527fc`. Exact post-merge CI #618 completed successfully on that exact SHA. Ordinary-language Studio intake is therefore integration-verified at its stated evidence ceiling.
 
-Implement the stock-ChatGPT/no-app Studio front door so the customer can describe a desired preference, workflow, or capability in ordinary language without supplying internal engineering identifiers.
+## Implemented vertical
 
-The customer-facing input is the raw request plus any explicit constraints they actually stated. A host/model may propose a semantic interpretation of that request. Deterministic MIRA validates the interpretation against the exact canonical `FeatureRegistry`, derives transitive dependency scope, preserves explicit constraints separately from assistant/model assumptions, generates stable intake identity, surfaces material blockers/questions, and decides whether the result is ready for customer review.
+- `ops/studio_execution_bridge.py` binds only review-ready `StudioIntakeDraft` evidence to trusted controller-owned execution policy. Customer request, desired outcome, explicit constraints, assumptions, feature/dependency scope and intake projection identity are preserved; technical policy cannot rewrite them.
+- `ops/studio_local_worker.py` validates an exact clean Git root/base SHA, creates an isolated worktree/branch, calls only an explicit loopback OpenAI-compatible model endpoint, accepts only strict JSON complete-file replacements for a canonical allowlist, and runs only fixed controller-owned test argv with `shell=False` and timeouts.
+- Candidate changes are committed only on the isolated branch. The source checkout/main remain untouched. The worker has no merge, push, publish, install or activation authority and no hosted fallback.
+- Repair is bounded by round and wall-clock ceilings and records baseline/per-round test evidence, model-response digest, changed paths, candidate SHA and stop reason.
+- Adversarial handling covers non-loopback endpoints, dirty repositories, path traversal/noncanonical allowlists, model-selected outside paths, markdown/non-JSON output, stagnation, baseline regressions, round ceilings, direct symlinks and symlinked parent directories.
+- Pre-merge review found and repaired a real path-safety flaw: recursive parent creation could follow a repository directory symlink and mutate its external target before validation rejected the escape. Parent components are now checked one at a time before creation, containment is reverified after each component, and replacement uses the same gate. The regression test requires the external symlink target to remain unmodified.
 
-This packet does not invoke a model, create an implementation packet/branch from intake, mutate source/provider state, publish/install/share/activate behavior, infer customer approval, or implement final graphical/browser Studio UX.
+## CI / integration evidence
 
-## Implemented behavior on preserved branch
+- CI #620 passed on exact head `7982c7c45cf792fd402a19acd5c7d70af8ff9315` after work-session metadata repair.
+- CI #622 passed on exact head `a8a65af6792308c740b3d50a8bc41468c3fc30bb` after adding the review-ready-intake execution bridge.
+- CI #624 passed on exact head `1a64e984734ec4c46a39de636c9f660aa741f81f` after symlink-parent hardening and its adversarial regression test. Compile, feature registry, lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android proof, Python unit tests and Workspace tests all passed.
+- This checkpoint itself changes the branch head, so one final exact-head CI run is mandatory before merge. Prior green runs are evidence, not permission to skip the final-head gate.
 
-- `StudioIntakeRequest` accepts only ordinary-language request text plus explicit customer constraints.
-- `StudioSemanticInterpretation` carries validated change kind, desired outcome, feature scope, customer-constraint echo, model assumptions, unresolved questions, conflicts and authority claims.
-- Selected feature IDs must exist in the exact canonical FeatureRegistry; unknown scope fails closed.
-- Dependency scope is derived deterministically and transitively from canonical feature dependencies rather than trusted from model prose.
-- Explicit customer constraints and assistant/model assumptions remain separate; mismatches or masquerading assumptions fail closed.
-- Material unresolved questions create deterministic blockers and exactly one clarification next action; otherwise the draft becomes review-ready.
-- Stable `intake-<sha256>` identity binds normalized request/interpretation evidence to the exact registry SHA.
-- Intake cannot authorize implementation, source mutation, publication, installation, approval or activation.
-- Direct tests cover feature, workflow and preference intake; dependencies; ambiguity; constraint/assumption separation; unknown scope; replay; registry revision binding; authority escalation; malformed/control-character input; and canonical internal evidence ordering.
+## Acceptance criteria
 
-## Acceptance state
+1. Worker executes end to end against a temporary real Git repository and fake loopback OpenAI-compatible model server. **PASS — CI #620/#622/#624.**
+2. Base/clean-repo, non-loopback, invalid branch/path, direct symlink and symlink-parent escape gates fail closed. **PASS — adversarial tests; symlink-parent external target remains unmodified in CI #624.**
+3. Model cannot choose commands, tests, repo, branch, endpoint or paths outside the allowlist. **PASS — worker schema/policy separation plus tests.**
+4. Tests execute with `shell=False`, timeout, captured stdout/stderr and candidate identity. **PASS.**
+5. Repair records each tested candidate and stops on pass, stagnation, regression, malformed output, round ceiling or wall-clock ceiling. **PASS for deterministic testable paths; wall-clock guard implemented and bounded.**
+6. Successful candidate remains isolated for Studio review with no merge/push/activation. **PASS in real-Git integration test.**
+7. Review-ready ordinary-language intake binds to execution without asking the customer for engineering plumbing. **PASS — execution bridge and tests in CI #622/#624.**
+8. Existing full repository CI remains green. **PASS through CI #624; final checkpoint head pending.**
+9. Exact-head and post-merge CI/readback gates are satisfied before closure. **PENDING final checkpoint CI + post-merge readback.**
 
-1. Ordinary-language customer request contract: **IMPLEMENTED on preserved branch; reconciled-head CI pending.**
-2. Host/model semantic interpretation validation: **IMPLEMENTED; reconciled-head CI pending.**
-3. Exact feature-registry grounding and transitive dependency derivation: **IMPLEMENTED; reconciled-head CI pending.**
-4. Explicit customer constraints vs assistant/model assumptions: **IMPLEMENTED; reconciled-head CI pending.**
-5. Material clarification/blocker state and exactly one next action: **IMPLEMENTED; reconciled-head CI pending.**
-6. Stable generated intake identity with no customer-supplied packet/work/change/Git/provider identifiers: **IMPLEMENTED; reconciled-head CI pending.**
-7. Zero implementation/source/share/install/approval/activation authority from intake: **IMPLEMENTED; reconciled-head CI pending.**
-8. Direct adversarial tests: **IMPLEMENTED; reconciled-head CI pending.**
-9. Exact-head repository CI after current-main reconciliation: **PENDING.**
-10. Live model/provider/source execution: **not claimed and out of scope.**
-
-## Session-start alignment verification — 2026-09-12 resumed after reliability/governance interruptions
+## Session-start alignment verification — 2026-09-12
 
 ### `FEATURES.md`
 
-`STUDIO-001` requires an integrated guided user-facing Studio over bounded preferences/workflows/features with source/dependency awareness and no silent activation. `DEV-004` supplies the bounded private feature-building direction, while `DEV-005` keeps canonical feature identity/dependency grounding authoritative. `DEV-007` requires packet/product alignment and `DEV-008` now requires explicit idea/backlog capture evidence. This packet closes the user-facing gap between ordinary-language intent and the already-merged lower-level Studio lifecycle without inventing another feature family.
+This packet advances existing `STUDIO-001` / `DEV-004`; it does not invent a new product vertical. `SOURCE-001` and `PROVIDER-001` already require verified source/runtime capability boundaries. The missing value was executable composition of those accepted requirements.
 
 ### `BACKLOG.md`
 
-`STUDIO-INTAKE-001` already exists as the selected next `MIRA-STUDIO-001` child, so the resumed Studio work reuses that stable work ID rather than creating a duplicate. `IDEA-CAPTURE-AUDIT-001` is integration-verified by M2-GOV-002 / PR #156 / main CI #615; its textual lifecycle status in BACKLOG is stale and must be reconciled at the next safe shared-governance write rather than ignored or used to create duplicate work.
+`MIRA-STUDIO-001` is the existing user-facing Studio vertical. `SKILL-BUILDER-001` already supplied staged preview/test/rollback/approval machinery and `STUDIO-INTAKE-001` supplied the ordinary-language front door. This packet fills the next vertical gap by making review-ready intent executable on an isolated local branch rather than adding another review-only abstraction.
 
 ### `ROADMAP.md`
 
-The roadmap prioritizes bounded no-app Personal usefulness. Ordinary-language Studio intake advances that direction without requiring Android, a server, terminal work, hard-coded providers, local compute, or paid model APIs as product dependencies.
+Direction is unchanged: finish infrastructure sufficiently to support a usable Studio vertical. This packet prioritizes executable end-to-end leverage over architecture-only decomposition.
 
 ### Idea/backlog capture audit
 
 CAPTURE AUDIT COMPLETE
 
-- Material ideas reviewed: the ordinary-language Studio intake capability plus the customer's newly enforced continuous capture-audit requirement.
-- Studio intake is already represented by `STUDIO-001`, `DEV-004`, and `STUDIO-INTAKE-001`; no duplicate Studio feature/work ID was created.
-- Continuous capture auditing is already represented by `DEV-008` / `IDEA-CAPTURE-AUDIT-001` and is integration-verified on current `main`.
-- No new material product idea was introduced by reconciling the preserved Studio implementation with current `main`.
-- Packet-scope result: unchanged and bounded; capture/audit compliance does not authorize additional Studio implementation.
-
-### Reuse and boundary review
-
-- `mira.feature_registry` remains the authority for exact feature IDs and dependencies.
-- `mira.studio` remains the downstream deterministic Studio lifecycle projection after a bounded change exists.
-- `mira.studio_competition` and `mira.studio_activation` remain review/approval/execution authorities.
-- `mira.feature_share` and `mira.feature_share_transport` remain sharing/import authorities.
-- `mira.studio_intake` owns only ordinary-language intake validation, registry grounding, deterministic draft identity, constraint/assumption separation, blocker/question state and review readiness.
-- Financial Escape, shipment tracking and receipt/inventory live surfaces remain out of scope for this packet even though their reliability repairs are now present on the reconciliation base.
+- No novel product vertical was introduced. The customer reiterated the already-canonical `STUDIO-001` outcome: MIRA acts as the software team and turns ordinary-language intent into bounded implementation work.
+- Existing canonical disposition remains `MIRA-STUDIO-001` / `STUDIO-001` / `DEV-004`.
+- Implementation-discovered requirement: generated code/tests must not be treated as safe to run with ambient host privileges. This is not silently admitted into this packet. Restricted worker identity/runtime isolation remains a hard infrastructure gate before production autonomous local execution can be live-verified.
+- The current packet remains bounded to the execution protocol, real Git isolation, controller/model authority split and deterministic evidence.
 
 ### Direction result
 
 ALIGNED
 
+## Pre-merge checkpoint — 2026-09-12
+
+### Idea/backlog capture audit
+
+CAPTURE AUDIT COMPLETE
+
+- Studio intake-to-execution glue was required to satisfy the packet's customer-facing vertical outcome and remains inside existing `MIRA-STUDIO-001` scope.
+- The symlink-parent flaw was a safety defect inside this packet and was repaired rather than deferred.
+- Host-level restricted worker isolation is deliberately not claimed or implemented here; it is the next infrastructure dependency before private live-model execution is considered production-safe.
+- No unrelated feature work was admitted.
+
 ## Exact next action / resume point
 
-1. Create a non-force two-parent reconciliation merge preserving `f3d22a1b8451fd0092c926776a106715926c8f8f` and current `main` `2cd46d95bb7aeb1b732753707ba61bf9667346f4`, with current-main governance plus the Studio implementation/test/ownership surfaces.
-2. Read back PR #153 head/mergeability and require exact-head CI green, including the new DEV-008 capture-audit alignment gate.
-3. If CI exposes only packet-owned defects, repair them without weakening gates; if current-main semantics conflict, preserve both histories and reconcile explicitly.
-4. Before merge, repeat the idea/backlog capture audit and current-main/PR-overlap check.
-5. Merge only with expected-head protection, then read back exact post-merge `main` and CI/status before claiming integration verification.
-6. Reconcile stale lifecycle text in `BACKLOG.md` (`IDEA-CAPTURE-AUDIT-001` complete; `STUDIO-INTAKE-001` current/complete as evidence permits) on a safe shared-governance write rather than manufacturing duplicate IDs.
+1. Require final exact-head CI green on this checkpoint commit.
+2. Re-read remote `main` and PR #157 head/mergeability immediately before merge.
+3. Mark PR #157 ready and merge only with expected-head protection if the exact head is green and `main` remains compatible.
+4. Read back exact post-merge `main` and require post-merge CI success before closing M2-M1-041.
+5. Then rank the next Studio/infrastructure packet around restricted local worker identity/runtime isolation and existing compute-control-plane integration before any claim of production-safe autonomous LM Studio execution.
 
 ## Evidence ceiling
 
-M2-M1-038 may prove deterministic registry-grounded intake/draft behavior only. It does not prove live model interpretation, generated implementation beyond this deterministic intake boundary, Git/source mutation from intake, provider I/O, customer approval, activation, sharing/provider publication, imported installation, or final graphical/browser Studio UX.
-
-## Recovery protocol
-
-Resume from branch `work/m2-m1-038-studio-intake`, preserved implementation head `f3d22a1b8451fd0092c926776a106715926c8f8f`, current reconciliation base `2cd46d95bb7aeb1b732753707ba61bf9667346f4`, this file and `docs/work-packets/M2-M1-038.md`. The original pre-repair checkpoint remains `3f8d52b2904891b5b9677ec26d64978afb4e4afa`. Git, not chat, is authoritative.
+Passing CI proves the executable worker protocol, ordinary-language-intake bridge, real Git/worktree behavior, strict loopback/model-output boundary and deterministic test/evidence behavior in CI. It does not prove the user's private LM Studio instance, private hardware, credentials, provider-specific production mutation, or host-level containment of arbitrary generated code. Those require later restricted-runtime implementation and live verification and must not be inferred from this packet.
