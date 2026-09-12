@@ -1,9 +1,10 @@
 """Verify active MIRA work against Git-authoritative product direction.
 
 This gate is intentionally narrow. It cannot decide product strategy for the
-customer, but it can prevent a work session from claiming alignment when the
-active work or feature IDs do not exist in the canonical authorities, or when
-CURRENT_WORK omits the required feature/backlog/roadmap review.
+customer or independently inspect conversational history, but it can prevent a
+work session from claiming alignment when active work or feature IDs do not
+exist in canonical authorities, or when CURRENT_WORK omits the required
+feature/backlog/roadmap and idea-capture reviews.
 """
 
 from __future__ import annotations
@@ -29,6 +30,8 @@ _BACKTICK_ID_RE = re.compile(
     r"`([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}|[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)`"
 )
 _SESSION_ALIGNMENT_PREFIX = "## Session-start alignment verification"
+_IDEA_CAPTURE_HEADING = "### Idea/backlog capture audit"
+_IDEA_CAPTURE_COMPLETE = "CAPTURE AUDIT COMPLETE"
 
 
 @dataclass(frozen=True)
@@ -159,6 +162,14 @@ def check_alignment_texts(
             raise WorkSessionAlignmentError(
                 f"session-start alignment missing authority review: {authority}"
             )
+    if _IDEA_CAPTURE_HEADING not in alignment:
+        raise WorkSessionAlignmentError(
+            "session-start alignment missing idea/backlog capture audit"
+        )
+    if _IDEA_CAPTURE_COMPLETE not in alignment:
+        raise WorkSessionAlignmentError(
+            "idea/backlog capture audit must record CAPTURE AUDIT COMPLETE"
+        )
     if "### Direction result" not in alignment or "ALIGNED" not in alignment:
         raise WorkSessionAlignmentError(
             "session-start alignment must record an explicit ALIGNED direction result"
