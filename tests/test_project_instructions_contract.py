@@ -41,3 +41,17 @@ def test_scheduled_runtime_does_not_require_local_checkout() -> None:
     )
     for phrase in required:
         assert phrase in INSTRUCTIONS
+
+
+def test_new_ideas_are_durably_captured_and_audited() -> None:
+    required = (
+        "IDEA / FEATURE CAPTURE AUDIT",
+        "Every materially new product idea",
+        "canonical `FEATURES.md` and `BACKLOG.md`",
+        "Capturing an idea must not expand the active packet",
+        "### Idea/backlog capture audit",
+        "CAPTURE AUDIT COMPLETE",
+        "fail alignment/closeout",
+    )
+    for phrase in required:
+        assert phrase in INSTRUCTIONS

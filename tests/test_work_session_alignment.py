@@ -18,7 +18,7 @@ FEATURES = """# MIRA 2.0 FEATURES
 
 - `CORE-001` | MIRA identity | required | specified | -
 - `ONBOARD-002` | Sanitized starter | required | specified | -
-- `ONBOARD-003` | Four-question setup | required | specified | ONBOARD-002
+- `ONBOARD-003` | Four-question setup | required | specified | -
 - `SERVICE-001` | Service state | required | specified | -
 - `CAL-006` | Calendar preference | required | specified | -
 - `STUDIO-001` | MIRA Studio | required | specified | -
@@ -68,6 +68,13 @@ checked
 ### `ROADMAP.md`
 checked
 
+### Idea/backlog capture audit
+
+CAPTURE AUDIT COMPLETE
+
+New or changed ideas reviewed: None.
+Canonical disposition: Existing packet scope only.
+
 ### Direction result
 
 ALIGNED
@@ -114,6 +121,26 @@ class WorkSessionAlignmentTests(unittest.TestCase):
     def test_missing_authority_review_fails(self) -> None:
         broken = CURRENT.replace("### `ROADMAP.md`", "### roadmap")
         with self.assertRaisesRegex(WorkSessionAlignmentError, "ROADMAP"):
+            check_alignment_texts(
+                current_work=broken,
+                features=FEATURES,
+                backlog=BACKLOG,
+                roadmap=ROADMAP,
+            )
+
+    def test_missing_idea_capture_audit_fails(self) -> None:
+        broken = CURRENT.replace("### Idea/backlog capture audit", "### capture notes")
+        with self.assertRaisesRegex(WorkSessionAlignmentError, "capture audit"):
+            check_alignment_texts(
+                current_work=broken,
+                features=FEATURES,
+                backlog=BACKLOG,
+                roadmap=ROADMAP,
+            )
+
+    def test_incomplete_idea_capture_audit_fails(self) -> None:
+        broken = CURRENT.replace("CAPTURE AUDIT COMPLETE", "CAPTURE AUDIT PENDING")
+        with self.assertRaisesRegex(WorkSessionAlignmentError, "CAPTURE AUDIT COMPLETE"):
             check_alignment_texts(
                 current_work=broken,
                 features=FEATURES,

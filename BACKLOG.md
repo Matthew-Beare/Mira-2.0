@@ -72,6 +72,7 @@ These waves preserve the shared-state Android path, but ordinary no-app Personal
 | 5 | `FEATURE-REGISTRY-001` | PREREQUISITE | Implement `DEV-005` parser/generator/drift gate from canonical `FEATURES.md`; authored semantic IDs only. | DEV-005,DEV-001,DEV-003 | complete; CI-enforced |
 | 6 | `CODE-OWNERSHIP-001` | PREREQUISITE | Implement `DEV-006` component ownership/direct-evidence manifest and central unowned/overlap gate; language-specific static rules remain profiles. | DEV-006,DEV-001 | complete; CI-enforced |
 | 6a | `FEATURE-ALIGN-001` | HARDENING | Implement `DEV-007` packet-to-feature-set alignment and product-lifecycle verification, including generated feature/work projection, completed-work filtering and session-start/session-end authority checks. | DEV-007,DEV-005,DEV-002,DEV-003 | complete in PR #61 at `c776db72d4f3a0e37b0be5004ac1a15141df14e8`; lifecycle projection, stale-status reconciliation and CI/session alignment verified |
+| 6b | `IDEA-CAPTURE-AUDIT-001` | HARDENING | Implement `DEV-008`: every materially new product idea, feature, workflow, requirement or implementation-discovered capability must be linked to existing canonical feature/work IDs or captured in `FEATURES.md` and `BACKLOG.md` with explicit lifecycle/dependency disposition; require repeated capture-audit evidence at alignment/checkpoint/packet-switch/merge so uncaptured ideas fail closed instead of disappearing. Capture never silently expands the active packet. | DEV-008,DEV-007,DEV-005,DEV-002,DEV-003 | active in `M2-GOV-002` |
 
 ### Wave 2 — Google Workspace-first stock ChatGPT proof (M2-M0)
 
@@ -277,6 +278,15 @@ Acceptance criteria for the historical packet:
 10. component responsibility/evidence recorded in Git even before `CODE-OWNERSHIP-001` automation exists;
 11. branch/checkpoint/PR/merge/readback discipline.
 
-## New-idea triage rule
+## New-idea triage and capture-audit rule
 
-New ideas are captured with stable feature/work IDs, dependency-ranked, and do not expand the active packet unless required for acceptance or explicitly reprioritized. Generated lifecycle views are used to avoid selecting already completed work, but Git remains authoritative.
+Every materially new product idea, feature, workflow, requirement, behavior, or implementation-discovered capability is audited immediately against `FEATURES.md` and `BACKLOG.md`.
+
+- If already represented, record/link the existing feature/work IDs in the active packet checkpoint or capture audit.
+- If not represented, create/update the stable feature ID in `FEATURES.md` and a dependency-ranked work item in `BACKLOG.md` before the idea is treated as durably captured.
+- If material intent is still ambiguous, record it conservatively as proposed / needs-refinement instead of manufacturing implementation detail.
+- Capture does not expand the active packet unless required by acceptance criteria, a hard dependency, or explicit user reprioritization.
+- At session-start alignment, every material checkpoint, before switching packets, and before merge/closeout, record an explicit idea/backlog capture audit with exact marker `CAPTURE AUDIT COMPLETE`, listing new/reused IDs or stating that no new material ideas were introduced.
+- An incomplete capture audit is a governance failure and must fail alignment/closeout rather than silently relying on chat memory.
+
+Generated lifecycle views are used to avoid selecting already completed work, but Git remains authoritative.
