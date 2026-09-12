@@ -80,6 +80,7 @@ class RestrictedRuntimePolicy:
     required_worker_capabilities: tuple[str, ...]
     allowed_attestation_kinds: tuple[str, ...]
     max_evidence_age_seconds: int
+    max_worker_heartbeat_age_seconds: int
     permit_ttl_seconds: int
     required_network_mode: str = "loopback_only"
     bind_job_input_to_draft: bool = True
@@ -101,6 +102,11 @@ class RestrictedRuntimePolicy:
         _positive_int(
             self.max_evidence_age_seconds,
             "max_evidence_age_seconds",
+            upper=86_400,
+        )
+        _positive_int(
+            self.max_worker_heartbeat_age_seconds,
+            "max_worker_heartbeat_age_seconds",
             upper=86_400,
         )
         _positive_int(self.permit_ttl_seconds, "permit_ttl_seconds", upper=3_600)
@@ -330,6 +336,23 @@ def _validate_context(
         raise RestrictedRuntimeError("compute worker is not healthy")
     if worker.interactive_lock:
         raise RestrictedRuntimeError("interactive lock blocks Studio execution")
+
+    identity_verified = _utc(
+        worker.identity_verified_at,
+        "worker.identity_verified_at",
+    )
+    heartbeat = _utc(worker.heartbeat_at, "worker.heartbeat_at")
+    if identity_verified > heartbeat:
+        raise RestrictedRuntimeError("worker heartbeat predates identity verification")
+    if identity_verified > now_dt:
+        raise RestrictedRuntimeError("worker identity verification cannot be from the future")
+    if heartbeat > now_dt:
+        raise RestrictedRuntimeError("worker heartbeat cannot be from the future")
+    if (
+        now_dt - heartbeat
+    ).total_seconds() > policy.max_worker_heartbeat_age_seconds:
+        raise RestrictedRuntimeError("worker heartbeat is stale")
+
     if job.data_classification not in set(worker.allowed_data_classifications):
         raise RestrictedRuntimeError("worker is not approved for the job data classification")
 
