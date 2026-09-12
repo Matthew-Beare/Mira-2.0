@@ -172,12 +172,19 @@ class StudioWorkerTaskTests(unittest.TestCase):
                 self.assertNotEqual(original.sha256, variant.sha256)
 
     def test_unready_intake_cannot_become_portable_execution_task(self):
-        for draft in (
-            self.draft(review_ready=False),
-            self.draft(unresolved_questions=("Clarify behavior",)),
-            self.draft(blockers=("blocked",)),
-            self.draft(next_action=StudioIntakeNextAction.CLARIFY),
-        ):
+        drafts = (
+            self.draft(
+                unresolved_questions=("Clarify behavior",),
+                review_ready=False,
+                next_action=StudioIntakeNextAction.CLARIFY_WITH_CUSTOMER,
+            ),
+            self.draft(
+                blockers=("blocked",),
+                review_ready=False,
+                next_action=StudioIntakeNextAction.CLARIFY_WITH_CUSTOMER,
+            ),
+        )
+        for draft in drafts:
             with self.subTest(draft=draft):
                 with self.assertRaisesRegex(StudioWorkerTaskError, "review-ready"):
                     portable_task_from_review_ready_intake(draft, self.policy())
