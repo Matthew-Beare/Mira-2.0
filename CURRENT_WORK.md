@@ -6,6 +6,9 @@ Git is authoritative. This branch records exactly one active packet.
 
 ### `M2-M1-040` — Ops mutable-fact authority and receipt-to-inventory reliability
 
+- **Primary work:** `OPS-BRIEF-VSLICE`, `RECEIPT-INTAKE-001`, `ASSET-ACQUISITION-001`.
+- **Primary features:** `OPS-004`, `ORDER-001`, `RECEIPT-001`, `ASSET-001`.
+- **Related invariants/features:** `AUTH-001`, `RECOVERY-002`, `TASK-002`, `INV-001`, `FITMENT-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-040-ops-evidence-authority`.
 - **Base SHA:** `6551691c7836a9c70a8be080cd11bb2ee18536d2`.
@@ -29,6 +32,7 @@ Git is authoritative. This branch records exactly one active packet.
 - Enabled MIRA PM Brief prompt updated and read back with the same contracts.
 - Current `main` remained at `6551691c7836a9c70a8be080cd11bb2ee18536d2` during pre-integration readback.
 - Open Studio PR #153 overlaps only on `CURRENT_WORK.md`; its implementation files are disjoint from this packet.
+- Initial PR #155 CI reached the work-session alignment gate and failed because this branch's first checkpoint omitted the required canonical feature/work alignment fields and session-start authority review. Earlier compile/registry/product-lifecycle/distribution gates passed. This is a branch-governance defect, not evidence of a passing implementation; it is repaired by this checkpoint and must be re-run.
 
 ## Acceptance criteria
 
@@ -39,16 +43,33 @@ Git is authoritative. This branch records exactly one active packet.
 5. Full durable evidence/archive/inventory/link/readback chain can commit. **PASS in deterministic test.**
 6. Consumables do not create mandatory durable inventory rows. **PASS in deterministic test.**
 7. Enabled AM and PM brief prompts explicitly enforce both contracts. **PASS — deployed and read back.**
-8. Exact remote branch and integration evidence recorded. **PRE-PR PASS; post-merge verification pending.**
+8. Exact remote branch and integration evidence recorded. **PRE-PR PASS; re-run CI/post-merge verification pending.**
+
+## Session-start alignment verification — 2026-09-12
+
+### `FEATURES.md`
+
+This reliability repair is directly grounded in canonical existing features rather than inventing a new product surface. `OPS-004` requires a fresh standalone run rather than replayed/stale state; `ORDER-001` requires evidence-grounded order/carrier correlation; `RECEIPT-001` requires canonical evidence dedupe; `ASSET-001` requires idempotent acquisition. `AUTH-001`, `RECOVERY-002`, `TASK-002`, `INV-001`, and `FITMENT-001` provide the authority, failure-isolation, honest-state, inventory-participation, and explicit relationship invariants used by the repair.
+
+### `BACKLOG.md`
+
+`OPS-BRIEF-VSLICE`, `RECEIPT-INTAKE-001`, and `ASSET-ACQUISITION-001` are existing canonical work items whose completed boundaries this packet hardens. The packet does not reopen or redefine those implementations; it adds a bounded integrity guard discovered by live failure evidence. No duplicate receipt, asset, inventory, or brief subsystem is introduced.
+
+### `ROADMAP.md`
+
+The repair preserves the Personal Google/no-app direction and restores trustworthy user-visible operation. It is an integrity interruption under the existing roadmap, not a scope expansion. Existing provider/Workspace surfaces remain the runtime path, and the open Studio packet remains isolated for later resumption.
+
+### Direction result
+
+ALIGNED
 
 ## Exact next action / resume point
 
-1. Open a bounded PR from this branch to current `main`.
-2. Verify exact-head CI/workflow status.
-3. Re-read `main` immediately before merge.
-4. If CI is green and `main` remains compatible, merge with expected-head protection.
-5. Read back post-merge `main` and exact CI/status evidence.
-6. Reconcile/resume displaced Studio packet `M2-M1-038` without discarding its implementation.
+1. Re-run PR #155 exact-head CI after this alignment repair.
+2. Re-read `main` immediately before merge.
+3. If CI is green and `main` remains compatible, merge with expected-head protection.
+4. Read back post-merge `main` and exact CI/status evidence.
+5. Reconcile/resume displaced Studio packet `M2-M1-038` without discarding its implementation.
 
 ## Evidence ceiling
 
