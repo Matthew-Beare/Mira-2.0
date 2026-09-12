@@ -51,6 +51,7 @@ No new scheduler/router/registry/model selector/approval system was introduced. 
 - CI #638 on `28a42a17d3d8680fcfd594aa66fe85d12bc56aa8` failed only the over-broad raw-error-persistence assertion; all repository gates before the Python assertion and the remaining dispatch/exact-lease tests passed.
 - Commit `4a9cc3c8b20700803bd6e2bca4b6cbc4c76e26f8` repaired that assertion to check the actual raw synthetic exception material.
 - CI #639 / run `34724545588` completed successfully on exact head `4a9cc3c8b20700803bd6e2bca4b6cbc4c76e26f8`, including compile, feature registry, lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android proof/provenance/retention, Python unit tests and Workspace Apps Script tests.
+- CI #641 correctly rejected a noncanonical session-alignment heading, and CI #642 then proved the heading prefix but exposed the missing required authority-review subsections. Those documentation-only failures are now repaired in this checkpoint.
 - This checkpoint changes the branch head, therefore one final exact-head CI run is still mandatory before merge.
 
 ## Acceptance state
@@ -74,13 +75,31 @@ No new scheduler/router/registry/model selector/approval system was introduced. 
 
 ## Session-start alignment verification — 2026-09-12
 
+### `FEATURES.md`
+
+This packet advances the already-defined `STUDIO-001`, `DEV-004`, `LOCAL-001` and `PROVIDER-001` capabilities. It composes Studio execution with optional local compute under existing provider/runtime boundaries and does not invent a new feature family or make private compute mandatory.
+
+### `BACKLOG.md`
+
+`LOCAL-INTEGRATIONS` is the existing primary work lane for wiring optional local compute into product capabilities. M2-M1-043 fills the durable Studio-dispatch seam inside that lane by reusing the existing compute control plane, worker registry and runtime router rather than creating duplicate scheduling authority.
+
+### `ROADMAP.md`
+
+Product direction remains unchanged: make MIRA usable through ordinary-language flows while keeping Personal Google support and optional advanced/local infrastructure on verified capability boundaries. This packet advances the executable Studio path without weakening Standard-mode independence from local hardware.
+
+### Idea/backlog capture audit
+
 CAPTURE AUDIT COMPLETE
 
 - Reuses existing `STUDIO-001`, `DEV-004`, `LOCAL-001`, `PROVIDER-001` and `LOCAL-INTEGRATIONS`.
 - Exact-job leasing is an integrity prerequisite inside the existing M2-M1-024 compute-control-plane authority, not a new feature vertical.
-- The raw-error assertion repair is packet-owned verification work, not scope growth.
+- The raw-error assertion repair and session-alignment metadata repairs are packet-owned verification work, not scope growth.
 - No private deployment binding or live-host behavior is silently admitted.
 - No duplicate feature/work ID is added.
+
+### Direction result
+
+ALIGNED
 
 ## Exact next action / resume point
 
