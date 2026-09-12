@@ -104,7 +104,7 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
             "priority": 10,
             "load_rank": 1,
             "cost_rank": 1,
-            "heartbeat_at": "2026-09-12T20:29:30Z",
+            "heartbeat_at": "2026-09-12T20:30:00Z",
             "idempotent_replay": False,
         }
         values.update(changes)
@@ -115,7 +115,7 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
             "worker_id": "worker-local-1",
             "principal_id": "principal-local-1",
             "runtime_id": "runtime-studio-1",
-            "observed_at": "2026-09-12T20:29:45Z",
+            "observed_at": "2026-09-12T20:30:00Z",
             "attestation_kind": "trusted_host_policy",
             "restricted_identity": True,
             "filesystem_isolation": True,
@@ -154,9 +154,10 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
             now=NOW,
         )
 
-    def test_permit_binds_exact_manifest_and_lease_context(self):
+    def test_permit_binds_exact_manifest_policy_and_lease_context(self):
         permit = self.permit()
         self.assertEqual(permit.manifest_sha256, manifest_sha256(self.manifest()))
+        self.assertEqual(len(permit.policy_sha256), 64)
         self.assertEqual(permit.job_id, "job-studio-1")
         self.assertEqual(permit.lease_id, "lease-1")
         self.assertEqual(permit.worker_id, "worker-local-1")
@@ -174,11 +175,23 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
             now="2026-09-12T20:31:00Z",
         )
 
+    def test_newer_heartbeat_does_not_invalidate_unchanged_permit(self):
+        permit = self.permit()
+        validate_execution_permit(
+            permit=permit,
+            manifest=self.manifest(),
+            job=self.job(),
+            worker=self.worker(revision=8, heartbeat_at="2026-09-12T20:30:30Z"),
+            isolation=self.isolation(observed_at="2026-09-12T20:30:30Z"),
+            policy=self.policy(),
+            now="2026-09-12T20:31:00Z",
+        )
+
     def test_manifest_change_invalidates_permit_before_worker_entry(self):
         permit = self.permit()
         changed = self.manifest(test_argv=("python", "-m", "unittest", "different"))
         with patch("ops.studio_restricted_runtime.run_manifest") as runner:
-            with self.assertRaisesRegex(RestrictedRuntimeError, "permit|manifest"):
+            with self.assertRaisesRegex(RestrictedRuntimeError, "manifest"):
                 run_authorized_manifest(
                     permit=permit,
                     manifest=changed,
@@ -190,6 +203,22 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
                 )
         runner.assert_not_called()
 
+    def test_policy_change_invalidates_permit_before_worker_entry(self):
+        permit = self.permit()
+        changed_policy = self.policy(permit_ttl_seconds=60)
+        with patch("ops.studio_restricted_runtime.run_manifest") as runner:
+            with self.assertRaisesRegex(RestrictedRuntimeError, "policy_sha256|policy"):
+                run_authorized_manifest(
+                    permit=permit,
+                    manifest=self.manifest(),
+                    job=self.job(),
+                    worker=self.worker(),
+                    isolation=self.isolation(),
+                    policy=changed_policy,
+                    now="2026-09-12T20:30:30Z",
+                )
+        runner.assert_not_called()
+
     def test_expired_permit_is_rejected_before_worker_entry(self):
         permit = self.permit()
         with patch("ops.studio_restricted_runtime.run_manifest") as runner:
@@ -198,8 +227,8 @@ class StudioRestrictedRuntimeTests(unittest.TestCase):
                     permit=permit,
                     manifest=self.manifest(),
                     job=self.job(),
-                    worker=self.worker(),
-                    isolation=self.isolation(),
+                    worker=self.worker(heartbeat_at="2026-09-12T20:32:01Z"),
+                    isolation=self.isolation(observed_at="2026-09-12T20:32:01Z"),
                     policy=self.policy(),
                     now="2026-09-12T20:32:01Z",
                 )
