@@ -430,22 +430,42 @@ def _validate_repo(manifest: WorkerManifest) -> Path:
     return repo
 
 
-def _validate_allowed_paths_in_worktree(worktree: Path, paths: tuple[str, ...]) -> None:
+def _safe_parent(worktree: Path, rel: str) -> Path:
+    """Return/create a parent path without ever traversing a symlink.
+
+    Parent components are checked one at a time before creation. This is deliberate:
+    calling mkdir(parents=True) first could follow a repository symlink and create
+    directories outside the isolated worktree before the escape was noticed.
+    """
+
     root = worktree.resolve()
+    current = root
+    for part in PurePosixPath(rel).parts[:-1]:
+        candidate = current / part
+        if candidate.is_symlink():
+            raise StudioWorkerError(f"allowed path traverses symlink: {rel}")
+        if candidate.exists():
+            if not candidate.is_dir():
+                raise StudioWorkerError(
+                    f"allowed path parent is not a directory: {rel}"
+                )
+        else:
+            candidate.mkdir()
+        if candidate.is_symlink():
+            raise StudioWorkerError(f"allowed path traverses symlink: {rel}")
+        resolved = candidate.resolve()
+        if root != resolved and root not in resolved.parents:
+            raise StudioWorkerError(f"allowed path escapes worktree: {rel}")
+        current = candidate
+    return current
+
+
+def _validate_allowed_paths_in_worktree(worktree: Path, paths: tuple[str, ...]) -> None:
     for rel in paths:
         target = worktree / rel
-        parent = target.parent
-        parent.mkdir(parents=True, exist_ok=True)
-        current = root
-        for part in PurePosixPath(rel).parts[:-1]:
-            current = current / part
-            if current.is_symlink():
-                raise StudioWorkerError(f"allowed path traverses symlink: {rel}")
-        if target.exists() and target.is_symlink():
+        _safe_parent(worktree, rel)
+        if target.is_symlink():
             raise StudioWorkerError(f"allowed path is a symlink: {rel}")
-        resolved_parent = parent.resolve()
-        if root != resolved_parent and root not in resolved_parent.parents:
-            raise StudioWorkerError(f"allowed path escapes worktree: {rel}")
         if target.exists() and not target.is_file():
             raise StudioWorkerError(f"allowed path is not a regular file: {rel}")
 
@@ -541,15 +561,13 @@ def _parse_model_replacements(
 
 def _apply_replacements(worktree: Path, replacements: dict[str, str]) -> tuple[str, ...]:
     changed: list[str] = []
-    root = worktree.resolve()
     for rel, content in replacements.items():
         target = worktree / rel
-        if target.exists() and target.is_symlink():
+        _safe_parent(worktree, rel)
+        if target.is_symlink():
             raise StudioWorkerError(f"refusing to replace symlink: {rel}")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        parent = target.parent.resolve()
-        if root != parent and root not in parent.parents:
-            raise StudioWorkerError(f"replacement escapes worktree: {rel}")
+        if target.exists() and not target.is_file():
+            raise StudioWorkerError(f"refusing to replace non-file: {rel}")
         previous = target.read_bytes() if target.exists() else None
         updated = content.encode("utf-8")
         if previous == updated:
