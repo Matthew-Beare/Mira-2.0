@@ -12,27 +12,30 @@ Git is authoritative. This branch records exactly one active packet.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-040-ops-evidence-authority`.
 - **Base SHA:** `6551691c7836a9c70a8be080cd11bb2ee18536d2`.
-- **Latest implementation/evidence checkpoint before this CURRENT_WORK write:** `918a8895735880f75b6c7ace569fce9a5025caf9`.
+- **Latest implementation/evidence checkpoint before this CURRENT_WORK write:** `05d97acefc84d388df86c0a2c7563a8a83098d37`.
 - **Packet:** `docs/work-packets/M2-M1-040.md`.
 - **Trigger:** a shipment ETA was reported without live carrier readback, then a false user-supplied ETA was accepted despite an existing tracking number; durable receipt-to-inventory processing was also found to be implied rather than enforced end-to-end.
-- **Owned surfaces:** `mira/ops_evidence_policy.py`, `tests/test_ops_evidence_policy.py`, `docs/OPS_EVIDENCE_AUTHORITY_CONTRACT.md`, this packet document, this branch `CURRENT_WORK.md`, and enabled AM/PM brief prompt policy as live operational deployment state.
-- **Shared/high-contention surface:** this branch `CURRENT_WORK.md` only.
+- **Owned surfaces:** `mira/authority.py`, `tests/test_ops_evidence_policy.py`, `docs/OPS_EVIDENCE_AUTHORITY_CONTRACT.md`, this packet document, this branch `CURRENT_WORK.md`, and enabled AM/PM brief prompt policy as live operational deployment state.
+- **Shared/high-contention surface:** this branch `CURRENT_WORK.md` only. `project/code_ownership.json` is deliberately untouched because Studio PR #153 has a separate additive change there.
 - **Out of scope:** Studio implementation, financial authority changes, wholesale historical receipt migration, or private production data in public Git.
 
 ## Implemented and deployed
 
-- Added deterministic shipment authority resolution: when tracking exists, carrier readback is required for verified ETA/status; secondary user/vendor values cannot be promoted to carrier truth.
-- Added deterministic durable-purchase commit gate: non-consumables require ownership confirmation, receipt evidence identity, archived receipt link, category, canonical record identity, matching receipt link on the canonical record, and successful readback.
+- Added provider-neutral shipment authority resolution to the existing canonical Authority boundary: when tracking exists, carrier readback is required for verified ETA/status; secondary user/vendor values cannot be promoted to carrier truth.
+- Added provider-neutral durable-purchase commit gating: non-consumables require ownership confirmation, receipt evidence identity, archived receipt link, category, canonical record identity, matching receipt link on the canonical record, and successful readback.
 - Consumables explicitly do not require durable inventory records.
 - Added public provider-neutral policy documentation with no private operational identifiers.
-- Added six synthetic unit tests covering the exact false-ETA failure and receipt-to-inventory completion gates.
-- Isolated local test execution: **6 passed**.
+- Added six synthetic regression tests covering the exact false-ETA failure and receipt-to-inventory completion gates; isolated run passed all six.
 - Live Workspace inspection confirmed existing authorities already support the intended chain: purchase/receipt archive physical-asset identity/relationship tables plus tool inventory receipt-link fields. No duplicate inventory store is needed.
 - Enabled MIRA AM Brief prompt updated and read back with mandatory live-fact authority and receipt-to-inventory contracts.
 - Enabled MIRA PM Brief prompt updated and read back with the same contracts.
-- Current `main` remained at `6551691c7836a9c70a8be080cd11bb2ee18536d2` during pre-integration readback.
-- Open Studio PR #153 overlaps only on `CURRENT_WORK.md`; its implementation files are disjoint from this packet.
-- Initial PR #155 CI reached the work-session alignment gate and failed because this branch's first checkpoint omitted the required canonical feature/work alignment fields and session-start authority review. Earlier compile/registry/product-lifecycle/distribution gates passed. This is a branch-governance defect, not evidence of a passing implementation; it is repaired by this checkpoint and must be re-run.
+- Open Studio PR #153 ownership-manifest patch was inspected. It only adds `studio-intake`; this packet avoids touching the manifest and therefore avoids manufacturing a concurrent merge conflict there.
+
+## CI history
+
+- PR #155 CI #605: compile/feature-registry/product-lifecycle/distribution passed; work-session alignment failed because the first checkpoint omitted required alignment metadata. Fixed without bypassing the gate.
+- PR #155 CI #606: alignment passed; code ownership failed because the first implementation created a new unregistered `mira/ops_evidence_policy.py`. Fixed without weakening ownership enforcement by moving the policy into already-owned `mira/authority.py`, retargeting tests, and deleting the redundant unowned module.
+- Exact-head full CI after the code-ownership-safe placement is **pending**.
 
 ## Acceptance criteria
 
@@ -43,7 +46,7 @@ Git is authoritative. This branch records exactly one active packet.
 5. Full durable evidence/archive/inventory/link/readback chain can commit. **PASS in deterministic test.**
 6. Consumables do not create mandatory durable inventory rows. **PASS in deterministic test.**
 7. Enabled AM and PM brief prompts explicitly enforce both contracts. **PASS — deployed and read back.**
-8. Exact remote branch and integration evidence recorded. **PRE-PR PASS; re-run CI/post-merge verification pending.**
+8. Exact remote branch and integration evidence recorded. **PRE-MERGE PASS; final CI/post-merge verification pending.**
 
 ## Session-start alignment verification — 2026-09-12
 
@@ -65,11 +68,11 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Re-run PR #155 exact-head CI after this alignment repair.
-2. Re-read `main` immediately before merge.
-3. If CI is green and `main` remains compatible, merge with expected-head protection.
-4. Read back post-merge `main` and exact CI/status evidence.
-5. Reconcile/resume displaced Studio packet `M2-M1-038` without discarding its implementation.
+1. Require PR #155 exact-head CI green after the code-ownership-safe placement.
+2. Re-read `main` immediately before merge and recheck PR #153 overlap.
+3. If CI is green and `main` remains compatible, merge PR #155 with expected-head protection.
+4. Read back post-merge `main` and exact post-merge CI/status evidence.
+5. Preserve/reconcile Studio PR #153 rather than discarding its concurrent work.
 
 ## Evidence ceiling
 
