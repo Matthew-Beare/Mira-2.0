@@ -9,14 +9,10 @@ or runtime-isolation details by hand.
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 
 from mira.command_sequencer import ComputeJobView
 from mira.service_state import WorkerRegistryView
-from mira.studio_intake import (
-    StudioIntakeDraft,
-    StudioIntakeNextAction,
-)
+from mira.studio_intake import StudioIntakeDraft
 from ops.studio_local_worker import StudioWorkerError, WorkerManifest, WorkerResult
 from ops.studio_restricted_runtime import (
     RestrictedRuntimePolicy,
@@ -24,6 +20,10 @@ from ops.studio_restricted_runtime import (
     StudioExecutionPermit,
     issue_execution_permit,
     run_authorized_manifest,
+)
+from ops.studio_worker_task import (
+    StudioWorkerTaskError,
+    objective_from_review_ready_intake,
 )
 
 
@@ -67,30 +67,10 @@ def manifest_from_review_ready_intake(
         raise StudioWorkerError("draft must be a StudioIntakeDraft")
     if not isinstance(policy, StudioLocalExecutionPolicy):
         raise StudioWorkerError("policy must be a StudioLocalExecutionPolicy")
-    if (
-        not draft.review_ready
-        or draft.next_action is not StudioIntakeNextAction.REVIEW_DRAFT
-        or draft.unresolved_questions
-        or draft.blockers
-    ):
-        raise StudioWorkerError(
-            "Studio intake must be review-ready before local implementation"
-        )
-
-    objective = json.dumps(
-        {
-            "customer_request": draft.raw_request,
-            "desired_outcome": draft.desired_outcome,
-            "explicit_customer_constraints": list(draft.explicit_constraints),
-            "model_assumptions": list(draft.assumptions),
-            "feature_ids": list(draft.feature_ids),
-            "dependency_ids": list(draft.dependency_ids),
-            "intake_projection_sha256": draft.projection_sha256,
-        },
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    try:
+        objective = objective_from_review_ready_intake(draft)
+    except StudioWorkerTaskError as exc:
+        raise StudioWorkerError(str(exc)) from exc
 
     manifest = WorkerManifest(
         draft_id=draft.draft_id,
