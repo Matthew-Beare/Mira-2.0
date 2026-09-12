@@ -1,66 +1,82 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This branch records exactly one active packet.
+Git is authoritative. This branch records exactly one active packet. Multiple other packet branches may remain active repository-wide under `docs/CONCURRENT_WORK_POLICY.md`.
 
 ## Active packet
 
-### `M2-M1-040` — Ops mutable-fact authority and receipt-to-inventory reliability
+### `M2-GOV-002` — Continuous idea/backlog capture audit
 
-- **Primary work:** `OPS-BRIEF-VSLICE`, `RECEIPT-INTAKE-001`, `ASSET-ACQUISITION-001`.
-- **Primary features:** `OPS-004`, `ORDER-001`, `RECEIPT-001`, `ASSET-001`.
-- **Related invariants/features:** `AUTH-001`, `RECOVERY-002`, `TASK-002`, `INV-001`, `FITMENT-001`.
+- **Primary work:** `IDEA-CAPTURE-AUDIT-001`.
+- **Primary features:** `DEV-008`.
+- **Related invariants/features:** `DEV-001`, `DEV-002`, `DEV-003`, `DEV-005`, `DEV-007`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-040-ops-evidence-authority`.
-- **Base SHA:** `6551691c7836a9c70a8be080cd11bb2ee18536d2`.
-- **Latest implementation/evidence checkpoint before this CURRENT_WORK write:** `05d97acefc84d388df86c0a2c7563a8a83098d37`.
-- **Packet:** `docs/work-packets/M2-M1-040.md`.
-- **Trigger:** a shipment ETA was reported without live carrier readback, then a false user-supplied ETA was accepted despite an existing tracking number; durable receipt-to-inventory processing was also found to be implied rather than enforced end-to-end.
-- **Owned surfaces:** `mira/authority.py`, `tests/test_ops_evidence_policy.py`, `docs/OPS_EVIDENCE_AUTHORITY_CONTRACT.md`, this packet document, this branch `CURRENT_WORK.md`, and enabled AM/PM brief prompt policy as live operational deployment state.
-- **Shared/high-contention surface:** this branch `CURRENT_WORK.md` only. `project/code_ownership.json` is deliberately untouched because Studio PR #153 has a separate additive change there.
-- **Out of scope:** Studio implementation, financial authority changes, wholesale historical receipt migration, or private production data in public Git.
+- **Branch:** `work/m2-gov-002-idea-backlog-audit`.
+- **Base SHA:** `e6e6135837278b094de6ceb495736010a650af52`.
+- **Packet:** `docs/work-packets/M2-GOV-002.md`.
+- **Trigger:** the customer explicitly required MIRA to add new product ideas/features to the Git-backed backlog and continuously audit whether it is actually doing so, rather than relying on conversational memory.
+- **Owned surfaces:** `FEATURES.md`, `BACKLOG.md`, `PROJECT_INSTRUCTIONS.md`, `mira/work_session_alignment.py`, `tests/test_work_session_alignment.py`, `tests/test_project_instructions_contract.py`, this packet's `CURRENT_WORK.md`, and the packet document. `project/code_ownership.json` is touched only if repository-integrity metadata requires it.
+- **Shared/high-contention surfaces:** `FEATURES.md`, `BACKLOG.md`, `CURRENT_WORK.md`, `PROJECT_INSTRUCTIONS.md`, and potentially `project/code_ownership.json`.
+- **Out of scope:** implementing brainstormed product features merely because they are captured, changing unrelated product priorities, modifying private production data, or rewriting Studio implementation.
 
-## Implemented and deployed
+## Prior packet closeout
 
-- Added provider-neutral shipment authority resolution to the existing canonical Authority boundary: when tracking exists, carrier readback is required for verified ETA/status; secondary user/vendor values cannot be promoted to carrier truth.
-- Added provider-neutral durable-purchase commit gating: non-consumables require ownership confirmation, receipt evidence identity, archived receipt link, category, canonical record identity, matching receipt link on the canonical record, and successful readback.
-- Consumables explicitly do not require durable inventory records.
-- Added public provider-neutral policy documentation with no private operational identifiers.
-- Added six synthetic regression tests covering the exact false-ETA failure and receipt-to-inventory completion gates; isolated run passed all six.
-- Live Workspace inspection confirmed existing authorities already support the intended chain: purchase/receipt archive physical-asset identity/relationship tables plus tool inventory receipt-link fields. No duplicate inventory store is needed.
-- Enabled MIRA AM Brief prompt updated and read back with mandatory live-fact authority and receipt-to-inventory contracts.
-- Enabled MIRA PM Brief prompt updated and read back with the same contracts.
-- Open Studio PR #153 ownership-manifest patch was inspected. It only adds `studio-intake`; this packet avoids touching the manifest and therefore avoids manufacturing a concurrent merge conflict there.
+`M2-M1-040` / PR #155 is closed at its bounded evidence ceiling:
 
-## CI history
+- merge/readback `main`: `e6e6135837278b094de6ceb495736010a650af52`;
+- exact post-merge CI run #612: completed / success;
+- Trusted Runner Gate on the same merge SHA: completed / success;
+- live enabled AM/PM brief prompts had already been updated and read back with mutable-live-fact authority and receipt-to-inventory commit rules;
+- no claim is made that every future external carrier/provider call will succeed; unavailable live authority remains fail-closed as `UNVERIFIED`.
 
-- PR #155 CI #605: compile/feature-registry/product-lifecycle/distribution passed; work-session alignment failed because the first checkpoint omitted required alignment metadata. Fixed without bypassing the gate.
-- PR #155 CI #606: alignment passed; code ownership failed because the first implementation created a new unregistered `mira/ops_evidence_policy.py`. Fixed without weakening ownership enforcement by moving the policy into already-owned `mira/authority.py`, retargeting tests, and deleting the redundant unowned module.
-- Exact-head full CI after the code-ownership-safe placement is **pending**.
+## Displaced work / durable resume point
+
+`M2-M1-038` / `STUDIO-INTAKE-001` remains preserved in draft PR #153 on branch `work/m2-m1-038-studio-intake`, head `f3d22a1b8451fd0092c926776a106715926c8f8f` at this packet's start.
+
+PR #153 changed `CURRENT_WORK.md`, its packet doc, `mira/studio_intake.py`, `tests/test_studio_intake.py`, and adds one `studio-intake` component to `project/code_ownership.json`. After M2-GOV-002 merges, resume that exact branch/PR and semantically reconcile it onto newly verified `main`; preserve its implementation rather than reconstructing from chat.
+
+## Intended repair
+
+- Register a governance feature requiring continuous idea/backlog capture audit.
+- Register dependency-ranked work implementing that governance feature.
+- Strengthen Project Instructions so every materially new product idea is immediately reconciled against canonical `FEATURES.md` / `BACKLOG.md` and does not live only in chat.
+- Require explicit `### Idea/backlog capture audit` evidence with exact marker `CAPTURE AUDIT COMPLETE` during session alignment/checkpoint/closeout.
+- Make the existing deterministic work-session alignment gate reject missing or incomplete capture-audit evidence.
+- Keep idea capture separate from packet scope: recording an idea never silently authorizes implementation.
 
 ## Acceptance criteria
 
-1. Tracking present + no carrier readback + user/vendor ETA => no verified ETA. **PASS in deterministic test.**
-2. Tracking present + live carrier readback => carrier state wins. **PASS in deterministic test.**
-3. Receipt email alone cannot commit a durable purchase. **PASS in deterministic test.**
-4. Receipt-link mismatch fails closed. **PASS in deterministic test.**
-5. Full durable evidence/archive/inventory/link/readback chain can commit. **PASS in deterministic test.**
-6. Consumables do not create mandatory durable inventory rows. **PASS in deterministic test.**
-7. Enabled AM and PM brief prompts explicitly enforce both contracts. **PASS — deployed and read back.**
-8. Exact remote branch and integration evidence recorded. **PRE-MERGE PASS; final CI/post-merge verification pending.**
+1. `DEV-008` exists in `FEATURES.md`. **PENDING write/readback.**
+2. `IDEA-CAPTURE-AUDIT-001` exists in `BACKLOG.md`. **PENDING write/readback.**
+3. Project Instructions require durable idea/backlog capture and repeated audit without expanding packet scope. **IMPLEMENTED on branch; CI/readback pending.**
+4. Work-session alignment fails closed without the audit section/marker. **PENDING implementation/test.**
+5. Repository `CURRENT_WORK.md` satisfies the new audit contract. **IMPLEMENTED checkpoint; gate pending.**
+6. Exact-head CI passes all existing and new gates. **PENDING.**
+7. Current-main overlap is rechecked before merge and PR #153 is preserved. **PENDING.**
+8. Post-merge `main` and CI/status are read back before closure. **PENDING.**
+9. Resume `M2-M1-038` from PR #153 after governance closure. **PENDING.**
 
 ## Session-start alignment verification — 2026-09-12
 
 ### `FEATURES.md`
 
-This reliability repair is directly grounded in canonical existing features rather than inventing a new product surface. `OPS-004` requires a fresh standalone run rather than replayed/stale state; `ORDER-001` requires evidence-grounded order/carrier correlation; `RECEIPT-001` requires canonical evidence dedupe; `ASSET-001` requires idempotent acquisition. `AUTH-001`, `RECOVERY-002`, `TASK-002`, `INV-001`, and `FITMENT-001` provide the authority, failure-isolation, honest-state, inventory-participation, and explicit relationship invariants used by the repair.
+The customer request is a governance capability, not a new user-runtime domain. Existing `DEV-001`/`DEV-002`/`DEV-003`/`DEV-005`/`DEV-007` establish Git authority, resumable packets, ranked backlog, machine-readable lifecycle, and packet alignment, but none explicitly requires continuous capture-audit evidence for materially new ideas. This packet therefore adds bounded governance feature `DEV-008` rather than pretending `DEV-007` already covers the exact failure mode.
 
 ### `BACKLOG.md`
 
-`OPS-BRIEF-VSLICE`, `RECEIPT-INTAKE-001`, and `ASSET-ACQUISITION-001` are existing canonical work items whose completed boundaries this packet hardens. The packet does not reopen or redefine those implementations; it adds a bounded integrity guard discovered by live failure evidence. No duplicate receipt, asset, inventory, or brief subsystem is introduced.
+The existing New-idea triage rule says new ideas are captured and must not expand the active packet, but there is no explicit work item/gate requiring repeated proof that the capture actually occurred. `IDEA-CAPTURE-AUDIT-001` is therefore a bounded HARDENING child of existing repository-integrity work, not a new product vertical.
 
 ### `ROADMAP.md`
 
-The repair preserves the Personal Google/no-app direction and restores trustworthy user-visible operation. It is an integrity interruption under the existing roadmap, not a scope expansion. Existing provider/Workspace surfaces remain the runtime path, and the open Studio packet remains isolated for later resumption.
+This does not change MIRA's product priority or active milestone. It hardens the Git-authoritative development control plane so user ideas cannot disappear into chat or silently bypass dependency ranking, while preserving the rule that capture alone does not expand the active packet.
+
+### Idea/backlog capture audit
+
+CAPTURE AUDIT COMPLETE
+
+- New material idea reviewed: continuously ensure that new product ideas/features are added to canonical backlog and audit whether that capture actually happened.
+- Canonical disposition: new governance feature `DEV-008` plus work item `IDEA-CAPTURE-AUDIT-001` in this bounded governance packet.
+- Reused related IDs: `DEV-001`, `DEV-002`, `DEV-003`, `DEV-005`, `DEV-007`.
+- Packet-scope result: capture/audit hardening only; no brainstormed product feature implementation is admitted by this packet.
 
 ### Direction result
 
@@ -68,12 +84,15 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Require PR #155 exact-head CI green after the code-ownership-safe placement.
-2. Re-read `main` immediately before merge and recheck PR #153 overlap.
-3. If CI is green and `main` remains compatible, merge PR #155 with expected-head protection.
-4. Read back post-merge `main` and exact post-merge CI/status evidence.
-5. Preserve/reconcile Studio PR #153 rather than discarding its concurrent work.
+1. Write/read back `DEV-008` in `FEATURES.md` and `IDEA-CAPTURE-AUDIT-001` plus strengthened triage/audit rule in `BACKLOG.md`.
+2. Harden `mira/work_session_alignment.py` and direct tests for required capture-audit evidence.
+3. Add an instruction-contract regression test.
+4. Reconcile repository-integrity ownership metadata if required.
+5. Run exact-head CI and repair failures without bypassing existing gates.
+6. Re-read current `main` and PR #153 overlap immediately before merge; merge with expected-head protection only if compatible.
+7. Verify exact post-merge `main` and CI/status evidence.
+8. Resume `M2-M1-038` from PR #153 head and reconcile it onto the verified post-governance `main`.
 
 ## Evidence ceiling
 
-This packet enforces fail-closed behavior when the live authority cannot be read. It cannot guarantee that every carrier/provider exposes package-specific state to every runtime. Lack of carrier readback therefore results in `UNVERIFIED`, never a fabricated or merely repeated ETA.
+The Git gate can require explicit durable audit evidence and reject packets that omit it. It cannot independently inspect every human conversation and prove that no idea was ever missed. MIRA remains responsible for performing the semantic audit against the conversation; this packet makes that responsibility explicit, repeatable, reviewable, and fail-closed at alignment/closeout.
