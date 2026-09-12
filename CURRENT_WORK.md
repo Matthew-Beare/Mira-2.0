@@ -1,98 +1,48 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This branch records exactly one active packet. Multiple other packet branches may be active repository-wide under `docs/CONCURRENT_WORK_POLICY.md`.
+Git is authoritative. This branch records exactly one active packet.
 
 ## Active packet
 
-### `M2-M1-039` — Financial Escape twice-daily refresh reliability repair
+### `M2-M1-040` — Ops mutable-fact authority and receipt-to-inventory reliability
 
-- **Primary work:** `FIN-EVIDENCE-RECONCILE-001`.
-- **Primary features:** `FIN-HISTORY-001`, `FIN-TRAJECTORY-001`, `FIN-DASH-001`, `FIN-PRIVATE-REF-001`.
-- **Related invariants/features:** `FIN-GOAL-001`, `RECOVERY-002`, `OPS-001`, `OPS-003`, `OPS-004`, `DEV-002`, `DEV-007`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-039-financial-escape-refresh-repair`.
-- **Base SHA:** `57f9cfab2976be1d93ccae41d07b497354511552`.
-- **Packet:** `docs/work-packets/M2-M1-039.md`.
-- **Displaced work:** `M2-M1-038` / `STUDIO-INTAKE-001`, checkpointed on its branch at commit `3f8d52b2904891b5b9677ec26d64978afb4e4afa`; no implementation had begun. Resume from its existing first implementation step after this packet closes.
-- **Current status:** LIVE REPAIR VERIFIED on 2026-09-11. Workbook readback is current and fail-closed audit gates pass. A dedicated pre-brief Financial Escape refresh now runs at 02:35 and 14:35 America/New_York ahead of the existing 02:45/14:45 briefs. Documentation closeout/merge remains.
-- **Owned live surfaces:** Financial Escape dashboard freshness/audit cells, twice-daily Financial Escape refresh verification behavior, and bounded refresh/readback evidence.
-- **Out of scope:** changing debt strategy assumptions without evidence, rewriting historical production evidence without an explicit correction record, or expanding unrelated MIRA features.
+- **Branch:** `work/m2-m1-040-ops-evidence-authority`.
+- **Base SHA:** `6551691c7836a9c70a8be080cd11bb2ee18536d2`.
+- **Packet:** `docs/work-packets/M2-M1-040.md`.
+- **Trigger:** a shipment ETA was reported without live carrier readback, then a false user-supplied ETA was accepted despite an existing tracking number; durable receipt-to-inventory processing was also found to be implied rather than enforced end-to-end.
+- **Owned surfaces:** `mira/ops_evidence_policy.py`, `tests/test_ops_evidence_policy.py`, `docs/OPS_EVIDENCE_AUTHORITY_CONTRACT.md`, this packet document, this branch `CURRENT_WORK.md`, and enabled AM/PM brief prompt policy as live operational deployment state.
+- **Shared/high-contention surface:** this branch `CURRENT_WORK.md` only.
+- **Out of scope:** Studio implementation, financial authority changes, wholesale historical receipt migration, or private production data in public Git.
 
-## Failure evidence captured 2026-09-11
+## Implemented
 
-- Enabled AM brief schedule: 02:45 America/New_York daily; scheduler invocation alone had occurred without a successful finance refresh.
-- Enabled PM brief schedule: 14:45 America/New_York daily.
-- Financial Escape `Today & Accounts` was still as-of 2026-09-07.
-- Latest `Daily Snapshots` row was still 2026-09-07.
-- Last `FIN-LIVE-VERIFY-001 COMPLETE` provenance evidence was 2026-09-07.
-- Current linked-account evidence materially differed from the stale workbook.
-- Inserting a new snapshot row exposed a structural bug: ordinary row references followed the old current snapshot to row 5, so current-model formulas could silently continue using stale data.
-
-## Repair implemented and read back
-
-- `Today & Accounts` now reads 2026-09-11 and explicitly preserves provider transaction freshness as UNKNOWN.
-- `Daily Snapshots` row 4 is the current 2026-09-11 snapshot; there is exactly one 2026-09-11 row. Missing Sep 8–10 daily snapshots were not fabricated.
-- Current live readback: HELOC $42,471.61; Honda $43,005.77; total payoff debt $85,477.38; depository cash $25,671.75; positive card balances $455.21.
-- Current linked assets used by the declared verified-net-worth formula: retirement $249,903.44; taxable brokerage $16,850.65; crypto $148.13. Verified net worth reads $206,641.38.
-- Historical Sep 7 snapshot evidence was restored/frozen rather than silently rewritten when the retirement-methodology inconsistency was discovered. Current verified-net-worth history now starts a clean methodology baseline instead of reporting the resulting accounting discontinuity as investment gain.
-- Posted Sep 8–10 provider transactions were upserted into the canonical FinOps Ledger by stable transaction/Event ID, including the user-authoritative correction that bank label `MTG` is HELOC cash movement, not a mortgage. Duplicate Event IDs read back as 0.
-- Completed workweek mileage ending 2026-09-10 was reconciled to 5,582 paid miles. Current 8-worked-week pace reads 5,796 mi/week.
-- Snapshot-dependent formulas in Dashboard, Assumptions, Forecast Charts, Details, Scenarios and Spend Control were hardened so insertion of a new current row does not silently retarget current-model formulas to the prior snapshot.
-- Remaining-time model math was corrected to use the current snapshot date rather than repeatedly granting the original baseline duration. Current model fallback reads escape-ready 2027-03-28, May 1 minimum 5,123 paid mi/week, 8W buffer +674 mi/week, and `AHEAD • -5w`.
-- Dashboard now shows a visible `DATA FRESHNESS` gate and `UPDATE AUDIT` block. Readback on 2026-09-11: live view 2026-09-11; latest snapshot 2026-09-11; snapshot age 0 days; last live verification 2026-09-11; duplicate Event IDs 0; today's snapshot rows 1; freshness `CURRENT`.
-- `FIN-LIVE-VERIFY-002 COMPLETE`, methodology-correction, reliability-repair and historical-gap provenance rows were written and read back.
-- Dedicated pre-brief Financial Escape refresh schedule is enabled for 02:35 and 14:35 America/New_York. It must refresh, upsert, snapshot, read back and append durable verification evidence; silent success is allowed only after all gates pass, while failure must notify `ACTION REQUIRED` with the exact failed gate.
+- Added deterministic shipment authority resolution: when tracking exists, carrier readback is required for verified ETA/status; secondary user/vendor values cannot be promoted to carrier truth.
+- Added deterministic durable-purchase commit gate: non-consumables require ownership confirmation, receipt evidence identity, archived receipt link, category, canonical record identity, matching receipt link on the canonical record, and successful readback.
+- Consumables explicitly do not require durable inventory records.
+- Added public provider-neutral policy documentation with no private operational identifiers.
+- Added six synthetic unit tests covering the exact false-ETA failure and receipt-to-inventory completion gates.
+- Isolated local test execution: **6 passed**.
+- Live Workspace inspection confirmed existing authorities already support the intended chain: purchase/receipt archive physical-asset identity/relationship tables plus tool inventory receipt-link fields. No duplicate inventory store is needed.
 
 ## Acceptance criteria
 
-1. Dashboard visibly shows current-vs-stale state without relying on chat claims. **PASS.**
-2. Dashboard exposes last live-view date, latest daily snapshot date, last successful verification, expected twice-daily cadence, and a fail-closed status. **PASS.**
-3. Current snapshot contract is exactly one America/New_York row 4 for today; next-day refresh must freeze the outgoing row before inserting the new current row. **PASS for current-date live state; durable pre-brief contract installed.**
-4. Scheduler invocation alone is never treated as success; success requires workbook readback. **PASS.**
-5. Live provider/account evidence is reconciled before projections are described as current; source freshness=unknown remains explicitly unknown. **PASS.**
-6. Historical evidence is not silently rewritten; corrections use explicit provenance. **PASS.**
-7. Linked retirement value is treated consistently with the declared verified-net-worth formula; methodology correction is explicit. **PASS.**
-8. Failed refresh is required to surface stale/action-required rather than repeat stale finance values as current. **PASS by fail-closed dashboard + refresh contract.**
-9. Exact live workbook readback demonstrates repaired current-date state. **PASS.**
-10. After closeout, resume `M2-M1-038` at its preserved first implementation step. **PENDING packet merge/closeout only.**
-
-## Session-start alignment verification — 2026-09-11
-
-### `FEATURES.md`
-
-`FIN-HISTORY-001` requires provenance-bound dated financial observations with freshness/confidence and historical source preservation. `FIN-TRAJECTORY-001` and `FIN-DASH-001` require current plan-vs-actual projections and broad-first human-readable status. `FIN-PRIVATE-REF-001` preserves the private Financial Escape reference contract without leaking private values into public Git. The repair directly restores those requirements after stale live-state evidence and does not broaden finance semantics.
-
-### `BACKLOG.md`
-
-`FIN-EVIDENCE-RECONCILE-001` is the accepted repeatable reconciliation/runtime work for newly available financial evidence with replay dedupe, exception handling, exact readback, and no claim of continuous operation until a real scheduler/runtime is live-verified. M2-M1-039 is a bounded reliability child of that work: it repairs the private live refresh/readback path and installs a fail-closed twice-daily pre-brief verification contract without claiming the entire backlog item complete.
-
-### `ROADMAP.md`
-
-The roadmap keeps finance/reconciliation as accepted Personal work while requiring bounded, user-visible progress and preserving canonical Authority/readback semantics. This repair was a customer-priority integrity interruption, not a roadmap expansion: it restores trustworthy existing Personal behavior, records the displaced Studio resume point, and returns to `STUDIO-INTAKE-001` after closeout.
-
-### Reuse and boundary review
-
-- Existing Financial Escape Sheets remain projection/control surfaces; no second finance authority was created.
-- Live Finances/account evidence remains money authority; sheet refresh logic reconciles and projects rather than inventing economic events.
-- Existing Ops Brief cadence remains 02:45/14:45 America/New_York; the 02:35/14:35 refresh is a prerequisite verification run, not a duplicate brief.
-- `M2-M1-038` remains checkpointed and displaced rather than being reconstructed or silently expanded.
-
-### Direction result
-
-ALIGNED
+1. Tracking present + no carrier readback + user/vendor ETA => no verified ETA. **PASS in deterministic test.**
+2. Tracking present + live carrier readback => carrier state wins. **PASS in deterministic test.**
+3. Receipt email alone cannot commit a durable purchase. **PASS in deterministic test.**
+4. Receipt-link mismatch fails closed. **PASS in deterministic test.**
+5. Full durable evidence/archive/inventory/link/readback chain can commit. **PASS in deterministic test.**
+6. Consumables do not create mandatory durable inventory rows. **PASS in deterministic test.**
+7. Enabled AM and PM brief prompts explicitly enforce both contracts. **PENDING deployment/readback.**
+8. Exact remote branch head/readback and integration evidence recorded. **PENDING.**
 
 ## Exact next action / resume point
 
-1. Re-run normal repository/PR closeout gates after the work-session alignment repair.
-2. Re-read current remote `main`, PR #154 exact head/mergeability, and base-to-head changed-file overlap.
-3. If exact-head CI is green and `main` has no incompatible movement, merge PR #154 using expected-head protection.
-4. Verify exact post-merge CI; do not overclaim future provider success beyond the fail-closed contract.
-5. Resume `M2-M1-038` from checkpoint commit `3f8d52b2904891b5b9677ec26d64978afb4e4afa` and its first implementation step.
+1. Update the enabled MIRA AM Brief and MIRA PM Brief prompts with the fact-specific live-authority and receipt-to-inventory commit rules.
+2. Read both automation definitions back and confirm deployment.
+3. Re-read this branch head and changed files, then record the exact head here.
+4. Check current `main` and open PR overlap before integration.
 
 ## Evidence ceiling
 
-M2-M1-039 proves the 2026-09-11 live repair, current-date workbook readback, fail-closed freshness/audit gates, insertion-safe current-snapshot references, corrected remaining-time calculations and installation of the dedicated pre-brief refresh contract. It does not prove that every future external provider call will succeed; future success remains gated by live readback rather than scheduler invocation.
-
-## Recovery protocol
-
-Resume from branch `work/m2-m1-039-financial-escape-refresh-repair`, base `57f9cfab2976be1d93ccae41d07b497354511552`, this file and `docs/work-packets/M2-M1-039.md`. `M2-M1-038` is preserved separately and must not be reconstructed from chat.
+This packet can enforce fail-closed behavior when the live authority cannot be read. It cannot guarantee that every carrier/provider exposes package-specific state to every runtime. Lack of carrier readback therefore results in `UNVERIFIED`, never a fabricated or merely repeated ETA.
