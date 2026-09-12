@@ -72,7 +72,7 @@ No new scheduler/router/registry/model selector/approval system was introduced. 
 15. Full exact-head and post-merge CI/readback are required. **FINAL HEAD PENDING after this checkpoint; post-merge pending.**
 16. No live private worker/host/model/provider/hardware claim is made from synthetic CI. **PASS.**
 
-## Session alignment / capture audit
+## Session-start alignment verification — 2026-09-12
 
 CAPTURE AUDIT COMPLETE
 
