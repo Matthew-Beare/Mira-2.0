@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 import unittest
+from unittest.mock import patch
 
 from mira.studio_competition import StudioChangeKind
 from mira.studio_intake import (
@@ -10,8 +11,10 @@ from mira.studio_intake import (
     StudioIntakeNextAction,
 )
 from ops.studio_execution_bridge import (
+    RestrictedStudioExecutionResult,
     StudioLocalExecutionPolicy,
     manifest_from_review_ready_intake,
+    run_review_ready_intake_restricted,
 )
 from ops.studio_local_worker import StudioWorkerError
 
@@ -104,6 +107,57 @@ class StudioExecutionBridgeTests(unittest.TestCase):
         self.assertFalse(hasattr(manifest, "merge_authorized"))
         self.assertFalse(hasattr(manifest, "activation_authorized"))
         self.assertFalse(hasattr(manifest, "push_authorized"))
+
+    def test_restricted_bridge_issues_permit_before_authorized_worker_entry(self):
+        draft = self.draft()
+        execution_policy = self.policy()
+        job = object()
+        worker = object()
+        isolation = object()
+        runtime_policy = object()
+        permit = object()
+        worker_result = object()
+
+        with patch(
+            "ops.studio_execution_bridge.issue_execution_permit",
+            return_value=permit,
+        ) as issue, patch(
+            "ops.studio_execution_bridge.run_authorized_manifest",
+            return_value=worker_result,
+        ) as run:
+            result = run_review_ready_intake_restricted(
+                draft,
+                execution_policy,
+                job=job,
+                worker=worker,
+                isolation=isolation,
+                runtime_policy=runtime_policy,
+                now="2026-09-12T20:30:00Z",
+            )
+
+        self.assertIsInstance(result, RestrictedStudioExecutionResult)
+        self.assertIs(result.permit, permit)
+        self.assertIs(result.worker_result, worker_result)
+        issued_manifest = issue.call_args.kwargs["manifest"]
+        self.assertEqual(issued_manifest.draft_id, draft.draft_id)
+        self.assertEqual(issued_manifest.repo_path, execution_policy.repo_path)
+        issue.assert_called_once_with(
+            manifest=issued_manifest,
+            job=job,
+            worker=worker,
+            isolation=isolation,
+            policy=runtime_policy,
+            now="2026-09-12T20:30:00Z",
+        )
+        run.assert_called_once_with(
+            permit=permit,
+            manifest=issued_manifest,
+            job=job,
+            worker=worker,
+            isolation=isolation,
+            policy=runtime_policy,
+            now="2026-09-12T20:30:00Z",
+        )
 
 
 if __name__ == "__main__":
