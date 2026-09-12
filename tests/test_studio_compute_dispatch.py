@@ -445,7 +445,9 @@ class StudioComputeDispatchTests(unittest.TestCase):
         self.assertEqual(result.reason, "studio_execution_error")
         self.assertEqual(result.job.state, "failed")
         self.assertEqual(result.job.error_code, "studio_execution_error")
-        self.assertNotIn("private", repr(result.job))
+        persisted = repr(result.job)
+        self.assertNotIn("synthetic private path", persisted)
+        self.assertNotIn("/do/not/store", persisted)
 
     def test_dispatch_and_restricted_runtime_policy_must_align(self):
         self.register_worker("worker-a")
