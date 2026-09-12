@@ -4,140 +4,112 @@ Git is authoritative. This branch records exactly one active packet.
 
 ## Active packet
 
-### `M2-M1-042` — Restricted Studio runtime admission
+### `M2-M1-043` — Studio durable compute dispatch
 
 - **Primary work:** `LOCAL-INTEGRATIONS`.
-- **Primary features:** `LOCAL-001`, `STUDIO-001`, `DEV-004`, `RECOVERY-002`.
-- **Related invariants/features:** `API-001`, `PROVIDER-001`, `SOURCE-001`, `DEV-008`.
+- **Primary features:** `STUDIO-001`, `DEV-004`, `LOCAL-001`, `PROVIDER-001`.
+- **Related invariants/features:** `STORE-001`, `API-001`, `SOURCE-001`, `RECOVERY-002`, `DEV-008`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-042-restricted-studio-runtime`.
-- **Base SHA:** `41550d60c92e692528b3de4b1deae6020d405011`.
-- **Packet:** `docs/work-packets/M2-M1-042.md`.
-- **Pull request:** `#158`.
+- **Branch:** `work/m2-m1-043-studio-compute-dispatch`.
+- **Base SHA:** `8be20acff6dec61d3367c9258eb84d553842625d`.
+- **PR:** `#159`.
+- **Packet:** `docs/work-packets/M2-M1-043.md`.
+
+## Closed parent packet
+
+`M2-M1-042` / PR #158 merged at exact `main` SHA `8be20acff6dec61d3367c9258eb84d553842625d`. Post-merge CI #635 / run `34717164107` completed successfully on that exact merge SHA. M2-M1-042 is integration verified only at its deterministic restricted-runtime-admission ceiling. It does not prove private host containment, LM Studio or physical-worker execution.
 
 ## Customer outcome
 
-Make the executable MIRA Studio path fail closed unless it is bound to an exact durable compute lease, a verified/approved healthy unlocked worker, allowed data classification/capabilities and fresh trusted host-isolation evidence. The customer still supplies ordinary-language product intent; MIRA owns the engineering plumbing.
+Connect ordinary-language MIRA Studio work to the existing durable compute fabric so MIRA owns job identity, capability requirements, worker routing, exact leasing, lifecycle reconciliation and restricted-runtime plumbing instead of making the customer provide job IDs, lease IDs, worker IDs, Git plumbing, model endpoints or machine selection.
 
-The resulting short-lived permit is cryptographically bound to the complete Studio worker manifest and complete restricted-runtime policy so changes to repository/base/branch, editable paths, tests, model endpoint/model, budgets, customer objective, capability/isolation requirements, freshness limits or network policy invalidate admission before execution.
+Local execution remains optional, capability- and policy-gated infrastructure. Nothing in this packet makes private hardware a Standard Personal dependency.
 
-## Prior packet closeout
+## Implemented vertical
 
-`M2-M1-041` / PR #157 merged to `main` at `41550d60c92e692528b3de4b1deae6020d405011`. Exact post-merge CI #626 completed successfully on that exact SHA. The executable Studio worker/intake bridge is therefore integration-verified at its stated evidence ceiling. Host-level restricted runtime containment was explicitly left unverified and is the dependency addressed here.
+- `ComputeJobControlPlane.lease_job()` now leases one explicit queued job to one explicit worker without changing worker-pull `lease_next()` semantics.
+- Exact-job leasing preserves capability checks, cancellation/terminal/attempt gates, active lease-ID collision protection, attempt accounting and transition idempotency.
+- `ops/studio_compute_dispatch.py` deterministically derives the existing `WorkerManifest`, binds one durable compute job to the exact draft and manifest digest, reads durable workers, projects external provider capability evidence through the existing router, resolves the selected lane/runtime back to one durable worker and leases the exact submitted Studio job.
+- Dispatch transitions the exact job through queued → leased → running before entering the M2-M1-042 restricted-runtime path.
+- Selected worker isolation evidence must bind to the exact worker/principal/runtime. Local-compute OFF, stale worker evidence and ordinary router policy/capability blockers remain fail-closed before worker execution.
+- Successful worker evidence completes the exact durable job with a result digest plus worker/runtime provenance. Bounded worker or restricted-runtime failure records deterministic durable failure instead of fabricating success.
+- Successful replay returns the existing durable terminal result without rerunning the worker or incrementing attempts.
+- Current Studio local execution intentionally uses `max_attempts=1`; one failed local run consumes its controller-owned Git branch and automatic retry is deferred until stronger branch/retry semantics exist.
+- No merge, push, activation, publication, install or feature-share authority is granted by dispatch success.
 
-## Existing authority reused
+## Semantic / adversarial review
 
-- `ComputeJobView` / durable compute control plane remains job, lease, cancellation and capability-requirement authority.
-- `WorkerRegistryView` remains worker identity, principal/runtime binding, approval, data-classification, local-compute policy, health/availability and interactive-lock authority.
-- M2-M1-025 remains the authenticated worker/channel boundary; this packet does not mint generic API authority or trust LAN presence.
-- M2-M1-028/029 remain deterministic safety/lifecycle policy boundaries.
-- `WorkerManifest` remains controller-owned Studio execution policy and the lower `run_manifest()` worker remains isolated Git/model/test execution machinery.
+Review after the first full dispatch implementation found one false-positive test rather than a persistence leak: the raw-error test rejected the generic substring `private`, which is legitimately present in the durable `data_classification='private_source'`. The implementation persists only the stable `studio_execution_error` code for that path. The test now asserts that the actual synthetic exception text and path are absent from the durable job representation.
 
-No second scheduler, worker registry, authentication service, local-compute policy or Studio intake model is introduced.
+The exact worker mapping was also checked against the existing router contract. `route_runtime()` requires unique `lane_id` values before selection, so dispatch deliberately fails closed on duplicate durable lanes rather than attempting to reinterpret the router's identity semantics.
 
-## Implemented behavior
+No new scheduler/router/registry/model selector/approval system was introduced. The packet composes existing authorities only.
 
-- `ops/studio_restricted_runtime.py` adds trusted `RuntimeIsolationEvidence`, controller-owned `RestrictedRuntimePolicy`, short-lived `StudioExecutionPermit`, exact whole-manifest and whole-policy SHA-256 binding, deterministic admission validation and a revalidating `run_authorized_manifest()` entrypoint.
-- Admission requires an active unexpired durable lease for the exact worker, correct operation/service, no cancellation request, optional draft-input binding, verified/approved worker identity, local compute enabled, ready/busy availability, healthy state, no interactive lock, allowed data classification and complete capabilities.
-- Worker identity/health/lock evidence is freshness-bounded by an explicit heartbeat-age policy; future or stale heartbeat state fails closed.
-- Trusted isolation evidence must match worker/principal/runtime identity, use an allowlisted attestation kind, be fresh/not future-dated, prove restricted identity/filesystem/process-tree/credential/resource isolation, and match explicit network-mode policy.
-- Permit expiry is bounded by both controller TTL and durable lease expiry. Permit integrity is independently rechecked before execution.
-- Revalidation accepts legitimate newer heartbeat/isolation observations while requiring the permit's original manifest/policy/job/lease/worker/principal/runtime/draft/isolation provenance bindings to remain valid.
-- Permit material contains only logical IDs/digests/timestamps/attestation kind. It excludes repository path, model endpoint/model, tests, credentials, hostnames/IPs/MACs/hardware IDs and raw source/customer text.
-- `ops/studio_execution_bridge.py` provides `run_review_ready_intake_restricted()` as the controller-facing safe path: review-ready intake → manifest → permit → revalidation → lower worker.
-- Direct tests cover the admission policy and the bridge composition, including proof that failed admission never enters the lower worker.
+## Verification evidence
 
-## Owned implementation surfaces
+- Earlier exact-job lease and dispatch CI runs exercised the new durable paths and exposed the raw-error assertion defect.
+- CI #638 on `28a42a17d3d8680fcfd594aa66fe85d12bc56aa8` failed only the over-broad raw-error-persistence assertion; all repository gates before the Python assertion and the remaining dispatch/exact-lease tests passed.
+- Commit `4a9cc3c8b20700803bd6e2bca4b6cbc4c76e26f8` repaired that assertion to check the actual raw synthetic exception material.
+- CI #639 / run `34724545588` completed successfully on exact head `4a9cc3c8b20700803bd6e2bca4b6cbc4c76e26f8`, including compile, feature registry, lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android proof/provenance/retention, Python unit tests and Workspace Apps Script tests.
+- CI #641 correctly rejected a noncanonical session-alignment heading, and CI #642 then proved the heading prefix but exposed the missing required authority-review subsections. Those documentation-only failures are now repaired in this checkpoint.
+- This checkpoint changes the branch head, therefore one final exact-head CI run is still mandatory before merge.
 
-- `ops/studio_restricted_runtime.py`
-- `ops/studio_execution_bridge.py`
-- `tests/test_studio_restricted_runtime.py`
-- `tests/test_studio_execution_bridge.py`
-- `docs/work-packets/M2-M1-042.md`
-- branch-local `CURRENT_WORK.md`
+## Acceptance state
+
+1. Exact-job lease preserves existing lease/idempotency/capability/attempt/collision semantics and leaves `lease_next()` intact. **PASS.**
+2. Studio dispatch creates/replays one durable job bound to the review-ready draft and complete manifest digest. **PASS.**
+3. Worker selection uses durable worker registry plus external provider capability evidence through the existing projection/router contracts. **PASS.**
+4. Missing/ambiguous durable worker mapping fails closed. **PASS.**
+5. Existing router policy/capability/freshness/health/lock gates remain in the path before local worker entry. **PASS at deterministic composition ceiling.**
+6. The exact submitted Studio job is leased instead of an unrelated higher-ranked queued job. **PASS, directly tested.**
+7. Durable job reaches leased/running before restricted Studio execution. **PASS.**
+8. M2-M1-042 restricted-runtime admission remains mandatory before lower-worker execution. **PASS.**
+9. Success records durable result digest and worker/runtime provenance. **PASS.**
+10. Bounded worker/restricted-runtime failure records durable failure and sanitized error code. **PASS.**
+11. Dispatch grants no merge/push/activation/publication/install authority. **PASS by implementation boundary.**
+12. Successful replay does not duplicate jobs, attempts or execution. **PASS.**
+13. Competing queued-job test proves exact-job lease does not consume the wrong job. **PASS.**
+14. Public Git material remains synthetic and secret-free. **PASS.**
+15. Full exact-head and post-merge CI/readback are required. **FINAL HEAD PENDING after this checkpoint; post-merge pending.**
+16. No live private worker/host/model/provider/hardware claim is made from synthetic CI. **PASS.**
 
 ## Session-start alignment verification — 2026-09-12
 
 ### `FEATURES.md`
 
-`LOCAL-001` already requires scoped local-service permissions/capability verification and rejects blanket LAN trust. `STUDIO-001` / `DEV-004` already own bounded Studio implementation. No new feature vertical is required.
+This packet advances the already-defined `STUDIO-001`, `DEV-004`, `LOCAL-001` and `PROVIDER-001` capabilities. It composes Studio execution with optional local compute under existing provider/runtime boundaries and does not invent a new feature family or make private compute mandatory.
 
 ### `BACKLOG.md`
 
-`LOCAL-INTEGRATIONS` is the existing accepted work family for local compute/runtime integration. Earlier M2-M1-021 through M2-M1-030 already implemented the compute fabric/control/identity/safety/lifecycle/model-profile foundations. M2-M1-041 explicitly identified restricted worker identity/runtime isolation as the remaining hard gate before production-safe autonomous local Studio execution.
+`LOCAL-INTEGRATIONS` is the existing primary work lane for wiring optional local compute into product capabilities. M2-M1-043 fills the durable Studio-dispatch seam inside that lane by reusing the existing compute control plane, worker registry and runtime router rather than creating duplicate scheduling authority.
 
 ### `ROADMAP.md`
 
-Direction is unchanged: finish the smallest safe infrastructure needed for a usable Studio/local-compute vertical, then prove real provider/runtime execution separately. This packet closes the admission-policy gap without pretending synthetic CI is live host containment.
+Product direction remains unchanged: make MIRA usable through ordinary-language flows while keeping Personal Google support and optional advanced/local infrastructure on verified capability boundaries. This packet advances the executable Studio path without weakening Standard-mode independence from local hardware.
 
 ### Idea/backlog capture audit
 
 CAPTURE AUDIT COMPLETE
 
-- Reused existing `LOCAL-001` / `LOCAL-INTEGRATIONS` rather than manufacturing a duplicate restricted-runtime feature/work ID.
-- Reused `STUDIO-001` / `DEV-004` for the executable Studio path.
-- No unrelated product idea entered this packet.
-- Provider/OS-specific live isolation attestation remains separate deployment evidence and is not silently absorbed.
+- Reuses existing `STUDIO-001`, `DEV-004`, `LOCAL-001`, `PROVIDER-001` and `LOCAL-INTEGRATIONS`.
+- Exact-job leasing is an integrity prerequisite inside the existing M2-M1-024 compute-control-plane authority, not a new feature vertical.
+- The raw-error assertion repair and session-alignment metadata repairs are packet-owned verification work, not scope growth.
+- No private deployment binding or live-host behavior is silently admitted.
+- No duplicate feature/work ID is added.
 
 ### Direction result
 
 ALIGNED
 
-## Semantic/adversarial review
+## Exact next action / resume point
 
-Review found and corrected three security/integrity defects before closeout:
-
-1. Stored worker health/lock state initially had no heartbeat freshness gate. Admission now rejects stale/future heartbeat evidence and invalid identity-verification/heartbeat ordering.
-2. Permit revalidation originally reconstructed a permit using the original issue time plus current worker evidence, which could falsely reject a legitimate newer heartbeat. Revalidation now checks current context independently and validates the original permit material/integrity directly.
-3. Permit binding initially carried only the runtime policy ID. It now binds the complete controller-owned restricted-runtime policy with `policy_sha256`, so a changed capability, freshness, network or draft-binding policy invalidates the permit.
-
-Bridge composition also received a direct test proving permit issuance precedes the authorized lower-worker entrypoint.
-
-No further blocking semantic defect was identified in the bounded packet review. The durable compute job already retains its input SHA-256; this packet binds the exact content-derived Studio draft ID plus the complete worker manifest and does not invent a second artifact-store contract.
-
-## Verification evidence
-
-- PR #158 is open as the packet draft PR.
-- CI #632 passed end to end on exact implementation head `3c8bcb86e1e40c000f69e33cbef5ab14ab135855` after the semantic fixes and adversarial tests.
-- Passing gates included compile, feature registry, lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android unit/proof/provenance gates, Python unit tests and Workspace Apps Script tests.
-- This documentation closeout changes the branch head, so one final exact-head CI run remains mandatory before merge.
-
-## Acceptance criteria
-
-1. Whole-manifest digest binds every `WorkerManifest` field. **PASS — implementation + CI #632.**
-2. Whole-policy digest and permit bind exact policy/job/lease/worker/principal/runtime/draft/manifest/isolation provenance. **PASS — implementation + CI #632.**
-3. Lease mismatch/cancellation/expiry fail closed. **PASS — adversarial tests + CI #632.**
-4. Worker identity/approval/local mode/health/availability/interactive lock and heartbeat freshness fail closed. **PASS — adversarial tests + CI #632.**
-5. Data-classification/capability mismatch fail closed. **PASS — adversarial tests + CI #632.**
-6. Isolation identity/attestation/freshness/property/network mismatches fail closed. **PASS — adversarial tests + CI #632.**
-7. Manifest or runtime-policy mutation and permit expiry prevent lower-worker entry. **PASS — adversarial tests + CI #632.**
-8. Controller-facing Studio bridge gates execution through permit issuance/revalidation before lower-worker entry. **PASS — direct composition test + CI #632.**
-9. Permit excludes private endpoint/path/credential material. **PASS — direct privacy test + CI #632.**
-10. Existing full repository CI remains green on implementation head. **PASS — CI #632.**
-11. Exact documentation-head + post-merge CI/readback complete before closure. **PENDING.**
-12. No live host/LM Studio/private-hardware containment claim from synthetic CI. **PRESERVED.**
-
-## Concurrency state
-
-At packet start, remote `main` was `41550d60c92e692528b3de4b1deae6020d405011`. Old draft PR #135 for Sheets control-surface work remains stale relative to current main and does not own this packet's `ops/studio_*` or direct test surfaces. No `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md` or monolithic ownership-manifest edit is required because existing IDs and repository ownership boundaries already cover this work.
-
-## Pre-merge capture audit
-
-CAPTURE AUDIT COMPLETE
-
-- All implementation changes remain inside existing `LOCAL-001` / `LOCAL-INTEGRATIONS` and `STUDIO-001` / `DEV-004` scope.
-- The heartbeat-freshness, permit-revalidation and full-policy-binding repairs are defects/integrity requirements inside this packet, not new product scope.
-- Live host attestation and provider/OS-specific containment remain explicitly deferred evidence and are not claimed by CI.
-- No unrelated feature work was admitted.
+1. Require full CI green on the exact checkpoint head created by this documentation update.
+2. Update PR #159 to reflect the completed dispatch vertical and verification evidence.
+3. Re-read remote `main`, PR #159 exact head and mergeability immediately before merge.
+4. Mark PR #159 ready and merge only with expected-head protection if exact-head CI is green and `main` remains compatible.
+5. Read back exact post-merge `main` and require the push CI on that exact merge SHA to pass before closing M2-M1-043.
+6. After closure, rank the next existing Studio/local-compute work from Git rather than inventing a parallel work ID.
 
 ## Evidence ceiling
 
-CI proves deterministic admission/binding, permit integrity, freshness/policy enforcement, bridge composition and repository compatibility. It does not prove that a private machine is actually sandboxed, that LM Studio is loaded, or that generated code executed on user hardware under a restricted OS identity. A live host/runtime adapter must later produce trustworthy isolation evidence from the actual containment boundary before MIRA may claim production-safe local execution.
-
-## Exact next action / resume point
-
-1. Require final exact-head CI green on this documentation-closeout commit.
-2. Re-read current remote `main`, PR #158 exact head/mergeability and concurrent changed-file overlap.
-3. If compatible, mark PR #158 ready and merge only with exact expected-head protection.
-4. Read back the exact merged `main` SHA and require post-merge CI success before closing M2-M1-042.
-5. Select the next Studio/local-compute child from current Git state rather than chat history.
+Synthetic CI proves deterministic dispatch composition, exact durable job leasing, router/worker-registry integration, restricted-runtime handoff and durable terminal reconciliation. It does not prove a private worker authenticated over a real transport, that a host containment mechanism is physically enforced, that LM Studio is running, that a private GPU exists, or that generated code executed on private hardware. Those remain separate live-verification gates.

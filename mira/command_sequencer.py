@@ -428,6 +428,78 @@ class ComputeJobControlPlane:
             finished_at=None,
         )
 
+    def lease_job(
+        self,
+        job_id: str,
+        *,
+        worker_id: str,
+        worker_capabilities: Iterable[str],
+        lease_id: str,
+        leased_at: str,
+        lease_expires_at: str,
+        idempotency_key: str,
+    ) -> ComputeJobView:
+        """Lease one exact queued job to one exact worker.
+
+        Unlike :meth:`lease_next`, this method never selects a different queued job.
+        It exists for controller-routed work where another trusted component has
+        already selected the worker for this specific durable job.
+        """
+
+        current = self.get(job_id)
+        worker = _token(worker_id, "worker_id")
+        caps_tuple = _tokens(worker_capabilities, "worker_capabilities", allow_empty=False)
+        caps = set(caps_tuple)
+        lease = _token(lease_id, "lease_id")
+        leased = _utc_text(leased_at, "leased_at")
+        expires = _utc_text(lease_expires_at, "lease_expires_at")
+        if _utc(expires, "lease_expires_at") <= _utc(leased, "leased_at"):
+            raise QueueStateError("lease_expires_at must be after leased_at")
+        key = _token(idempotency_key, "idempotency_key")
+        material = {
+            "operation": "lease_job",
+            "job_id": current.job_id,
+            "worker_id": worker,
+            "worker_capabilities": list(caps_tuple),
+            "lease_id": lease,
+            "leased_at": leased,
+            "lease_expires_at": expires,
+        }
+        replay = _transition_replay(current, key, material)
+        if replay is not None:
+            return replay
+        if current.state != "queued":
+            raise QueueStateError(
+                f"cannot lease exact compute job in state {current.state}"
+            )
+        if current.cancel_requested:
+            raise QueueStateError("cancel-requested compute job cannot be leased")
+        if current.attempts >= current.max_attempts:
+            raise QueueStateError("compute job attempt budget is exhausted")
+        if not set(current.required_capabilities).issubset(caps):
+            raise QueueStateError("worker lacks required compute-job capabilities")
+        for candidate in self.list_jobs():
+            if (
+                candidate.job_id != current.job_id
+                and candidate.lease_id == lease
+                and candidate.active_lease
+            ):
+                raise QueueStateError("lease_id is already active with different material")
+        return self._mutate(
+            current.job_id,
+            key,
+            material,
+            state="leased",
+            attempts=current.attempts + 1,
+            lease_worker_id=worker,
+            lease_id=lease,
+            leased_at=leased,
+            lease_expires_at=expires,
+            started_at=None,
+            error_code=None,
+            finished_at=None,
+        )
+
     def start(
         self,
         job_id: str,
