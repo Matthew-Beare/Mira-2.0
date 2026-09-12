@@ -8,6 +8,7 @@ Git is authoritative. This branch records exactly one active packet.
 
 - **Primary work:** `MIRA-STUDIO-001`.
 - **Primary features:** `STUDIO-001`, `DEV-004`, `SOURCE-001`, `PROVIDER-001`, `RECOVERY-002`.
+- **Related invariants/features:** `DEV-005`, `DEV-008`, `AUTH-001`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
 - **Branch:** `work/m2-m1-041-studio-execution-vertical`.
 - **Base SHA:** `9303431bb3e573f2a241f6796a2d3da2918527fc`.
@@ -80,11 +81,10 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Add the bounded local Studio worker under `ops/` plus adversarial integration tests.
-2. Exercise it against temporary real Git repositories and a fake loopback model server.
-3. Run exact-head CI and repair only failures within packet scope.
-4. After deterministic proof, decide whether one small glue change is required to emit the worker manifest directly from existing Studio intake/session state; include it only if needed for the vertical acceptance criteria.
-5. Open/merge only after exact-head evidence; post-merge readback is mandatory.
+1. Run exact-head CI on the executable local worker and adversarial integration tests; repair only packet-owned failures.
+2. Exercise the worker against temporary real Git repositories and a fake loopback model server through CI.
+3. After deterministic proof, decide whether one small glue change is required to emit the worker manifest directly from existing Studio intake/session state; include it only if needed for the vertical acceptance criteria.
+4. Open/merge only after exact-head evidence; post-merge readback is mandatory.
 
 ## Evidence ceiling
 
