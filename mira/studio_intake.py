@@ -394,6 +394,6 @@ def _internal_items(
         for index, value in enumerate(values)
     )
     canonical = tuple(sorted(set(normalized)))
-    if normalized != canonical:
+    if values != canonical:
         raise StudioIntakeError(f"{field} must be normalized, unique, and sorted")
     return canonical
