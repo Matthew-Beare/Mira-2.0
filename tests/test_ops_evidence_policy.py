@@ -1,4 +1,4 @@
-from mira.ops_evidence_policy import (
+from mira.authority import (
     AcquisitionState,
     AuthoritySource,
     DurablePurchaseEvidence,
