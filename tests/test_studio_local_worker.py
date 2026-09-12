@@ -301,6 +301,40 @@ class StudioLocalWorkerTests(unittest.TestCase):
                     )
                 )
 
+    def test_symlink_parent_rejected_before_any_outside_directory_is_created(self):
+        outside = self.root / "outside"
+        outside.mkdir()
+        link = self.repo / "linked-dir"
+        try:
+            link.symlink_to(outside, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("directory symlink creation is unavailable")
+        git(self.repo, "add", "linked-dir")
+        git(
+            self.repo,
+            "-c",
+            "user.name=Test",
+            "-c",
+            "user.email=test@example.invalid",
+            "commit",
+            "-q",
+            "-m",
+            "directory symlink",
+        )
+        self.base_sha = git(self.repo, "rev-parse", "HEAD")
+
+        manifest = self.manifest(
+            "http://127.0.0.1:1234/v1",
+            branch="studio/symlink-parent",
+            allowed_paths=("linked-dir/newdir/generated.py",),
+        )
+        with self.assertRaisesRegex(StudioWorkerError, "symlink"):
+            run_manifest(manifest)
+        self.assertFalse(
+            (outside / "newdir").exists(),
+            "validation must not mutate a symlink target outside the worktree",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
