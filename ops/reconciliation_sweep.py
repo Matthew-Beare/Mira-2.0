@@ -214,9 +214,12 @@ class RunSpec:
         day = _date(local_date)
         zone = _timezone(timezone)
         normalized_slot = _slug(slot, "slot")
-        normalized_context = None if context is None else _bounded_text(
-            context.strip().lower(), "context", max_len=128, error=ManifestError
-        )
+        if context is None:
+            normalized_context = None
+        else:
+            normalized_context = _bounded_text(
+                context, "context", max_len=128, error=ManifestError
+            ).lower()
         module_tuple = tuple(modules)
         _validate_manifest(module_tuple)
         identity = {
