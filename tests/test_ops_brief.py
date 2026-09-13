@@ -155,7 +155,9 @@ class OpsBriefServiceTests(unittest.TestCase):
         brief = self.briefs.compose_slot(
             "2026-08-30", "am", timezone_name="America/New_York"
         )
-        self.assertIn("- No active tasks.", brief.rendered_text)
+        self.assertNotIn("Tasks", brief.rendered_text)
+        self.assertNotIn("No active tasks", brief.rendered_text)
+        self.assertEqual(brief.rendered_text, "MIRA Ops Brief — 2026-08-30 AM\n")
         for unavailable in ("Weather", "Orders", "Email", "Calendar", "Mileage"):
             self.assertNotIn(unavailable, brief.rendered_text)
 
