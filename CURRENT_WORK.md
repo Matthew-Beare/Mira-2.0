@@ -8,15 +8,15 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 
 ## Reconciled state — 2026-09-14
 
-- `M2-M1-046` / finance evidence coverage is merged and its post-merge Trusted Runner Gate passed.
 - Connected transaction coverage is `full_history`, query-complete for the bounded checks performed, and reaches 2024-08-09; provider freshness remains `unknown`.
-- The prior runtime blocker claiming canonical Sheets mutation/readback was unavailable is superseded: this runtime has successfully mutated and read back the canonical finance surfaces.
-- Exact provider-to-canonical comparison covers 2,091 provider transactions across eight transaction sources.
-- Four sources are already fully represented. Ten current omissions were repaired before historical replay.
-- Canonical FinOps Ledger and Spending Review now contain 1,404 matching stable Event IDs. Fresh-export verification shows zero duplicate Event IDs, zero duplicate transaction IDs, zero duplicate review IDs, and exact ledger/review Event-ID set equality.
-- Two hundred historical credit-card events are projected. Card repayments are excluded from economic spend, purchase/refund signs are preserved, and unresolved purpose/necessity remains reviewable rather than guessed.
-- Remaining exact provider gap is 687 events: 301 historical credit-card events plus 386 checking events.
-- The Spending Review lookup ceiling was expanded before bulk replay so newly appended events continue to consume user overrides.
+- Exact fresh provider inventory is 2,091 unique posted transaction identities across eight transaction sources.
+- Fresh canonical export before this run contained 1,555 unique provider-backed Event IDs with zero duplicate Event IDs and zero duplicate Transaction IDs.
+- Canonical source counts before this batch were: CREDIT CARD 419, Joint Checking 389, Quicksilver 295, Rewards Signature 9854 186, Matthew's Primary Savings 113, Savor 67, Home Savings 59, Joint Savings 27. Every source except CREDIT CARD and Joint Checking was already identity-complete.
+- This run projected the next 25 missing Joint Checking events from March 2025 into FinOps Ledger using exact provider Transaction IDs and synchronized the same 25 stable Event IDs into Spending Review.
+- Exact post-write readback shows 1,580 unique canonical Event IDs / Transaction IDs, with Joint Checking increased to 414 and no duplicate identities in the exported canonical ledger.
+- Spending Review readback resolves all 25 newly inserted Event IDs to the expected ledger date/vendor/net-spend/category fields. Transfers and income remain zero-economic-spend; ordinary outflows remain included; ambiguous purpose/necessity remains reviewable rather than guessed.
+- Remaining exact provider gap is 511 events: 256 CREDIT CARD plus 255 Joint Checking.
+- Existing historical date cells include mixed native-date and serial-date storage from earlier replay batches. They render through the review surface, but date normalization remains a cleanup gate before final finance closure.
 
 ## Customer priority / sequencing
 
@@ -24,7 +24,7 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 2. Preserve source evidence/provenance and stable provider transaction identity. Never duplicate economic effects or overwrite older production data.
 3. Resolve transfers, card repayments, income, refunds, reimbursements, and other non-purchase semantics before purchase-purpose classification.
 4. Preserve ambiguous purpose, necessity, allowance, and funding context as reviewable state rather than guessing.
-5. After provider identity coverage is complete, run full integrity/readback gates and reconcile remaining reviewable semantic fields.
+5. After provider identity coverage is complete, normalize historical date storage, run full integrity/readback gates, and reconcile remaining reviewable semantic fields.
 6. After historical finance coverage is closed or durably bounded by actual source unavailability, move to the user-visible Android inventory/scanning vertical using the existing inventory/identity/asset architecture. Do not create a parallel inventory model.
 
 ## Acceptance gates
@@ -35,18 +35,19 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 4. Ambiguous semantic classification remains reviewable rather than fabricated.
 5. Exact readback proves duplicate Event IDs, Evidence IDs, Entity IDs, Relation IDs and broken relation endpoints are all zero.
 6. Provider identity set is fully represented or explicitly accounted for by documented source unavailability/exclusion.
-7. Public Git contains only sanitized coverage/proof, never private balances, account/provider IDs, transaction IDs, receipt contents, addresses, or secrets.
-8. Repository CI passes at the exact completion head and again after merge before the objective is called complete.
+7. Historical date storage is normalized so downstream month/date logic is deterministic.
+8. Public Git contains only sanitized coverage/proof, never private balances, account/provider IDs, transaction IDs, receipt contents, addresses, or secrets.
+9. Repository CI passes at the exact completion head and again after merge before the objective is called complete.
 
 ## Resume point
 
-Continue bounded historical replay from the next unprojected credit-card provider identity after the first 200 historical events. Re-read canonical counts before each mutation because scheduled finance workers may run concurrently. Current verified canonical count is 1,404 events and the remaining exact gap is 687. Preserve the same transfer/income exclusion and signed economic-spend rules, synchronize every appended Event ID into Spending Review, and require duplicate/set-equality readback after each bounded batch. Finish the remaining 301 credit-card events, then replay the 386-event checking block and run full graph-integrity gates.
+Re-read live canonical counts before mutating because scheduled finance workers may run concurrently. Continue Joint Checking from the next missing provider identity after the 25-event March 2025 batch just projected, then finish the remaining CREDIT CARD identities. Current verified canonical identity count is 1,580 and the exact remaining gap is 511: 255 Joint Checking plus 256 CREDIT CARD. Preserve the same transfer/income exclusion and signed economic-spend rules, synchronize every appended Event ID into Spending Review, and require duplicate/set-equality readback after each bounded batch. After identity closure, normalize historical date cell storage and run full graph-integrity gates.
 
 ## Canonical six-line status
 
 Objective: Reconcile every accessible historical provider transaction into canonical MIRROR exactly once.
-Progress: Exact provider-to-MIRROR coverage is bounded; 200 historical events are now live with clean duplicate/set-equality gates and 687 exact identities remaining.
-Last 24h: Historical finance replay became executable, canonical review synchronization was repaired, and 200 historical events were safely projected.
-Deliverable: Complete provider-to-MIRROR historical coverage with integrity proof and no duplicate economic effects.
+Progress: 25 more historical checking events were projected and read back cleanly; 1,580 of 2,091 provider identities are now represented, leaving 511.
+Last 24h: Historical finance replay became executable and has advanced with stable identity, review synchronization, and duplicate-safe readback.
+Deliverable: Complete provider-to-MIRROR historical coverage with normalized dates, integrity proof, and no duplicate economic effects.
 Expected delivery: UNKNOWN.
 Blocker: none; continue bounded replay and verification.
