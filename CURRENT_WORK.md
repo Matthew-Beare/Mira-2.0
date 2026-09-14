@@ -1,47 +1,52 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This checkpoint is reconciled to remote `main` before further work selection.
+Git is authoritative. This checkpoint is reconciled to live provider coverage, canonical MIRROR finance state, and remote `main` before further work selection.
 
 ## Current objective
 
-Continue `FIN-CANON-AUDIT-001` by reconciling the historical provider transaction gap into the existing canonical MIRROR finance graph using stable provider identity, preserved provenance, idempotent replay, and exact readback. Historical source data must not be discarded or hidden behind an artificial MIRA 2.0 start date.
+Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider transaction gap into the existing canonical MIRROR finance graph using stable provider identity, preserved provenance, idempotent replay, and exact readback. Historical source data must not be discarded or hidden behind an artificial MIRA 2.0 start date.
 
-## Reconciled repository state — 2026-09-14
+## Reconciled state — 2026-09-14
 
-- `M2-M1-046` / finance evidence coverage is merged to remote `main`.
-- Verified remote `main` before this checkpoint: `8ed16f9e2b3e2672ff7149488ba0a7d28a4a0222`.
-- Post-merge Trusted Runner Gate for that exact head completed successfully.
-- The previous CURRENT_WORK checkpoint was stale: it still described M2-M1-046 as active and its merge/CI acceptance gate as pending. That stale state is superseded here.
-- Connected Finances transaction coverage reports `full_history`, `ready`, and complete bounded-query coverage; freshness remains `unknown`.
-- Direct oldest-row probe proves accessible connected transaction history reaches at least **2024-08-09**, materially earlier than the current canonical finance projection. This is source-coverage evidence only, not yet proof that every historical row has been projected into MIRROR.
+- `M2-M1-046` / finance evidence coverage is merged and its post-merge Trusted Runner Gate passed.
+- Connected transaction coverage is `full_history`, query-complete for the bounded checks performed, and reaches 2024-08-09; provider freshness remains `unknown`.
+- The prior runtime blocker claiming canonical Sheets mutation/readback was unavailable is superseded: this runtime has successfully mutated and read back the canonical finance surfaces.
+- Exact provider-to-canonical comparison covers 2,091 provider transactions across eight transaction sources.
+- Four sources are already fully represented. Ten current omissions were repaired before historical replay.
+- Canonical FinOps Ledger and Spending Review now contain 1,254 matching stable Event IDs. Fresh export verification shows zero duplicate Event IDs, zero duplicate transaction IDs, zero duplicate review IDs, and exact ledger/review Event-ID set equality.
+- The first 50 historical credit-card events were projected with transfer/payment economic effects excluded, purchase/refund signs preserved, and unresolved purpose/necessity left reviewable rather than guessed.
+- Remaining exact provider gap is 837 events: 451 historical credit-card events and 386 checking events.
+- The Spending Review lookup ceiling was expanded before bulk replay so newly appended events continue to consume user overrides.
 
 ## Customer priority / sequencing
 
-1. Close or durably bound the historical finance projection gap first. Because the connected source demonstrably exposes older history, an artificial product start boundary is not acceptable.
-2. Preserve source evidence/provenance and stable provider transaction identity. Reconciliation may add canonical entities/relations/events but must not duplicate economic effects or overwrite older production data.
-3. Explicitly represent any genuine unavailable source gaps if discovered.
-4. After historical finance coverage is closed or bounded by actual source unavailability, move to the user-visible Android inventory/scanning vertical using existing `INV-001`, `INV-002`, `MOVE-001`, `IDENT-001`, `ASSET-001`, `ASSET-002`, `ASSET-003` and the existing Android client architecture. Do not create a parallel inventory model.
+1. Finish the exact historical provider projection gap first.
+2. Preserve source evidence/provenance and stable provider transaction identity. Never duplicate economic effects or overwrite older production data.
+3. Resolve transfers, card repayments, income, refunds, reimbursements, and other non-purchase semantics before purchase-purpose classification.
+4. Preserve ambiguous purpose, necessity, allowance, and funding context as reviewable state rather than guessing.
+5. After provider identity coverage is complete, run full integrity/readback gates and reconcile remaining reviewable semantic fields.
+6. After historical finance coverage is closed or durably bounded by actual source unavailability, move to the user-visible Android inventory/scanning vertical using the existing inventory/identity/asset architecture. Do not create a parallel inventory model.
 
-## Acceptance gates for the historical finance continuation
+## Acceptance gates
 
-1. Inventory the actual connected historical range per relevant account/source rather than assuming a date boundary.
-2. Compare provider stable transaction identities against canonical MIRROR finance event/source identities.
-3. Project every supported missing historical provider event exactly once, preserving source provenance and current category/interpretation rules without converting evidence authorities into money authorities.
-4. Preserve ambiguous/unresolved semantic classification as reviewable state rather than guessing.
-5. Exact readback proves no duplicate event IDs, evidence IDs, entity IDs or relation IDs and no broken relation endpoints.
-6. Exact readback proves the historical provider identity set is either represented in canonical MIRROR or explicitly accounted for by a documented source-unavailability/exclusion reason.
-7. Public Git stores only sanitized coverage/proof, never private balances, account/provider IDs, transaction IDs, receipt contents, addresses or secrets.
-8. Repository CI must pass at exact head and again after merge before the objective is called complete.
+1. Actual connected historical range inventoried per relevant source.
+2. Provider stable transaction identities compared against canonical MIRROR finance identities.
+3. Every supported missing provider event projected exactly once.
+4. Ambiguous semantic classification remains reviewable rather than fabricated.
+5. Exact readback proves duplicate Event IDs, Evidence IDs, Entity IDs, Relation IDs and broken relation endpoints are all zero.
+6. Provider identity set is fully represented or explicitly accounted for by documented source unavailability/exclusion.
+7. Public Git contains only sanitized coverage/proof, never private balances, account/provider IDs, transaction IDs, receipt contents, addresses, or secrets.
+8. Repository CI passes at the exact completion head and again after merge before the objective is called complete.
 
-## Environment ceiling / resume point
+## Resume point
 
-This runtime can read connected Finances and GitHub directly, but no canonical MIRROR/Google Sheets mutation connector is currently loaded in this run. Therefore the next executable step is to use the available canonical-state connector when present to compare the provider historical identity set against MIRROR and perform idempotent backfill with exact readback. Do not infer completion merely from provider full-history coverage.
+Continue bounded historical replay from the next unprojected credit-card provider identity after the first 50-event batch. Re-read canonical counts before each mutation because scheduled finance workers may run concurrently. Current verified canonical count is 1,254 events and the remaining exact gap is 837. Preserve the same transfer/income exclusion and signed economic-spend rules, synchronize every appended Event ID into Spending Review, and require duplicate/set-equality readback after each bounded batch. Then replay the remaining checking block and run full graph-integrity gates.
 
 ## Canonical six-line status
 
-Objective: Reconcile all accessible historical finance transactions into the existing canonical MIRROR finance graph without duplicate economic effects.
-Progress: M2-M1-046 merge/CI was verified, stale CURRENT_WORK was reconciled, and connected history was directly proven to reach at least 2024-08-09.
-Last 24h: Finance evidence coverage was merged and post-merge CI passed while preserving the explicit historical projection blocker.
-Deliverable: Exact historical provider-to-MIRROR coverage proof plus idempotent backfill of every supported missing transaction.
+Objective: Reconcile every accessible historical provider transaction into canonical MIRROR exactly once.
+Progress: Exact provider-to-MIRROR coverage is bounded; current omissions were repaired and the first historical batch is live with clean duplicate/set-equality gates.
+Last 24h: Historical finance replay became executable, canonical review synchronization was repaired, and exact backfill began.
+Deliverable: Complete provider-to-MIRROR historical coverage with integrity proof and no duplicate economic effects.
 Expected delivery: UNKNOWN.
-Blocker: Canonical MIRROR mutation/readback connector is not loaded in this runtime; continue immediately when that connected state surface is available.
+Blocker: none; continue bounded replay and verification.
