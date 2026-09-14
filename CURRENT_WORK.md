@@ -13,7 +13,7 @@ Git is authoritative. This branch records exactly one active packet.
 - **Branch:** `work/m2-m1-047-finance-historical-backfill`.
 - **Original base SHA:** `8ed16f9e2b3e2672ff7149488ba0a7d28a4a0222`.
 - **Remote main verified this run:** `166ec68dec558e812c463c41a4df1382ab29b24c`.
-- **Remote branch head before this checkpoint:** `e4e08151c2ee181c21cc80d9e1559131fc6d3d20`.
+- **Remote PR head verified before this checkpoint:** `c51aab505e82eae23e0d12c97ac360f06bd7a2ce`.
 
 ## Recovery contract
 
@@ -38,13 +38,16 @@ Close the historical finance coverage gap by reconciling all trustworthy provide
 - **Matthew's Primary Savings reconciled:** 70 historical provider identities appended; exact comparison confirmed all 70 present with no duplicate canonical transaction IDs.
 - One explicitly named merchant refund in Primary Savings was retained as a negative economic-spend credit rather than excluded merely because the provider categorized it as income.
 - **Rewards Signature reconciled:** all 128 provider-visible rows before `2026-01-02` were appended and exactly read back. Exported-workbook verification proved 128 source IDs = 128 canonical IDs, zero missing IDs, zero extras, zero duplicate transaction IDs, zero Event-ID mismatches, zero date mismatches, and zero amount/treatment semantic mismatches.
-- Rewards Signature treatment preserved source semantics: 15 credit-card payments are zero-economic-spend `EXCLUDED_TRANSFER`; three cash-back rewards are zero-economic-spend `EXCLUDED_INCOME`; 101 verified fuel rows use the existing user corrections, while convenience-store, grocery, fast-food, beauty and refund rows remain distinct rather than being blanket-rewritten to fuel.
-- The existing V:AK formula scaffolding was preserved across the 128 appended rows; representative boundary rows from each write chunk were exported and inspected with formulas intact.
-- **Joint Checking source was freshly re-read this run:** 127 posted rows in 2024 and 309 in 2025, 436 unique provider transaction IDs total, both bounded queries complete. The set includes payroll, card payments, savings/account transfers, HELOC payments, dividends/interest, user-named family-loan events and ordinary expenses; it therefore requires semantic treatment rather than a category-blind append.
-- Existing user semantics were re-observed in source for the next pass: `Scarlett loan` plus three `Scarlett loan reimbursement` rows, and 34 `HELOC Payment` rows. These remain identity-specific corrections, not broad merchant inference rules.
-- Remaining source after Rewards closure is **937 rows:** Joint Checking 436 and CREDIT CARD 501.
-- **257 of 1,194 pre-canonical provider rows are reconciled.**
-- PR #165 is open and non-draft at exact head `e4e08151c2ee181c21cc80d9e1559131fc6d3d20` before this checkpoint. It is currently reported non-mergeable against newer `main`, which is expected to be resolved only after historical reconciliation is complete and branch/main are semantically reconciled. No workflow run is attached to that exact head, so earlier green CI is not treated as proof.
+- Rewards Signature treatment preserved source semantics: credit-card payments are zero-economic-spend `EXCLUDED_TRANSFER`; cash-back rewards are zero-economic-spend `EXCLUDED_INCOME`; verified fuel uses existing user corrections, while convenience-store, grocery, fast-food, beauty and refund rows remain distinct rather than being blanket-rewritten to fuel.
+- The existing V:AK formula scaffolding remained intact across prior appended history.
+- **Joint Checking source is freshly bounded:** 127 posted rows in 2024 and 309 in 2025, **436 unique provider transaction IDs**, and both bounded queries report complete full-history coverage.
+- Persisted finance corrections were re-read before mutation. They confirm identity-specific Scarlett loan/reimbursement semantics, HELOC normalization away from mortgage, and Old Dominion payroll normalization without touching unrelated utility transactions.
+- **First Joint Checking batch reconciled this run:** 20 oldest source rows were appended to canonical rows 1146–1165 and exact A:U readback matched transaction identity, date serial, economic-spend treatment, vendor/category semantics, confidence and provenance.
+- That first batch includes preserved zero-economic-spend transfers, excluded payroll income, an included user-confirmed HELOC payment, ordinary bills/shopping/insurance spend and source provenance. No source row was discarded to simplify the model.
+- Canonical append boundary is now **row 1166** for the next absent Joint Checking identity.
+- Remaining source after this checkpoint is **917 rows:** Joint Checking 416 and CREDIT CARD 501.
+- **277 of 1,194 pre-canonical provider rows are reconciled.**
+- PR #165 remains open and non-draft. Before this checkpoint its exact head was `c51aab505e82eae23e0d12c97ac360f06bd7a2ce`; no workflow run/status was attached to that exact head, so no CI claim is made. The PR is currently non-mergeable against newer `main`; resolve that only after historical reconciliation is complete and branch/main are semantically reconciled.
 
 ## Acceptance criteria
 
@@ -80,18 +83,18 @@ ALIGNED
 
 ## Exact resume point
 
-1. Re-read live destination rows after 1145 before the next write.
-2. Re-query Joint Checking 2024/2025 partitions or reuse only if provider coverage/readback is still the same; compare all 436 provider transaction IDs against canonical state before mutation.
-3. Apply existing persisted user corrections only to identities they actually support, including payroll, HELOC and family-loan semantics. Preserve ordinary transfers as zero-economic-spend evidence and keep ambiguous deposits/withdrawals reviewable rather than guessing.
-4. Write only absent Joint Checking identities into the existing A:U schema in bounded batches, with exact post-write transaction-ID/date/amount/treatment comparisons and rollback only for an unverified batch.
-5. Then reconcile CREDIT CARD in 2024/2025 partitions with the same identity/readback discipline.
-6. Before PR merge, reconcile with current main and require exact-head CI. Do not begin Android inventory implementation until all 1,194 historical provider rows are reconciled or an actual source-unavailability boundary is proved.
+1. Verify remote main/PR head and re-read canonical row 1165 plus the next blank destination row before mutation.
+2. Continue Joint Checking from the next 2024 source identity after the 20-row checkpoint; 416 source identities remain. Re-query the bounded partition if provider coverage or source evidence changed.
+3. Apply persisted user corrections only to identities they support. Keep ordinary transfers at zero economic spend, payroll/income excluded from spend, HELOC payments normalized to the user-confirmed HELOC, supported reimbursements as negative economic-spend credits, and ambiguous transactions reviewable rather than guessed.
+4. Append only absent identities into A:U in bounded batches beginning at row 1166. Preserve V:AK formula scaffolding and exact-read each written batch before advancing the checkpoint.
+5. After all 436 Joint Checking identities are present and exactly reconciled, reconcile CREDIT CARD's remaining 501 historical rows with the same identity/readback discipline.
+6. Before PR merge, semantically reconcile with current main and require exact-head CI. Do not begin Android inventory implementation until all 1,194 historical provider rows are reconciled or an actual source-unavailability boundary is proved.
 
 ## Canonical six-line status
 
 Objective: Reconcile the complete provider-visible historical finance record into MIRROR before starting inventory scanning.
-Progress: Four complete account histories totaling 257 rows are exactly reconciled; Joint Checking's remaining 436-row source is now freshly bounded and classified for the next write pass.
-Last 24h: Rewards Signature's 128-row pre-canonical history was reconciled with exact identity checks while preserving payments, cash-back, refunds and non-fuel purchases as distinct semantics.
+Progress: Five account histories are in progress/complete at 277 reconciled rows; the first 20 Joint Checking historical rows are now written and exactly read back, leaving 416 there plus 501 on the final card account.
+Last 24h: Rewards Signature was fully reconciled and Joint Checking historical ingestion has now begun with persisted payroll, HELOC and family-help semantics applied before mutation.
 Deliverable: Canonical FinOps history backfilled to the provider's actual oldest available boundary with exact transaction-ID readback and explicit unavailable gaps.
 Expected delivery: UNKNOWN
 Blocker: none
