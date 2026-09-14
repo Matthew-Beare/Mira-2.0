@@ -4,126 +4,97 @@ Git is authoritative. This branch records exactly one active packet.
 
 ## Active packet
 
-### `M2-M1-044` — Deterministic reconciliation and pre-reply gate
+### `M2-M1-045` — Canonical finance live reconciliation continuation
 
-- **Primary work:** `FIN-EVIDENCE-RECONCILE-001`.
-- **Primary features:** `RECOVERY-001`, `RECOVERY-002`, `OPS-004`, `FIN-001`.
-- **Related invariants/features:** `AUTH-001`, `SOURCE-001`, `MAIL-001`, `ORDER-001`, `ORDER-002`, `ORDER-005`, `MILE-001`, `MILE-002`, `TASK-002`.
+- **Primary work:** `FIN-CANON-AUDIT-001`.
+- **Primary features:** `FIN-001`, `OPS-004`.
+- **Related invariants/features:** `RECOVERY-001`, `RECOVERY-002`, `MAIL-001`, `ORDER-001`, `ORDER-002`, `ORDER-005`, `MILE-001`, `MILE-002`, `TASK-002`.
+- **Follow-on work, only where prerequisite-safe:** `FIN-EVIDENCE-RECONCILE-001`.
+- **Bounded presentation dependency:** `OPS-BRIEF-VSLICE`.
 - **Repository:** `Matthew-Beare/Mira-2.0`.
-- **Branch:** `work/m2-m1-044-reconciliation-reply-gate`.
-- **Base SHA:** `be73fd5eb987841be37fb050bc383dfd6f660606`.
-- **PR:** `#161`.
-- **Packet:** `docs/work-packets/M2-M1-044.md`.
+- **Branch:** `work/m2-m1-045-finance-live-reconciliation`.
+- **Base SHA:** `c77378bc4c6043b5ab351199f141e92250f484ec`.
+- **PR:** `#162`.
+- **Packet:** `docs/work-packets/M2-M1-045.md`.
 
-## Closed/displaced work
+## Predecessor closure
 
-`M2-M1-043` / PR #159 merged at exact `main` SHA `be73fd5eb987841be37fb050bc383dfd6f660606`. Exact-merge check runs on that SHA are green. The Studio compute-dispatch vertical is therefore no longer the active packet in this chat.
+`M2-M1-044` / PR #161 is merged at exact `main` SHA `c77378bc4c6043b5ab351199f141e92250f484ec`. Remote `main` points to that SHA and all four visible post-merge checks completed successfully. Its deterministic reconciliation/pre-reply gate is integration-verified at the repository CI ceiling; live provider truth still requires domain evidence.
 
 ## Customer outcome
 
-MIRA must not compose an operational or Financial Escape reply merely because it fetched some data. A run must first execute a deterministic sweep:
+Financial Escape and recurring MIRA briefs must use live provider/Workspace evidence, preserve one canonical finance/evidence/entity model, and stop exposing misleading or noisy operational detail. Current customer rules include:
 
-`DISCOVER -> RECONCILE -> MUTATE -> REBUILD -> VERIFY -> CHECKPOINT -> REPLY`
-
-The sweep is reusable across Finance Escape, Trucking/Ops, mileage, orders/shipments, receipts/assets, calendar, jobs and later domains. Each module must finish with an explicit terminal disposition and evidence. Required mutations must have exact readback before the module can claim success. Unknown/blocked state remains explicit, and one failed module must not suppress healthy independent modules.
-
-## Implemented vertical
-
-- `ops/reconciliation_sweep.py` implements deterministic run identity, manifest validation, dependency ordering, per-module terminal dispositions, reconciliation counts, source freshness/coverage, mutation/readback proof, required projection-rebuild proof, bounded blocker/review states, checkpoint fingerprints, replay and pre-reply claim gating.
-- Strong claims such as `current`, `updated`, `reconciled`, `done`, `complete` and `verified` are gated by verified module state; `current` additionally requires fresh/complete source coverage.
-- Handler exceptions and contract failures persist bounded blocker codes instead of raw exception material.
-- Independent modules continue when another module fails; dependent modules fail closed with `dependency_not_verified`.
-- `ops/reconciliation_checkpoint_store.py` persists the run checkpoint through the existing provider-neutral `StructuredStateAdapter`, performs exact payload readback, validates the stored fingerprint and allows a fresh sweep instance to replay without rerunning handlers.
-- `docs/OPS_EVIDENCE_AUTHORITY_CONTRACT.md` now requires the global reconciliation sweep, exact mutation readback before success language, Pig Phet/shared-trip mileage backstop semantics, and deep AM/PM unresolved-shipment/email evidence rechecks before concluding tracking is unavailable.
-- This packet intentionally does not implement the live finance, Gmail, carrier, mileage-sheet or scheduler handlers. Those remain bounded domain integrations that must consume this gate.
-
-## Owned implementation surfaces
-
-- `ops/reconciliation_sweep.py`
-- `ops/reconciliation_checkpoint_store.py`
-- `tests/test_reconciliation_sweep.py`
-- `tests/test_reconciliation_checkpoint_store.py`
-- `docs/OPS_EVIDENCE_AUTHORITY_CONTRACT.md`
-- `docs/work-packets/M2-M1-044.md`
-- this branch's `CURRENT_WORK.md`
-
-## Shared/high-contention surfaces
-
-No `FEATURES.md`, `BACKLOG.md`, `ROADMAP.md`, `PROJECT_INSTRUCTIONS.md`, Google production data, or live provider resources are authorized for mutation in the implementation slice. Existing `FIN-EVIDENCE-RECONCILE-001` is reused rather than duplicated.
+- elapsed-month spend pacing (~25/50/75/100% by week unless a canonical control explicitly differs), distinguishing ahead-of-pace from over-full-month-budget;
+- executive-glance brief formatting with clear breaks/bullets and no routine no-change finance line;
+- no tracking/order numbers in ordinary briefs; specific item/part only when known, otherwise generic item + vendor when useful;
+- live mutable-state authority for shipment/finance/current-state claims, with verification ceilings stated rather than inferred;
+- receipt/order/refund evidence relates to canonical economic events and durable assets without duplicating spend or inventory.
 
 ## Collision review
 
-- Open draft PR #135 (`M2-M1-020`) owns reusable Google Sheets control-surface implementation and older governance-file edits. This packet does not touch its Sheets renderer/control-surface code.
-- Stale PR #115 is lifecycle-only and does not overlap the owned implementation surface.
+- Draft PR #135 / `M2-M1-020` owns reusable Google Sheets control-surface implementation and older governance-file edits. This packet does not modify its Sheets renderer/control-surface code. Governance overlap must be reconciled before merge.
+- Draft PR #160 is Studio/local-worker work and does not displace this finance blocker without explicit reprioritization.
+- The bounded `OPS-BRIEF-VSLICE` change touches only generic empty/no-change presentation behavior plus its test/contract; it adds no new provider source or scheduler authority.
 
-## Verification evidence
+## Live evidence earned in this packet
 
-- Initial local adversarial pass proved the core sweep behavior, but the first PR test files used `pytest` while repository CI canonically runs `python -m unittest discover -s tests -v`.
-- Exact-head CI on `8c212a0ae4a9376b46275aabfa222fe46a675b00` and `08259f26c321cbb587185a402a7d1348d29dbc5c` therefore failed only at the Python unit-test step; compile, feature registry, lifecycle ledger, Personal distribution, work-session alignment, code ownership and Android proof/build gates had already passed.
-- Tests were converted to stdlib `unittest` and the exact repository test command was reproduced locally. Packet-specific sweep + structured-checkpoint tests pass under the canonical runner.
-- CI run `34747326544`, run number `649`, completed successfully on exact implementation head `80d2d57971339c707e17117fb2d11e19358d66a9`.
-- That exact run passed compile, feature registry, lifecycle ledger, Personal starter distribution, work-session alignment, code ownership, Android proof/build/provenance/artifact retention, Python unit tests and Workspace Apps Script tests.
-- PR #161 changed-file audit contains only the seven intended packet files listed above; no Sheets-control-surface code or private provider state is included.
+- Financial Escape workbook and relational FinOps tabs were reached directly and read before mutation.
+- Connected finance transaction coverage reports full history available, but provider freshness remains **UNKNOWN**. Money-state claims stay at that ceiling.
+- Spend Control status formulas now use elapsed-month pacing while preserving the full monthly budget as hard cap; exact readback passed.
+- Dashboard spending summaries now show posted MTD / selected budget / percent used / paced status instead of misleading projection/remaining-budget wording; exact readback passed.
+- A stale true-free-cash snapshot reference and stale reserve-policy text were repaired against the current canonical policy; exact readback passed.
+- The current recent provider slice was reconciled by stable provider transaction identity. Every returned posted transaction resolves to exactly one FinOps Ledger event after an accidental duplicate insertion was detected, rolled back, and re-read.
+- Spending Review user inputs remain keyed to stable Event IDs. A projection defect was found where three user review notes were sitting in the vendor-override field, causing the effective vendor to become note text instead of the user-confirmed normalized fuel vendor. Those notes were moved to the dedicated Notes column, vendor overrides cleared, effective vendor re-resolved to `Gas`, headers restored, and canonical Review Notes formulas repaired to bind by stable Event ID. Exact readback passed.
+- Current finance invariants read clean: duplicate event/evidence/entity/relation IDs = 0, broken relation endpoints = 0, required SKF net gate = 0, active ChatGPT subscriptions = 2, duplicate allowance debit keys = 0. Vendor overrides = 0 and user review notes = 3 after the projection repair.
+- Recent Gmail/order evidence was reconciled against provider activity. One fast-food receipt remains evidence-only because no posted matching transaction is visible; it is not admitted as posted spend.
+- Existing Subaru purchase/shipment evidence is linked back to its canonical posted economic event and read back without creating another event.
+- One previously identified durable automotive purchase with complete order/shipment evidence was backfilled through the Purchase & Receipt Archive: receipt detail, stable canonical asset identity, explicit `owned_by` relation, and retained evidence rows. Vehicle assignment, installation, and current carrier state remain unverified and were deliberately not inferred.
+- Current generic Ops Brief rendering now omits an empty `Tasks / No active tasks` section. `docs/OPS_BRIEF_PRESENTATION_CONTRACT.md` records compact executive-glance, no tracking/order-number, live-authority, spend-pacing, chart-density and module-isolation rules without adding new source integrations.
+
+No private balances, provider identifiers, order/tracking numbers, addresses, receipt contents, or provider secrets are stored in public Git.
+
+## Repository verification
+
+- Draft PR #162 opened from this branch to `main` so repository CI can exercise the bounded code change.
+- CI run #653 reached compile, feature registry, product lifecycle ledger and Personal starter distribution successfully, then failed at `Work-session alignment` because this branch's earlier CURRENT_WORK checkpoint omitted the gate-required `Primary features`, `Related invariants/features`, and session-start alignment sections.
+- That is a governance/checkpoint defect, not an Ops Brief unit-test result; downstream code ownership/unit tests were skipped by the failed gate.
+- This CURRENT_WORK update restores those required authoritative fields/sections. Exact-head CI must be rerun and pass before merge.
 
 ## Acceptance state
 
-1. Deterministic run identity, timezone/slot/context and declared module manifest. **PASS.**
-2. Every declared module reaches exactly one terminal disposition: `complete`, `needs_review`, `blocked`, or `not_applicable`. **PASS.**
-3. Required canonical mutations require exact readback evidence before a module can remain `complete`. **PASS.**
-4. Source freshness/coverage plus discovered/matched/updated/duplicate/unresolved counts are checkpointed. **PASS.**
-5. Required blockers remain explicit while healthy independent modules remain usable. **PASS.**
-6. Unsupported strong reply claims are rejected; `current` additionally requires fresh/complete source coverage. **PASS.**
-7. Successful replay of the same completed run is idempotent and does not rerun module handlers. **PASS.**
-8. Durable checkpoint state survives a fresh sweep instance through existing structured-state persistence and preserves module cursors/markers. **PASS at structured-state adapter ceiling.**
-9. Provider-neutral code contains no private account IDs, spreadsheet IDs, email contents, routes or credentials. **PASS.**
-10. Adversarial synthetic tests cover success, review-required, blocker isolation, missing readback, malformed manifests, duplicate identities, dependency failures, exception sanitization, replay, durable readback/tamper detection and overclaim rejection. **PASS.**
-11. Exact-head repository CI passes on implementation head. **PASS at `80d2d57971339c707e17117fb2d11e19358d66a9`, CI #649. Final docs-head CI and post-merge CI still required.**
-12. No live Gmail/bank/card/carrier/shared-trip-sheet/scheduler claim is made from synthetic CI. **PASS.**
+1. Close predecessor `M2-M1-044` with post-merge exact-SHA checks. **PASS.**
+2. Read live Financial Escape authorities and provider coverage/freshness before mutation. **PASS.**
+3. Correct/read back spend pacing semantics without changing provider money authority. **PASS.**
+4. Enforce compact brief presentation rules in the available operational rendering/control path. **PASS at current surface ceiling — Dashboard + generic Ops Brief renderer + durable presentation contract; unavailable shipment-source code is not fabricated.**
+5. Reconcile current financial/order/receipt evidence with stable identity and no duplicate economic effects. **PASS for current slice — all returned recent posted provider transactions resolve once; unmatched receipt remains evidence-only.**
+6. Link supported durable acquisitions into canonical receipt/asset state with exact readback; ambiguous items remain reviewable. **PASS for current bounded evidence — one full durable chain committed; generic/ambiguous items were not forced into inventory.**
+7. Use `M2-M1-044` reconciliation/pre-reply semantics where integration surfaces permit; unsupported strong claims fail closed. **PASS at current provider ceiling.**
+8. Public Git contains sanitized evidence only. **PASS.**
+9. Exact-head repository CI and merge/post-merge verification. **PENDING.**
 
 ## Session-start alignment verification — 2026-09-13
 
 ### `FEATURES.md`
 
-The packet advances existing recovery/run integrity (`RECOVERY-001`, `RECOVERY-002`, `OPS-004`) and the already accepted financial evidence-reconciliation direction (`FIN-001`, `MAIL-001`, `ORDER-*`, `MILE-*`). It does not create a second canonical finance model or duplicate provider infrastructure.
+The packet advances existing finance (`FIN-001`), operational brief/run integrity (`OPS-004`, `RECOVERY-001`, `RECOVERY-002`) and existing mail/order/mileage/task semantics. It does not create a second finance model, shipment authority, or provider stack. The bounded Ops Brief presentation change only removes empty/no-change noise and records the approved presentation contract.
 
 ### `BACKLOG.md`
 
-`FIN-EVIDENCE-RECONCILE-001` already requires repeatable reconciliation with stable source identity, replay dedupe, exception queues and exact readback. This packet extracts the reusable deterministic run/reply gate prerequisite so finance and non-finance operational modules can obey the same contract. `FIN-CANON-AUDIT-001` remains separate canonical-finance work and is not falsely marked complete here.
+`FIN-CANON-AUDIT-001` is the existing canonical-finance blocker and remains the primary work. `FIN-EVIDENCE-RECONCILE-001` is consumed only where its prerequisites are already satisfied. No duplicate finance or receipt/inventory work ID is created.
 
 ### `ROADMAP.md`
 
-Direction remains ordinary-language MIRA backed by durable canonical state, explicit evidence/readback, failure isolation and no fabricated provider/live claims. The packet improves reliability of every recurring user-facing run without changing provider choice or Standard/Advanced deployment semantics.
+Direction remains ordinary-language MIRA backed by canonical state, provider-specific authority, exact readback, evidence provenance, failure isolation and no fabricated live claims. Current work improves the recurring user-facing finance/brief path without changing Standard/Advanced provider semantics.
 
 ### Idea/backlog capture audit
 
 CAPTURE AUDIT COMPLETE
 
-- The customer-approved global reconciliation sweep is implemented as a reusable prerequisite inside existing recovery/run and `FIN-EVIDENCE-RECONCILE-001` semantics rather than creating a parallel finance system.
-- Pig Phet shared-mileage backstop and deep daily shipment/email recheck remain domain policy/handler requirements, not duplicate global engines.
-- No private production identifiers or account data are committed.
+- Spend pacing and compact-brief presentation requirements are durably represented in the live projection and/or Git contract.
+- The discovered review-note/vendor-override corruption was repaired in the existing canonical projection rather than creating another spending database.
+- Unmatched receipts, ambiguous durable goods and unverified carrier state remain explicit review/verification states.
 - No unrelated feature is admitted.
-
-### Direction result
-
-ALIGNED
-
-## Session-end direction verification — 2026-09-13
-
-### `FEATURES.md`
-
-ALIGNED. The implementation remains within existing recovery, Ops, finance/evidence, mail/order and mileage semantics. No semantic feature was deleted, weakened or replaced.
-
-### `BACKLOG.md`
-
-ALIGNED. `M2-M1-044` supplies a reusable prerequisite for `FIN-EVIDENCE-RECONCILE-001`; it does not falsely complete that live/provider-facing work or `FIN-CANON-AUDIT-001`.
-
-### `ROADMAP.md`
-
-ALIGNED. The product direction remains evidence-backed ordinary-language MIRA with provider-neutral canonical state and explicit verification boundaries.
-
-### Capture audit
-
-CAPTURE AUDIT COMPLETE. The approved reconciliation sweep, mileage backstop and shipment diligence rules are durably represented; no newly discovered product requirement remains only in chat.
 
 ### Direction result
 
@@ -131,13 +102,13 @@ ALIGNED
 
 ## Exact next action / resume point
 
-1. Require full repository CI green on the exact documentation-closeout head created after `80d2d57971339c707e17117fb2d11e19358d66a9`.
-2. Update PR #161 body/head evidence to the final closeout SHA.
-3. Re-read remote `main`, PR #161 exact head, changed-file overlap and mergeability immediately before merge.
-4. Mark PR #161 ready and merge only with expected-head protection if exact-head CI is green and `main` remains compatible.
-5. Read back exact post-merge `main` and require push CI on that exact merge SHA to pass before calling M2-M1-044 integration verified.
-6. After closure, re-read Git authorities and rank the next existing finance/trucking/order domain-integration work rather than inventing a parallel work ID.
+1. Require PR #162 CI green on the exact head created by this CURRENT_WORK correction.
+2. If CI fails, fix only the failing gate/test and rerun; do not expand scope.
+3. Re-read PR #162 changed files, mergeability and remote `main`; reconcile any governance overlap from draft PR #135 before merge if Git reports a real conflict.
+4. Mark PR #162 ready and merge only with expected-head protection after exact-head CI is green.
+5. Read back exact post-merge `main` and require push CI on that exact merge SHA before calling `M2-M1-045` integration verified.
+6. After closure, re-read Git authorities and rank the next existing packet rather than inventing parallel work.
 
 ## Evidence ceiling
 
-Synthetic CI proves deterministic orchestration, exact required-mutation readback semantics, durable structured-state checkpoint persistence, replay, source freshness/coverage claim gating, blocker/review isolation and tamper detection. It does not prove Gmail was actually read, a bank/card provider is fresh, Pig Phet's live sheet was reconciled, a carrier was dereferenced, or a scheduled AM/PM run executed. Those require domain/live provider evidence in follow-on packets/runs.
+Live Workspace writes above were directly read back. Connected-finance history is available but provider freshness remains UNKNOWN. Carrier state was not live-verified during this packet, so no current shipment ETA/progress claim is accepted from email alone. Repository CI has not yet passed on the current closeout head.

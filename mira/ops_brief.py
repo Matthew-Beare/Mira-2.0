@@ -3,9 +3,10 @@
 This is the first user-visible no-app vertical. It deliberately composes only
 canonical task state plus the already-defined optional progressive-discovery
 prompt. Missing weather, mail, orders, mileage, calendar, or other services are
-omitted rather than fabricated. Composition is distinct from delivery: the
-canonical run checkpoint records a composed brief, never claims a notification
-or scheduler actually fired.
+omitted rather than fabricated. Empty/no-change sections are also omitted so
+ordinary briefs remain executive-glance surfaces. Composition is distinct from
+delivery: the canonical run checkpoint records a composed brief, never claims
+a notification or scheduler actually fired.
 """
 
 from __future__ import annotations
@@ -244,11 +245,9 @@ def _render(
     normalized_context = _context(context)
     if normalized_context is not None:
         lines.append(f"Context: {normalized_context.upper()}")
-    lines.append("")
-    lines.append("Tasks")
-    if not tasks:
-        lines.append("- No active tasks.")
-    else:
+
+    if tasks:
+        lines.extend(("", "Tasks"))
         day = date.fromisoformat(slot.local_date)
         for task in tasks:
             due = ""
