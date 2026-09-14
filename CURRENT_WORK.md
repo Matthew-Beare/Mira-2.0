@@ -27,21 +27,20 @@ Close the historical finance coverage gap by reconciling every trustworthy provi
 
 ## Verified state
 
-- Connected transactions report `full_history`, available, complete for bounded queries; freshness remains unknown.
+- Connected transactions report `full_history`, available, complete for the bounded queries performed; freshness remains unknown.
 - Provider-visible posted history before canonical ledger start (`2026-01-02`) is **1,194 rows across six accounts**, oldest verified row **2024-08-09**.
 - Fully reconciled historical accounts: Joint Savings **19**, Home Savings **40**, Matthew's Primary Savings **70**, Rewards Signature **128**.
-- Remote `main` and the live workbook had advanced beyond the earlier branch checkpoint: **200 historical CREDIT CARD rows** were already canonical. The stale row-1196 resume point was rejected and no existing rows were overwritten.
-- Joint Checking source was freshly re-bounded again this run from provider data: **436 unique posted rows for 2024–2025**, with complete bounded coverage.
-- Before each new slice, a fresh exported canonical workbook was used to subtract existing transaction identities and the live destinations were re-read as blank; no already-canonical identity was replayed.
-- Prior work appended **50 absent Joint Checking identities** in two bounded 25-row slices to `FinOps Ledger` rows **1406–1455** and synchronized the same stable Event IDs to `Spending Review` rows **1408–1457**.
-- This run appended **20 additional absent Joint Checking identities** in two bounded 10-row slices to `FinOps Ledger` rows **1456–1475** and synchronized the same deterministic Event IDs to `Spending Review` rows **1458–1477**.
-- Exact post-write readback verified all **20 new ledger rows** across A:U and all **20 corresponding review Event IDs**. The slices preserve necessary household trash, insurance, electricity, phone and HELOC spending; dividends/payroll as zero-economic-spend income evidence; savings/card repayments and Google Store debt service as zero-economic-spend transfers; and raw provider category provenance.
-- Persisted corrections remain preserved, including Old Dominion payroll normalization, HELOC normalization away from mortgage, exact Google Store debt-service treatment, and user-confirmed household trash semantics.
+- Remote `main` and the live workbook had advanced beyond the earlier branch checkpoint: **200 historical CREDIT CARD rows** are canonical. Existing production rows were not overwritten.
+- Joint Checking was freshly re-bounded from provider data this run: **436 unique posted rows for 2024–2025** with complete bounded coverage (**127 in 2024 + 309 in 2025**).
+- Fresh canonical export plus exact stable-ID subtraction exposed a checkpoint counting defect: only **100** Joint Checking provider identities were live before this run, not the previously claimed 120. The stale **577/1,194** checkpoint was therefore rejected and corrected to **557/1,194** before further mutation.
+- This run then appended **10 identities proven absent** from Joint Checking to `FinOps Ledger` rows **1501–1510** and synchronized the same deterministic Event IDs to `Spending Review` rows **1503–1512**.
+- Exact post-write readback verified all **10 new ledger rows** across A:U and all **10 corresponding review Event IDs**. The slice preserves payroll as zero-economic-spend income evidence, credit-card repayments and an insurance-designated deposit as zero-economic-spend transfers, and Mountain Electric as necessary household utility spend. Raw provider category provenance and provider transaction identity are preserved.
+- Persisted corrections remain preserved, including Old Dominion payroll normalization, HELOC normalization away from mortgage, Google Store debt-service treatment, and user-confirmed household trash semantics.
 - Provider transaction ID remains the canonical identity key and Event ID remains deterministic as `EVT-<provider transaction id>`.
 - Successful writes use bounded `updateCells`; formula scaffolding is not targeted: `FinOps Ledger` writes touch A:U only and `Spending Review` writes touch J only.
-- Historical reconciliation is now **577 of 1,194 provider rows**. Remaining exact gap at this checkpoint is **617 = 316 Joint Checking + 301 CREDIT CARD**.
-- Current verified append boundaries are **FinOps Ledger row 1476** and **Spending Review J1478**, but these are not reservations; fresh identity subtraction and blank-destination readback are mandatory before every batch because concurrent canonical work can move them.
-- PR #165 remains open/non-draft. Its pre-run head had no check runs/status contexts; no exact-head CI success claim is made. This checkpoint commit changes the branch head, so CI must be re-read against the new exact head before merge.
+- Historical reconciliation is now **567 of 1,194 provider rows**. Remaining exact gap is **627 = 326 Joint Checking + 301 CREDIT CARD**.
+- Current verified append boundaries are **FinOps Ledger row 1510** and **Spending Review row 1512**, but these are not reservations; fresh identity subtraction and blank-destination readback are mandatory before every batch because concurrent canonical work can move them.
+- PR #165 remains open/non-draft and is currently stale/conflicted against newer `main`. Its prior exact head had no workflow runs; no exact-head CI success claim is made. Reconcile with current `main` only after the live historical objective is complete or at the required pre-merge gate, preserving all newer compatible work.
 
 ## Acceptance criteria
 
@@ -69,17 +68,17 @@ CAPTURE AUDIT COMPLETE. No new product feature was introduced; historical reconc
 ## Exact resume point
 
 1. Verify fresh remote main, branch/PR head, exact-head CI, connected transaction coverage, and live canonical state.
-2. Re-query Joint Checking 2024/2025 and subtract live canonical transaction IDs. At this checkpoint **316 Joint Checking identities remain**.
-3. Fresh-read the next destination; only if blank, continue absent identities in bounded A:U slices and write matching Event IDs into the review queue. Current last verified rows are ledger **1475** and review **1477**.
+2. Re-query Joint Checking 2024/2025 and subtract live canonical transaction IDs. At this checkpoint **326 Joint Checking identities remain**; do not trust arithmetic from older checkpoints over fresh stable-ID subtraction.
+3. Fresh-read the next destinations; only if blank, continue absent identities in bounded A:U slices and write matching Event IDs into the review queue. Current last verified rows are ledger **1510** and review **1512**.
 4. Exact-read each slice before advancing. Preserve provider evidence, persisted corrections, zero-spend transfers/payroll, user-confirmed HELOC semantics, signed credits, and unresolved ambiguity.
 5. After Joint Checking reaches complete identity coverage, re-bound and finish the **301 currently remaining CREDIT CARD** identities without replaying any concurrent work.
-6. When all 1,194 historical rows are reconciled or an actual source-unavailability boundary is proved, perform integrity proof, semantically reconcile with main, require exact-head CI, and only then move to Android inventory/scanning.
+6. When all 1,194 historical rows are reconciled or an actual source-unavailability boundary is proved, perform full duplicate/entity/relation/broken-endpoint integrity proof, semantically reconcile PR #165 with current main, require exact-head CI, merge, and require post-merge CI before switching to Android inventory/scanning.
 
 ## Canonical six-line status
 
 Objective: Reconcile every accessible historical provider transaction into canonical MIRROR exactly once before starting inventory scanning.
-Progress: 577 of 1,194 historical provider rows are reconciled; 20 more Joint Checking identities were added and exactly read back, leaving 617 total.
-Last 24h: Historical projection reached 577 verified rows while preserving provider identity, user corrections, review synchronization and concurrent-work safety.
+Progress: Fresh stable-ID subtraction corrected a 20-row checkpoint overcount; 10 proven-absent Joint Checking identities were then added and exactly read back, bringing verified coverage to 567 of 1,194 with 627 remaining.
+Last 24h: Historical projection is live and idempotent, and this run caught and corrected stale reconciliation arithmetic before it could cause duplicate or skipped history.
 Deliverable: Complete provider-to-MIRROR historical finance coverage with exact transaction-ID/readback proof and explicit source gaps.
 Expected delivery: UNKNOWN
 Blocker: none
