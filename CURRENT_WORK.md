@@ -13,9 +13,9 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 - The prior runtime blocker claiming canonical Sheets mutation/readback was unavailable is superseded: this runtime has successfully mutated and read back the canonical finance surfaces.
 - Exact provider-to-canonical comparison covers 2,091 provider transactions across eight transaction sources.
 - Four sources are already fully represented. Ten current omissions were repaired before historical replay.
-- Canonical FinOps Ledger and Spending Review now contain 1,254 matching stable Event IDs. Fresh export verification shows zero duplicate Event IDs, zero duplicate transaction IDs, zero duplicate review IDs, and exact ledger/review Event-ID set equality.
-- The first 50 historical credit-card events were projected with transfer/payment economic effects excluded, purchase/refund signs preserved, and unresolved purpose/necessity left reviewable rather than guessed.
-- Remaining exact provider gap is 837 events: 451 historical credit-card events and 386 checking events.
+- Canonical FinOps Ledger and Spending Review now contain 1,404 matching stable Event IDs. Fresh-export verification shows zero duplicate Event IDs, zero duplicate transaction IDs, zero duplicate review IDs, and exact ledger/review Event-ID set equality.
+- Two hundred historical credit-card events are projected. Card repayments are excluded from economic spend, purchase/refund signs are preserved, and unresolved purpose/necessity remains reviewable rather than guessed.
+- Remaining exact provider gap is 687 events: 301 historical credit-card events plus 386 checking events.
 - The Spending Review lookup ceiling was expanded before bulk replay so newly appended events continue to consume user overrides.
 
 ## Customer priority / sequencing
@@ -40,13 +40,13 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 
 ## Resume point
 
-Continue bounded historical replay from the next unprojected credit-card provider identity after the first 50-event batch. Re-read canonical counts before each mutation because scheduled finance workers may run concurrently. Current verified canonical count is 1,254 events and the remaining exact gap is 837. Preserve the same transfer/income exclusion and signed economic-spend rules, synchronize every appended Event ID into Spending Review, and require duplicate/set-equality readback after each bounded batch. Then replay the remaining checking block and run full graph-integrity gates.
+Continue bounded historical replay from the next unprojected credit-card provider identity after the first 200 historical events. Re-read canonical counts before each mutation because scheduled finance workers may run concurrently. Current verified canonical count is 1,404 events and the remaining exact gap is 687. Preserve the same transfer/income exclusion and signed economic-spend rules, synchronize every appended Event ID into Spending Review, and require duplicate/set-equality readback after each bounded batch. Finish the remaining 301 credit-card events, then replay the 386-event checking block and run full graph-integrity gates.
 
 ## Canonical six-line status
 
 Objective: Reconcile every accessible historical provider transaction into canonical MIRROR exactly once.
-Progress: Exact provider-to-MIRROR coverage is bounded; current omissions were repaired and the first historical batch is live with clean duplicate/set-equality gates.
-Last 24h: Historical finance replay became executable, canonical review synchronization was repaired, and exact backfill began.
+Progress: Exact provider-to-MIRROR coverage is bounded; 200 historical events are now live with clean duplicate/set-equality gates and 687 exact identities remaining.
+Last 24h: Historical finance replay became executable, canonical review synchronization was repaired, and 200 historical events were safely projected.
 Deliverable: Complete provider-to-MIRROR historical coverage with integrity proof and no duplicate economic effects.
 Expected delivery: UNKNOWN.
 Blocker: none; continue bounded replay and verification.
