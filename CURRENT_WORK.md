@@ -32,9 +32,11 @@ Close the historical finance coverage gap by reconciling all trustworthy provide
 - Canonical `Financial Escape` / `FinOps Ledger` began at `2026-01-02` before this packet; direct sheet readback confirmed no earlier production rows before the backfill writes below.
 - Provider rows expose stable `transaction_id`, account identity, posted date, signed amount, merchant/name/category data, and confidence suitable for deterministic source identity. Missing check payee/memo/image data remains unknown unless corroborated by another source.
 - The first bounded production import is complete for **Joint Savings**: all 19 provider rows dated 2024-08-30 through 2025-12-31 were absent from canonical transaction IDs, appended with deterministic `EVT-<transaction_id>` identity, and read back exactly at rows 888-906.
+- The second bounded production import is complete for **Home Savings**: all 40 provider rows dated 2024-08-17 through 2025-12-31 were appended only after confirming the destination range was empty and preserving a concurrently restored current-ledger row immediately ahead of the batch. Exact readback at rows 908-947 confirms stable transaction/Event identity, dates, values, classifications, formula propagation, month derivation and review state.
 - Historical income and transfer rows preserve provider signed amount in provenance while canonical economic-spend fields remain zero, matching existing ledger treatment (`EXCLUDED_INCOME` / `EXCLUDED_TRANSFER`). Formula and presentation columns were copied from the canonical row contract and exact readback confirms correct dates, categories, treatment and month derivation.
-- **1,175 pre-canonical provider rows remain** after the verified Joint Savings batch.
-- Remote `main` was verified at `8ed16f9e2b3e2672ff7149488ba0a7d28a4a0222`. PR #165 is the active packet PR. Initial CI #661 failed only because the earlier checkpoint format did not satisfy the canonical work-session alignment parser; the checkpoint structure has since been repaired on the packet branch.
+- Supported historical household outflows in the second batch retain positive economic spend and conservative semantics: known home-insurance/tax rows reuse verified household classifications, while a provider-labeled home-improvement-materials row remains necessity-unknown rather than being guessed.
+- **1,135 pre-canonical provider rows remain** after the two verified account batches. A total of 59 of the original 1,194 rows are now reconciled into canonical FinOps history.
+- Remote `main` was verified at `8ed16f9e2b3e2672ff7149488ba0a7d28a4a0222`. PR #165 is the active packet PR. Exact-head CI #663 on the prior checkpoint head completed successfully before this live-state continuation.
 
 ## Acceptance criteria
 
@@ -66,7 +68,7 @@ CAPTURE AUDIT COMPLETE
 
 - Historical reconciliation is existing `FIN-CANON-AUDIT-001` work.
 - The next inventory/scanning outcome is already represented by `INV-001`, `INV-002`, `MOVE-001`, `IDENT-001`, `ASSET-001`, `ASSET-002`, and `ASSET-003`.
-- No new material product feature is introduced by this checkpoint repair or the bounded historical import.
+- No new material product feature is introduced by this checkpoint repair or the bounded historical imports.
 
 ### Direction result
 
@@ -74,17 +76,17 @@ ALIGNED
 
 ## Exact resume point
 
-1. Verify exact-head CI on PR #165 after the checkpoint repair; fix packet-specific alignment failures before unrelated growth.
-2. Continue historical backfill account-by-account with the 40-row Home Savings account next, then Matthew's Primary Savings (70), Rewards Signature・9854 (128), and bounded partitions for Joint Checking (436) and CREDIT CARD (501).
-3. Before every append, compare provider transaction IDs against the current canonical `FinOps Ledger`; write only missing identities.
+1. Verify the new packet head and CI after this checkpoint commit; fix packet-specific failures before unrelated growth.
+2. Continue historical backfill with Matthew's Primary Savings (70) next, then Rewards Signature・9854 (128), followed by bounded partitions for Joint Checking (436) and CREDIT CARD (501).
+3. Before every append, compare provider transaction IDs against the current canonical `FinOps Ledger`, re-read the destination range for concurrent writes, and write only missing identities.
 4. Preserve raw provider signed amount in provenance when canonical economic-spend semantics intentionally zero income/transfer rows; exact-read back every batch including derived formulas and date formatting.
 5. Do not begin Android inventory implementation until all 1,194 historical provider rows are reconciled or an actual source-unavailability boundary is durably proven.
 
 ## Six-line customer status
 
 Objective: Reconcile the complete provider-visible historical finance record into MIRROR before starting inventory scanning.
-Progress: Proved 1,194 provider rows predate the canonical ledger and imported/read back the complete 19-row Joint Savings history; 1,175 rows remain.
-Last 24h: Historical finance coverage was proven back to 2024-08-09 and the first full historical account was added without duplicate economic effects.
+Progress: Two full historical accounts are reconciled and exactly read back: 59 of 1,194 pre-canonical rows are now canonical; 1,135 remain.
+Last 24h: Historical finance coverage was proven back to 2024-08-09 and two complete account histories were added without overwriting concurrent production state or creating duplicate economic effects.
 Deliverable: Canonical FinOps history backfilled to the provider's actual oldest available boundary with exact transaction-ID readback and explicit unavailable gaps.
 Expected delivery: UNKNOWN
 Blocker: none
