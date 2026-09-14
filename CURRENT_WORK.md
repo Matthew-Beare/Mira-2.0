@@ -13,7 +13,7 @@ Git is authoritative. This branch records exactly one active packet.
 - **Branch:** `work/m2-m1-047-finance-historical-backfill`.
 - **Original base SHA:** `8ed16f9e2b3e2672ff7149488ba0a7d28a4a0222`.
 - **Remote main verified this run:** `166ec68dec558e812c463c41a4df1382ab29b24c`.
-- **Branch head verified before this checkpoint:** `10f37a0667e656441144c4d77987119e30d31b41`.
+- **Remote branch head verified this run:** `8edad59bf577d1e83806f04fabf10d402a4465aa`.
 
 ## Recovery contract
 
@@ -38,11 +38,11 @@ Close the historical finance coverage gap by reconciling all trustworthy provide
 - **Matthew's Primary Savings reconciled:** 70 historical provider identities appended; exact comparison confirmed all 70 present with no duplicate canonical transaction IDs.
 - One explicitly named merchant refund in Primary Savings was retained as a negative economic-spend credit rather than excluded merely because the provider categorized it as income.
 - A prior Rewards Signature tentative write failed exact identity comparison and was fully rolled back in A:U while preserving V:AK formula scaffolding; none of that rejected batch is credited.
-- This run freshly queried Rewards Signature history before `2026-01-02`: **exactly 128 posted rows**, complete for query. The set contains 96 provider-classified fuel rows plus card payments, cash-back rewards, and a small number of clearly non-fuel merchant rows requiring their own semantics rather than blanket fuel rewriting.
-- Live canonical workbook readback this run confirms rows beginning at **1018** are blank in A:U and retain the expected V:AK formula scaffolding. This removes the prior runtime-connector blocker and gives a safe bounded destination for the next exact write.
+- Rewards Signature history before `2026-01-02` was freshly verified at **128 posted rows**, complete for query. The set contains 96 provider-classified fuel rows plus card payments, cash-back rewards, and a small number of clearly non-fuel merchant rows requiring their own semantics rather than blanket fuel rewriting.
+- Live canonical workbook readback confirmed rows beginning at **1018** are blank in A:U and retain the expected V:AK formula scaffolding, providing a safe bounded destination for the next exact write.
 - Remaining large-account source partitions stay bounded below provider return limits: Joint Checking = **436** rows (127 in 2024, 309 in 2025); CREDIT CARD = **501** rows (150 in 2024, 351 in 2025).
 - **129 of 1,194 pre-canonical provider rows are reconciled. 1,065 remain:** Rewards Signature 128, Joint Checking 436, CREDIT CARD 501.
-- PR #165 is open and non-draft at verified head `10f37a0667e656441144c4d77987119e30d31b41` before this checkpoint. No workflow/check run is currently attached to that exact head, so earlier green CI is not treated as proof for the current head.
+- PR #165 is open and non-draft at verified head `8edad59bf577d1e83806f04fabf10d402a4465aa` before this checkpoint. No workflow/check run is currently attached to that exact head, so earlier green CI is not treated as proof for the current head.
 
 ## Acceptance criteria
 
@@ -78,18 +78,17 @@ ALIGNED
 
 ## Exact resume point
 
-1. Read back this new branch head and PR #165 state.
-2. Re-read live A:U destination immediately before writing Rewards Signature.
-3. Re-query the 128-row Rewards Signature source set fresh and compare transaction IDs against canonical state immediately before mutation.
-4. Write only absent identities into the existing A:U schema. Preserve payment/cash-back/non-fuel rows with their own semantics; apply the user-confirmed Ducks fuel normalization only where fuel identity is supported.
-5. Exact source-to-canonical transaction-ID set comparison must show all 128 source identities represented once and no unexpected identities in the tentative batch. On any mismatch, roll back only that batch.
-6. Then continue Joint Checking in 2024/2025 partitions, followed by CREDIT CARD in 2024/2025 partitions, with pre-write readback and post-write exact identity checks for every batch.
-7. Before PR merge, reconcile with current main and require exact-head CI. Do not begin Android inventory implementation until all 1,194 historical provider rows are reconciled or an actual source-unavailability boundary is proved.
+1. Re-read live A:U destination immediately before writing Rewards Signature.
+2. Re-query the 128-row Rewards Signature source set fresh and compare transaction IDs against canonical state immediately before mutation.
+3. Write only absent identities into the existing A:U schema. Preserve payment/cash-back/non-fuel rows with their own semantics; apply the user-confirmed Ducks fuel normalization only where fuel identity is supported.
+4. Exact source-to-canonical transaction-ID set comparison must show all 128 source identities represented once and no unexpected identities in the tentative batch. On any mismatch, roll back only that batch.
+5. Then continue Joint Checking in 2024/2025 partitions, followed by CREDIT CARD in 2024/2025 partitions, with pre-write readback and post-write exact identity checks for every batch.
+6. Before PR merge, reconcile with current main and require exact-head CI. Do not begin Android inventory implementation until all 1,194 historical provider rows are reconciled or an actual source-unavailability boundary is proved.
 
 ## Canonical six-line status
 
 Objective: Reconcile the complete provider-visible historical finance record into MIRROR before starting inventory scanning.
-Progress: Conflicting duplicate packet ownership was removed, the 128-row Rewards Signature source set was freshly verified, and the live canonical destination/formula scaffold was read back as safe for the next bounded write.
+Progress: Repository/PR state was reconciled to the live branch head; three account histories totaling 129 rows remain verified complete and the next Rewards Signature destination is bounded for exact write/readback.
 Last 24h: Historical finance coverage was proven back to 2024-08-09 and three complete account histories totaling 129 rows were reconciled with exact identity checks.
 Deliverable: Canonical FinOps history backfilled to the provider's actual oldest available boundary with exact transaction-ID readback and explicit unavailable gaps.
 Expected delivery: UNKNOWN
