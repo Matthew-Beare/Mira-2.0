@@ -57,6 +57,9 @@ dependencies {
     // The proof Activity directly consumes AuthorizationResult/Task types exposed by
     // GooglePlayWorkspaceAuthorization, so keep this dependency explicit at the app edge.
     implementation("com.google.android.gms:play-services-auth:21.6.0")
+    // Provider-owned scanner UI. MIRA receives decoded values only and does not request camera
+    // permission or implement a second camera stack.
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
 
     testImplementation("junit:junit:4.13.2")
 }
