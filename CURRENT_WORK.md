@@ -1,6 +1,6 @@
 # MIRA 2.0 CURRENT WORK
 
-Git is authoritative. This checkpoint is reconciled to live provider coverage, canonical MIRROR finance state, remote `main`, and open PR state before further work selection.
+Git is authoritative. This checkpoint is reconciled to live provider coverage and canonical MIRROR finance state before further work selection.
 
 ## Current objective
 
@@ -8,22 +8,24 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 
 ## Reconciled state — 2026-09-15
 
-- Remote `main` was re-read at the current checkpoint before work selection. PR #165 remains an older historical-finance checkpoint and does not supersede main.
-- Live Finances coverage was re-read and remains `full_history`, query-complete for transactions and recurring transactions. Freshness remains `unknown`.
-- Stable provider history materially predates MIRA 2.0. September 1, 2026 is not a historical exclusion boundary.
-- Exact bounded source counts remain authoritative for replay: Prime Visa 2024-08-01..2024-12-31 = 150, 2025-01-01..2025-07-31 = 254, 2025-08-01..2026-09-15 = 271; Joint Checking 2024-08-01..2025-07-31 = 297 and 2025-08-01..2026-09-15 = 372.
-- The Drive surface in this run now exposes safe Google Sheets `batchUpdate`, removing the prior write-capability blocker.
-- Canonical FinOps historical date presentation was repaired without rewriting provider evidence: the `Posted Date` and `Last Reconciled` columns now have deterministic `yyyy-mm-dd` date formatting across the ledger. Exact readback proves former spreadsheet serial `45632` renders as `2024-12-06`, and a full bounded search finds zero remaining formatted `45632` values.
-- No provider transaction rows were appended in this cycle because exact canonical/provider Transaction-ID set difference must be recomputed from complete bounded source reads before mutation. The date repair was independent, reversible formatting metadata and passed exact readback.
+- Live Finances coverage remains `full_history`; transaction queries are complete for the bounded source windows. Freshness remains `unknown`.
+- Exact bounded source counts remain: Prime Visa = 675 transactions across the complete queried windows; Joint Checking = 669 transactions across the complete queried windows.
+- Canonical FinOps now contains 1,835 ledger Event IDs and 1,835 Spending Review Event IDs.
+- Exact readback proves zero duplicate ledger Event IDs, zero duplicate provider Transaction IDs, zero duplicate Spending Review Event IDs, and exact ledger/review Event-ID set equality.
+- Joint Checking provider identity coverage is complete: 669/669 provider Transaction IDs are represented canonically.
+- Prime Visa provider identity coverage is 419/675; 256 provider identities remain to project.
+- The completed checking replay preserves payroll/income, transfer/card-payment, debt-payment, refund/reimbursement, and cash-movement semantics instead of treating all account movement as economic spending.
+- Low-confidence purpose/necessity cases were preserved as reviewable voice prompts rather than guessed. No existing user override fields were overwritten.
+- Historical ISO date formatting remains normalized and verified from the prior checkpoint.
 
 ## Customer priority / sequencing
 
-1. Finish the exact historical provider projection gap first.
-2. Preserve source evidence/provenance and stable provider transaction identity. Never duplicate economic effects or overwrite older production data.
-3. Resolve transfers, card repayments, income, refunds, reimbursements, and other non-purchase semantics before purchase-purpose classification.
-4. Preserve ambiguous purpose, necessity, allowance, and funding context as reviewable state rather than guessing.
-5. After provider identity coverage is complete, run full integrity/readback gates and reconcile remaining reviewable semantic fields.
-6. After historical finance coverage is closed or durably bounded by actual source unavailability, move to the user-visible Android inventory/scanning vertical using the existing inventory/identity/asset architecture. Do not create a parallel inventory model.
+1. Finish the remaining 256 Prime Visa provider identities using evidence-first classification.
+2. Correlate ambiguous marketplace/card merchants against available order, receipt, and mail evidence before asking the user; never infer item identity from merchant name alone.
+3. Preserve transfer/payment/refund semantics and signed economic-spend rules.
+4. Put unresolved low-confidence purpose, necessity, allowance, or funding context into concise voice-review prompts.
+5. After provider identity closure, run full FinOps graph-integrity/readback gates and reconcile remaining reviewable semantic fields.
+6. After historical finance coverage is closed or durably bounded by actual source unavailability, move to the user-visible Android inventory/scanning vertical using the existing inventory/identity/asset architecture.
 
 ## Acceptance gates
 
@@ -33,19 +35,19 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 4. Ambiguous semantic classification remains reviewable rather than fabricated.
 5. Exact readback proves duplicate Event IDs, Evidence IDs, Entity IDs, Relation IDs and broken relation endpoints are all zero.
 6. Provider identity set is fully represented or explicitly accounted for by documented source unavailability/exclusion.
-7. Historical date storage/presentation is normalized so downstream month/date logic is deterministic. Date-format repair is now verified; value semantics remain subject to the final integrity pass.
+7. Historical date storage/presentation remains deterministic.
 8. Public Git contains only sanitized coverage/proof, never private balances, account/provider IDs, transaction IDs, receipt contents, addresses, or secrets.
 9. Repository CI passes at the exact completion head and again after merge before the objective is called complete.
 
 ## Resume point
 
-Use the now mutation-capable canonical sheet surface to compute fresh canonical Transaction-ID sets and compare them with complete bounded Finances reads. Never write from a truncated provider page. Append only missing identities, preserve transfer/card-payment linkage and signed economic-spend rules, synchronize appended Event IDs into Spending Review, and require duplicate/set-equality readback after each bounded batch. After identity closure, run full graph-integrity gates and verify date value semantics in addition to the already-corrected date formatting.
+Start from the exact verified provider/canonical set difference: Joint Checking is complete at 669/669; Prime Visa has 256 missing identities. Process those 256 card events from complete bounded provider reads only. Resolve card payments/credits/refunds deterministically, correlate marketplace purchases against available order/receipt/email evidence where possible, and put genuinely unresolved purchases into concise voice review. After each bounded append, synchronize Spending Review and require duplicate/set-equality readback. After provider identity closure, run the remaining graph-integrity gates.
 
 ## Canonical six-line status
 
 Objective: Reconcile every accessible historical provider transaction into canonical MIRROR exactly once.
-Progress: The historical date defect is now visibly repaired in canonical FinOps; former spreadsheet serial dates render as deterministic ISO dates and exact readback finds no remaining `45632` display values.
-Last 24h: Historical finance replay reached 1,580 canonical provider-backed identities, source pagination was bounded safely, and canonical historical date presentation was repaired with exact readback.
+Progress: Joint Checking provider identity coverage is complete at 669/669; canonical ledger/review surfaces are synchronized at 1,835 Event IDs with zero Event-ID or provider-Transaction-ID duplicates.
+Last 24h: 255 previously missing Joint Checking identities were projected with deterministic transfer/income/debt semantics and bounded voice review for ambiguous purpose.
 Deliverable: Complete provider-to-MIRROR historical coverage with normalized dates, integrity proof, and no duplicate economic effects.
 Expected delivery: UNKNOWN.
-Blocker: none; compute a fresh canonical/provider Transaction-ID set difference before the next replay write.
+Blocker: none; continue with the remaining 256 Prime Visa identities using evidence-first classification.
