@@ -11,174 +11,118 @@
       "id": "android-client-credential-security",
       "responsibility": "Android OS-protected storage of the opaque same-user MIRA client credential using Android Keystore and authenticated no-backup ciphertext.",
       "why_separate": "Native credential protection is a client security boundary below transport and UI; it must not absorb provider credentials, canonical state, offline synchronization, or server-side revocation authority.",
-      "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/security/ProtectedCredentialStore.java"
-      ],
+      "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/security/ProtectedCredentialStore.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
       "work_ids": ["ANDROID-CLIENT-CORE-001"],
-      "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/security/ProtectedCredentialStoreTest.java"
-      ]
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/security/ProtectedCredentialStoreTest.java"]
     },
     {
       "id": "android-client-offline-sync-state",
       "responsibility": "Android replay-safe encrypted local state for exact provider-neutral API command intents, acknowledgement replay suppression, nonauthoritative canonical snapshots, and opaque reconnect cursor compare-and-set state.",
       "why_separate": "Local offline persistence is a client synchronization primitive below transport and UI. It stages exact API intent and verified-readback cache material without becoming network transport, conflict policy, provider authority, or canonical state.",
-      "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/sync/OfflineSyncStateStore.java"
-      ],
+      "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/sync/OfflineSyncStateStore.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
       "work_ids": ["ANDROID-CLIENT-CORE-001"],
-      "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/sync/OfflineSyncStateStoreTest.java"
-      ]
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/sync/OfflineSyncStateStoreTest.java"]
     },
     {
       "id": "android-client-reconnect-coordinator",
       "responsibility": "Provider-neutral Android reconnect orchestration enforcing exact queued-command replay, verified terminal acknowledgement, verified canonical snapshot persistence, snapshot-before-cursor progression, and a read-only verified-change refresh path that never submits pending commands.",
       "why_separate": "Reconnect orchestration coordinates durable local state with authenticated transports without owning provider OAuth, network implementation, canonical authority, conflict UI, or provider connection UX.",
-      "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/sync/ReconnectCoordinator.java"
-      ],
+      "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/sync/ReconnectCoordinator.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
       "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC"],
-      "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java",
-        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java",
-        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceMutatorTest.java"
-      ]
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java", "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java", "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceMutatorTest.java"]
     },
     {
       "id": "android-client-canonical-resource-reader",
       "responsibility": "Freshness-gated provider-neutral Android reads of exact canonical resources from the encrypted nonauthoritative snapshot cache after verified remote Changes are exhausted.",
       "why_separate": "A user-facing read must distinguish fresh canonical truth from merely cached material and must never submit pending writes as a side effect of refreshing remote state.",
-      "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/sync/CanonicalResourceReader.java"
-      ],
+      "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/sync/CanonicalResourceReader.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
       "work_ids": ["ANDROID-SYNC"],
-      "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java"
-      ]
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java"]
     },
     {
       "id": "android-client-canonical-resource-mutator",
       "responsibility": "Provider-neutral Android canonical upsert facade that durably stages exact command intent, drives only the queued reconnect boundary, distinguishes FIFO blocking/failure states, and exposes applied success only from acknowledged verified canonical readback.",
       "why_separate": "A user-facing mutation needs one bounded composition surface over the existing queue and coordinator without duplicating transport logic, owning provider credentials, becoming canonical authority, or absorbing conflict UI and cross-client presentation.",
-      "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/sync/CanonicalResourceMutator.java"
-      ],
+      "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/sync/CanonicalResourceMutator.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
       "work_ids": ["ANDROID-SYNC"],
-      "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceMutatorTest.java"
-      ]
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceMutatorTest.java"]
     },
     {
       "id": "android-client-verified-change-query",
       "responsibility": "Bounded provider-neutral read-only folding of the verified canonical Changes projection for one data class without owning local cursor state or invoking queued command reconciliation.",
       "why_separate": "Passive capture lookup needs a complete verified projection query without widening the encrypted offline-state contract or acquiring any mutation capability.",
-      "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/sync/VerifiedChangeQuery.java"
-      ],
+      "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/sync/VerifiedChangeQuery.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
       "work_ids": ["ANDROID-CAPTURE-001"],
-      "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/sync/VerifiedChangeQueryTest.java"
-      ]
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/sync/VerifiedChangeQueryTest.java"]
     },
     {
       "id": "android-client-identifier-capture",
       "responsibility": "Provider-neutral decoded QR/barcode identifier validation and passive resolution against verified canonical identifier snapshots, with explicit unresolved/ambiguous/integrity states and no write surface.",
       "why_separate": "Capture interpretation is evidence/observation logic above transport but below UI; keeping it write-incapable prevents a passive scan from creating assets, attaching identifiers, or silently moving inventory.",
-      "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/capture/IdentifierCaptureResolver.java"
-      ],
+      "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/capture/IdentifierCaptureResolver.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "IDENT-001", "INV-001", "ASSET-001", "EVID-001"],
       "work_ids": ["ANDROID-CAPTURE-001"],
-      "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/capture/IdentifierCaptureResolverTest.java"
-      ]
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/capture/IdentifierCaptureResolverTest.java"]
     },
     {
       "id": "android-client-google-workspace-transport",
-      "responsibility": "Default-Personal Android mapping between exact API command intent / reconnect change pages and the MIRA Google Workspace Commands and verified Changes row protocols through an injected authorized Sheets gateway, including explicit verified pagination completeness.",
+      "responsibility": "Default-Personal Android mapping between exact API command intent / reconnect change pages and the MIRA Google Workspace Commands and verified Changes row protocols through an injected authorized Sheets gateway, including explicit verified pagination completeness and the append-event envelope extension over the unchanged Commands schema.",
       "why_separate": "The row protocol validates transport evidence without owning OAuth UI, account selection, provider identifiers, network client lifecycle, canonical authority, or local persistence; concrete Google SDK/network behavior remains outside core.",
-      "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceTransport.java"
-      ],
-      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC"],
-      "verification": [
-        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java",
-        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceChangePaginationTest.java"
-      ]
+      "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceTransport.java", "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceEventTransport.java"],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002", "MOVE-001"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC", "ANDROID-CAPTURE-001"],
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java"]
     },
     {
       "id": "android-client-google-workspace-binding",
       "responsibility": "Token-free Android binding and revalidation of one provider-selected MIRA Personal Google Sheet, including exact clean-starter metadata checks and honest direct-versus-shared-writer readiness state.",
       "why_separate": "Google-specific file identity and readiness verification belongs in the replaceable provider module rather than provider-neutral core and remains separate from consent UI, raw transport semantics, canonical mutation, and local reconnect state.",
-      "owned_paths": [
-        "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleWorkspaceConnection.java"
-      ],
+      "owned_paths": ["android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleWorkspaceConnection.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "PROVIDER-003", "AUTH-001", "STORE-001", "SERVICE-001"],
       "work_ids": ["ANDROID-CLIENT-CORE-001"],
-      "verification": [
-        "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceConnectionTest.java"
-      ]
+      "verification": ["android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceConnectionTest.java"]
     },
     {
       "id": "android-client-google-play-authorization",
       "responsibility": "Android Google Identity Services consent, provider-owned mobile Picker handoff and revocation using only drive.file, with exact one-file grant parsing.",
       "why_separate": "Google SDK authorization/revocation is provider-specific and must remain outside provider-neutral core; it never persists tokens, validates canonical MIRA state, or gains generic Drive authority.",
-      "owned_paths": [
-        "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GooglePlayWorkspaceAuthorization.java"
-      ],
+      "owned_paths": ["android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GooglePlayWorkspaceAuthorization.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "AUTH-001", "SERVICE-001"],
       "work_ids": ["ANDROID-CLIENT-CORE-001"],
-      "verification": [
-        "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GooglePlayWorkspaceAuthorizationTest.java"
-      ]
+      "verification": ["android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GooglePlayWorkspaceAuthorizationTest.java"]
     },
     {
       "id": "android-client-google-workspace-rest",
       "responsibility": "Least-authority Google Drive/Sheets REST bridge for selected-file metadata, bounded MIRA verification/transport reads, and the Commands-only append surface consumed by GoogleWorkspaceTransport.",
       "why_separate": "Provider HTTP/network behavior, provider IDs and error normalization stay in the replaceable Google module so core remains incapable of acquiring generic Drive or Sheets authority.",
-      "owned_paths": [
-        "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleWorkspaceRestApi.java"
-      ],
+      "owned_paths": ["android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleWorkspaceRestApi.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "PROVIDER-003", "API-001", "RECOVERY-002"],
       "work_ids": ["ANDROID-CLIENT-CORE-001"],
-      "verification": [
-        "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceRestApiTest.java"
-      ]
+      "verification": ["android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceRestApiTest.java"]
     },
     {
       "id": "android-device-proof-code-scanner",
       "responsibility": "Google Play-services code-scanner edge that owns provider camera UI and maps decoded QR/EAN/UPC results into provider-neutral MIRA capture observations without canonical read or mutation authority.",
       "why_separate": "Camera-provider lifecycle and SDK types belong at the disposable Android app edge; isolating them keeps scanner dependencies, camera behavior and provider failures out of canonical capture semantics and state authority.",
-      "owned_paths": [
-        "android-client/device-proof-app/src/main/java/com/mira/deviceproof/GoogleCodeScannerCapture.java"
-      ],
+      "owned_paths": ["android-client/device-proof-app/src/main/java/com/mira/deviceproof/GoogleCodeScannerCapture.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "IDENT-001", "INV-001", "EVID-001"],
       "work_ids": ["ANDROID-CAPTURE-001"],
-      "verification": [
-        "android-client/device-proof-app/src/test/java/com/mira/deviceproof/GoogleCodeScannerCaptureTest.java"
-      ]
+      "verification": ["android-client/device-proof-app/src/test/java/com/mira/deviceproof/GoogleCodeScannerCaptureTest.java"]
     },
     {
       "id": "android-device-proof-shell",
       "responsibility": "Minimal installable Android proof application that composes the existing Google authorization/binding, canonical read and queued mutation seams into truthful representative-device evidence states without rendering provider secrets or identifiers.",
       "why_separate": "The proof shell is a disposable presentation/composition boundary for physical-device verification. It must not absorb provider authorization internals, transport protocol, canonical authority, release distribution, notifications, capture hardware or the future full Android product UI.",
-      "owned_paths": [
-        "android-client/device-proof-app/src/main/java/com/mira/deviceproof/DeviceProofActivity.java",
-        "android-client/device-proof-app/src/main/java/com/mira/deviceproof/DeviceProofPresentation.java"
-      ],
+      "owned_paths": ["android-client/device-proof-app/src/main/java/com/mira/deviceproof/DeviceProofActivity.java", "android-client/device-proof-app/src/main/java/com/mira/deviceproof/DeviceProofPresentation.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002"],
       "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-CAPTURE-001"],
-      "verification": [
-        "android-client/device-proof-app/src/test/java/com/mira/deviceproof/DeviceProofPresentationTest.java"
-      ]
+      "verification": ["android-client/device-proof-app/src/test/java/com/mira/deviceproof/DeviceProofPresentationTest.java"]
     }
   ]
 }
