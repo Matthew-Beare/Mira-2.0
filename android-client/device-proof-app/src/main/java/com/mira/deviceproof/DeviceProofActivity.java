@@ -66,6 +66,7 @@ public final class DeviceProofActivity extends Activity {
     private OfflineSyncStateStore stateStore;
     private ReconnectCoordinator coordinator;
     private String lastResolvedEntityUuid;
+    private volatile MovementCommandFacade.MoveRequest pendingMoveRequest;
 
     private TextView connectionStatus;
     private TextView proofStatus;
@@ -290,7 +291,7 @@ public final class DeviceProofActivity extends Activity {
                     null
             ));
             scanButton.setEnabled(true);
-            moveButton.setEnabled(false);
+            moveButton.setEnabled(pendingMoveRequest != null);
             readButton.setEnabled(true);
             mutateButton.setEnabled(true);
         } else {
@@ -351,7 +352,7 @@ public final class DeviceProofActivity extends Activity {
         proofStatus.setText(summary);
         if (captureResolver != null && verifiedBinding != null && activeGrant != null) {
             scanButton.setEnabled(true);
-            moveButton.setEnabled(resolvedEntityUuid != null);
+            moveButton.setEnabled(resolvedEntityUuid != null || pendingMoveRequest != null);
         }
     }
 
@@ -381,6 +382,7 @@ public final class DeviceProofActivity extends Activity {
         final CanonicalResourceReader activeReader = reader;
         final OfflineSyncStateStore activeStateStore = stateStore;
         final ReconnectCoordinator activeCoordinator = coordinator;
+        final MovementCommandFacade.MoveRequest retryRequest = pendingMoveRequest;
         final String entityUuid = lastResolvedEntityUuid;
         final String destination = trimmed(movementDestination);
         final String subject = trimmed(subjectId);
@@ -389,11 +391,11 @@ public final class DeviceProofActivity extends Activity {
             proofStatus.setText("Move: unavailable [workspace_not_verified]");
             return;
         }
-        if (entityUuid == null || entityUuid.isEmpty()) {
+        if (retryRequest == null && (entityUuid == null || entityUuid.isEmpty())) {
             proofStatus.setText("Move: scan and resolve one asset first [asset_not_resolved]");
             return;
         }
-        if (destination.isEmpty() || subject.isEmpty()) {
+        if (retryRequest == null && (destination.isEmpty() || subject.isEmpty())) {
             proofStatus.setText("Move: destination and subject are required [invalid_move_input]");
             return;
         }
@@ -401,15 +403,24 @@ public final class DeviceProofActivity extends Activity {
         moveButton.setEnabled(false);
         ioExecutor.execute(() -> {
             try {
+                if (retryRequest != null) {
+                    MovementCommandFacade.MoveResult retry = activeMovement.move(retryRequest);
+                    if (retry.status() == MovementCommandFacade.Status.APPLIED) {
+                        pendingMoveRequest = null;
+                    }
+                    runOnUiThread(() -> finishMove(moveSummary(retry)));
+                    return;
+                }
+
                 if (activeStateStore.pendingCount() > 0) {
                     ReconnectCoordinator.ReconnectResult resumed = activeCoordinator.reconnect();
-                    if (activeStateStore.pendingCount() > 0) {
-                        runOnUiThread(() -> finishMove(
-                                "Move: existing queued work still pending ["
-                                        + resumed.status().name().toLowerCase(Locale.US) + "]"
-                        ));
-                        return;
-                    }
+                    int remaining = activeStateStore.pendingCount();
+                    String summary = remaining > 0
+                            ? "Move: existing queued work still pending ["
+                                    + resumed.status().name().toLowerCase(Locale.US) + "]"
+                            : "Move: existing queued work reconciled; no new move submitted";
+                    runOnUiThread(() -> finishMove(summary));
+                    return;
                 }
 
                 CanonicalResourceReader.ReadResult destinationRead = freshRead(
@@ -476,7 +487,11 @@ public final class DeviceProofActivity extends Activity {
                         nullableString(payload, "note"),
                         null
                 );
+                pendingMoveRequest = request;
                 MovementCommandFacade.MoveResult result = activeMovement.move(request);
+                if (result.status() == MovementCommandFacade.Status.APPLIED) {
+                    pendingMoveRequest = null;
+                }
                 runOnUiThread(() -> finishMove(moveSummary(result)));
             } catch (JSONException | RuntimeException exc) {
                 runOnUiThread(() -> finishMove("Move: local failure [movement_exception]"));
@@ -486,9 +501,8 @@ public final class DeviceProofActivity extends Activity {
 
     private void finishMove(String summary) {
         proofStatus.setText(summary);
-        if (movementFacade != null && lastResolvedEntityUuid != null
-                && verifiedBinding != null && activeGrant != null) {
-            moveButton.setEnabled(true);
+        if (movementFacade != null && verifiedBinding != null && activeGrant != null) {
+            moveButton.setEnabled(lastResolvedEntityUuid != null || pendingMoveRequest != null);
         }
     }
 
