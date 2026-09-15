@@ -13,11 +13,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.identity.AuthorizationResult;
+import com.mira.client.core.capture.IdentifierCaptureResolver;
 import com.mira.client.core.sync.CanonicalResourceMutator;
 import com.mira.client.core.sync.CanonicalResourceReader;
 import com.mira.client.core.sync.GoogleWorkspaceTransport;
 import com.mira.client.core.sync.OfflineSyncStateStore;
 import com.mira.client.core.sync.ReconnectCoordinator;
+import com.mira.client.core.sync.VerifiedChangeQuery;
 import com.mira.client.googleworkspace.GooglePlayWorkspaceAuthorization;
 import com.mira.client.googleworkspace.GoogleWorkspaceConnection;
 import com.mira.client.googleworkspace.GoogleWorkspaceRestApi;
@@ -32,9 +34,10 @@ import java.util.concurrent.Executors;
 /**
  * Minimal installable shell for M2-M1 representative-device evidence.
  *
- * <p>This is deliberately not the finished MIRA Android UI. It exposes one provider-native
- * connection action and bounded read/mutate proof controls over the existing client modules.
- * Provider tokens and spreadsheet IDs are never rendered or logged.</p>
+ * <p>This is deliberately not the finished MIRA Android UI. It exposes provider-native
+ * connection/scanner actions and bounded canonical proof controls over existing client modules.
+ * Provider tokens and spreadsheet IDs are never rendered or logged. Passive scanning is read-only
+ * and does not share the mutation facade.</p>
  */
 public final class DeviceProofActivity extends Activity {
     private static final int REQUEST_GOOGLE_AUTHORIZATION = 4101;
@@ -48,6 +51,8 @@ public final class DeviceProofActivity extends Activity {
     private GoogleWorkspaceConnection workspaceConnection;
     private GoogleWorkspaceConnection.VerifiedBinding verifiedBinding;
     private GoogleWorkspaceConnection.PickerGrant activeGrant;
+    private GoogleCodeScannerCapture codeScanner;
+    private IdentifierCaptureResolver captureResolver;
     private CanonicalResourceReader reader;
     private CanonicalResourceMutator mutator;
 
@@ -59,6 +64,7 @@ public final class DeviceProofActivity extends Activity {
     private EditText expectedRevision;
     private EditText payloadJson;
     private Button connectButton;
+    private Button scanButton;
     private Button readButton;
     private Button mutateButton;
 
@@ -68,6 +74,7 @@ public final class DeviceProofActivity extends Activity {
         authorization = new GooglePlayWorkspaceAuthorization(this);
         workspaceApi = new GoogleWorkspaceRestApi();
         workspaceConnection = new GoogleWorkspaceConnection(workspaceApi);
+        codeScanner = new GoogleCodeScannerCapture(this);
         setContentView(buildContent());
         renderDisconnected();
     }
@@ -101,6 +108,11 @@ public final class DeviceProofActivity extends Activity {
         TextView proofHeader = text("Canonical proof controls", 18f);
         proofHeader.setPadding(0, dp(20), 0, dp(8));
         root.addView(proofHeader);
+
+        scanButton = new Button(this);
+        scanButton.setText("Scan identifier (read-only)");
+        scanButton.setOnClickListener(ignored -> runScan());
+        root.addView(scanButton);
 
         subjectId = input("Proof subject ID", "synthetic same-user subject identity");
         root.addView(subjectId);
@@ -211,11 +223,15 @@ public final class DeviceProofActivity extends Activity {
                         stateStore,
                         coordinator
                 );
+                IdentifierCaptureResolver newCaptureResolver = new IdentifierCaptureResolver(
+                        new VerifiedChangeQuery(transport)
+                );
                 runOnUiThread(() -> {
                     activeGrant = grant;
                     verifiedBinding = binding;
                     reader = newReader;
                     mutator = newMutator;
+                    captureResolver = newCaptureResolver;
                     renderBinding(binding);
                 });
             } catch (GoogleWorkspaceConnection.ConnectionException exc) {
@@ -235,6 +251,7 @@ public final class DeviceProofActivity extends Activity {
                     binding.mutationMode(),
                     null
             ));
+            scanButton.setEnabled(true);
             readButton.setEnabled(true);
             mutateButton.setEnabled(true);
         } else {
@@ -246,6 +263,68 @@ public final class DeviceProofActivity extends Activity {
                     null
             ));
             disableProofActions();
+        }
+    }
+
+    private void runScan() {
+        final IdentifierCaptureResolver resolver = captureResolver;
+        if (resolver == null || verifiedBinding == null || activeGrant == null) {
+            proofStatus.setText("Scan: unavailable [workspace_not_verified]");
+            return;
+        }
+        scanButton.setEnabled(false);
+        codeScanner.start(new GoogleCodeScannerCapture.Callback() {
+            @Override
+            public void onCaptured(IdentifierCaptureResolver.DecodedCapture capture) {
+                ioExecutor.execute(() -> {
+                    IdentifierCaptureResolver.ResolveResult result;
+                    try {
+                        result = resolver.resolve(capture);
+                    } catch (RuntimeException exc) {
+                        runOnUiThread(() -> finishScan("Scan: local failure [capture_exception]"));
+                        return;
+                    }
+                    runOnUiThread(() -> finishScan(scanSummary(result)));
+                });
+            }
+
+            @Override
+            public void onCancelled() {
+                runOnUiThread(() -> finishScan("Scan: cancelled"));
+            }
+
+            @Override
+            public void onFailure(String code) {
+                runOnUiThread(() -> finishScan("Scan: failed [" + code + "]"));
+            }
+        });
+    }
+
+    private void finishScan(String summary) {
+        proofStatus.setText(summary);
+        if (captureResolver != null && verifiedBinding != null && activeGrant != null) {
+            scanButton.setEnabled(true);
+        }
+    }
+
+    private static String scanSummary(IdentifierCaptureResolver.ResolveResult result) {
+        switch (result.status()) {
+            case RESOLVED:
+                return "Scan: resolved one canonical asset (read-only)";
+            case UNRESOLVED:
+                return "Scan: identifier not found in canonical inventory (read-only)";
+            case AMBIGUOUS:
+                return "Scan: ambiguous across " + result.entityUuids().size()
+                        + " canonical assets (read-only)";
+            case INVALID_CAPTURE:
+                return "Scan: invalid or unsupported code [invalid_capture]";
+            case TRANSPORT_FAILURE:
+            case PROTOCOL_FAILURE:
+            case LOCAL_FAILURE:
+            case INTEGRITY_FAILURE:
+            default:
+                String code = result.errorCode() == null ? "capture_resolution_failed" : result.errorCode();
+                return "Scan: resolution failed [" + code + "]";
         }
     }
 
@@ -374,6 +453,7 @@ public final class DeviceProofActivity extends Activity {
     private void renderConnectionFailure(String code) {
         activeGrant = null;
         verifiedBinding = null;
+        captureResolver = null;
         reader = null;
         mutator = null;
         connectionStatus.setText(DeviceProofPresentation.connectionSummary(
@@ -387,6 +467,9 @@ public final class DeviceProofActivity extends Activity {
     }
 
     private void disableProofActions() {
+        if (scanButton != null) {
+            scanButton.setEnabled(false);
+        }
         if (readButton != null) {
             readButton.setEnabled(false);
         }
