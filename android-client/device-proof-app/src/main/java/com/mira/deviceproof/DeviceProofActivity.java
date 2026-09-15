@@ -13,11 +13,15 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.identity.AuthorizationResult;
+import com.mira.client.core.capture.IdentifierCaptureResolver;
 import com.mira.client.core.sync.CanonicalResourceMutator;
 import com.mira.client.core.sync.CanonicalResourceReader;
+import com.mira.client.core.sync.GoogleWorkspaceEventTransport;
 import com.mira.client.core.sync.GoogleWorkspaceTransport;
+import com.mira.client.core.sync.MovementCommandFacade;
 import com.mira.client.core.sync.OfflineSyncStateStore;
 import com.mira.client.core.sync.ReconnectCoordinator;
+import com.mira.client.core.sync.VerifiedChangeQuery;
 import com.mira.client.googleworkspace.GooglePlayWorkspaceAuthorization;
 import com.mira.client.googleworkspace.GoogleWorkspaceConnection;
 import com.mira.client.googleworkspace.GoogleWorkspaceRestApi;
@@ -26,20 +30,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * Minimal installable shell for M2-M1 representative-device evidence.
  *
- * <p>This is deliberately not the finished MIRA Android UI. It exposes one provider-native
- * connection action and bounded read/mutate proof controls over the existing client modules.
- * Provider tokens and spreadsheet IDs are never rendered or logged.</p>
+ * <p>This is deliberately not the finished MIRA Android UI. It exposes provider-native
+ * connection/scanner actions and bounded canonical proof controls over existing client modules.
+ * Provider tokens and spreadsheet IDs are never rendered or logged. Passive scanning is read-only;
+ * movement requires a separate explicit button and the replay-safe MOVE-001 command facade.</p>
  */
 public final class DeviceProofActivity extends Activity {
     private static final int REQUEST_GOOGLE_AUTHORIZATION = 4101;
     private static final String LOCAL_CLIENT_ID = "mira-device-proof-v1";
     private static final String API_SCHEMA_VERSION = "mira-api-1";
+    private static final int MAX_FRESH_READ_PASSES = 16;
 
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
 
@@ -48,17 +58,27 @@ public final class DeviceProofActivity extends Activity {
     private GoogleWorkspaceConnection workspaceConnection;
     private GoogleWorkspaceConnection.VerifiedBinding verifiedBinding;
     private GoogleWorkspaceConnection.PickerGrant activeGrant;
+    private GoogleCodeScannerCapture codeScanner;
+    private IdentifierCaptureResolver captureResolver;
     private CanonicalResourceReader reader;
     private CanonicalResourceMutator mutator;
+    private MovementCommandFacade movementFacade;
+    private OfflineSyncStateStore stateStore;
+    private ReconnectCoordinator coordinator;
+    private String lastResolvedEntityUuid;
+    private volatile MovementCommandFacade.MoveRequest pendingMoveRequest;
 
     private TextView connectionStatus;
     private TextView proofStatus;
     private EditText subjectId;
+    private EditText movementDestination;
     private EditText dataClass;
     private EditText resourceId;
     private EditText expectedRevision;
     private EditText payloadJson;
     private Button connectButton;
+    private Button scanButton;
+    private Button moveButton;
     private Button readButton;
     private Button mutateButton;
 
@@ -68,6 +88,7 @@ public final class DeviceProofActivity extends Activity {
         authorization = new GooglePlayWorkspaceAuthorization(this);
         workspaceApi = new GoogleWorkspaceRestApi();
         workspaceConnection = new GoogleWorkspaceConnection(workspaceApi);
+        codeScanner = new GoogleCodeScannerCapture(this);
         setContentView(buildContent());
         renderDisconnected();
     }
@@ -98,7 +119,24 @@ public final class DeviceProofActivity extends Activity {
         connectButton.setOnClickListener(ignored -> beginAuthorization());
         root.addView(connectButton);
 
-        TextView proofHeader = text("Canonical proof controls", 18f);
+        TextView captureHeader = text("Capture / movement proof", 18f);
+        captureHeader.setPadding(0, dp(20), 0, dp(8));
+        root.addView(captureHeader);
+
+        scanButton = new Button(this);
+        scanButton.setText("Scan identifier (read-only)");
+        scanButton.setOnClickListener(ignored -> runScan());
+        root.addView(scanButton);
+
+        movementDestination = input("Move destination location ID", "existing canonical location");
+        root.addView(movementDestination);
+
+        moveButton = new Button(this);
+        moveButton.setText("Move scanned asset explicitly");
+        moveButton.setOnClickListener(ignored -> runExplicitMove());
+        root.addView(moveButton);
+
+        TextView proofHeader = text("Generic canonical proof controls", 18f);
         proofHeader.setPadding(0, dp(20), 0, dp(8));
         root.addView(proofHeader);
 
@@ -198,24 +236,41 @@ public final class DeviceProofActivity extends Activity {
         ioExecutor.execute(() -> {
             try {
                 GoogleWorkspaceConnection.VerifiedBinding binding = workspaceConnection.connect(grant);
-                GoogleWorkspaceTransport transport = new GoogleWorkspaceTransport(
-                        workspaceApi.gateway(binding, grant)
-                );
-                OfflineSyncStateStore stateStore = new OfflineSyncStateStore(
+                GoogleWorkspaceTransport.SheetsGateway gateway = workspaceApi.gateway(binding, grant);
+                GoogleWorkspaceEventTransport transport = new GoogleWorkspaceEventTransport(gateway);
+                OfflineSyncStateStore newStateStore = new OfflineSyncStateStore(
                         getApplicationContext(),
                         LOCAL_CLIENT_ID
                 );
-                ReconnectCoordinator coordinator = new ReconnectCoordinator(stateStore, transport);
-                CanonicalResourceReader newReader = new CanonicalResourceReader(stateStore, transport);
+                ReconnectCoordinator newCoordinator = new ReconnectCoordinator(
+                        newStateStore,
+                        transport
+                );
+                CanonicalResourceReader newReader = new CanonicalResourceReader(
+                        newStateStore,
+                        transport
+                );
                 CanonicalResourceMutator newMutator = new CanonicalResourceMutator(
-                        stateStore,
-                        coordinator
+                        newStateStore,
+                        newCoordinator
+                );
+                MovementCommandFacade newMovementFacade = new MovementCommandFacade(
+                        newStateStore,
+                        newCoordinator
+                );
+                IdentifierCaptureResolver newCaptureResolver = new IdentifierCaptureResolver(
+                        new VerifiedChangeQuery(transport)
                 );
                 runOnUiThread(() -> {
                     activeGrant = grant;
                     verifiedBinding = binding;
+                    stateStore = newStateStore;
+                    coordinator = newCoordinator;
                     reader = newReader;
                     mutator = newMutator;
+                    movementFacade = newMovementFacade;
+                    captureResolver = newCaptureResolver;
+                    lastResolvedEntityUuid = null;
                     renderBinding(binding);
                 });
             } catch (GoogleWorkspaceConnection.ConnectionException exc) {
@@ -235,6 +290,8 @@ public final class DeviceProofActivity extends Activity {
                     binding.mutationMode(),
                     null
             ));
+            scanButton.setEnabled(true);
+            moveButton.setEnabled(pendingMoveRequest != null);
             readButton.setEnabled(true);
             mutateButton.setEnabled(true);
         } else {
@@ -247,6 +304,260 @@ public final class DeviceProofActivity extends Activity {
             ));
             disableProofActions();
         }
+    }
+
+    private void runScan() {
+        final IdentifierCaptureResolver resolver = captureResolver;
+        if (resolver == null || verifiedBinding == null || activeGrant == null) {
+            proofStatus.setText("Scan: unavailable [workspace_not_verified]");
+            return;
+        }
+        scanButton.setEnabled(false);
+        moveButton.setEnabled(false);
+        codeScanner.start(new GoogleCodeScannerCapture.Callback() {
+            @Override
+            public void onCaptured(IdentifierCaptureResolver.DecodedCapture capture) {
+                ioExecutor.execute(() -> {
+                    IdentifierCaptureResolver.ResolveResult result;
+                    try {
+                        result = resolver.resolve(capture);
+                    } catch (RuntimeException exc) {
+                        runOnUiThread(() -> finishScan(null, "Scan: local failure [capture_exception]"));
+                        return;
+                    }
+                    String resolved = null;
+                    if (result.status() == IdentifierCaptureResolver.Status.RESOLVED
+                            && result.entityUuids().size() == 1) {
+                        resolved = result.entityUuids().get(0);
+                    }
+                    final String resolvedEntity = resolved;
+                    runOnUiThread(() -> finishScan(resolvedEntity, scanSummary(result)));
+                });
+            }
+
+            @Override
+            public void onCancelled() {
+                runOnUiThread(() -> finishScan(null, "Scan: cancelled"));
+            }
+
+            @Override
+            public void onFailure(String code) {
+                runOnUiThread(() -> finishScan(null, "Scan: failed [" + code + "]"));
+            }
+        });
+    }
+
+    private void finishScan(String resolvedEntityUuid, String summary) {
+        lastResolvedEntityUuid = resolvedEntityUuid;
+        proofStatus.setText(summary);
+        if (captureResolver != null && verifiedBinding != null && activeGrant != null) {
+            scanButton.setEnabled(true);
+            moveButton.setEnabled(resolvedEntityUuid != null || pendingMoveRequest != null);
+        }
+    }
+
+    private static String scanSummary(IdentifierCaptureResolver.ResolveResult result) {
+        switch (result.status()) {
+            case RESOLVED:
+                return "Scan: resolved one canonical asset (read-only)";
+            case UNRESOLVED:
+                return "Scan: identifier not found in canonical inventory (read-only)";
+            case AMBIGUOUS:
+                return "Scan: ambiguous across " + result.entityUuids().size()
+                        + " canonical assets (read-only)";
+            case INVALID_CAPTURE:
+                return "Scan: invalid or unsupported code [invalid_capture]";
+            case TRANSPORT_FAILURE:
+            case PROTOCOL_FAILURE:
+            case LOCAL_FAILURE:
+            case INTEGRITY_FAILURE:
+            default:
+                String code = result.errorCode() == null ? "capture_resolution_failed" : result.errorCode();
+                return "Scan: resolution failed [" + code + "]";
+        }
+    }
+
+    private void runExplicitMove() {
+        final MovementCommandFacade activeMovement = movementFacade;
+        final CanonicalResourceReader activeReader = reader;
+        final OfflineSyncStateStore activeStateStore = stateStore;
+        final ReconnectCoordinator activeCoordinator = coordinator;
+        final MovementCommandFacade.MoveRequest retryRequest = pendingMoveRequest;
+        final String entityUuid = lastResolvedEntityUuid;
+        final String destination = trimmed(movementDestination);
+        final String subject = trimmed(subjectId);
+        if (activeMovement == null || activeReader == null || activeStateStore == null
+                || activeCoordinator == null || verifiedBinding == null || activeGrant == null) {
+            proofStatus.setText("Move: unavailable [workspace_not_verified]");
+            return;
+        }
+        if (retryRequest == null && (entityUuid == null || entityUuid.isEmpty())) {
+            proofStatus.setText("Move: scan and resolve one asset first [asset_not_resolved]");
+            return;
+        }
+        if (retryRequest == null && (destination.isEmpty() || subject.isEmpty())) {
+            proofStatus.setText("Move: destination and subject are required [invalid_move_input]");
+            return;
+        }
+
+        moveButton.setEnabled(false);
+        ioExecutor.execute(() -> {
+            try {
+                if (retryRequest != null) {
+                    MovementCommandFacade.MoveResult retry = activeMovement.move(retryRequest);
+                    if (retry.status() == MovementCommandFacade.Status.APPLIED) {
+                        pendingMoveRequest = null;
+                    }
+                    runOnUiThread(() -> finishMove(moveSummary(retry)));
+                    return;
+                }
+
+                if (activeStateStore.pendingCount() > 0) {
+                    ReconnectCoordinator.ReconnectResult resumed = activeCoordinator.reconnect();
+                    int remaining = activeStateStore.pendingCount();
+                    String summary = remaining > 0
+                            ? "Move: existing queued work still pending ["
+                                    + resumed.status().name().toLowerCase(Locale.US) + "]"
+                            : "Move: existing queued work reconciled; no new move submitted";
+                    runOnUiThread(() -> finishMove(summary));
+                    return;
+                }
+
+                CanonicalResourceReader.ReadResult destinationRead = freshRead(
+                        activeReader,
+                        "location",
+                        destination
+                );
+                if (destinationRead.status() != CanonicalResourceReader.Status.FRESH_FOUND) {
+                    runOnUiThread(() -> finishMove(
+                            "Move: destination is not a verified canonical location ["
+                                    + readFailureCode(destinationRead) + "]"
+                    ));
+                    return;
+                }
+
+                CanonicalResourceReader.ReadResult inventoryRead = freshRead(
+                        activeReader,
+                        "inventory_state",
+                        entityUuid
+                );
+                if (inventoryRead.status() != CanonicalResourceReader.Status.FRESH_FOUND
+                        || inventoryRead.snapshot() == null) {
+                    runOnUiThread(() -> finishMove(
+                            "Move: canonical inventory state unavailable ["
+                                    + readFailureCode(inventoryRead) + "]"
+                    ));
+                    return;
+                }
+
+                OfflineSyncStateStore.ResourceSnapshot prior = inventoryRead.snapshot();
+                JSONObject payload = new JSONObject(
+                        new String(prior.payload(), StandardCharsets.UTF_8)
+                );
+                if (payload.optInt("schema_version", -1) != 1
+                        || !entityUuid.equals(payload.optString("entity_uuid", ""))
+                        || !"tracked".equals(payload.optString("participation_state", ""))) {
+                    runOnUiThread(() -> finishMove(
+                            "Move: canonical inventory payload failed validation [inventory_integrity]"
+                    ));
+                    return;
+                }
+
+                String observedAt = utcNow();
+                String identityMaterial = entityUuid + "\n" + destination + "\n" + prior.revision();
+                String digest = DeviceProofPresentation.sha256(
+                        identityMaterial.getBytes(StandardCharsets.UTF_8)
+                );
+                if ("unavailable".equals(digest)) {
+                    throw new IllegalStateException("SHA-256 unavailable");
+                }
+                String identity = digest.substring(0, 40);
+                MovementCommandFacade.MoveRequest request = new MovementCommandFacade.MoveRequest(
+                        subject,
+                        entityUuid,
+                        destination,
+                        observedAt,
+                        "android_explicit_move",
+                        "device-proof-move-" + identity,
+                        "device-proof-move-idem-" + identity,
+                        prior.revision(),
+                        nullableString(payload, "observed_location_id"),
+                        nullableString(payload, "observed_at"),
+                        nullableString(payload, "intended_location_id"),
+                        nullableString(payload, "note"),
+                        null
+                );
+                pendingMoveRequest = request;
+                MovementCommandFacade.MoveResult result = activeMovement.move(request);
+                if (result.status() == MovementCommandFacade.Status.APPLIED) {
+                    pendingMoveRequest = null;
+                }
+                runOnUiThread(() -> finishMove(moveSummary(result)));
+            } catch (JSONException | RuntimeException exc) {
+                runOnUiThread(() -> finishMove("Move: local failure [movement_exception]"));
+            }
+        });
+    }
+
+    private void finishMove(String summary) {
+        proofStatus.setText(summary);
+        if (movementFacade != null && verifiedBinding != null && activeGrant != null) {
+            moveButton.setEnabled(lastResolvedEntityUuid != null || pendingMoveRequest != null);
+        }
+    }
+
+    private static String moveSummary(MovementCommandFacade.MoveResult result) {
+        switch (result.status()) {
+            case APPLIED:
+                return "Move: applied with verified canonical location readback";
+            case WAITING_EVENT:
+                return "Move: event queued; canonical movement not yet complete";
+            case WAITING_PROJECTION:
+                return "Move: event verified; location projection still queued";
+            case BLOCKED_BY_EARLIER_COMMAND:
+                return "Move: blocked by earlier queued work";
+            case REMOTE_FAILURE:
+            case TRANSPORT_FAILURE:
+            case PROTOCOL_FAILURE:
+            case LOCAL_FAILURE:
+            default:
+                String code = result.errorCode() == null ? "movement_failed" : result.errorCode();
+                return "Move: failed [" + code + "]";
+        }
+    }
+
+    private static CanonicalResourceReader.ReadResult freshRead(
+            CanonicalResourceReader activeReader,
+            String dataClassValue,
+            String resourceIdValue
+    ) {
+        CanonicalResourceReader.ReadResult result = null;
+        for (int pass = 0; pass < MAX_FRESH_READ_PASSES; pass++) {
+            result = activeReader.refreshAndRead(dataClassValue, resourceIdValue);
+            if (result.status() != CanonicalResourceReader.Status.MORE_REMOTE_CHANGES) {
+                return result;
+            }
+        }
+        return result;
+    }
+
+    private static String readFailureCode(CanonicalResourceReader.ReadResult result) {
+        if (result == null) {
+            return "read_unavailable";
+        }
+        return result.errorCode() == null
+                ? result.status().name().toLowerCase(Locale.US)
+                : result.errorCode();
+    }
+
+    private static String nullableString(JSONObject payload, String key) throws JSONException {
+        return !payload.has(key) || payload.isNull(key) ? null : payload.getString(key);
+    }
+
+    private static String utcNow() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return format.format(new Date());
     }
 
     private void runRead() {
@@ -374,8 +685,13 @@ public final class DeviceProofActivity extends Activity {
     private void renderConnectionFailure(String code) {
         activeGrant = null;
         verifiedBinding = null;
+        captureResolver = null;
         reader = null;
         mutator = null;
+        movementFacade = null;
+        stateStore = null;
+        coordinator = null;
+        lastResolvedEntityUuid = null;
         connectionStatus.setText(DeviceProofPresentation.connectionSummary(
                 DeviceProofPresentation.ConnectionStatus.FAILED,
                 null,
@@ -387,6 +703,12 @@ public final class DeviceProofActivity extends Activity {
     }
 
     private void disableProofActions() {
+        if (scanButton != null) {
+            scanButton.setEnabled(false);
+        }
+        if (moveButton != null) {
+            moveButton.setEnabled(false);
+        }
         if (readButton != null) {
             readButton.setEnabled(false);
         }

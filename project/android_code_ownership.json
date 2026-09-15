@@ -5,7 +5,9 @@
     "android-client/google-workspace/src/main/java",
     "android-client/device-proof-app/src/main/java"
   ],
-  "suffixes": [".java"],
+  "suffixes": [
+    ".java"
+  ],
   "components": [
     {
       "id": "android-client-credential-security",
@@ -14,8 +16,14 @@
       "owned_paths": [
         "android-client/core/src/main/java/com/mira/client/core/security/ProtectedCredentialStore.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-CLIENT-CORE-001"
+      ],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/security/ProtectedCredentialStoreTest.java"
       ]
@@ -27,8 +35,14 @@
       "owned_paths": [
         "android-client/core/src/main/java/com/mira/client/core/sync/OfflineSyncStateStore.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-CLIENT-CORE-001"
+      ],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/OfflineSyncStateStoreTest.java"
       ]
@@ -40,8 +54,15 @@
       "owned_paths": [
         "android-client/core/src/main/java/com/mira/client/core/sync/ReconnectCoordinator.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-CLIENT-CORE-001",
+        "ANDROID-SYNC"
+      ],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/ReconnectCoordinatorTest.java",
         "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java",
@@ -55,8 +76,14 @@
       "owned_paths": [
         "android-client/core/src/main/java/com/mira/client/core/sync/CanonicalResourceReader.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
-      "work_ids": ["ANDROID-SYNC"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-SYNC"
+      ],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceReaderTest.java"
       ]
@@ -68,24 +95,103 @@
       "owned_paths": [
         "android-client/core/src/main/java/com/mira/client/core/sync/CanonicalResourceMutator.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
-      "work_ids": ["ANDROID-SYNC"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-SYNC"
+      ],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/CanonicalResourceMutatorTest.java"
       ]
     },
     {
+      "id": "android-client-movement-command",
+      "responsibility": "Provider-neutral Android MOVE-001 saga facade that stages one explicit inventory observation event followed by its inventory_state projection through the existing encrypted FIFO queue and reports success only from both verified acknowledgements plus exact projection readback.",
+      "why_separate": "Movement is a two-command event-first/projection-second semantic operation above generic queue/reconnect primitives. Keeping it bounded prevents passive scan code, transport adapters, or the generic upsert facade from acquiring movement policy or a second queue.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/MovementCommandFacade.java"
+      ],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "MOVE-001",
+        "INV-001",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-CAPTURE-001"
+      ],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/MovementCommandFacadeTest.java"
+      ]
+    },
+    {
+      "id": "android-client-verified-change-query",
+      "responsibility": "Bounded provider-neutral read-only folding of the verified canonical Changes projection for one data class without owning local cursor state or invoking queued command reconciliation.",
+      "why_separate": "Passive capture lookup needs a complete verified projection query without widening the encrypted offline-state contract or acquiring any mutation capability.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/VerifiedChangeQuery.java"
+      ],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-CAPTURE-001"
+      ],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/VerifiedChangeQueryTest.java"
+      ]
+    },
+    {
+      "id": "android-client-identifier-capture",
+      "responsibility": "Provider-neutral decoded QR/barcode identifier validation and passive resolution against verified canonical identifier snapshots, with explicit unresolved/ambiguous/integrity states and no write surface.",
+      "why_separate": "Capture interpretation is evidence/observation logic above transport but below UI; keeping it write-incapable prevents a passive scan from creating assets, attaching identifiers, or silently moving inventory.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/capture/IdentifierCaptureResolver.java"
+      ],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "IDENT-001",
+        "INV-001",
+        "ASSET-001",
+        "EVID-001"
+      ],
+      "work_ids": [
+        "ANDROID-CAPTURE-001"
+      ],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/capture/IdentifierCaptureResolverTest.java"
+      ]
+    },
+    {
       "id": "android-client-google-workspace-transport",
-      "responsibility": "Default-Personal Android mapping between exact API command intent / reconnect change pages and the MIRA Google Workspace Commands and verified Changes row protocols through an injected authorized Sheets gateway, including explicit verified pagination completeness.",
+      "responsibility": "Default-Personal Android mapping between exact API command intent / reconnect change pages and the MIRA Google Workspace Commands and verified Changes row protocols through an injected authorized Sheets gateway, including explicit verified pagination completeness and the append-event envelope extension over the unchanged Commands schema.",
       "why_separate": "The row protocol validates transport evidence without owning OAuth UI, account selection, provider identifiers, network client lifecycle, canonical authority, or local persistence; concrete Google SDK/network behavior remains outside core.",
       "owned_paths": [
-        "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceTransport.java"
+        "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceTransport.java",
+        "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceEventTransport.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "PROVIDER-002",
+        "RECOVERY-002",
+        "MOVE-001"
+      ],
+      "work_ids": [
+        "ANDROID-CLIENT-CORE-001",
+        "ANDROID-SYNC",
+        "ANDROID-CAPTURE-001"
+      ],
       "verification": [
         "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java",
-        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceChangePaginationTest.java"
+        "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceEventTransportTest.java"
       ]
     },
     {
@@ -95,8 +201,17 @@
       "owned_paths": [
         "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleWorkspaceConnection.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "PROVIDER-003", "AUTH-001", "STORE-001", "SERVICE-001"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "PROVIDER-002",
+        "PROVIDER-003",
+        "AUTH-001",
+        "STORE-001",
+        "SERVICE-001"
+      ],
+      "work_ids": [
+        "ANDROID-CLIENT-CORE-001"
+      ],
       "verification": [
         "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceConnectionTest.java"
       ]
@@ -108,8 +223,15 @@
       "owned_paths": [
         "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GooglePlayWorkspaceAuthorization.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "AUTH-001", "SERVICE-001"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "PROVIDER-002",
+        "AUTH-001",
+        "SERVICE-001"
+      ],
+      "work_ids": [
+        "ANDROID-CLIENT-CORE-001"
+      ],
       "verification": [
         "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GooglePlayWorkspaceAuthorizationTest.java"
       ]
@@ -121,10 +243,38 @@
       "owned_paths": [
         "android-client/google-workspace/src/main/java/com/mira/client/googleworkspace/GoogleWorkspaceRestApi.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "PROVIDER-002", "PROVIDER-003", "API-001", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "PROVIDER-002",
+        "PROVIDER-003",
+        "API-001",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-CLIENT-CORE-001"
+      ],
       "verification": [
         "android-client/google-workspace/src/test/java/com/mira/client/googleworkspace/GoogleWorkspaceRestApiTest.java"
+      ]
+    },
+    {
+      "id": "android-device-proof-code-scanner",
+      "responsibility": "Google Play-services code-scanner edge that owns provider camera UI and maps decoded QR/EAN/UPC results into provider-neutral MIRA capture observations without canonical read or mutation authority.",
+      "why_separate": "Camera-provider lifecycle and SDK types belong at the disposable Android app edge; isolating them keeps scanner dependencies, camera behavior and provider failures out of canonical capture semantics and state authority.",
+      "owned_paths": [
+        "android-client/device-proof-app/src/main/java/com/mira/deviceproof/GoogleCodeScannerCapture.java"
+      ],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "IDENT-001",
+        "INV-001",
+        "EVID-001"
+      ],
+      "work_ids": [
+        "ANDROID-CAPTURE-001"
+      ],
+      "verification": [
+        "android-client/device-proof-app/src/test/java/com/mira/deviceproof/GoogleCodeScannerCaptureTest.java"
       ]
     },
     {
@@ -135,8 +285,16 @@
         "android-client/device-proof-app/src/main/java/com/mira/deviceproof/DeviceProofActivity.java",
         "android-client/device-proof-app/src/main/java/com/mira/deviceproof/DeviceProofPresentation.java"
       ],
-      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002"],
-      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "feature_ids": [
+        "CLIENT-ANDROID-001",
+        "API-001",
+        "PROVIDER-002",
+        "RECOVERY-002"
+      ],
+      "work_ids": [
+        "ANDROID-CLIENT-CORE-001",
+        "ANDROID-CAPTURE-001"
+      ],
       "verification": [
         "android-client/device-proof-app/src/test/java/com/mira/deviceproof/DeviceProofPresentationTest.java"
       ]

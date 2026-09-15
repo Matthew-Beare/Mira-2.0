@@ -7,10 +7,9 @@
  * performs revision/idempotency preflight, canonical mutation, recovery and
  * exact readback.
  *
- * The Changes tab introduced by M2-M1-006 is an append-only read projection of
- * canonical Resources. It is transport evidence for reconnect, never canonical
- * state. Missing projection rows are reconstructed from exact current Resource
- * readback under the same ScriptLock.
+ * The Changes tab is an append-only read projection of canonical Resources.
+ * Events are canonical append-only state and are read back directly from Events;
+ * they are deliberately not projected into Changes as fake Resources.
  *
  * This is same-user Personal infrastructure. The command inbox and Changes
  * projection are transport, never canonical state. Cross-person permission
@@ -68,6 +67,16 @@ const MIRA_RESOURCE_HEADERS_ = [
   'last_idempotency_key',
   'request_hash',
 ];
+const MIRA_EVENT_HEADERS_ = [
+  'event_type',
+  'event_id',
+  'stream_type',
+  'stream_id',
+  'stream_revision',
+  'payload_json',
+  'occurred_at',
+  'idempotency_key',
+];
 const MIRA_INTERNAL_CHANGE_TYPES_ = ['authority', 'authority_binding'];
 
 function miraEnableQueuedWriter() {
@@ -75,8 +84,6 @@ function miraEnableQueuedWriter() {
   const spreadsheet = miraSpreadsheet_();
   miraEnsureCommandsSheet_(spreadsheet);
   miraEnsureChangesSheet_(spreadsheet);
-  // Trigger validation/creation happens before changing the mutation mode. If
-  // trigger setup fails, direct single-writer behavior remains authoritative.
   miraEnsureCommandTrigger_();
   miraSetMetadataValue_(spreadsheet, MIRA_COMMAND_MODE_KEY_, MIRA_QUEUED_MODE_);
   SpreadsheetApp.flush();
@@ -96,10 +103,7 @@ function miraProcessCommandQueue() {
     const sheet = miraRequireTable_(spreadsheet, 'Commands', MIRA_COMMAND_HEADERS_);
     miraEnsureChangesSheet_(spreadsheet);
 
-    // Reconcile current canonical state before processing new commands. This
-    // seeds pre-Android Resources and repairs a crash after canonical write but
-    // before projection acknowledgement. Internal Authority rows are excluded
-    // because they are infrastructure, not client-domain state.
+    // Seed/repair the Resource read projection before processing commands.
     miraReconcileCurrentChanges_(spreadsheet);
 
     const rows = sheet.getDataRange().getValues();
@@ -122,9 +126,8 @@ function miraProcessCommandQueue() {
       if (rawCommandId) handled[rawCommandId] = true;
       processed += 1;
 
-      let command = null;
       try {
-        command = miraParseQueuedCommand_(rows[index], index + 1);
+        const command = miraParseQueuedCommand_(rows[index], index + 1);
         const group = miraValidateExactCommandGroup_(rawGroup, command);
         const priorTerminal = miraExactCommandTerminal_(group);
         if (priorTerminal && priorTerminal.status === 'failed') {
@@ -148,8 +151,7 @@ function miraProcessCommandQueue() {
       } catch (error) {
         const code = error && error.miraCode ? error.miraCode : 'internal_error';
         if (miraRetryableWorkerCode_(code)) {
-          // Leave every duplicate physical delivery pending. A later run retries
-          // one logical command using the same API-001 idempotency material.
+          // Leave exact deliveries pending. Stable idempotency material makes retry safe.
           continue;
         }
         const targets = pendingRows.length ? pendingRows : [index + 1];
@@ -174,8 +176,8 @@ function miraProcessCommandQueue() {
 }
 
 function miraExecuteQueuedCommand_(spreadsheet, command) {
-  if (command.action !== 'upsert') {
-    throw miraError_('validation_error', 'queued Workspace worker supports upsert only');
+  if (command.action !== 'upsert' && command.action !== 'append_event') {
+    throw miraError_('validation_error', 'queued Workspace worker supports upsert and append_event only');
   }
   if (command.api_major !== MIRA_API_MAJOR_ || command.schema_version !== MIRA_API_SCHEMA_) {
     throw miraError_(
@@ -188,16 +190,32 @@ function miraExecuteQueuedCommand_(spreadsheet, command) {
   if (schema.resource_types.indexOf(command.data_class) === -1) {
     throw miraError_('validation_error', 'unknown resource type: ' + command.data_class);
   }
+  if (
+    command.action === 'append_event' &&
+    schema.event_types.indexOf(command.event_type) === -1
+  ) {
+    throw miraError_('validation_error', 'unknown event type: ' + command.event_type);
+  }
 
   const parsedResources = miraResourceRows_();
-  const authority = miraResolveWorkerAuthority_(parsedResources, command.data_class, schema.schema_version);
+  const authority = miraResolveWorkerAuthority_(
+    parsedResources,
+    command.data_class,
+    schema.schema_version,
+  );
   if (command.subject_id !== authority.owner_id) {
     throw miraError_('authorization_error', 'same-user command subject does not match authority owner');
   }
 
+  if (command.action === 'append_event') {
+    return miraExecuteQueuedEvent_(spreadsheet, command, authority.authority_id);
+  }
+  return miraExecuteQueuedUpsert_(spreadsheet, command, authority.authority_id);
+}
+
+function miraExecuteQueuedUpsert_(spreadsheet, command, authorityId) {
   const fingerprint = miraQueuedUpsertFingerprint_(command);
-  const idempotencyRows = miraRawIdempotencyRows_(spreadsheet);
-  const matchingIdempotency = idempotencyRows.filter(function (row) {
+  const matchingIdempotency = miraRawIdempotencyRows_(spreadsheet).filter(function (row) {
     return row.idempotency_key === command.idempotency_key;
   });
   if (matchingIdempotency.length > 1) {
@@ -208,10 +226,10 @@ function miraExecuteQueuedCommand_(spreadsheet, command) {
     if (stored.operation !== 'upsert' || stored.request_hash !== fingerprint) {
       throw miraError_('conflict', 'idempotency key was already used for different material input');
     }
-    const replay = miraParseResultJson_(stored.result_json);
+    const replay = miraParseResultJson_(stored.result_json, 'upsert');
     miraVerifyQueuedReadback_(spreadsheet, command, fingerprint, replay);
     miraEnsureVerifiedChange_(spreadsheet, replay.record, command.command_id);
-    return miraCommandResult_(command, authority.authority_id, replay.record, true);
+    return miraCommandResult_(command, authorityId, replay.record, true);
   }
 
   const rawResources = miraRawResourceRows_(spreadsheet);
@@ -223,10 +241,7 @@ function miraExecuteQueuedCommand_(spreadsheet, command) {
   }
   const current = matches.length ? matches[0] : null;
 
-  // Recovery path: a previous execution can die after the resource write but
-  // before appending its idempotency acknowledgement. The resource row itself
-  // carries the key/hash, so the retry can prove the exact mutation landed,
-  // reconstruct the missing idempotency row, and converge without revision 3.
+  // Recovery after resource write but before Idempotency acknowledgement.
   if (current && current.last_idempotency_key === command.idempotency_key) {
     if (current.request_hash !== fingerprint) {
       throw miraError_('conflict', 'resource records the idempotency key with a different request hash');
@@ -237,12 +252,17 @@ function miraExecuteQueuedCommand_(spreadsheet, command) {
     ) {
       throw miraError_('readback_error', 'partial-write recovery material does not match command');
     }
-    const recovered = miraUpsertResult_(current.resource_type, current.resource_id, current.payload, current.revision);
+    const recovered = miraUpsertResult_(
+      current.resource_type,
+      current.resource_id,
+      current.payload,
+      current.revision,
+    );
     miraAppendIdempotency_(spreadsheet, command, fingerprint, recovered);
     SpreadsheetApp.flush();
     miraVerifyQueuedReadback_(spreadsheet, command, fingerprint, recovered);
     miraEnsureVerifiedChange_(spreadsheet, recovered.record, command.command_id);
-    return miraCommandResult_(command, authority.authority_id, recovered.record, true);
+    return miraCommandResult_(command, authorityId, recovered.record, true);
   }
 
   const currentRevision = current ? current.revision : 0;
@@ -276,14 +296,97 @@ function miraExecuteQueuedCommand_(spreadsheet, command) {
   );
   SpreadsheetApp.flush();
 
-  // Deliberately separate from the resource write. Recovery above makes a
-  // crash at this exact seam safe without requiring a second infrastructure
-  // service or pretending SpreadsheetApp offers a cross-tab transaction.
   miraAppendIdempotency_(spreadsheet, command, fingerprint, result, now);
   SpreadsheetApp.flush();
   miraVerifyQueuedReadback_(spreadsheet, command, fingerprint, result);
   miraEnsureVerifiedChange_(spreadsheet, result.record, command.command_id);
-  return miraCommandResult_(command, authority.authority_id, result.record, false);
+  return miraCommandResult_(command, authorityId, result.record, false);
+}
+
+function miraExecuteQueuedEvent_(spreadsheet, command, authorityId) {
+  const fingerprint = miraQueuedAppendEventFingerprint_(command);
+  const matchingIdempotency = miraRawIdempotencyRows_(spreadsheet).filter(function (row) {
+    return row.idempotency_key === command.idempotency_key;
+  });
+  if (matchingIdempotency.length > 1) {
+    throw miraError_('conflict', 'duplicate persisted idempotency key');
+  }
+  if (matchingIdempotency.length === 1) {
+    const stored = matchingIdempotency[0];
+    if (stored.operation !== 'append_event' || stored.request_hash !== fingerprint) {
+      throw miraError_('conflict', 'idempotency key was already used for different material input');
+    }
+    const replay = miraParseResultJson_(stored.result_json, 'append_event');
+    miraVerifyQueuedEventReadback_(spreadsheet, command, fingerprint, replay);
+    return miraEventCommandResult_(command, authorityId, replay.event, true);
+  }
+
+  const events = miraRawEventRows_(spreadsheet);
+  const sameId = events.filter(function (event) {
+    return event.event_id === command.event_id;
+  });
+  if (sameId.length > 1) {
+    throw miraError_('conflict', 'duplicate persisted event identity');
+  }
+
+  // Recovery after Events append but before Idempotency acknowledgement.
+  if (sameId.length === 1) {
+    const landed = sameId[0];
+    const exact =
+      landed.idempotency_key === command.idempotency_key &&
+      landed.event_type === command.event_type &&
+      landed.stream_type === command.data_class &&
+      landed.stream_id === command.resource_id &&
+      miraCanonicalJson_(landed.payload) === miraCanonicalJson_(command.payload) &&
+      (
+        command.expected_revision === null ||
+        landed.stream_revision === command.expected_revision + 1
+      );
+    if (!exact) {
+      throw miraError_('conflict', 'event_id was already used for different material input');
+    }
+    const recovered = miraAppendEventResult_(landed);
+    miraAppendIdempotency_(spreadsheet, command, fingerprint, recovered);
+    SpreadsheetApp.flush();
+    miraVerifyQueuedEventReadback_(spreadsheet, command, fingerprint, recovered);
+    return miraEventCommandResult_(command, authorityId, recovered.event, true);
+  }
+
+  const streamEvents = events.filter(function (event) {
+    return event.stream_type === command.data_class && event.stream_id === command.resource_id;
+  });
+  let currentRevision = 0;
+  streamEvents.forEach(function (event) {
+    currentRevision = Math.max(currentRevision, event.stream_revision);
+  });
+  if (
+    command.expected_revision !== null &&
+    command.expected_revision !== currentRevision
+  ) {
+    throw miraError_(
+      'conflict',
+      'expected stream revision ' + command.expected_revision +
+        ', current revision is ' + currentRevision,
+    );
+  }
+
+  const now = miraNow_();
+  const event = {
+    event_id: command.event_id,
+    stream_type: command.data_class,
+    stream_id: command.resource_id,
+    event_type: command.event_type,
+    payload: JSON.parse(miraCanonicalJson_(command.payload)),
+    stream_revision: currentRevision + 1,
+  };
+  miraWriteCanonicalEvent_(spreadsheet, event, command.idempotency_key, now);
+  SpreadsheetApp.flush();
+
+  const result = miraAppendEventResult_(event);
+  miraAppendIdempotency_(spreadsheet, command, fingerprint, result, now);
+  SpreadsheetApp.flush();
+  miraVerifyQueuedEventReadback_(spreadsheet, command, fingerprint, result);
+  return miraEventCommandResult_(command, authorityId, result.event, false);
 }
 
 function miraParseQueuedCommand_(row, rowNumber) {
@@ -294,21 +397,44 @@ function miraParseQueuedCommand_(row, rowNumber) {
   const apiMajor = Number(row[4]);
   const schemaVersion = miraToken_(String(row[5] || ''), 'schema_version');
   const resourceId = miraId_(String(row[6] || ''), 'resource_id');
-  let payload;
+  let transportPayload;
   try {
-    payload = JSON.parse(String(row[7] || ''));
+    transportPayload = JSON.parse(String(row[7] || ''));
   } catch (error) {
     throw miraError_('validation_error', 'queued payload_json is invalid');
   }
-  miraRequireObject_(payload, 'queued payload');
-  const idempotencyKey = miraId_(String(row[8] || ''), 'idempotency_key');
-  const expectedRevision = Number(row[9]);
-  if (!Number.isInteger(expectedRevision) || expectedRevision < 0) {
-    throw miraError_('validation_error', 'expected_revision must be a non-negative integer');
+  miraRequireObject_(transportPayload, 'queued payload');
+  const idempotencyKey = miraId_(String(row[8] || '').trim(), 'idempotency_key');
+
+  let expectedRevision = null;
+  const rawExpected = row[9];
+  if (rawExpected !== '' && rawExpected !== null && rawExpected !== undefined) {
+    expectedRevision = Number(rawExpected);
+    if (!Number.isInteger(expectedRevision) || expectedRevision < 0) {
+      throw miraError_('validation_error', 'expected_revision must be non-negative or blank');
+    }
   }
   if (!Number.isInteger(apiMajor) || apiMajor < 1) {
     throw miraError_('validation_error', 'api_major must be a positive integer');
   }
+
+  let payload = transportPayload;
+  let eventId = null;
+  let eventType = null;
+  if (action === 'append_event') {
+    miraRejectExtraKeys_(transportPayload, ['event_id', 'event_type', 'payload']);
+    eventId = miraId_(String(transportPayload.event_id || ''), 'event_id');
+    eventType = miraToken_(String(transportPayload.event_type || ''), 'event_type');
+    miraRequireObject_(transportPayload.payload, 'queued event payload');
+    payload = transportPayload.payload;
+  } else if (action === 'upsert') {
+    if (expectedRevision === null) {
+      throw miraError_('validation_error', 'upsert requires expected_revision');
+    }
+  } else {
+    throw miraError_('validation_error', 'unsupported queued command action: ' + action);
+  }
+
   return {
     row_number: rowNumber,
     command_id: commandId,
@@ -321,6 +447,8 @@ function miraParseQueuedCommand_(row, rowNumber) {
     payload: payload,
     idempotency_key: idempotencyKey,
     expected_revision: expectedRevision,
+    event_id: eventId,
+    event_type: eventType,
   };
 }
 
@@ -358,6 +486,8 @@ function miraCommandMaterial_(command) {
     api_major: command.api_major,
     command_id: command.command_id,
     data_class: command.data_class,
+    event_id: command.event_id,
+    event_type: command.event_type,
     expected_revision: command.expected_revision,
     idempotency_key: command.idempotency_key,
     payload: command.payload,
@@ -420,14 +550,25 @@ function miraResolveWorkerAuthority_(resources, dataClass, schemaVersion) {
 }
 
 function miraQueuedUpsertFingerprint_(command) {
-  const material = {
+  return miraSha256_(miraCanonicalJson_({
     expected_revision: command.expected_revision,
     operation: 'upsert',
     payload: command.payload,
     resource_id: command.resource_id,
     resource_type: command.data_class,
-  };
-  return miraSha256_(miraCanonicalJson_(material));
+  }));
+}
+
+function miraQueuedAppendEventFingerprint_(command) {
+  return miraSha256_(miraCanonicalJson_({
+    event_id: command.event_id,
+    event_type: command.event_type,
+    expected_stream_revision: command.expected_revision,
+    operation: 'append_event',
+    payload: command.payload,
+    stream_id: command.resource_id,
+    stream_type: command.data_class,
+  }));
 }
 
 function miraRawResourceRows_(spreadsheet) {
@@ -461,6 +602,39 @@ function miraRawResourceRows_(spreadsheet) {
   return parsed;
 }
 
+function miraRawEventRows_(spreadsheet) {
+  const sheet = miraRequireTable_(spreadsheet, 'Events', MIRA_EVENT_HEADERS_);
+  const rows = sheet.getDataRange().getValues();
+  const parsed = [];
+  for (let index = 1; index < rows.length; index += 1) {
+    const row = rows[index];
+    if (!String(row[0] || '').trim() && !String(row[1] || '').trim()) continue;
+    let payload;
+    try {
+      payload = JSON.parse(String(row[5] || ''));
+    } catch (error) {
+      throw miraError_('validation_error', 'persisted event payload_json is invalid');
+    }
+    miraRequireObject_(payload, 'persisted event payload');
+    const revision = Number(row[4]);
+    if (!Number.isInteger(revision) || revision < 1) {
+      throw miraError_('validation_error', 'persisted event stream_revision is invalid');
+    }
+    parsed.push({
+      row_number: index + 1,
+      event_type: miraToken_(String(row[0] || '').trim(), 'event_type'),
+      event_id: miraId_(String(row[1] || '').trim(), 'event_id'),
+      stream_type: miraDataClass_(String(row[2] || '').trim()),
+      stream_id: miraId_(String(row[3] || '').trim(), 'stream_id'),
+      stream_revision: revision,
+      payload: payload,
+      occurred_at: String(row[6] || '').trim(),
+      idempotency_key: miraId_(String(row[7] || '').trim(), 'idempotency_key'),
+    });
+  }
+  return parsed;
+}
+
 function miraRawIdempotencyRows_(spreadsheet) {
   const sheet = miraRequireTable_(spreadsheet, 'Idempotency', MIRA_IDEMPOTENCY_HEADERS_);
   const rows = sheet.getDataRange().getValues();
@@ -486,16 +660,38 @@ function miraWriteCanonicalResource_(spreadsheet, rowNumber, values) {
   sheet.getRange(targetRow, 1, 1, MIRA_RESOURCE_HEADERS_.length).setValues([values]);
 }
 
+function miraWriteCanonicalEvent_(spreadsheet, event, idempotencyKey, now) {
+  const sheet = miraRequireTable_(spreadsheet, 'Events', MIRA_EVENT_HEADERS_);
+  sheet.getRange(sheet.getLastRow() + 1, 1, 1, MIRA_EVENT_HEADERS_.length).setValues([[
+    event.event_type,
+    event.event_id,
+    event.stream_type,
+    event.stream_id,
+    event.stream_revision,
+    miraCanonicalJson_(event.payload),
+    now,
+    idempotencyKey,
+  ]]);
+}
+
 function miraAppendIdempotency_(spreadsheet, command, fingerprint, result, nowValue) {
   const sheet = miraRequireTable_(spreadsheet, 'Idempotency', MIRA_IDEMPOTENCY_HEADERS_);
   const now = nowValue || miraNow_();
+  let resourceRef;
+  if (result.kind === 'upsert') {
+    resourceRef = command.data_class + '/' + command.resource_id;
+  } else if (result.kind === 'append_event') {
+    resourceRef = command.data_class + '/' + command.resource_id + '#' + command.event_id;
+  } else {
+    throw miraError_('validation_error', 'cannot persist idempotency for unknown operation');
+  }
   sheet.getRange(sheet.getLastRow() + 1, 1, 1, MIRA_IDEMPOTENCY_HEADERS_.length).setValues([[
     command.idempotency_key,
-    'upsert',
+    result.kind,
     fingerprint,
     miraCanonicalJson_(result),
     now,
-    command.data_class + '/' + command.resource_id,
+    resourceRef,
   ]]);
 }
 
@@ -527,9 +723,48 @@ function miraVerifyQueuedReadback_(spreadsheet, command, fingerprint, result) {
     idempotency[0].operation !== 'upsert' ||
     idempotency[0].request_hash !== fingerprint ||
     idempotency[0].resource_ref !== command.data_class + '/' + command.resource_id ||
-    miraCanonicalJson_(miraParseResultJson_(idempotency[0].result_json)) !== miraCanonicalJson_(result)
+    miraCanonicalJson_(miraParseResultJson_(idempotency[0].result_json, 'upsert')) !==
+      miraCanonicalJson_(result)
   ) {
     throw miraError_('readback_error', 'idempotency readback material does not match command');
+  }
+}
+
+function miraVerifyQueuedEventReadback_(spreadsheet, command, fingerprint, result) {
+  const events = miraRawEventRows_(spreadsheet).filter(function (row) {
+    return row.event_id === command.event_id;
+  });
+  if (events.length !== 1) {
+    throw miraError_('readback_error', 'canonical event readback is missing or duplicated');
+  }
+  const actual = events[0];
+  const expected = result.event;
+  if (
+    actual.event_type !== expected.event_type ||
+    actual.stream_type !== expected.stream_type ||
+    actual.stream_id !== expected.stream_id ||
+    actual.stream_revision !== expected.stream_revision ||
+    actual.idempotency_key !== command.idempotency_key ||
+    miraCanonicalJson_(actual.payload) !== miraCanonicalJson_(expected.payload)
+  ) {
+    throw miraError_('readback_error', 'canonical event readback does not match command result');
+  }
+
+  const idempotency = miraRawIdempotencyRows_(spreadsheet).filter(function (row) {
+    return row.idempotency_key === command.idempotency_key;
+  });
+  if (idempotency.length !== 1) {
+    throw miraError_('readback_error', 'event idempotency readback is missing or duplicated');
+  }
+  if (
+    idempotency[0].operation !== 'append_event' ||
+    idempotency[0].request_hash !== fingerprint ||
+    idempotency[0].resource_ref !==
+      command.data_class + '/' + command.resource_id + '#' + command.event_id ||
+    miraCanonicalJson_(miraParseResultJson_(idempotency[0].result_json, 'append_event')) !==
+      miraCanonicalJson_(result)
+  ) {
+    throw miraError_('readback_error', 'event idempotency readback material does not match command');
   }
 }
 
@@ -562,7 +797,6 @@ function miraEnsureVerifiedChange_(spreadsheet, record, sourceCommandId) {
   }
   miraRequireObject_(record.payload, 'change projection payload');
 
-  // Freshly re-read the canonical source before asserting verified projection.
   const canonical = miraRawResourceRows_(spreadsheet).filter(function (row) {
     return row.resource_type === resourceType && row.resource_id === resourceId;
   });
@@ -642,8 +876,6 @@ function miraEnsureVerifiedChange_(spreadsheet, record, sourceCommandId) {
   ]]);
   SpreadsheetApp.flush();
 
-  // Exact projection readback. A crash before this point leaves either no row
-  // or a complete row; the next retry revalidates exact material and converges.
   const verifyRows = sheet.getDataRange().getValues().filter(function (row, index) {
     return index > 0 && Number(row[0]) === nextSequence;
   });
@@ -692,6 +924,20 @@ function miraUpsertResult_(resourceType, resourceId, payload, revision) {
   };
 }
 
+function miraAppendEventResult_(event) {
+  return {
+    kind: 'append_event',
+    event: {
+      event_id: event.event_id,
+      stream_type: event.stream_type,
+      stream_id: event.stream_id,
+      event_type: event.event_type,
+      payload: JSON.parse(miraCanonicalJson_(event.payload)),
+      stream_revision: event.stream_revision,
+    },
+  };
+}
+
 function miraCommandResult_(command, authorityId, record, replay) {
   return {
     command_id: command.command_id,
@@ -703,7 +949,18 @@ function miraCommandResult_(command, authorityId, record, replay) {
   };
 }
 
-function miraParseResultJson_(value) {
+function miraEventCommandResult_(command, authorityId, event, replay) {
+  return {
+    command_id: command.command_id,
+    authority_id: authorityId,
+    record: null,
+    event: event,
+    idempotent_replay: replay === true,
+    readback_verified: true,
+  };
+}
+
+function miraParseResultJson_(value, expectedKind) {
   let result;
   try {
     result = JSON.parse(String(value || ''));
@@ -711,8 +968,14 @@ function miraParseResultJson_(value) {
     throw miraError_('conflict', 'persisted idempotency result is invalid JSON');
   }
   miraRequireObject_(result, 'persisted idempotency result');
-  if (result.kind !== 'upsert' || !result.record) {
+  if (result.kind !== expectedKind) {
     throw miraError_('conflict', 'persisted idempotency result has wrong operation');
+  }
+  if (expectedKind === 'upsert' && !result.record) {
+    throw miraError_('conflict', 'persisted upsert result is missing record');
+  }
+  if (expectedKind === 'append_event' && !result.event) {
+    throw miraError_('conflict', 'persisted append_event result is missing event');
   }
   return result;
 }
