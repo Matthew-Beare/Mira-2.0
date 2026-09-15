@@ -4,9 +4,9 @@ Git is authoritative for recovery, but mutable finance truth must be re-read fro
 
 ## Status surface
 Objective: Close the historical finance identity gap, then deliver Android inventory scanning against the existing canonical inventory graph.
-Progress: Re-read live Prime Visa provider history and mechanically verified 675 posted rows = 675 distinct provider transaction IDs, bounded 2024-08-09 through 2026-09-11; no provider-side duplicates exist in that bounded source set.
+Progress: Re-read connected finance history across the historical boundary and verified posted transaction coverage reaches 2024-08-09; an explicit query for dates before 2024-08-09 returned zero rows, durably bounding the accessible provider history instead of imposing an artificial MIRA start date.
 Last 24h: Reduced the canonical Spending Review queue from 990 to 673 while repairing override formulas and resolving receipt/provider-backed classifications without guessing ambiguous rows.
-Deliverable: Exact Prime Visa provider-minus-canonical Transaction ID reconciliation with any proven-missing rows projected idempotently, or the gap durably closed at zero.
+Deliverable: Exact provider-minus-canonical Transaction ID reconciliation across all accessible history, followed by Android camera/QR/barcode inventory capture against the existing asset graph.
 Expected delivery: UNKNOWN.
 Blocker: none.
 
@@ -16,23 +16,28 @@ Blocker: none.
 
 ## Current objective
 
-Continue canonical transaction reconciliation and high-confidence review-queue reduction. Compare exact provider identities against `FinOps Ledger.Transaction ID` before any projection; never infer identity from date/amount. Classify only where provider semantics, durable user rules, receipts, or resolved precedent are strong. Leave low-confidence purpose/necessity explicitly reviewable.
+Close the remaining historical finance coverage gap using stable provider identity and exact canonical readback. Historical evidence is preserved; unavailable history is represented explicitly. Continue high-confidence review-queue reduction only where provider semantics, durable user rules, receipts, or resolved precedent are strong.
 
-## User reprioritization
+## Historical coverage verification — 2026-09-15
 
-On 2026-09-15 the user explicitly instructed MIRA to work more transactions. This displaces `FIN-MODEL-TARGET-002` until this transaction-audit packet is checkpointed or the user reprioritizes again.
+- Connected Finances reports transaction coverage `full_history` and query-complete for the requested slices; freshness remains `unknown`.
+- Exact posted-history slice `date >= 2026-08-01` returned 237 rows through 2026-09-11.
+- Exact posted-history slice `date < 2026-08-01` first returned 1,000 rows with more available, spanning 2025-07-13 through 2026-07-31.
+- A second bounded query `date < 2025-07-13` returned 854 rows, spanning 2024-08-09 through 2025-07-11.
+- A boundary probe `date < 2024-08-09` returned exactly zero rows with `has_more=false` and query-complete coverage.
+- Therefore the currently accessible connected transaction-history boundary is **2024-08-09**. Do not claim earlier history is reconciled or unavailable in reality; claim only that the connected source currently exposes no posted transactions before this boundary.
+- This supersedes any implied September 2026 finance start boundary. September may bound recurring processes, never historical truth.
 
 ## Canonical source state
 
-- Finances account history coverage remains `full_history`; freshness remains `unknown`.
-- Prime Visa source range was re-read on 2026-09-15 and is exactly 675 posted rows / 675 distinct provider transaction IDs, bounded from 2024-08-09 through 2026-09-11. This confirms zero provider-side duplicate transaction IDs in the bounded source set.
-- `FinOps Ledger.Transaction ID` remains the stable provider identity key. Joint Checking was previously proven complete at 669/669 provider identities.
-- The live Financial Escape Command Center has changed since older finance checkpoints; recompute provider-minus-canonical identity sets mechanically before projecting anything.
-- No new provider rows were projected during the current classification pass; work was limited to canonical rule repair, overrides, receipt-backed classification, and readback.
+- `FinOps Ledger.Transaction ID` is the stable provider identity key. Joint Checking was previously proven complete at 669/669 provider identities.
+- Prime Visa source range was previously re-read as exactly 675 posted rows / 675 distinct provider transaction IDs, bounded 2024-08-09 through 2026-09-11, confirming zero provider-side duplicate transaction IDs in that bounded source set.
+- The live Financial Escape Command Center changes independently of Git checkpoints; recompute provider-minus-canonical identity sets mechanically before projecting anything.
+- Preserve original evidence and provenance. Never delete or overwrite historical production rows to simplify the model.
 
 ## 2026-09-15 transaction-classification checkpoint
 
-`Spending Review` began these consecutive transaction passes with 990 rows marked `NEEDS REVIEW`. Exact live recount after the latest mutations is **673**, a reduction of **317 rows**. Ambiguous rows remain reviewable.
+`Spending Review` began these consecutive transaction passes with 990 rows marked `NEEDS REVIEW`. Latest verified checkpoint is **673**, a reduction of **317 rows**. Ambiguous rows remain reviewable.
 
 ### Deterministic canonical rules now active
 
@@ -46,56 +51,41 @@ On 2026-09-15 the user explicitly instructed MIRA to work more transactions. Thi
 - Medical provider categories `dental_care`, `pharmacy_supplements`, `other_medical`, `vision_care`, and `primary_care` => NECESSARY / NO ALLOWANCE. Hair/beauty is deliberately excluded.
 - Household-funded rows already proven NECESSARY resolve NO ALLOWANCE.
 - Amazon Pharmacy remains Health / medication / NECESSARY / NO ALLOWANCE.
-- User rule is durable in `MIRA Durable Operating Addenda`: doctors/medical providers, dentists/dental, and medication/pharmacy are always NECESSARY when evidence establishes that purpose; explicit provider fuel is sufficient Fuel/Gas evidence.
 
 ### Structural repairs
 
-- Fixed `FinOps Ledger` review-override lookup formulas that incorrectly began at `Spending Review` row 5 and therefore ignored the first data row 4. V/X/Z/AB/AF now read from row 4 through 3028 by exact Event ID.
-- This repair immediately allowed the user-confirmed outdoor-sign transaction to resolve READY.
-- Repaired a stale hard-coded `NEEDS REVIEW` status on the receipt-backed Walmart $159.50 row; the normal formula now evaluates it READY.
+- Fixed `FinOps Ledger` review-override lookup formulas that incorrectly began at `Spending Review` row 5 and ignored first data row 4. V/X/Z/AB/AF now read from row 4 through 3028 by exact Event ID.
+- Repaired a stale hard-coded `NEEDS REVIEW` status on the receipt-backed Walmart $159.50 row; normal formula now evaluates it READY.
 
-### Receipt/evidence-backed rows resolved or refined
+### Evidence-backed examples already resolved/refined
 
 - Walmart $159.50 (2026-09-11): receipt-backed 33-item delivery/grocery order; Groceries / NECESSARY / NO ALLOWANCE; READY.
-- Tacoma Subaru $139.39: backing plate plus intermediate-pipe bolts/springs/nuts; Auto repair / NECESSARY / NO ALLOWANCE; READY.
-- SubaruOnlineParts $125.22: remaining OEM repair hardware after backordered hub assemblies were removed; Auto repair / NECESSARY / NO ALLOWANCE; READY.
-- September County Clerk $75.67: user-confirmed vehicle registration; Vehicle registration / NECESSARY / NO ALLOWANCE; READY. The separate August same-amount County Clerk row remains unresolved pending stronger evidence.
-- Legacy HELOC payment $2,311.24 on 2025-03-15: corrected to NECESSARY / NO ALLOWANCE by exact recurrence against 52 other canonical HELOC-payment rows; READY.
-- Mishimoto $148.62: locking lug nuts; Auto repair / UNNECESSARY; allowance owner unresolved.
-- System Motorsports $95.25: Project Kics hubrings; Auto repair / UNNECESSARY; allowance owner unresolved.
-- Evasive Motorsports $2,415.12: four Enkei wheels plus lug nuts; Auto repair / UNNECESSARY; allowance owner unresolved.
-- Eastwood $149.42: fender roller tool; Tools / project / UNNECESSARY; allowance owner unresolved.
-- Pro Torque Tools $304.58: two CDI torque wrenches; Tools / project category resolved; necessity/allowance unresolved.
-- JEGS $85.38 + $61.30: exact pair equals one $146.68 receipt for ARP Miata wheel studs; Auto repair category resolved; repair-vs-upgrade necessity/allowance remains unresolved.
-
-## Remaining queue character
-
-The 673 remaining rows are now disproportionately evidence-limited: mixed Amazon/Walmart/Target purchases, convenience-store charges without fuel evidence, auto parts/modification purchases where repair-vs-upgrade intent is unclear, Audible/history rows where study-vs-entertainment purpose is unresolved, digital services, beauty/personal-care rows, gifts/clothing, and older generic checks/PayPal purchases. Do not broad-classify these from merchant name alone.
+- Tacoma Subaru $139.39 and SubaruOnlineParts $125.22: OEM repair parts/hardware; Auto repair / NECESSARY / NO ALLOWANCE; READY.
+- September County Clerk $75.67: user-confirmed vehicle registration; NECESSARY / NO ALLOWANCE; READY. Separate August same-amount row remains unresolved.
+- Legacy HELOC payment $2,311.24 on 2025-03-15: corrected by exact recurrence against 52 other canonical HELOC-payment rows; READY.
+- Modification/tool rows retain unresolved necessity/allowance where evidence does not establish repair-vs-upgrade intent.
 
 ## Required work
 
-1. Re-read live canonical workbook/provider state before each new mutation batch.
-2. Continue receipt/order-backed work on recent higher-dollar ambiguous rows first; preserve low-confidence rows for voice review.
-3. Prefer exact recurring-pattern and provider-semantic rules over repetitive manual edits, but do not broaden rules past the evidence.
-4. Recompute the Prime Visa provider-minus-canonical `Transaction ID` set mechanically before projecting any missing rows.
-5. Project only proven-missing provider IDs with provenance, stable identity, correct signed economic treatment, and no duplicate economic effects.
+1. Re-read live canonical workbook/provider state before each mutation batch.
+2. Mechanically compare provider transaction IDs against canonical `FinOps Ledger.Transaction ID` across the entire accessible boundary, account by account; never infer identity from date/amount.
+3. Project only proven-missing provider IDs with provenance, stable identity, correct signed economic treatment, and no duplicate economic effects.
+4. Explicitly record source-unavailable historical gaps rather than inventing a start date.
+5. Continue receipt/order-backed recent higher-dollar ambiguous rows; preserve low-confidence rows for voice review.
 6. After each mutation batch, read back affected rows and exact queue count.
 7. Before packet completion, verify duplicate Event IDs = 0, duplicate provider transaction IDs = 0, and review-surface/ledger parity for reviewable Event IDs.
-
-## Displaced packet checkpoint — FIN-MODEL-TARGET-002
-
-Paused, not abandoned. Re-read the live Command Center before resume because Workspace model/dashboard edits continued after the earlier Git checkpoint. Do not reconstruct model state from chat.
+8. Once finance history is closed or durably bounded, switch priority to Android inventory/scanning using existing INV-001, INV-002, MOVE-001, IDENT-001, ASSET-001/002/003 and Android architecture. Do not create a parallel inventory model.
 
 ## Acceptance gates — FIN-CANON-AUDIT-001
 
-1. Provider and canonical identity sets are compared mechanically using stable transaction IDs.
+1. Provider and canonical identity sets are compared mechanically using stable transaction IDs across all accessible history.
 2. Only proven-missing transactions are projected; replay remains idempotent with zero duplicate economic effects.
 3. Source provenance/provider identity are preserved.
-4. High-confidence classifications are applied; ambiguous rows remain reviewable.
-5. Canonical ledger/review surfaces agree on reviewable Event IDs.
-6. Readback confirms no duplicate Event IDs or provider transaction IDs.
-7. Remaining provider gap and exact next batch are recorded before switching work.
+4. Source-unavailable history is explicitly bounded.
+5. High-confidence classifications are applied; ambiguous rows remain reviewable.
+6. Canonical ledger/review surfaces agree on reviewable Event IDs.
+7. Readback confirms no duplicate Event IDs or provider transaction IDs.
 
 ## Next bounded step
 
-Resume from **673 NEEDS REVIEW**. Mechanically compare the now re-verified 675 Prime Visa provider transaction IDs against live canonical `FinOps Ledger.Transaction ID`; project only exact missing IDs if any. Then continue recent receipt-backed mixed retail/auto/tool classification and exact recurring-pattern anomalies. Historical Amazon remains evidence-limited and should not be guessed.
+Use the verified **2024-08-09** connected-history boundary. Re-read live `FinOps Ledger.Transaction ID`, then compare stable provider identities account-by-account across the complete accessible range. Prime Visa and Joint Checking already have strong prior evidence; verify them against current canonical state rather than trusting stale counts. Project only exact missing IDs. After the historical finance identity gap is zero or durably bounded, begin the Android inventory/scanning vertical.
