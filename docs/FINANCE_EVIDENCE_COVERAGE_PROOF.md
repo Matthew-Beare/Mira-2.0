@@ -1,79 +1,69 @@
 # Finance evidence coverage proof
 
-Date: 2026-09-13
+Date: 2026-09-15
 
-Packet: `M2-M1-046`
+Packet: `FIN-CANON-AUDIT-001`
 
-This document records sanitized verification for the bounded evidence-coverage closure of `FIN-CANON-AUDIT-001`. It intentionally excludes private financial values, account/provider identifiers, transaction/order/tracking identifiers, addresses, receipt/email contents and provider secrets.
+This document records sanitized closure evidence for canonical connected-finance projection. It intentionally excludes private account/provider identifiers, transaction/order/tracking identifiers, transaction amounts, addresses, receipt contents and provider secrets.
 
-## Provider ceiling
+## Provider coverage ceiling
 
-Connected financial transaction history was read before reconciliation. The provider reports full-history availability and complete coverage for the bounded queries used here, while freshness remains **UNKNOWN**. Provider-observed transactions therefore remain money authority, but this proof does not claim current-to-the-second completeness.
+The connected finance provider reports transaction history as `full_history`, `ready`, and complete for every deterministic bounded query used for this closure. Provider freshness remains **UNKNOWN**. This proof therefore establishes exact historical projection equality for the provider dataset returned during the audit; it does not claim current-to-the-second freshness.
 
-## Evidence lanes reached
+## Explicit connected-account boundaries
 
-The live reconciliation directly reached:
+Every connected transaction account was given either a provider-observed earliest date or an explicit no-row state:
 
-- the historical mailbox evidence archive already indexed into Financial Escape;
-- connected current Gmail for post-archive incremental evidence; and
-- the current Purchase & Receipt Archive, including its order/detail/audit/classification surfaces.
+- Prime Visa: earliest 2024-08-09; 675 provider rows.
+- Rewards Signature 9854: earliest 2024-08-13; 186 provider rows.
+- Joint Checking: earliest 2024-08-12; 669 provider rows.
+- Home Savings: earliest 2024-08-17; 59 provider rows.
+- Matthew's Primary Savings: earliest 2024-08-09; 113 provider rows.
+- Joint Savings: earliest 2024-08-30; 27 provider rows.
+- Quicksilver: earliest 2026-05-12; 295 provider rows.
+- Savor: earliest 2026-05-15; 67 provider rows.
+- A second Rewards Signature account exposes no provider transactions in full-history coverage.
 
-These sources explain meaning and provenance. None of them independently proves that money posted.
+Across accounts with rows, the provider returned **2,091 transactions with 2,091 unique stable transaction IDs**.
 
-## Canonical evidence coverage
+## Historical projection gap repair
 
-Exact live readback after reconciliation showed:
+Exact stable-ID reconciliation found one remaining historical projection gap: 42 posted Prime Visa marketplace purchases clustered in late 2025 were present at the provider but absent from the canonical ledger.
 
-- 914 indexed evidence rows;
-- 914 unique source dedup keys;
-- zero duplicate source dedup keys;
-- zero rows without a deterministic audit disposition;
-- 161 unmatched amount-evidence rows;
-- 57 unmatched order-evidence rows;
-- 55 explicit non-economic commerce hints;
-- 58 shipping/delivery support rows;
-- 572 unresolved-review rows; and
-- six current evidence rows explicitly retained as supported meaning/evidence state.
+Only those proven-missing stable provider IDs were appended into unused canonical rows. Existing production rows were not overwritten, repurposed or deleted. Provider date, merchant/category semantics and provenance were preserved. Because item identity could not be established from provider semantics alone, the imported marketplace purchases remain low-confidence review items rather than receiving invented purpose, necessity or allowance classifications.
 
-These are evidence-state counts. They are not purchase counts or spend totals.
+Post-write readback confirmed the appended rows and their canonical formula projections.
 
-## False-positive cleanup
+## Exact identity closure
 
-A bounded review found marketing mail incorrectly promoted to purchase, return or shipping evidence because promotional copy contained commerce keywords or amount-like text. Clearly promotional rows in the reviewed slice were reclassified to non-economic commerce hints while preserving source identity, raw provenance and replay keys.
+A fresh provider/canonical set comparison after repair produced:
 
-A zero-cash-credit order was also corrected so it cannot masquerade as unmatched cash spend.
+- provider stable transaction IDs: 2,091 unique;
+- canonical stable transaction IDs: 2,091 unique;
+- provider minus canonical: 0;
+- canonical minus provider: 0;
+- duplicate canonical transaction IDs: 0;
+- duplicate canonical Event IDs: 0.
 
-This repair narrows the review queue without deleting evidence or inventing a purchase.
+Every connected account with provider rows therefore has exact stable-ID coverage across its provider-observed full-history interval. The explicit no-row account remains a no-row state rather than a manufactured history boundary.
 
-## Current connected-mail reconciliation
+## Review-surface parity
 
-Two current receipt cases exercise the intended boundary:
+Exact readback also confirmed:
 
-1. One receipt matched an existing posted provider event. It was linked as supporting evidence to that existing canonical event and did not create another economic event.
-2. A later receipt had no matching posted provider transaction in the refreshed bounded slice. It remains unmatched evidence only and does not change posted spend.
+- canonical ledger rows marked `NEEDS REVIEW`: 660 unique Event IDs;
+- Spending Review rows marked `NEEDS REVIEW`: 660 unique Event IDs;
+- ledger minus review surface: 0;
+- review surface minus ledger: 0.
 
-This proves both the positive-link and fail-closed no-money-authority paths using live provider/mail evidence.
+Unresolved meaning remains visible for human review without blocking canonical money-state completeness.
 
-## Graph and replay integrity
+## Integrity semantics
 
-After the bounded mutations, exact readback confirmed:
-
-- duplicate canonical economic-event IDs: 0;
-- duplicate evidence IDs: 0;
-- duplicate entity IDs: 0;
-- duplicate relation IDs: 0;
-- broken relation endpoints: 0;
-- canonical entity count: 3,023; and
-- canonical relation count: 3,668.
-
-The canonical ledger remained at 886 economic-event rows. New evidence therefore enriched existing state without silently manufacturing spend.
-
-## Remaining blocker
-
-`FIN-CANON-AUDIT-001` is not yet fully closable. The connected provider exposes history predating the lower bound of the current canonical finance projection, and that older history remains explicitly marked `OPEN HISTORICAL BACKFILL` in the live control surface.
-
-The next bounded packet must either reconcile that older provider history through stable provider identity or establish an explicit durable product boundary that intentionally excludes it. Until then, MIRA must not claim full historical finance projection coverage.
+Transfers, income, credits/refunds and non-spend state retain their existing economic treatment. The closure repair added only provider-proven missing posted marketplace purchases and did not reclassify transfers as spend or manufacture transaction identities.
 
 ## Result
 
-**PASS for current indexed evidence coverage and deterministic exception disposition. BLOCKED for overall canonical-finance audit closure by the explicit pre-projection historical-coverage gap.**
+**PASS. `FIN-CANON-AUDIT-001` historical connected-finance projection closure gates are satisfied.**
+
+Provider freshness remains UNKNOWN and must continue to be disclosed whenever a user-facing statement depends on current posted state.
