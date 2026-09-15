@@ -8,52 +8,65 @@ Git is authoritative for recovery, but mutable finance truth must be re-read fro
 
 ## Current objective
 
-Resume historical provider-to-canonical finance reconciliation and work the next transaction batch. Compare exact provider transaction identities against the current canonical `FinOps Ledger.Transaction ID` set, project only identities proven absent, preserve source provenance and idempotency, and classify only where evidence is strong. Low-confidence purpose/necessity stays reviewable rather than guessed.
+Continue canonical transaction reconciliation and high-confidence review-queue reduction. Compare exact provider identities against `FinOps Ledger.Transaction ID` before any projection; never infer identity from date/amount. Classify only where provider semantics, durable user rules, receipts, or resolved precedent are strong. Leave low-confidence purpose/necessity explicitly reviewable.
 
 ## User reprioritization
 
 On 2026-09-15 the user explicitly instructed MIRA to work more transactions. This displaces `FIN-MODEL-TARGET-002` until the transaction-audit packet is checkpointed or the user reprioritizes again.
 
-## Canonical reconciliation state
+## Canonical source state
 
-- Live Finances reports transaction coverage `full_history`; freshness remains `unknown`.
-- Prime Visa source range is bounded exactly from 2024-08-09 through 2026-09-11.
-- Complete bounded provider reads returned 150 transactions for 2024, 351 for 2025, and 174 for 2026: 675 total, matching the prior source count.
-- `FinOps Ledger.Transaction ID` is the stable provider identity column used for exact reconciliation.
-- No provider-to-canonical set difference was computed after the prior packet switch and no Prime Visa rows were appended during that interrupted run.
-- Joint Checking remains previously proven complete at 669/669 provider identities.
-- Current repo branch/head at reprioritization: `main` @ `ceec7d0bc0ae4ce63cd40b38dca398a7d75a7f32`.
+- Finances account history coverage remains `full_history`; freshness remains `unknown`.
+- Prime Visa source range remains bounded from 2024-08-09 through 2026-09-11.
+- Prior bounded provider reads returned 150 transactions for 2024, 351 for 2025, and 174 for 2026: 675 total.
+- `FinOps Ledger.Transaction ID` remains the stable provider identity key.
+- Joint Checking was previously proven complete at 669/669 provider identities.
+- The live Financial Escape Command Center has changed since the prior finance checkpoint, including older Prime Visa rows already present in canonical state. Do not assume the old provider-minus-canonical gap; recompute mechanically before projecting anything.
+
+## 2026-09-15 transaction-classification pass
+
+Live `Spending Review` began this pass with 990 rows marked `NEEDS REVIEW` and ended at 837: 153 rows removed from review through canonical rule repair and high-confidence resolution.
+
+Applied/verified durable logic:
+- Rewards Signature・9854 rows whose provider category matches `transportation_fuel` resolve as vendor Gas / category Fuel / NECESSARY under the user's Ducks Unlimited fuel rule.
+- Effective Allowance now resolves those Ducks fuel rows to `NO ALLOWANCE` instead of leaving them `UNKNOWN`.
+- Exact Amazon Pharmacy rows resolve to `NO ALLOWANCE`; prior Health / medication + NECESSARY treatment remains intact.
+- New explicit user rule: doctor, dentist, and medication transactions are always `NECESSARY`.
+- `Effective Necessity` now automatically marks observed medical provider categories `dental_care`, `pharmacy_supplements`, `other_medical`, `vision_care`, and `primary_care` as `NECESSARY`.
+- Hair/beauty provider categories are intentionally excluded from that medical rule so merchants such as Ulta, Great Clips, salons, cosmetics, etc. do not become necessary merely because the provider taxonomy groups them under health/wellness.
+
+Additional high-confidence rows resolved in this pass included truck gas, Skyline Internet recurring utilities by resolved precedent, Dermatology Associates medical care, and prior user-confirmed outdoor-sign classification where only allowance resolution remained safe.
 
 ## Required work
 
-1. Re-read current canonical Financial Escape Command Center metadata, `FinOps Ledger` headers, current transaction-ID coverage, and review-queue structure before mutation.
-2. Re-read the bounded 675-row Prime Visa provider set from Finances or an equivalent current provider authority.
-3. Compute the provider-minus-canonical identity set mechanically. Never resume from a date-based estimate or an obsolete queue count.
-4. Project only proven-missing identities with source provenance, stable provider identity, correct signed economic treatment, and no duplicate economic effects.
-5. Apply high-confidence category / necessity / funding treatment from provider semantics, existing durable user rules, receipts, and prior confirmed classifications. Leave low-confidence rows in `NEEDS REVIEW`.
-6. Read back inserted/updated rows and verify duplicate Event IDs = 0, duplicate provider transaction IDs = 0, and ledger/review queue parity for reviewable events.
-7. Checkpoint exact remaining provider gap and next bounded batch in this file before switching work.
+1. Re-read live canonical workbook and provider state before each new mutation batch.
+2. Recompute Prime Visa provider-minus-canonical identity set mechanically before projecting any missing rows; never use date-based estimates.
+3. Project only proven-missing provider IDs with provenance, stable identity, correct signed economic treatment, and no duplicate economic effects.
+4. Continue reducing the 837-row review queue using deterministic merchant/category rules, receipts, Gmail/Drive evidence, and prior confirmed user classifications.
+5. Prefer family-level canonical logic fixes over hand-editing repeated rows when the evidence supports a durable rule.
+6. Keep ambiguous multipurpose merchants and unclear purchase purpose in `NEEDS REVIEW`; do not guess.
+7. After each mutation batch, read back affected rows and current queue count.
+8. Before packet completion, verify duplicate Event IDs = 0, duplicate provider transaction IDs = 0, and review-surface/ledger parity for reviewable Event IDs.
 
 ## Displaced packet checkpoint — FIN-MODEL-TARGET-002
 
 The model-target packet is paused, not abandoned.
 
-- Objective: retire April 1, 2027 as the active Debt Escape target and make March 1, 2027 the governing target throughout the live Financial Escape Command Center; synchronize dependent calculations and presentation surfaces; add six-month weekly spending to Forecast Charts; elevate rolling net worth on Dashboard.
-- Acceptance gates were not completed before this reprioritization.
-- The live Command Center must be re-read on resume because Workspace edits may have occurred after the Git checkpoint, including recent Dashboard debt-payoff/APR presentation changes.
-- Exact resume point: re-audit the live Command Center for every active April-target dependency, Forecast Charts weekly-spend support, and Dashboard rolling-net-worth placement; then apply one synchronized target-migration update and read back all dependent outputs.
-- Resume base is the then-current `main`; do not reconstruct sheet state from chat.
+- Objective: retire April 1, 2027 as the active Debt Escape target and make March 1, 2027 the governing target throughout the live Financial Escape Command Center; synchronize dependent calculations/presentation surfaces; add six-month weekly spending to Forecast Charts; elevate rolling net worth on Dashboard.
+- Acceptance gates were not completed before reprioritization.
+- Re-read the live Command Center on resume; Workspace edits may have occurred after the Git checkpoint.
+- Exact resume point: audit the live Command Center for remaining April-target dependencies, Forecast Charts weekly-spend support, and Dashboard rolling-net-worth placement; then apply one synchronized target migration and read back dependent outputs.
 
 ## Acceptance gates — FIN-CANON-AUDIT-001
 
 1. Provider and canonical identity sets are compared mechanically using stable transaction IDs.
-2. Only proven-missing transactions are projected; replay is idempotent and duplicate economic effects remain zero.
+2. Only proven-missing transactions are projected; replay remains idempotent with zero duplicate economic effects.
 3. Source provenance and provider identity are preserved for every projected row.
-4. High-confidence classifications are applied; ambiguous rows remain explicitly reviewable.
+4. High-confidence classifications are applied; ambiguous rows stay explicitly reviewable.
 5. Canonical ledger and review surfaces agree on reviewable Event IDs after mutation.
 6. Readback confirms no duplicate Event IDs or provider transaction IDs.
-7. Remaining provider gap and exact next batch are recorded here before another packet switch.
+7. Remaining provider gap and exact next batch are recorded here before switching work.
 
 ## Next bounded step
 
-Re-read the live Financial Escape Command Center and provider account state, compute the current Prime Visa provider-minus-canonical `Transaction ID` set from the authoritative 675-row source set, then reconcile the next bounded missing batch and verify it by exact readback.
+Continue the next high-confidence review families from the current 837-row queue, prioritizing deterministic medical/dental/pharmacy, recurring utilities, explicit fuel/truck descriptors, and other merchants with resolved precedent. Then recompute the exact Prime Visa provider-minus-canonical Transaction ID set before any new transaction projection.
