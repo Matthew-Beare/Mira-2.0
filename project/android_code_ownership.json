@@ -77,7 +77,7 @@
       "owned_paths": ["android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceTransport.java", "android-client/core/src/main/java/com/mira/client/core/sync/GoogleWorkspaceEventTransport.java"],
       "feature_ids": ["CLIENT-ANDROID-001", "API-001", "PROVIDER-002", "RECOVERY-002", "MOVE-001"],
       "work_ids": ["ANDROID-CLIENT-CORE-001", "ANDROID-SYNC", "ANDROID-CAPTURE-001"],
-      "verification": ["android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java"]
+      "verification": ["android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceTransportTest.java", "android-client/core/src/test/java/com/mira/client/core/sync/GoogleWorkspaceEventTransportTest.java"]
     },
     {
       "id": "android-client-google-workspace-binding",
