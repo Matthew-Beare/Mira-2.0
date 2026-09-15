@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -22,20 +23,9 @@ import java.util.regex.Pattern;
  * Passive decoded-camera identifier parsing and canonical asset resolution.
  *
  * <p>This component has no mutation dependency. It accepts already-decoded QR/barcode material,
- * validates the identifier using the same bounded semantics as IDENT-001, queries only verified
- * canonical readback projection, and returns the matching Entity UUID(s). A passive scan cannot
- * create an asset, attach an identifier, or move inventory because no write surface is reachable
- * from this class.</p>
- *
- * <p>MIRA QR identifier envelope v1 is strict JSON:</p>
- * <pre>
- * {"schema_version":1,"kind":"identifier","identifier_type":"serial_number",
- *  "namespace":"vendor","value":"ABC-123"}
- * </pre>
- * <p>{@code namespace} is required only for IDENT-001 namespaced types. Unknown fields and
- * unsupported material fail closed. This first Android slice accepts ASCII local identifiers and
- * namespaces so Java normalization is exactly compatible with the canonical captured subset;
- * arbitrary Unicode local identifiers remain unsupported rather than approximately normalized.</p>
+ * validates the identifier using the bounded IDENT-001 capture semantics, queries only verified
+ * canonical readback projection, and returns matching Entity UUIDs. A passive scan cannot create
+ * an asset, attach an identifier, or move inventory because no write surface is reachable here.</p>
  */
 public final class IdentifierCaptureResolver {
     private static final String IDENTIFIER_DATA_CLASS = "identifier";
@@ -163,7 +153,7 @@ public final class IdentifierCaptureResolver {
         return ResolveResult.completed(Status.AMBIGUOUS, wanted, matches);
     }
 
-    /** Parse one decoded capture without performing any provider read. */
+    /** Parse one decoded capture without performing provider I/O. */
     public static CapturedIdentifier parse(DecodedCapture capture)
             throws CaptureValidationException {
         Objects.requireNonNull(capture, "capture");
@@ -194,8 +184,13 @@ public final class IdentifierCaptureResolver {
                 throw new CaptureValidationException("barcode symbology is unsupported");
         }
         String source = requireText(capture.rawValue, "barcode value", MAX_VALUE_CHARS);
-        String normalized = normalizedValue(identifierType, source);
-        return new CapturedIdentifier(identifierType, null, null, source, normalized);
+        return new CapturedIdentifier(
+                identifierType,
+                null,
+                null,
+                source,
+                normalizedValue(identifierType, source)
+        );
     }
 
     private static CapturedIdentifier parseQr(String raw) throws CaptureValidationException {
@@ -206,27 +201,33 @@ public final class IdentifierCaptureResolver {
         } catch (JSONException exc) {
             throw new CaptureValidationException("QR payload must be a JSON object", exc);
         }
-        for (String key : payload.keySet()) {
+
+        // Android's platform org.json does not expose JSONObject.keySet() on every supported API.
+        // keys() is available throughout this app's API range and keeps strict unknown-field checks.
+        Iterator<String> keys = payload.keys();
+        while (keys.hasNext()) {
+            String key = keys.next();
             if (!QR_KEYS.contains(key)) {
                 throw new CaptureValidationException("QR payload contains unsupported field: " + key);
             }
         }
+
         if (payload.optInt("schema_version", -1) != QR_SCHEMA_VERSION) {
             throw new CaptureValidationException("QR schema_version must be 1");
         }
         if (!"identifier".equals(payload.optString("kind", null))) {
             throw new CaptureValidationException("QR kind must be identifier");
         }
-        String identifierType = identifierType(payload.optString("identifier_type", null));
+        String type = identifierType(payload.optString("identifier_type", null));
         String source = requireText(payload.optString("value", null), "value", MAX_VALUE_CHARS);
 
         String namespace = null;
         String namespaceKey = null;
         boolean namespacePresent = payload.has("namespace") && !payload.isNull("namespace");
-        if (NAMESPACED_TYPES.contains(identifierType)) {
+        if (NAMESPACED_TYPES.contains(type)) {
             if (!namespacePresent) {
                 throw new CaptureValidationException(
-                        "namespace is required for identifier type " + identifierType
+                        "namespace is required for identifier type " + type
                 );
             }
             namespace = requireText(
@@ -236,18 +237,15 @@ public final class IdentifierCaptureResolver {
             );
             namespaceKey = normalizeAsciiLocal(namespace, "namespace");
         } else if (namespacePresent) {
-            throw new CaptureValidationException(
-                    identifierType + " is global and must not include namespace"
-            );
+            throw new CaptureValidationException(type + " is global and must not include namespace");
         }
 
-        String normalized = normalizedValue(identifierType, source);
         return new CapturedIdentifier(
-                identifierType,
+                type,
                 namespace,
                 namespaceKey,
                 source,
-                normalized
+                normalizedValue(type, source)
         );
     }
 
@@ -266,6 +264,7 @@ public final class IdentifierCaptureResolver {
         if (payload.optInt("schema_version", -1) != IDENTIFIER_SCHEMA_VERSION) {
             throw new CaptureValidationException("canonical identifier schema version is unsupported");
         }
+
         String identifierId = requireText(
                 payload.optString("identifier_id", null),
                 "identifier_id",
@@ -284,6 +283,7 @@ public final class IdentifierCaptureResolver {
         if (!ENTITY_UUID.matcher(entityUuid).matches()) {
             throw new CaptureValidationException("canonical identifier entity_uuid is invalid");
         }
+
         String type = identifierType(payload.optString("identifier_type", null));
         String source = requireText(
                 payload.optString("source_value", null),
@@ -317,13 +317,8 @@ public final class IdentifierCaptureResolver {
                     "canonical global identifier contains namespace material"
             );
         }
-        return new IdentifierSnapshot(
-                entityUuid,
-                type,
-                namespaceKey,
-                source,
-                normalized
-        );
+
+        return new IdentifierSnapshot(entityUuid, type, namespaceKey, source, normalized);
     }
 
     private static String nullableText(JSONObject payload, String field, int maximum)
@@ -514,7 +509,7 @@ public final class IdentifierCaptureResolver {
         }
     }
 
-    /** Canonically comparable interpretation of a decoded capture. */
+    /** Validated nonauthoritative identifier material extracted from a scan. */
     public static final class CapturedIdentifier {
         private final String identifierType;
         private final String namespace;
@@ -587,13 +582,13 @@ public final class IdentifierCaptureResolver {
             return new ResolveResult(status, identifier, entityUuids, null, null);
         }
 
-        static ResolveResult failure(Status status, String code, String message) {
+        static ResolveResult failure(Status status, String errorCode, String message) {
             return new ResolveResult(
                     status,
                     null,
-                    Collections.emptyList(),
-                    code,
-                    message == null ? "capture resolution failed" : message
+                    Collections.<String>emptyList(),
+                    errorCode,
+                    message
             );
         }
 
