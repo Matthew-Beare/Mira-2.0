@@ -2,49 +2,52 @@
 
 Git is authoritative for recovery, but mutable finance truth must be re-read from the connected provider and canonical FinOps sheet before work selection.
 
+## Active packet
+
+`FIN-MODEL-TARGET-002`
+
 ## Current objective
 
-Continue `FIN-CANON-AUDIT-001`: prove and close the remaining historical provider-to-canonical finance identity gap without artificial start dates, lost evidence, duplicate economic effects, or fabricated classifications.
+Retire April 1, 2027 as the Debt Escape target and make March 1, 2027 the single governing target throughout the live Financial Escape Command Center. Synchronize all dependent calculations and presentation surfaces, add a six-month weekly-spending view to Forecast Charts, and elevate rolling net worth on the main Dashboard to the same visual priority as exit date.
 
-## Reconciled state — 2026-09-15
+## Required work
+
+1. Audit every live Command Center label, formula, assumption, snapshot field, chart input, target comparison, and mileage requirement that depends on April 1 or an April-target concept.
+2. Replace the governing target with March 1, 2027 and recompute all dependent exit/pace/spending/payoff outputs. Do not preserve April 1 as an active user-facing target.
+3. Add a weekly-spending series covering the most recent six months to Forecast Charts using canonical posted economic-spend data and preserving historical actuals.
+4. Put rolling net worth prominently on the main Dashboard at the same executive-glance priority as modeled exit date. Use the canonical verified net-worth definition and do not manufacture unavailable history.
+5. Read back changed formulas, key values, labels, and chart sources before calling the packet complete.
+6. Update durable operating policy so March 1 is the target used by future refreshes and briefs.
+
+## Displaced packet checkpoint — FIN-CANON-AUDIT-001
+
+Historical provider-to-canonical finance reconciliation is paused, not abandoned.
 
 - Live Finances reports transaction coverage `full_history`; freshness remains `unknown`.
-- Prior checkpoint recorded complete bounded source counts of Prime Visa = 675 and Joint Checking = 669 transactions.
-- Prior canonical readback recorded 1,835 ledger Event IDs and synchronized Spending Review Event IDs with zero duplicate ledger Event IDs, zero duplicate provider Transaction IDs, zero duplicate Spending Review Event IDs, and exact ledger/review Event-ID set equality.
-- Joint Checking was previously proven complete at 669/669 provider identities.
-- The prior claim that Prime Visa has exactly 256 missing canonical provider identities is **not currently safe to use as a projection queue without recomputing the exact set difference**. Fresh provider-to-canonical spot checks found canonical rows for Prime Visa identities at both 2024-08-09 and 2025-01-01, including their provider Transaction IDs and Event IDs. This does not prove the card is complete; it proves that age/date alone cannot identify the missing set and prevents a duplicate historical replay.
-- Historical source data remains authoritative evidence. No existing production data is to be deleted or overwritten merely to simplify reconciliation.
+- Prime Visa source range is now bounded exactly from 2024-08-09 through 2026-09-11.
+- Complete bounded provider reads returned 150 transactions for 2024, 351 for 2025, and 174 for 2026: 675 total, matching the prior source count.
+- The canonical Financial Escape Command Center workbook was exported after identifying `FinOps Ledger.Transaction ID` as the stable provider identity column.
+- No provider-to-canonical set difference has yet been computed from that export, and no Prime Visa rows were appended during this resumed run.
+- Joint Checking remains previously proven complete at 669/669 provider identities.
 
-## Customer priority / sequencing
+### Exact resume point
 
-1. Recompute the exact Prime Visa provider-ID set against canonical `FinOps Ledger.Transaction ID` from complete bounded provider reads and current canonical readback. Do not infer missing rows from dates or counts alone.
-2. Project only identities proven absent from canonical state, preserving provider evidence and idempotent Event IDs.
-3. Correlate ambiguous marketplace/card merchants against available order, receipt, and mail evidence before asking the user; never infer item identity from merchant name alone.
-4. Preserve transfer/payment/refund semantics and signed economic-spend rules. Keep unresolved purpose/necessity/funding context reviewable rather than guessed.
-5. After identity closure, synchronize Spending Review and run full graph-integrity/readback gates.
-6. After historical finance coverage is closed or durably bounded by actual source unavailability, move to the Android inventory/scanning vertical using the existing INV-001, INV-002, MOVE-001, IDENT-001, ASSET-001/002/003 and Android architecture.
+After `FIN-MODEL-TARGET-002` is complete, re-read provider/Workspace state, obtain the then-current canonical `FinOps Ledger.Transaction ID` set, compare it mechanically against the 675 bounded Prime Visa provider IDs, and project only identities proven absent. Never resume from the obsolete 256-row estimate or a date-based queue.
 
 ## Acceptance gates
 
-1. Actual connected historical range inventoried per relevant source.
-2. Provider stable transaction identities compared against canonical MIRROR finance identities using only complete bounded provider reads.
-3. Every supported missing provider event projected exactly once; no already-canonical provider identity is replayed.
-4. Ambiguous semantic classification remains reviewable rather than fabricated.
-5. Exact readback proves duplicate Event IDs, Evidence IDs, Entity IDs, Relation IDs and broken relation endpoints are all zero.
-6. Provider identity set is fully represented or explicitly accounted for by documented source unavailability/exclusion.
-7. Historical date storage/presentation remains deterministic.
-8. Public Git contains only sanitized coverage/proof, never private balances, account/provider IDs, transaction IDs, receipt contents, addresses, or secrets.
-9. Repository CI passes at the exact completion head and again after merge before the objective is called complete.
+1. No active April-1 target logic remains in live target calculations or user-facing Financial Escape surfaces.
+2. March 1, 2027 drives target pace, readiness, exit comparison, mileage requirement, and dependent forecast calculations.
+3. Forecast Charts contains a correct weekly-spending view for the latest six months using canonical posted spend semantics.
+4. Dashboard shows rolling net worth prominently and links it to canonical current/history data rather than a hard-coded value.
+5. Daily/history data is preserved; forecast changes do not rewrite prior actual snapshots.
+6. All modified inputs and dependent outputs pass live readback.
+7. Reconciliation packet resume state above remains sufficient to continue without chat reconstruction.
 
-## Resume point
+## Repository checkpoint
 
-Do **not** blindly append the previously recorded 256 Prime Visa rows. First obtain the current canonical Transaction-ID column and complete bounded Prime Visa provider IDs, compute an exact set difference, and use only that set as the replay queue. Two live spot checks from the historical card range are already canonical, so a date-based replay would risk duplicates. After each bounded append, synchronize Spending Review and require duplicate/set-equality readback.
+Base before packet switch: `main` @ `7aa848adf28f0e33379f1f59affd1899ec2a7261`.
 
-## Canonical six-line status
+## Next bounded step
 
-Objective: Reconcile every accessible historical provider transaction into canonical MIRROR exactly once.
-Progress: Revalidated the historical card path against live provider and canonical evidence; stopped an unsafe count/date-based replay because sampled 2024 and 2025 provider identities are already canonical.
-Last 24h: Joint Checking provider identity coverage was completed at 669/669 with synchronized ledger/review surfaces and zero recorded provider-identity duplicates.
-Deliverable: Exact Prime Visa provider-to-MIRROR set-difference proof followed by projection of only genuinely missing identities.
-Expected delivery: UNKNOWN.
-Blocker: none; exact Prime Visa set difference must be recomputed before any further historical card append.
+Audit the live Financial Escape Command Center for every April-target dependency, current Forecast Charts layout/data sources, and Dashboard placement/rolling-net-worth support; then apply one synchronized live-sheet update and read it back.
