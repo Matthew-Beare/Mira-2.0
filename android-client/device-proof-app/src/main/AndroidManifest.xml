@@ -6,6 +6,9 @@
         android:allowBackup="false"
         android:label="MIRA Device Proof"
         android:supportsRtl="true">
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode_ui" />
         <activity
             android:name=".DeviceProofActivity"
             android:exported="true">
