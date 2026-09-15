@@ -1,61 +1,79 @@
 # MIRA 2.0 — Current Work
 
+## Active packet
+
+`ANDROID-CAPTURE-001`
+
 ## Customer status
-Objective: Close historical finance reconciliation before moving to the Android inventory/scanning vertical.
-Progress: Deterministic quarter-chunk provider reads now materialize the complete 2026 stable-ID sets for Prime Visa (174 IDs) and Joint Checking (233 IDs), with full-history/complete-query coverage on every chunk; canonical equality remains the closure gate.
-Last 24h: Historical provider rows were reconciled into the canonical ledger with provenance preserved, including pre-2026 savings history and deterministic non-spend handling for transfers/income.
-Deliverable: Durable finance-coverage proof with exact provider/canonical identity coverage per connected transaction account, followed by Android camera/QR/barcode inventory capture using the existing asset/location graph.
+
+Objective: Add Android camera/QR/barcode capture to the existing canonical asset/inventory system without creating a second inventory authority.
+Progress: `FIN-CANON-AUDIT-001` is closed with exact full-history provider/canonical stable-ID equality. Android shared-state, asset identity, identifier lookup, location state, inventory query and movement foundations are already merged/test-verified.
+Deliverable: A bounded Android capture slice that turns camera/QR/barcode input into a nonauthoritative observation, resolves canonical identifier/asset state, and requires an explicit movement command before changing observed location.
 Expected delivery: UNKNOWN.
-Blocker: none.
+Blocker: none currently known.
 
 ## Recovery authority
-This file is the authoritative execution checkpoint. Chat context is disposable. Re-read repository instructions, remote `main`, open PRs and CI before selecting work.
 
-## Current objective
-`FIN-CANON-AUDIT-001` historical coverage closure. Do not use 2026-09-01 as a historical exclusion boundary. Preserve provider evidence and provenance; represent actual unavailable gaps explicitly.
+This file is the authoritative execution checkpoint. Chat context is disposable. Re-read repository instructions, remote `main`, open PRs and CI before implementation or merge.
 
-### Verified live state — 2026-09-15
-- Remote `main` and open PR state were independently re-read before this checkpoint. PR #166 remains open but its branch checkpoint is stale relative to `main`; do not use its >=627 Prime Visa narrative as current recovery authority or merge it blindly.
-- Finances reports transaction dataset `full_history`, `ready`, and complete for every deterministic bounded query used here; freshness remains unknown.
-- Fresh provider aggregation for the unresolved 2026 lanes, bounded 2026-01-01 through 2026-09-15, with transfers included and pending excluded:
-  - Prime Visa / CREDIT CARD: 174 rows, 174 distinct transaction IDs, earliest 2026-01-02, latest 2026-09-11.
-  - Joint Checking: 233 rows, 233 distinct transaction IDs, earliest 2026-01-02, latest 2026-09-09.
-  - Quicksilver: 295 rows, 295 distinct transaction IDs, earliest 2026-05-12, latest 2026-09-11.
-  - Rewards Signature 9854: 58 rows, 58 distinct transaction IDs, earliest 2026-01-05, latest 2026-09-10.
-  - Savor: 67 rows, 67 distinct transaction IDs, earliest 2026-05-15, latest 2026-09-11.
-  - Rewards Signature 5868: no posted rows in the bounded query.
-- Deterministic provider identity extraction has now been executed for Prime Visa and Joint Checking in non-overlapping quarter chunks:
-  - Prime Visa: 55 IDs for 2026-01-01..03-31, 53 for 04-01..06-30, 66 for 07-01..09-15 = exactly 174 rows/IDs.
-  - Joint Checking: 82 IDs for 2026-01-01..03-31, 79 for 04-01..06-30, 72 for 07-01..09-15 = exactly 233 rows/IDs.
-  - Every chunk returned `full_history`, `ready`, `is_complete_for_query=true`, and `has_more=false`; the chunk sums exactly match the prior aggregate counts, removing pagination/truncation ambiguity for these two 2026 provider sets.
-- Canonical spot-readback of the provider-earliest Prime Visa ID (2026-01-02) found exactly one FinOps Ledger row with matching stable Transaction ID and transfer/non-spend semantics preserved. This is evidence that stable-ID comparison works, not yet proof that all 174 IDs are canonical.
-- Earlier exact canonical FinOps Ledger readback proved stable transaction-ID presence for the historical savings lanes, including provider-earliest rows for Matthew's Primary Savings (2024-08-09), Home Savings (2024-08-17), and Joint Savings (2024-08-30). Do not re-import them.
-- Canonical FinOps Ledger contains 3,000 data rows. Do not infer complete identity coverage from row count or merchant/date/amount; finish stable-ID equality reconciliation.
-- Existing `docs/FINANCE_EVIDENCE_COVERAGE_PROOF.md` remains stale where it says older provider history remains wholly outside the canonical projection. Do not update it to a closure claim until stable-ID reconciliation is complete.
+## Closed packet — FIN-CANON-AUDIT-001
 
-## Exact resume point
-1. Compare the now-materialized 174 Prime Visa and 233 Joint Checking provider stable IDs against canonical `FinOps Ledger.Transaction ID`. Prefer deterministic bounded/batched canonical reads; the earliest Prime Visa ID is already proven present exactly once.
-2. Materialize exact provider transaction-ID sets for Quicksilver, Rewards Signature 9854, and Savor using deterministic non-overlapping date chunks; preserve the explicit no-row Rewards Signature 5868 state.
-3. Any provider ID absent from canonical must be imported with original evidence/provenance, then read back exactly. Never delete or overwrite older production rows.
-4. Verify canonical duplicate count for provider transaction IDs is zero.
-5. Update `docs/FINANCE_EVIDENCE_COVERAGE_PROOF.md` with the exact durable coverage boundary and explicit unavailable/no-row states.
-6. Mark `FIN-CANON-AUDIT-001` closed only after exact readback supports it.
-7. Next priority: Android inventory/scanning vertical using the existing Android client plus `INV-001`, `INV-002`, `MOVE-001`, `IDENT-001`, `ASSET-001/002/003`; implement camera/QR/barcode capture into canonical asset identity and location/movement with exact readback. Do not create a parallel inventory model.
+Closed 2026-09-15.
 
-## Acceptance gates for finance closure
-- Provider coverage status recorded.
-- Every connected transaction account has an explicit provider earliest date or explicit no-row/unavailable state.
-- Canonical ledger contains every provider transaction in the covered interval exactly once by stable transaction ID, or any exception is durably enumerated.
-- Transfers/income/refunds remain economic-state preserving and are not silently converted into spend.
-- Historical provenance is preserved.
-- Exact post-write/readback shows no duplicate canonical transaction IDs introduced.
-- Coverage proof and CURRENT_WORK agree with live state.
+Acceptance evidence:
+- Finance provider transaction coverage reported `full_history`, `ready`, and complete for every deterministic bounded query used; freshness remains UNKNOWN.
+- Every connected transaction account has a provider-observed earliest date or an explicit no-row state.
+- Exact stable-ID reconciliation found one remaining late-2025 Prime Visa gap containing 42 posted marketplace purchases. Only those proven-missing provider IDs were appended into unused canonical rows; older production rows were not overwritten or deleted and unresolved item purpose remained reviewable.
+- Post-write exact set equality: 2,091 provider stable transaction IDs = 2,091 canonical stable transaction IDs; provider-minus-canonical = 0; canonical-minus-provider = 0.
+- Duplicate canonical transaction IDs = 0; duplicate canonical Event IDs = 0.
+- Review-surface parity: 660 canonical `NEEDS REVIEW` Event IDs = 660 Spending Review `NEEDS REVIEW` Event IDs; difference = 0.
+- Sanitized durable proof is `docs/FINANCE_EVIDENCE_COVERAGE_PROOF.md` at main commit `942ace58cb780524198670ae561605a4f399f496`.
+- Provider freshness remains UNKNOWN; closure proves historical projection equality for the queried provider dataset, not current-to-the-second freshness.
+
+## Active objective — ANDROID-CAPTURE-001
+
+Implement the queued Android capture work item against the existing Android/shared-state and canonical asset graph. Do not create a parallel inventory model, local-only asset authority, or scan-driven implicit movement.
+
+Feature/work alignment:
+- `CLIENT-ANDROID-001` / `ANDROID-CLIENT-CORE-001`
+- `ANDROID-CAPTURE-001`
+- `ASSET-001`, `ASSET-002`, `ASSET-003`
+- `IDENT-001` / completed `ASSET-IDENTIFIER-001`
+- `INV-001`, `INV-002`
+- `LOC-001` / completed `LOCATION-STATE-001`
+- `MOVE-001` / completed `MOVEMENT-CORE-001`
+- `EVID-001`
+- shared `API-001` command/readback semantics
+
+Base state:
+- Packet selected from `main` after finance closure proof at base SHA `942ace58cb780524198670ae561605a4f399f496`.
+- `ANDROID-CAPTURE-001` is already queued in BACKLOG; its stated rule is that camera/barcode/QR/NFC/BLE inputs are nonauthoritative observations and passive reads never silently move assets.
+- This bounded slice starts with camera/QR/barcode only. NFC/BLE remain outside this packet unless required by a hard shared abstraction dependency discovered during implementation.
+- Existing canonical inventory primitives are reused: immutable asset Entity UUID, namespaced identifiers, hierarchical locations, inventory query projection and event-first movement/readback.
+
+## Acceptance gates — ANDROID-CAPTURE-001
+
+1. Android capture accepts camera/QR/barcode observations through a bounded capture interface; raw capture does not itself become canonical truth.
+2. Supported identifier payloads normalize through existing `IDENT-001` namespace/collision rules and can resolve an existing canonical asset exactly.
+3. Unknown identifiers fail honestly into an unresolved observation/result state; no fabricated asset is silently created.
+4. A passive scan performs zero movement writes.
+5. Any move requires an explicit user/action command using existing `MOVE-001` event semantics and shared queued mutation boundary.
+6. Replay/idempotency prevents duplicate movement effects.
+7. Exact readback proves the canonical asset/location state after an explicit move and proves zero-write behavior for passive scans/replay.
+8. Offline/reconnect behavior preserves existing encrypted/replay-safe Android queue semantics rather than creating a second queue.
+9. Tests cover successful lookup, unknown identifier, malformed/unsupported payload, passive zero-write, explicit move, replay and conflict/error paths.
+10. Packet-to-feature alignment and idea-capture audit pass before merge; no uncaptured parallel inventory semantics are introduced.
+
+## Next bounded step
+
+Inspect the existing Android client modules, identifier contracts, movement commands and tests on `main`; choose the narrowest reusable capture seam. Then create the packet branch from the recorded base, implement camera/QR/barcode observation parsing plus canonical identifier lookup first, and prove passive scan = zero canonical writes before adding explicit move UI/command wiring.
+
+## Preserved work state
+
+- Stale PR #166 remains open from earlier finance work; do not merge it blindly or use its historical narrative as recovery authority.
+- Broader Android representative-device, notification/TTS, NFC/BLE and release-signing work remains separate unless a hard dependency is proven.
+- Finance review rows remain human-review work but no longer block historical canonical coverage closure.
 
 ## Idea/backlog capture audit
-CAPTURE AUDIT COMPLETE — no new material product ideas introduced; this run advances existing `FIN-CANON-AUDIT-001` evidence only.
 
-## Constraints
-- Do not manufacture a historical start date for convenience.
-- Do not claim provider freshness beyond what Finances reports.
-- Do not expose private account IDs, transaction IDs, amounts, addresses, receipt contents or provider secrets in public proof docs.
-- Routine worker runs remain silent to the user; checkpoint progress here.
+No new product semantics were introduced by the finance closure or packet switch. Android capture maps to existing `ANDROID-CAPTURE-001`, `IDENT-001`, `INV-001/002`, `LOC-001`, `MOVE-001`, `ASSET-001/002/003`, and `EVID-001` scope.
