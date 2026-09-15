@@ -8,15 +8,13 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 
 ## Reconciled state — 2026-09-14
 
-- Connected transaction coverage is `full_history`, query-complete for the bounded checks performed, and reaches 2024-08-09; provider freshness remains `unknown`.
-- Exact fresh provider inventory is 2,091 unique posted transaction identities across eight transaction sources.
-- Fresh canonical export before this run contained 1,555 unique provider-backed Event IDs with zero duplicate Event IDs and zero duplicate Transaction IDs.
-- Canonical source counts before this batch were: CREDIT CARD 419, Joint Checking 389, Quicksilver 295, Rewards Signature 9854 186, Matthew's Primary Savings 113, Savor 67, Home Savings 59, Joint Savings 27. Every source except CREDIT CARD and Joint Checking was already identity-complete.
-- This run projected the next 25 missing Joint Checking events from March 2025 into FinOps Ledger using exact provider Transaction IDs and synchronized the same 25 stable Event IDs into Spending Review.
-- Exact post-write readback shows 1,580 unique canonical Event IDs / Transaction IDs, with Joint Checking increased to 414 and no duplicate identities in the exported canonical ledger.
-- Spending Review readback resolves all 25 newly inserted Event IDs to the expected ledger date/vendor/net-spend/category fields. Transfers and income remain zero-economic-spend; ordinary outflows remain included; ambiguous purpose/necessity remains reviewable rather than guessed.
-- Remaining exact provider gap is 511 events: 256 CREDIT CARD plus 255 Joint Checking.
-- Existing historical date cells include mixed native-date and serial-date storage from earlier replay batches. They render through the review surface, but date normalization remains a cleanup gate before final finance closure.
+- Remote `main` and this checkpoint were re-read before work selection; no open PR was found that supersedes this finance objective.
+- Live Finances coverage is `full_history`, query-complete for transactions and recurring transactions. Freshness remains `unknown`, so coverage completeness is proven independently from freshness.
+- Stable provider history materially predates MIRA 2.0: Rewards Signature 9854 reaches 2024-08-13 and Prime Visa reaches 2024-08-09. This confirms September 1, 2026 cannot be treated as a historical exclusion boundary.
+- Fresh provider counts remain identity-rich: Rewards Signature 9854 has 186 posted rows, Quicksilver 295, Savor 67. Prime Visa and Joint Checking exceed a single 400-row page over the full range, so bounded queries are required for exact reconciliation.
+- A bounded read from 2025-08-01 forward proves Prime Visa has 271 posted rows and Joint Checking has 372 posted rows in that interval, with complete query coverage for each bound. Transfer linkage is present on matched card payments and is preserved as provider evidence.
+- Existing canonical checkpoint remains 1,580 unique provider-backed Event IDs / Transaction IDs with no duplicate identities after the last verified write; the previously recorded remaining gap is 511 events (256 Prime Visa, 255 Joint Checking).
+- No canonical mutation was attempted in this cycle because the available Drive read returned the ledger but not a safely bounded row-level mutation plan tied to the newly refreshed provider identity set. Writing from stale row positions would violate idempotent replay and exact-readback requirements.
 
 ## Customer priority / sequencing
 
@@ -41,13 +39,13 @@ Continue `FIN-CANON-AUDIT-001` by reconciling the remaining historical provider 
 
 ## Resume point
 
-Re-read live canonical counts before mutating because scheduled finance workers may run concurrently. Continue Joint Checking from the next missing provider identity after the 25-event March 2025 batch just projected, then finish the remaining CREDIT CARD identities. Current verified canonical identity count is 1,580 and the exact remaining gap is 511: 255 Joint Checking plus 256 CREDIT CARD. Preserve the same transfer/income exclusion and signed economic-spend rules, synchronize every appended Event ID into Spending Review, and require duplicate/set-equality readback after each bounded batch. After identity closure, normalize historical date cell storage and run full graph-integrity gates.
+Re-read live canonical FinOps Ledger and Spending Review rows, build the provider Transaction-ID set from bounded full-history queries for Prime Visa and Joint Checking, and compute the exact missing set against canonical Transaction IDs before any write. Continue in bounded batches only from that fresh set difference. Preserve transfer/card-payment linkage and signed economic-spend rules, synchronize every appended Event ID into Spending Review, and require duplicate/set-equality readback after each batch. After identity closure, normalize historical date cell storage and run full graph-integrity gates.
 
 ## Canonical six-line status
 
 Objective: Reconcile every accessible historical provider transaction into canonical MIRROR exactly once.
-Progress: 25 more historical checking events were projected and read back cleanly; 1,580 of 2,091 provider identities are now represented, leaving 511.
-Last 24h: Historical finance replay became executable and has advanced with stable identity, review synchronization, and duplicate-safe readback.
+Progress: Live full-history coverage was reverified and bounded historical reads proved both remaining large sources are queryable without an artificial start date; the next write is gated on a fresh exact set-difference, not stale row positions.
+Last 24h: Historical finance replay advanced to 1,580 of 2,091 verified provider identities with duplicate-safe readback.
 Deliverable: Complete provider-to-MIRROR historical coverage with normalized dates, integrity proof, and no duplicate economic effects.
 Expected delivery: UNKNOWN.
-Blocker: none; continue bounded replay and verification.
+Blocker: none; rebuild the fresh canonical/provider identity set and resume bounded replay.
