@@ -12,61 +12,82 @@ Continue canonical transaction reconciliation and high-confidence review-queue r
 
 ## User reprioritization
 
-On 2026-09-15 the user explicitly instructed MIRA to work more transactions. This displaces `FIN-MODEL-TARGET-002` until the transaction-audit packet is checkpointed or the user reprioritizes again.
+On 2026-09-15 the user explicitly instructed MIRA to work more transactions. This displaces `FIN-MODEL-TARGET-002` until this transaction-audit packet is checkpointed or the user reprioritizes again.
 
 ## Canonical source state
 
 - Finances account history coverage remains `full_history`; freshness remains `unknown`.
-- Prime Visa source range remains bounded from 2024-08-09 through 2026-09-11.
-- Prior bounded provider reads returned 150 transactions for 2024, 351 for 2025, and 174 for 2026: 675 total.
-- `FinOps Ledger.Transaction ID` remains the stable provider identity key.
-- Joint Checking was previously proven complete at 669/669 provider identities.
-- The live Financial Escape Command Center has changed since the prior finance checkpoint, including older Prime Visa rows already present in canonical state. Do not assume the old provider-minus-canonical gap; recompute mechanically before projecting anything.
+- Prime Visa source range remains bounded from 2024-08-09 through 2026-09-11; prior bounded provider reads returned 675 total rows.
+- `FinOps Ledger.Transaction ID` remains the stable provider identity key. Joint Checking was previously proven complete at 669/669 provider identities.
+- The live Financial Escape Command Center has changed since older finance checkpoints; recompute provider-minus-canonical identity sets mechanically before projecting anything.
+- No new provider rows were projected during the current classification pass; work was limited to canonical rule repair, overrides, receipt-backed classification, and readback.
 
-## 2026-09-15 transaction-classification pass
+## 2026-09-15 transaction-classification checkpoint
 
-Live `Spending Review` began this pass with 990 rows marked `NEEDS REVIEW` and ended at 837: 153 rows removed from review through canonical rule repair and high-confidence resolution.
+`Spending Review` began these consecutive transaction passes with 990 rows marked `NEEDS REVIEW`. Exact live recount after the latest mutations is **673**, a reduction of **317 rows**. Ambiguous rows remain reviewable.
 
-Applied/verified durable logic:
-- Rewards Signature・9854 rows whose provider category matches `transportation_fuel` resolve as vendor Gas / category Fuel / NECESSARY under the user's Ducks Unlimited fuel rule.
-- Effective Allowance now resolves those Ducks fuel rows to `NO ALLOWANCE` instead of leaving them `UNKNOWN`.
-- Exact Amazon Pharmacy rows resolve to `NO ALLOWANCE`; prior Health / medication + NECESSARY treatment remains intact.
-- New explicit user rule: doctor, dentist, and medication transactions are always `NECESSARY`.
-- `Effective Necessity` now automatically marks observed medical provider categories `dental_care`, `pharmacy_supplements`, `other_medical`, `vision_care`, and `primary_care` as `NECESSARY`.
-- Hair/beauty provider categories are intentionally excluded from that medical rule so merchants such as Ulta, Great Clips, salons, cosmetics, etc. do not become necessary merely because the provider taxonomy groups them under health/wellness.
+### Deterministic canonical rules now active
 
-Additional high-confidence rows resolved in this pass included truck gas, Skyline Internet recurring utilities by resolved precedent, Dermatology Associates medical care, and prior user-confirmed outdoor-sign classification where only allowance resolution remained safe.
+- Provider `transportation / transportation_fuel` => category Fuel, vendor Gas, NECESSARY, NO ALLOWANCE across cards.
+- Ducks/Rewards Signature・9854 rows already normalized to Fuel + Gas + NECESSARY also resolve NO ALLOWANCE even where older provider taxonomy was only generic transportation.
+- Exact provider grocery category `groceries / groceries_groceries` => Groceries / NECESSARY / NO ALLOWANCE.
+- Provider education category `education / education_tuition_courses` => Education / NECESSARY / NO ALLOWANCE.
+- `bills_utilities / bills_utilities_*` => Utilities / NECESSARY / NO ALLOWANCE.
+- `financial / financial_insurance` => Insurance / NECESSARY / NO ALLOWANCE.
+- `financial / financial_taxes` => Taxes / NECESSARY / NO ALLOWANCE.
+- Medical provider categories `dental_care`, `pharmacy_supplements`, `other_medical`, `vision_care`, and `primary_care` => NECESSARY / NO ALLOWANCE. Hair/beauty is deliberately excluded.
+- Household-funded rows already proven NECESSARY resolve NO ALLOWANCE.
+- Amazon Pharmacy remains Health / medication / NECESSARY / NO ALLOWANCE.
+- User rule is durable in `MIRA Durable Operating Addenda`: doctors/medical providers, dentists/dental, and medication/pharmacy are always NECESSARY when evidence establishes that purpose; explicit provider fuel is sufficient Fuel/Gas evidence.
+
+### Structural repairs
+
+- Fixed `FinOps Ledger` review-override lookup formulas that incorrectly began at `Spending Review` row 5 and therefore ignored the first data row 4. V/X/Z/AB/AF now read from row 4 through 3028 by exact Event ID.
+- This repair immediately allowed the user-confirmed outdoor-sign transaction to resolve READY.
+- Repaired a stale hard-coded `NEEDS REVIEW` status on the receipt-backed Walmart $159.50 row; the normal formula now evaluates it READY.
+
+### Receipt/evidence-backed rows resolved or refined
+
+- Walmart $159.50 (2026-09-11): receipt-backed 33-item delivery/grocery order; Groceries / NECESSARY / NO ALLOWANCE; READY.
+- Tacoma Subaru $139.39: backing plate plus intermediate-pipe bolts/springs/nuts; Auto repair / NECESSARY / NO ALLOWANCE; READY.
+- SubaruOnlineParts $125.22: remaining OEM repair hardware after backordered hub assemblies were removed; Auto repair / NECESSARY / NO ALLOWANCE; READY.
+- September County Clerk $75.67: user-confirmed vehicle registration; Vehicle registration / NECESSARY / NO ALLOWANCE; READY. The separate August same-amount County Clerk row remains unresolved pending stronger evidence.
+- Legacy HELOC payment $2,311.24 on 2025-03-15: corrected to NECESSARY / NO ALLOWANCE by exact recurrence against 52 other canonical HELOC-payment rows; READY.
+- Mishimoto $148.62: locking lug nuts; Auto repair / UNNECESSARY; allowance owner unresolved.
+- System Motorsports $95.25: Project Kics hubrings; Auto repair / UNNECESSARY; allowance owner unresolved.
+- Evasive Motorsports $2,415.12: four Enkei wheels plus lug nuts; Auto repair / UNNECESSARY; allowance owner unresolved.
+- Eastwood $149.42: fender roller tool; Tools / project / UNNECESSARY; allowance owner unresolved.
+- Pro Torque Tools $304.58: two CDI torque wrenches; Tools / project category resolved; necessity/allowance unresolved.
+- JEGS $85.38 + $61.30: exact pair equals one $146.68 receipt for ARP Miata wheel studs; Auto repair category resolved; repair-vs-upgrade necessity/allowance remains unresolved.
+
+## Remaining queue character
+
+The 673 remaining rows are now disproportionately evidence-limited: mixed Amazon/Walmart/Target purchases, convenience-store charges without fuel evidence, auto parts/modification purchases where repair-vs-upgrade intent is unclear, Audible/history rows where study-vs-entertainment purpose is unresolved, digital services, beauty/personal-care rows, gifts/clothing, and older generic checks/PayPal purchases. Do not broad-classify these from merchant name alone.
 
 ## Required work
 
-1. Re-read live canonical workbook and provider state before each new mutation batch.
-2. Recompute Prime Visa provider-minus-canonical identity set mechanically before projecting any missing rows; never use date-based estimates.
-3. Project only proven-missing provider IDs with provenance, stable identity, correct signed economic treatment, and no duplicate economic effects.
-4. Continue reducing the 837-row review queue using deterministic merchant/category rules, receipts, Gmail/Drive evidence, and prior confirmed user classifications.
-5. Prefer family-level canonical logic fixes over hand-editing repeated rows when the evidence supports a durable rule.
-6. Keep ambiguous multipurpose merchants and unclear purchase purpose in `NEEDS REVIEW`; do not guess.
-7. After each mutation batch, read back affected rows and current queue count.
-8. Before packet completion, verify duplicate Event IDs = 0, duplicate provider transaction IDs = 0, and review-surface/ledger parity for reviewable Event IDs.
+1. Re-read live canonical workbook/provider state before each new mutation batch.
+2. Continue receipt/order-backed work on recent higher-dollar ambiguous rows first; preserve low-confidence rows for voice review.
+3. Prefer exact recurring-pattern and provider-semantic rules over repetitive manual edits, but do not broaden rules past the evidence.
+4. Recompute the Prime Visa provider-minus-canonical `Transaction ID` set mechanically before projecting any missing rows.
+5. Project only proven-missing provider IDs with provenance, stable identity, correct signed economic treatment, and no duplicate economic effects.
+6. After each mutation batch, read back affected rows and exact queue count.
+7. Before packet completion, verify duplicate Event IDs = 0, duplicate provider transaction IDs = 0, and review-surface/ledger parity for reviewable Event IDs.
 
 ## Displaced packet checkpoint — FIN-MODEL-TARGET-002
 
-The model-target packet is paused, not abandoned.
-
-- Objective: retire April 1, 2027 as the active Debt Escape target and make March 1, 2027 the governing target throughout the live Financial Escape Command Center; synchronize dependent calculations/presentation surfaces; add six-month weekly spending to Forecast Charts; elevate rolling net worth on Dashboard.
-- Acceptance gates were not completed before reprioritization.
-- Re-read the live Command Center on resume; Workspace edits may have occurred after the Git checkpoint.
-- Exact resume point: audit the live Command Center for remaining April-target dependencies, Forecast Charts weekly-spend support, and Dashboard rolling-net-worth placement; then apply one synchronized target migration and read back dependent outputs.
+Paused, not abandoned. Re-read the live Command Center before resume because Workspace model/dashboard edits continued after the earlier Git checkpoint. Do not reconstruct model state from chat.
 
 ## Acceptance gates — FIN-CANON-AUDIT-001
 
 1. Provider and canonical identity sets are compared mechanically using stable transaction IDs.
 2. Only proven-missing transactions are projected; replay remains idempotent with zero duplicate economic effects.
-3. Source provenance and provider identity are preserved for every projected row.
-4. High-confidence classifications are applied; ambiguous rows stay explicitly reviewable.
-5. Canonical ledger and review surfaces agree on reviewable Event IDs after mutation.
+3. Source provenance/provider identity are preserved.
+4. High-confidence classifications are applied; ambiguous rows remain reviewable.
+5. Canonical ledger/review surfaces agree on reviewable Event IDs.
 6. Readback confirms no duplicate Event IDs or provider transaction IDs.
-7. Remaining provider gap and exact next batch are recorded here before switching work.
+7. Remaining provider gap and exact next batch are recorded before switching work.
 
 ## Next bounded step
 
-Continue the next high-confidence review families from the current 837-row queue, prioritizing deterministic medical/dental/pharmacy, recurring utilities, explicit fuel/truck descriptors, and other merchants with resolved precedent. Then recompute the exact Prime Visa provider-minus-canonical Transaction ID set before any new transaction projection.
+Resume from **673 NEEDS REVIEW**. Continue recent receipt-backed mixed retail/auto/tool classification and exact recurring-pattern anomalies; then mechanically recompute Prime Visa provider-minus-canonical Transaction IDs before any projection. Historical Amazon remains evidence-limited and should not be guessed.
