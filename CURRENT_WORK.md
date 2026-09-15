@@ -11,10 +11,10 @@
 ## Customer status
 
 Objective: Add Android camera/QR/barcode capture to the existing canonical asset/inventory system without creating a second inventory authority.
-Progress: Finance historical projection is closed. PR #167 implements the first passive-capture core: verified read-only change query plus strict QR/UPC/EAN identifier parsing and canonical asset resolution. The first CI failure was obsolete Android SDK setup and is fixed; the next failure exposed this stale CURRENT_WORK alignment format and is being corrected here.
+Progress: Passive QR/barcode capture through Google Code Scanner is implemented and fully green in PR #167 CI run #697: Android tests, signed debug APK/provenance, Python tests and Apps Script tests all passed. Passive scans resolve verified canonical identifiers and have no mutation dependency. The remaining packet work is explicit replay-safe MOVE-001 execution/readback over the existing encrypted Android queue and serialized Workspace writer.
 Deliverable: Bounded Android capture that treats raw camera/QR/barcode input as nonauthoritative, resolves existing canonical identifiers/assets, performs zero writes for passive scans, and requires an explicit replay-safe movement command plus exact readback before observed location changes.
 Expected delivery: UNKNOWN.
-Blocker: none currently known.
+Blocker: none. The next implementation seam is known: API-001/store already support append_event, while the Android Workspace row bridge and Apps Script queued worker currently support only upsert execution.
 
 ## Recovery authority
 
@@ -31,41 +31,55 @@ Implement the queued Android capture work item against the existing Android/shar
 Current branch: `feature/android-capture-001`
 Current PR: #167
 Recorded packet base: `942ace58cb780524198670ae561605a4f399f496`
-Latest packet branch head before this checkpoint: `c9910280975d234b19ca5ad1479d01b3a83735e0`
+Green scanner checkpoint head: `940873b4cfee81038a7601a1fedc385fd96f40c7`
+Green scanner CI: run #697, all gates passed.
 
-Implemented in the current PR:
+Implemented and test-verified in the current PR:
 - `VerifiedChangeQuery`: bounded provider-neutral read-only fold over verified canonical Changes; it never reconciles or submits commands.
 - `IdentifierCaptureResolver`: strict decoded QR/UPC-A/EAN-8/EAN-13 identifier parsing and lookup against canonical `IDENT-001` snapshots.
 - Honest unresolved, ambiguous, malformed, transport, protocol and integrity states; unknown scans never create assets.
 - Serial-level duplicate resolution fails closed.
-- Direct JVM tests for passive query/capture behavior and Android ownership registration.
+- Google Code Scanner 16.1.0 app-edge integration for QR/EAN-8/UPC-A/EAN-13 with auto-zoom; scanner/camera behavior remains outside provider-neutral core.
+- Proof app requests no CAMERA permission; Google Play services owns scanner UI/camera interaction and returns decoded values only.
+- Scan UI reports read-only resolution state without rendering provider secrets or canonical asset IDs.
+- Direct JVM tests for verified query, passive resolution and scanner-format mapping plus Android ownership registration.
 - CI Android SDK bootstrap no longer requests the removed legacy `tools` package.
 
 Not yet accepted/integrated:
-- PR #167 is not merged and CI is not green yet.
-- Camera/Google Code Scanner app-edge wiring is not implemented yet.
+- PR #167 remains unmerged while MOVE-001 execution is incomplete.
 - Explicit movement command/replay/readback is not implemented yet.
-- Representative-device proof is not complete.
+- Representative-device live proof is not complete.
+
+## Movement bridge discovery
+
+- Canonical `API-001` and `GoogleSheetsStructuredStateAdapter` already support `append_event` with idempotency, event identity, stream revision and exact event readback.
+- `MOVE-001` already defines the correct event-first / projection-second semantics; do not replace it with scan-driven inventory upserts.
+- `OfflineSyncStateStore.CommandIntent` already models `append_event`, including `event_id` and `event_type`.
+- Current `GoogleWorkspaceTransport` rejects append-event commands and the 16-column Commands row protocol has no separate event-id/type columns.
+- Current Apps Script queued worker rejects any action except `upsert`.
+- Do not migrate/expand the live Commands sheet solely for event metadata. Preserve the existing 16-column production transport and encode append-event metadata in a strictly validated transport-only payload envelope while retaining the canonical event payload separately after decoding. Existing upsert row encoding remains unchanged.
+- Event append success may acknowledge with verified event readback and zero Resource snapshots; the following explicit inventory-state projection remains a separate queued upsert using existing `MOVE-001` recovery semantics.
 
 ## Acceptance gates — ANDROID-CAPTURE-001
 
-1. Android capture accepts camera/QR/barcode observations through a bounded capture interface; raw capture does not itself become canonical truth.
-2. Supported identifier payloads normalize through existing `IDENT-001` namespace/collision rules and resolve an existing canonical asset exactly.
-3. Unknown identifiers fail honestly into an unresolved result; no fabricated asset is silently created.
-4. A passive scan performs zero movement writes.
-5. Any move requires an explicit user/action command using existing `MOVE-001` event semantics and the shared queued mutation boundary.
-6. Replay/idempotency prevents duplicate movement effects.
-7. Exact readback proves canonical asset/location after an explicit move and zero-write behavior for passive scans/replay.
-8. Offline/reconnect preserves the existing encrypted/replay-safe Android queue; no second queue is introduced.
-9. Tests cover lookup, unknown identifier, malformed/unsupported payload, passive zero-write, explicit move, replay and conflict/error paths.
-10. Packet-to-feature alignment and idea-capture audit pass before merge; no uncaptured parallel inventory semantics are introduced.
+1. Android capture accepts camera/QR/barcode observations through a bounded capture interface; raw capture does not itself become canonical truth. **PASS in CI #697.**
+2. Supported identifier payloads normalize through existing `IDENT-001` namespace/collision rules and resolve an existing canonical asset exactly. **PASS in CI #697.**
+3. Unknown identifiers fail honestly into an unresolved result; no fabricated asset is silently created. **PASS in CI #697.**
+4. A passive scan performs zero movement writes. **PASS in CI #697.**
+5. Any move requires an explicit user/action command using existing `MOVE-001` event semantics and the shared queued mutation boundary. **OPEN.**
+6. Replay/idempotency prevents duplicate movement effects. **OPEN.**
+7. Exact readback proves canonical asset/location after an explicit move and zero-write behavior for passive scans/replay. Passive half PASS; movement half OPEN.
+8. Offline/reconnect preserves the existing encrypted/replay-safe Android queue; no second queue is introduced. **PASS for passive; movement integration OPEN.**
+9. Tests cover lookup, unknown identifier, malformed/unsupported payload, passive zero-write, explicit move, replay and conflict/error paths. Passive coverage PASS; movement coverage OPEN.
+10. Packet-to-feature alignment and idea-capture audit pass before merge; no uncaptured parallel inventory semantics are introduced. **PASS at current checkpoint; re-run before merge.**
 
 ## Next bounded step
 
-1. Rerun PR #167 CI after this alignment checkpoint and repair only actual failing gates.
-2. Once the passive core compiles/tests cleanly, add the camera edge using the existing Android app boundary while keeping decoding separate from canonical semantics.
-3. Inspect the existing queued API/Workspace command contract for a reusable `MOVE-001` append-event path. Extend the shared boundary only if no existing explicit movement command exists; do not fake movement as an ordinary passive scan/upsert.
-4. Prove explicit movement replay/conflict/exact readback, then checkpoint acceptance evidence before merge.
+1. Add append-event support to the existing Android Workspace command transport without changing the 16-column Commands sheet schema; strictly encode/decode event metadata in transport-only JSON for action=`append_event`.
+2. Extend the serialized Apps Script queued worker to execute canonical append_event with exact idempotency/event readback against existing Events + Idempotency tabs.
+3. Add an Android MOVE-001 facade that explicitly stages event-first then inventory-state projection through the same encrypted queue, never from a passive scan callback.
+4. Prove event replay, interrupted event/projection recovery, stale revision conflict and exact observed-location readback.
+5. Re-run full CI, checkpoint acceptance evidence, then merge only if all packet gates pass.
 
 ## Preserved work state
 
@@ -78,11 +92,11 @@ Not yet accepted/integrated:
 
 ### `FEATURES.md`
 
-Reviewed. Active scope maps to existing Android client, identifier, inventory, movement, API, asset, location, evidence and recovery features. No new semantic feature is required for the passive capture core.
+Reviewed. Active scope maps to existing Android client, identifier, inventory, movement, API, asset, location, evidence and recovery features. No new semantic feature is required for the current packet.
 
 ### `BACKLOG.md`
 
-Reviewed. `ANDROID-CAPTURE-001` is the selected canonical work item. Camera/barcode/QR are the current bounded slice; NFC/BLE remain deferred within the same backlog item.
+Reviewed. `ANDROID-CAPTURE-001` is the selected canonical work item. Camera/barcode/QR and explicit movement are the current bounded slice; NFC/BLE remain deferred within the same backlog item.
 
 ### `ROADMAP.md`
 
@@ -92,7 +106,7 @@ Reviewed. The work preserves the Personal Google/shared-state direction and reus
 
 CAPTURE AUDIT COMPLETE
 
-No materially new product capability was introduced by the current implementation or CI repair. Google Code Scanner is an implementation choice for the already-captured camera/barcode/QR surface, not a new product feature. Explicit movement remains existing `MOVE-001` semantics and must not be silently expanded by passive capture.
+No materially new product capability was introduced. Google Code Scanner is an implementation choice for the already-captured camera/barcode/QR surface. Append-event transport support is required plumbing for already-canonical `MOVE-001`, not a new user-visible feature. Explicit movement must remain separate from passive capture.
 
 ### Direction result
 
