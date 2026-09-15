@@ -9,21 +9,21 @@ Continue `FIN-CANON-AUDIT-001`: prove and close the remaining historical provide
 ## Reconciled state — 2026-09-15
 
 - Live Finances reports transaction coverage `full_history`; freshness remains `unknown`.
-- A fresh bounded read of the currently linked Prime Visa account returned 398 posted transactions, with provider dates spanning 2026-01-02 through 2026-09-13. Ascending and descending reads returned the same 398 stable transaction identities with complete overlap, so that is the current provider-exposed bound for this linked account in this run.
-- This directly contradicts the older checkpoint count of Prime Visa = 675. The older count is retained as historical evidence, not discarded, but it must not be used as the current replay bound. The discrepancy itself is now a coverage condition that must be explained or durably bounded before historical finance can be called closed.
+- A fresh Prime Visa read on 2026-09-15 proves the linked provider currently exposes **at least 627 unique posted transaction identities spanning 2024-08-09 through 2026-09-13**. This supersedes the branch's earlier incorrect 398-row/2026-only claim, which came from an incomplete bounded read. The read was obtained as 400 oldest rows plus a complete 227-row slice from 2025-10-01 forward; their identity union is the current minimum proven live bound. Do not treat 627 as an exact complete account count until pagination/overlap is mechanically completed.
+- The older checkpoint count of Prime Visa = 675 is retained as historical evidence. The remaining difference may be pagination/overlap or a provider-window change and must be mechanically resolved, not explained away with a date heuristic.
 - Joint Checking was previously proven complete at 669/669 provider identities; re-read before any new write that depends on that mutable claim.
-- Current canonical `FinOps Ledger.Transaction ID` readback includes Prime Visa identities from 2024 and 2025 as well as current data. Therefore the provider's present 2026-only exposure must not be interpreted as proof that older canonical history is invalid or should be removed.
+- Current canonical `FinOps Ledger.Transaction ID` readback includes Prime Visa identities from 2024 and 2025 as well as current data. Older canonical history remains valid evidence and must never be removed merely because a later provider window contracts.
 - Historical source data remains authoritative evidence. No existing production data is to be deleted or overwritten merely to simplify reconciliation.
 
 ## Customer priority / sequencing
 
-1. Compare the current 398-ID Prime Visa provider set against canonical `FinOps Ledger.Transaction ID` and project only identities proven absent.
-2. Preserve and investigate the 675-versus-398 provider-bound discrepancy. Treat the older 2024/2025 canonical rows as preserved historical evidence; never delete them because the live connector currently exposes a shorter window.
-3. If the current 398 identities are all represented, document the older-source gap as provider-unavailable unless another trustworthy connected source exposes it; if another source is available, reconcile it by stable identity and provenance.
+1. Finish an exact complete Prime Visa provider identity inventory using pagination/overlap, then compare that set against canonical `FinOps Ledger.Transaction ID`.
+2. Project only identities proven absent, preserving provenance and signed economic semantics.
+3. Reconcile the older 675-count checkpoint against the newly proven >=627 live identities. If a trustworthy connected source exposes older/missing history, ingest it; otherwise explicitly record the unavailable gap.
 4. Correlate ambiguous marketplace/card merchants against available order, receipt, and mail evidence before asking the user; never infer item identity from merchant name alone.
 5. Preserve transfer/payment/refund semantics and signed economic-spend rules. Keep unresolved purpose/necessity/funding context reviewable rather than guessed.
 6. After identity closure, synchronize Spending Review and run full graph-integrity/readback gates.
-7. After historical finance coverage is closed or durably bounded by actual source unavailability, move to the Android inventory/scanning vertical using the existing INV-001, INV-002, MOVE-001, IDENT-001, ASSET-001/002/003 and Android architecture.
+7. After historical finance coverage is closed or durably bounded by actual source unavailability, move to the Android inventory/scanning vertical using existing INV-001, INV-002, MOVE-001, IDENT-001, ASSET-001/002/003 and Android architecture.
 
 ## Acceptance gates
 
@@ -37,15 +37,19 @@ Continue `FIN-CANON-AUDIT-001`: prove and close the remaining historical provide
 8. Public Git contains only sanitized coverage/proof, never private balances, account/provider IDs, transaction IDs, receipt contents, addresses, or secrets.
 9. Repository CI passes at the exact completion head and again after merge before the objective is called complete.
 
+## Idea/backlog capture audit
+
+CAPTURE AUDIT COMPLETE — no new material product ideas introduced; this checkpoint corrects evidence for existing finance reconciliation work only.
+
 ## Resume point
 
-Use the fresh current provider bound of 398 Prime Visa identities, not the stale 675 count and not a date heuristic. Compute an exact set difference against the canonical Transaction-ID column and append only proven-absent identities. Preserve the prior 675-count checkpoint as evidence of a historical provider-window contraction. If the 398 current identities are all canonical, the remaining task is to determine whether any trustworthy connected source still exposes the older provider history; otherwise record that inaccessible span explicitly rather than manufacturing a start date.
+Do not use the stale 398-row checkpoint. Current live evidence proves >=627 unique Prime Visa identities from 2024-08-09 through 2026-09-13. Complete pagination/overlap to obtain the exact provider set, compare exact stable identities against canonical Transaction ID, and append only proven-missing identities. Preserve the prior 675-count checkpoint as evidence until the discrepancy is mechanically reconciled or durably bounded by source unavailability.
 
 ## Canonical six-line status
 
 Objective: Reconcile every accessible historical provider transaction into canonical MIRROR exactly once.
-Progress: Re-read the live card source and proved its current complete bound is 398 posted identities covering 2026-01-02 through 2026-09-13; the older 675-count checkpoint is stale and preserved as evidence of provider-window contraction.
+Progress: Corrected a bad 398-row checkpoint; fresh live reads now prove at least 627 unique Prime Visa identities reach back to August 2024, so older history remains actively accessible and must be reconciled rather than bounded away.
 Last 24h: Joint Checking provider identity coverage was completed at 669/669 with synchronized ledger/review surfaces and zero recorded provider-identity duplicates.
-Deliverable: Exact current Prime Visa 398-ID provider-to-MIRROR set-difference proof plus a durable accounting of the older-source coverage gap.
+Deliverable: Exact Prime Visa provider-to-MIRROR identity set-difference proof plus durable accounting for any genuinely unavailable historical gap.
 Expected delivery: UNKNOWN.
-Blocker: none; current provider identities can be reconciled while the older provider-window discrepancy is bounded from available evidence.
+Blocker: none; exact pagination and canonical set-difference reconciliation remain unblocked.
