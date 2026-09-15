@@ -2,6 +2,14 @@
 
 Git is authoritative for recovery, but mutable finance truth must be re-read from the connected provider and canonical FinOps sheet before work selection.
 
+## Status surface
+Objective: Close the historical finance identity gap, then deliver Android inventory scanning against the existing canonical inventory graph.
+Progress: Re-read live Prime Visa provider history and mechanically verified 675 posted rows = 675 distinct provider transaction IDs, bounded 2024-08-09 through 2026-09-11; no provider-side duplicates exist in that bounded source set.
+Last 24h: Reduced the canonical Spending Review queue from 990 to 673 while repairing override formulas and resolving receipt/provider-backed classifications without guessing ambiguous rows.
+Deliverable: Exact Prime Visa provider-minus-canonical Transaction ID reconciliation with any proven-missing rows projected idempotently, or the gap durably closed at zero.
+Expected delivery: UNKNOWN.
+Blocker: none.
+
 ## Active packet
 
 `FIN-CANON-AUDIT-001`
@@ -17,7 +25,7 @@ On 2026-09-15 the user explicitly instructed MIRA to work more transactions. Thi
 ## Canonical source state
 
 - Finances account history coverage remains `full_history`; freshness remains `unknown`.
-- Prime Visa source range remains bounded from 2024-08-09 through 2026-09-11; prior bounded provider reads returned 675 total rows.
+- Prime Visa source range was re-read on 2026-09-15 and is exactly 675 posted rows / 675 distinct provider transaction IDs, bounded from 2024-08-09 through 2026-09-11. This confirms zero provider-side duplicate transaction IDs in the bounded source set.
 - `FinOps Ledger.Transaction ID` remains the stable provider identity key. Joint Checking was previously proven complete at 669/669 provider identities.
 - The live Financial Escape Command Center has changed since older finance checkpoints; recompute provider-minus-canonical identity sets mechanically before projecting anything.
 - No new provider rows were projected during the current classification pass; work was limited to canonical rule repair, overrides, receipt-backed classification, and readback.
@@ -90,4 +98,4 @@ Paused, not abandoned. Re-read the live Command Center before resume because Wor
 
 ## Next bounded step
 
-Resume from **673 NEEDS REVIEW**. Continue recent receipt-backed mixed retail/auto/tool classification and exact recurring-pattern anomalies; then mechanically recompute Prime Visa provider-minus-canonical Transaction IDs before any projection. Historical Amazon remains evidence-limited and should not be guessed.
+Resume from **673 NEEDS REVIEW**. Mechanically compare the now re-verified 675 Prime Visa provider transaction IDs against live canonical `FinOps Ledger.Transaction ID`; project only exact missing IDs if any. Then continue recent receipt-backed mixed retail/auto/tool classification and exact recurring-pattern anomalies. Historical Amazon remains evidence-limited and should not be guessed.
