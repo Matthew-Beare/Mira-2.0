@@ -75,6 +75,32 @@
       ]
     },
     {
+      "id": "android-client-verified-change-query",
+      "responsibility": "Bounded provider-neutral read-only folding of the verified canonical Changes projection for one data class without owning local cursor state or invoking queued command reconciliation.",
+      "why_separate": "Passive capture lookup needs a complete verified projection query without widening the encrypted offline-state contract or acquiring any mutation capability.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/sync/VerifiedChangeQuery.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "RECOVERY-002"],
+      "work_ids": ["ANDROID-CAPTURE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/sync/VerifiedChangeQueryTest.java"
+      ]
+    },
+    {
+      "id": "android-client-identifier-capture",
+      "responsibility": "Provider-neutral decoded QR/barcode identifier validation and passive resolution against verified canonical identifier snapshots, with explicit unresolved/ambiguous/integrity states and no write surface.",
+      "why_separate": "Capture interpretation is evidence/observation logic above transport but below UI; keeping it write-incapable prevents a passive scan from creating assets, attaching identifiers, or silently moving inventory.",
+      "owned_paths": [
+        "android-client/core/src/main/java/com/mira/client/core/capture/IdentifierCaptureResolver.java"
+      ],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "IDENT-001", "INV-001", "ASSET-001", "EVID-001"],
+      "work_ids": ["ANDROID-CAPTURE-001"],
+      "verification": [
+        "android-client/core/src/test/java/com/mira/client/core/capture/IdentifierCaptureResolverTest.java"
+      ]
+    },
+    {
       "id": "android-client-google-workspace-transport",
       "responsibility": "Default-Personal Android mapping between exact API command intent / reconnect change pages and the MIRA Google Workspace Commands and verified Changes row protocols through an injected authorized Sheets gateway, including explicit verified pagination completeness.",
       "why_separate": "The row protocol validates transport evidence without owning OAuth UI, account selection, provider identifiers, network client lifecycle, canonical authority, or local persistence; concrete Google SDK/network behavior remains outside core.",
