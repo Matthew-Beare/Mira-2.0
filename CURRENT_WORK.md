@@ -3,8 +3,8 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while preserving trustworthy inventory/manual evidence.
-Progress: Android capture is merged and green. A live audit of the legacy inventory/manual surfaces also verified that retained WRX/FL5 service references are classified as manuals, while the exact-model LAUNCH CRP129E V2.0 manual remains honestly source-unavailable and the Logitech C920s manufacturer PDF is only a quick-start/setup guide, so it must not satisfy a full-manual requirement.
-Last 24h: Historical finance coverage closed with exact full-history identity parity, then Android passive capture + explicit replay-safe movement was integrated to main with green CI.
+Progress: Android capture is merged and green. The legacy Knowledge Index was exhaustively scanned across its current 1,000-row bound for manual-labeled records: only the WRX factory service manual, FL5 service-reference manual, and Eastwood 31158 manufacturer-manual-search record are present; no hidden setup/QSG record is currently masquerading as a full manual there. Logitech C920s remains setup/QSG-only and must not satisfy the manual requirement.
+Last 24h: Historical finance coverage closed with exact full-history identity parity, Android passive capture + explicit replay-safe movement integrated to main with green CI, and legacy manual evidence classification was live-audited against the canonical inventory/knowledge surfaces.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; inventory evidence continues to distinguish full manuals from quick-start/setup material.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
 Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof below.
@@ -19,7 +19,7 @@ Closed 2026-09-15. Exact full-history identity proof at closure: 2,091 provider 
 
 ## Integrated packet — ANDROID-CAPTURE-001
 
-Merged to `main` on 2026-09-15. Remote main merge commit at reconciliation: `dc9611b195b8e6907bc6974cdedf8aa0202f12aa`.
+Merged to `main` on 2026-09-15. The Android packet remains integrated; current remote main was independently reconciled before this checkpoint and had advanced through the manual-evidence checkpoint rather than reverting Android work.
 
 Verified integration evidence:
 - Merge commit message: `Merge ANDROID-CAPTURE-001 passive capture and explicit movement`.
@@ -45,9 +45,11 @@ Implemented and test-verified:
 Bounded live-source audit performed against the existing legacy inventory/knowledge surfaces; no protected production rows were deleted or rewritten.
 
 - The legacy `Tool Inventory` remains an inventory source, not the MIRA 2.0 canonical development authority.
-- The legacy `Purchase & Receipt Archive` Knowledge Index currently retains the 2015 Subaru WRX/STI factory service manual and a 2022–2024 Honda Civic FL5 service-reference manual; the FL5 record already warns to verify 2025 applicability per procedure/specification.
+- Live bounded scan of `Purchase & Receipt Archive` → `Knowledge Index` across rows 1:1000 found exactly three rows matching `manual`: the WRX factory service manual, FL5 service-reference manual, and Eastwood 31158 manufacturer-manual-search record. There is no additional setup/QSG artifact currently labeled as a manual in that bounded index.
+- The retained 2015 Subaru WRX/STI factory service manual is classified as `service_manual`.
+- The retained 2022–2024 Honda Civic FL5 service-reference manual is classified as `service_manual`; its record warns to verify 2025 applicability per procedure/specification.
 - Eastwood 31158 is recorded as an exact-SKU manufacturer-instructions search with the advertised official file unavailable to the connected runtime; no substitute was silently archived.
-- LAUNCH CRP129E V2.0 Elite is explicitly recorded as `source-unavailable` after official-site search because the available manufacturer manual is for a different V3 family. A third-party rewrite is not accepted as the exact manual.
+- LAUNCH CRP129E V2.0 Elite remains explicitly source-unavailable after official-site search because the available manufacturer manual is for a different V3 family. A third-party rewrite is not accepted as the exact manual.
 - Logitech C920s manufacturer evidence resolves to the official `c920s-web-qsg.pdf`, i.e. a quick-start/setup guide. It may be retained as secondary setup evidence, but it does **not** satisfy a full owner/instruction/service-manual requirement.
 - Manual evidence rule for continuing reconciliation: classify source artifacts by actual document type; never promote QSG/setup/product/support pages to `owner_manual`, `instruction_manual`, or `service_manual`. If no exact/model-family full manual can be verified, record source-unavailable/not-published rather than fabricating coverage.
 
@@ -86,10 +88,11 @@ Do not use protected/legacy production state as a disposable proof fixture.
 ## Next bounded step
 
 1. Await representative-device/provider proof for the integrated Android capture vertical; do not fabricate live verification.
-2. Continue the historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual; preserve provenance and explicit unavailable gaps.
-3. Continue dependency-safe work that does not require physical-device/provider consent from canonical BACKLOG/ROADMAP on the next execution boundary.
-4. Keep NFC/BLE outside this bounded QR/barcode packet unless independently selected from canonical backlog.
-5. Preserve stale PR #166 as historical finance evidence only; do not use it as recovery authority or merge it blindly.
+2. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual; preserve provenance and explicit unavailable gaps.
+3. Prioritize exact-model, identified powered/precision tools over generic hand tools when expanding manual coverage, because they have higher safety/maintenance value and stronger manufacturer-document likelihood.
+4. Continue dependency-safe work that does not require physical-device/provider consent from canonical BACKLOG/ROADMAP on the next execution boundary.
+5. Keep NFC/BLE outside this bounded QR/barcode packet unless independently selected from canonical backlog.
+6. Preserve stale PR #166 as historical finance evidence only; do not use it as recovery authority or merge it blindly.
 
 ## Direction result
 
