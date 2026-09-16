@@ -3,7 +3,7 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
-Progress: Reconciled current remote main and green CI, then exact-read TI-0027 from the canonical Inventory tab; ownership remains confirmed but brand/model/receipt/serial/photo are absent, so no Rotary-family manual was attached or falsely promoted.
+Progress: Reconciled remote main and green CI at the latest checkpoint; exact-model manual rules remain enforced and no setup/quick-start artifact is accepted as a full manual.
 Last 24h: Historical finance coverage closed with exact full-history identity parity, Android passive capture + explicit replay-safe movement integrated to main, and legacy manual evidence was audited without promoting setup guides to manuals.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
@@ -76,13 +76,13 @@ No protected production rows were deleted or rewritten.
 - LAUNCH CRP129E V2.0 Elite remains source-unavailable because the manufacturer manual found was for a different V3 family.
 - Logitech C920s manufacturer evidence resolves to a quick-start/setup guide only. It may be secondary setup evidence but does **not** satisfy a full owner/instruction/service-manual requirement.
 - High-value powered/precision examples still lacking stable manufacturer/model identity include the two-post lift, compressor, drill press, meters, vacuum pump, rework/soldering stations, pressure washer, chainsaw and powered woodworking tools.
-- Fresh exact readback of `TI-0027` from canonical `Inventory` row 116 confirms `Two-post vehicle lift`, quantity 1, `verified_existing_inventory`, but brand, model, date, seller, price, serial/part number, receipt link, and photo remain blank. Broad Drive search for `Rotary` returned the inventory row but no trustworthy purchase/serial/photo evidence establishing lift model applicability. A Rotary-family operation/maintenance manual therefore remains deliberately unattached.
+- Exact readback of `TI-0027` from canonical `Inventory` row 116 confirms `Two-post vehicle lift`, quantity 1, `verified_existing_inventory`, but brand, model, date, seller, price, serial/part number, receipt link, and photo remain blank. Broad Drive search for `Rotary` returned the inventory row but no trustworthy purchase/serial/photo evidence establishing lift model applicability. A Rotary-family operation/maintenance manual therefore remains deliberately unattached.
 - Continuing rule: classify documents by actual type. Never promote QSG/setup/product/support pages to `owner_manual`, `instruction_manual`, or `service_manual`. If no exact/model-family full manual can be verified, record unavailable/not-published rather than fabricating coverage.
 
 ## CI/readback evidence — 2026-09-16
 
-- Remote `main` head at session verification: `1835b9e6cb2508a10bf4653a120b636fc932b2d3` (`Reconcile current main CI and lift identity evidence`).
-- GitHub Actions `Trusted Runner Gate` run 183 for that exact head completed `success`.
+- Remote `main` head verified before this checkpoint: `7c56e2da3e99e1cf9c89607f3ff010cd16f96b73` (`Reconcile latest main CI and inventory evidence readback`).
+- GitHub Actions `Trusted Runner Gate` run 184 for that exact head completed `success`.
 - Open PR audit still shows stale finance PR #166; it is preserved as historical evidence and is not a merge candidate.
 
 ### Idea/backlog capture audit
