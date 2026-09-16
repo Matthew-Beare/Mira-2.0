@@ -3,9 +3,9 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
-Progress: Reconciled remote main, open PR state, and CI; repaired this checkpoint to satisfy the repository work-session alignment contract after the prior manual-audit checkpoint accidentally removed the required active-packet/alignment structure. Manual evidence remains fail-closed: setup/QSG material does not satisfy a full-manual requirement.
+Progress: Verified current main and Actions CI green after the recovery repair; re-read the legacy Tool Inventory and bounded 94 currently `Details pending` rows, preserving fail-closed identity/manual handling rather than attaching guessed manuals.
 Last 24h: Historical finance coverage closed with exact full-history identity parity, Android passive capture + explicit replay-safe movement integrated to main, and legacy manual evidence was audited without promoting setup guides to manuals.
-Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model manual reconciliation continues where trustworthy identity evidence exists.
+Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
 Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
 
@@ -68,15 +68,23 @@ Verified deterministic/integration evidence:
 No protected production rows were deleted or rewritten.
 
 - The legacy `Tool Inventory` is an inventory evidence source, not the MIRA 2.0 development authority.
+- Fresh bounded provider readback found 94 rows currently matching `Details pending` in rows 1:130. This supersedes the older checkpoint count of 101 for that bounded surface; no rows were mutated merely to force parity.
 - The bounded Knowledge Index manual scan found the WRX factory service manual, FL5 service-reference manual, and Eastwood 31158 manufacturer-manual-search record; no setup/QSG artifact was silently classified as a full manual.
 - The retained WRX factory service manual is `service_manual` evidence.
 - The retained FL5 service-reference manual is `service_manual` evidence with an explicit warning to verify 2025 applicability per procedure/specification.
 - Eastwood 31158 remains an exact-SKU manufacturer-instructions search whose advertised official file was unavailable to the connected runtime; no substitute was fabricated.
 - LAUNCH CRP129E V2.0 Elite remains source-unavailable because the manufacturer manual found was for a different V3 family.
 - Logitech C920s manufacturer evidence resolves to a quick-start/setup guide only. It may be secondary setup evidence but does **not** satisfy a full owner/instruction/service-manual requirement.
-- Tool Inventory has 101 `Details pending` rows in the audited bound. High-value powered/precision examples still lacking stable manufacturer/model identity include the two-post lift, compressor, drill press, table saw, meters, vacuum pump, rework/soldering stations, pressure washer, chainsaw and powered woodworking tools.
-- A genuine Rotary SPOA10/2000-Series manufacturer-family operation/maintenance manual path exists, but the legacy lift row lacks model identity. It must not be attached until receipt/serial/photo evidence establishes applicability.
+- High-value powered/precision examples still lacking stable manufacturer/model identity include the two-post lift, compressor, drill press, meters, vacuum pump, rework/soldering stations, pressure washer, chainsaw and powered woodworking tools.
+- The current two-post lift row is `TI-0027`, with ownership confirmed but brand/model still blank in the canonical legacy sheet. A genuine Rotary SPOA10/2000-Series manufacturer-family operation/maintenance manual path exists, but it must not be attached until receipt/serial/photo evidence establishes applicability.
 - Continuing rule: classify documents by actual type. Never promote QSG/setup/product/support pages to `owner_manual`, `instruction_manual`, or `service_manual`. If no exact/model-family full manual can be verified, record unavailable/not-published rather than fabricating coverage.
+
+## CI/readback evidence — 2026-09-16
+
+- Remote `main` head at session verification: `9122b74be01c80f3c08a94ffdfcbbfb728b661f6` (`Repair work-session alignment checkpoint`).
+- GitHub Actions `Trusted Runner Gate` run 181 for that exact head completed `success`.
+- Commit Status API reports no legacy status contexts (`total_count=0`), so the aggregate `pending` value there is not evidence of a failing workflow; Actions is the relevant CI evidence.
+- Open PR audit still shows stale finance PR #166; it is preserved as historical evidence and is not a merge candidate.
 
 ### Idea/backlog capture audit
 
@@ -99,10 +107,10 @@ Do not use protected/legacy production state as a disposable proof fixture.
 
 ## Next bounded step
 
-1. Verify CI on this repaired checkpoint before claiming the recovery surface green.
-2. Await representative-device/provider proof for live Android capture; do not fabricate it.
-3. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual.
-4. Resolve manufacturer/model identity from trustworthy receipts, serial/part numbers, or retained photos before attaching manuals to `Details pending` rows; prioritize powered/precision equipment.
+1. Await representative-device/provider proof for live Android capture; do not fabricate it.
+2. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual.
+3. Resolve manufacturer/model identity from trustworthy receipts, serial/part numbers, or retained photos before attaching manuals to `Details pending` rows; prioritize powered/precision equipment.
+4. For `TI-0027`, seek exact Rotary model identity from purchase/serial/photo evidence before attaching the SPOA10/2000-Series manual family.
 5. Preserve stale PR #166 as historical finance evidence only; do not merge it blindly.
 
 ## Direction result
