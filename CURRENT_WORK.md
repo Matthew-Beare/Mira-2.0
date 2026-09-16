@@ -3,7 +3,7 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while preserving trustworthy inventory/manual evidence.
-Progress: Android capture is merged and green. The legacy Knowledge Index was exhaustively scanned across its current 1,000-row bound for manual-labeled records: only the WRX factory service manual, FL5 service-reference manual, and Eastwood 31158 manufacturer-manual-search record are present; no hidden setup/QSG record is currently masquerading as a full manual there. Logitech C920s remains setup/QSG-only and must not satisfy the manual requirement.
+Progress: Android capture remains merged and green. Historical manual reconciliation advanced to the next evidence gate: the live Tool Inventory contains 101 `Details pending` rows, including high-value powered/precision equipment, so exact-model manuals cannot be safely attached until those assets gain stable manufacturer/model identity. The manual classifier continues to reject setup/QSG material as a full manual.
 Last 24h: Historical finance coverage closed with exact full-history identity parity, Android passive capture + explicit replay-safe movement integrated to main with green CI, and legacy manual evidence classification was live-audited against the canonical inventory/knowledge surfaces.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; inventory evidence continues to distinguish full manuals from quick-start/setup material.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
@@ -40,7 +40,7 @@ Implemented and test-verified:
 - Movement tests cover event-first ordering, multi-pass convergence, exact replay without provider I/O, event-success/projection-conflict recovery, FIFO blocking, and mismatched verified projection refusal.
 - Proof shell requires a distinct `Move scanned asset explicitly` action and reports success only after canonical location readback.
 
-## Inventory/manual evidence audit — 2026-09-15
+## Inventory/manual evidence audit — 2026-09-16
 
 Bounded live-source audit performed against the existing legacy inventory/knowledge surfaces; no protected production rows were deleted or rewritten.
 
@@ -51,6 +51,8 @@ Bounded live-source audit performed against the existing legacy inventory/knowle
 - Eastwood 31158 is recorded as an exact-SKU manufacturer-instructions search with the advertised official file unavailable to the connected runtime; no substitute was silently archived.
 - LAUNCH CRP129E V2.0 Elite remains explicitly source-unavailable after official-site search because the available manufacturer manual is for a different V3 family. A third-party rewrite is not accepted as the exact manual.
 - Logitech C920s manufacturer evidence resolves to the official `c920s-web-qsg.pdf`, i.e. a quick-start/setup guide. It may be retained as secondary setup evidence, but it does **not** satisfy a full owner/instruction/service-manual requirement.
+- Live Tool Inventory metadata shows 999 rows / 26 columns. An exhaustive `Details pending` search over A1:Z999 matched 101 inventory rows. High-value examples with manufacturer/model still absent include the two-post vehicle lift, air compressor, drill press, table saw, digital multimeter, clamp meter, vacuum pump, hot-air rework station, soldering station, pressure washer, chainsaw and powered woodworking tools. Exact manuals for these must not be guessed from generic tool type.
+- A web evidence probe found a genuine Rotary SPOA10/2000-Series manufacturer-family operation/maintenance manual path, but the legacy inventory row identifies only `Two-post vehicle lift` with brand/model blank. Therefore no SPOA10 manual is attached until the lift's exact identity is reconciled from receipt/serial/photo evidence.
 - Manual evidence rule for continuing reconciliation: classify source artifacts by actual document type; never promote QSG/setup/product/support pages to `owner_manual`, `instruction_manual`, or `service_manual`. If no exact/model-family full manual can be verified, record source-unavailable/not-published rather than fabricating coverage.
 
 ### Idea/backlog capture audit
@@ -89,10 +91,11 @@ Do not use protected/legacy production state as a disposable proof fixture.
 
 1. Await representative-device/provider proof for the integrated Android capture vertical; do not fabricate live verification.
 2. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual; preserve provenance and explicit unavailable gaps.
-3. Prioritize exact-model, identified powered/precision tools over generic hand tools when expanding manual coverage, because they have higher safety/maintenance value and stronger manufacturer-document likelihood.
-4. Continue dependency-safe work that does not require physical-device/provider consent from canonical BACKLOG/ROADMAP on the next execution boundary.
-5. Keep NFC/BLE outside this bounded QR/barcode packet unless independently selected from canonical backlog.
-6. Preserve stale PR #166 as historical finance evidence only; do not use it as recovery authority or merge it blindly.
+3. Resolve manufacturer/model identity from trustworthy receipts, serial/part numbers, or retained photos before attaching manuals to the 101 `Details pending` inventory rows. Prioritize powered/precision equipment.
+4. Where an exact model is established, prefer manufacturer-hosted owner/instruction/service manuals; retain setup/QSG only as secondary evidence and explicitly mark unavailable gaps.
+5. Continue dependency-safe work that does not require physical-device/provider consent from canonical BACKLOG/ROADMAP on the next execution boundary.
+6. Keep NFC/BLE outside this bounded QR/barcode packet unless independently selected from canonical backlog.
+7. Preserve stale PR #166 as historical finance evidence only; do not use it as recovery authority or merge it blindly.
 
 ## Direction result
 
