@@ -81,8 +81,8 @@ No protected production rows were deleted or rewritten.
 
 ## CI/readback evidence — 2026-09-16
 
-- Remote `main` head verified before this checkpoint: `7c56e2da3e99e1cf9c89607f3ff010cd16f96b73` (`Reconcile latest main CI and inventory evidence readback`).
-- GitHub Actions `Trusted Runner Gate` run 184 for that exact head completed `success`.
+- Remote `main` head verified before this checkpoint: `2e041ec6ad88d0945b6ab162f6b410d6d304d83d` (`Reconcile current main and CI checkpoint`).
+- GitHub Actions `Trusted Runner Gate` run 185 for that exact head completed `success`.
 - Open PR audit still shows stale finance PR #166; it is preserved as historical evidence and is not a merge candidate.
 
 ### Idea/backlog capture audit
