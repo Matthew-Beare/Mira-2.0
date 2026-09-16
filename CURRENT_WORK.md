@@ -2,16 +2,50 @@
 
 ## Customer status
 
-Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while preserving trustworthy inventory/manual evidence.
-Progress: Android capture remains merged and green. Historical manual reconciliation advanced to the next evidence gate: the live Tool Inventory contains 101 `Details pending` rows, including high-value powered/precision equipment, so exact-model manuals cannot be safely attached until those assets gain stable manufacturer/model identity. The manual classifier continues to reject setup/QSG material as a full manual.
-Last 24h: Historical finance coverage closed with exact full-history identity parity, Android passive capture + explicit replay-safe movement integrated to main with green CI, and legacy manual evidence classification was live-audited against the canonical inventory/knowledge surfaces.
-Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; inventory evidence continues to distinguish full manuals from quick-start/setup material.
+Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
+Progress: Reconciled remote main, open PR state, and CI; repaired this checkpoint to satisfy the repository work-session alignment contract after the prior manual-audit checkpoint accidentally removed the required active-packet/alignment structure. Manual evidence remains fail-closed: setup/QSG material does not satisfy a full-manual requirement.
+Last 24h: Historical finance coverage closed with exact full-history identity parity, Android passive capture + explicit replay-safe movement integrated to main, and legacy manual evidence was audited without promoting setup guides to manuals.
+Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
-Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof below.
+Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
 
 ## Recovery authority
 
 This file is the authoritative execution checkpoint. Chat context is disposable. Re-read repository instructions, remote `main`, open PRs and CI before implementation or merge.
+
+## Active packet
+
+### `M2-M1-046` — Android capture live-proof and inventory evidence reconciliation
+
+- **Primary work:** `ANDROID-CAPTURE-001`
+- **Primary features:** `IDENT-001`, `ASSET-001`
+- **Related invariants/features:** `CLIENT-ANDROID-001`, `EVID-001`, `MOVE-001`, `INV-001`
+- **State:** integrated/test-verified; live representative-device proof pending; historical inventory/manual evidence reconciliation continues where exact identity is trustworthy
+- **Owned surfaces:** `CURRENT_WORK.md` recovery/status checkpoint; no Android implementation changes are claimed in this checkpoint
+- **Shared/high-contention surfaces:** `CURRENT_WORK.md`
+- **Blocker:** representative Android device + provider consent are required only for the live proof; evidence reconciliation remains dependency-safe
+
+## Session-start alignment verification — 2026-09-16
+
+### `FEATURES.md`
+
+Reviewed against the active Android capture/inventory objective. `IDENT-001`, `ASSET-001`, `CLIENT-ANDROID-001`, `EVID-001`, `MOVE-001`, and `INV-001` remain the existing canonical feature semantics; no parallel inventory system is introduced.
+
+### `BACKLOG.md`
+
+Reviewed against remote main. `ANDROID-CAPTURE-001` remains the canonical work item for nonauthoritative camera/barcode/QR capture; passive reads do not silently move assets. Historical evidence reconciliation is treated as integrity work under the existing asset/evidence semantics rather than invented as a competing product model.
+
+### `ROADMAP.md`
+
+Reviewed against the current Personal Google + Android shared-state direction. The live proof remains a representative-device/provider evidence gate, not something CI can fabricate.
+
+### Idea/backlog capture audit
+
+No materially new product idea was introduced by repairing the recovery checkpoint or enforcing the full-manual evidence rule. Existing inventory, identity, movement, evidence, and Android capture semantics are reused. `CAPTURE AUDIT COMPLETE`.
+
+### Direction result
+
+ALIGNED
 
 ## Closed packet — FIN-CANON-AUDIT-001
 
@@ -19,83 +53,57 @@ Closed 2026-09-15. Exact full-history identity proof at closure: 2,091 provider 
 
 ## Integrated packet — ANDROID-CAPTURE-001
 
-Merged to `main` on 2026-09-15. The Android packet remains integrated; current remote main was independently reconciled before this checkpoint and had advanced through the manual-evidence checkpoint rather than reverting Android work.
+Merged to `main` on 2026-09-15. PR #167 is no longer open. Stale finance PR #166 remains open as historical evidence and must not be merged blindly.
 
-Verified integration evidence:
-- Merge commit message: `Merge ANDROID-CAPTURE-001 passive capture and explicit movement`.
-- Post-merge `Trusted Runner Gate` completed successfully on remote main.
-- Pre-merge deterministic acceptance/CI was fully green for the bounded QR/barcode + explicit movement slice.
-- PR #167 is no longer open. Stale finance PR #166 remains open and must not be merged blindly.
-
-Implemented and test-verified:
-- `VerifiedChangeQuery`: bounded provider-neutral read-only fold over verified canonical Changes; it never reconciles or submits commands.
-- `IdentifierCaptureResolver`: strict decoded QR/UPC-A/EAN-8/EAN-13 identifier parsing and lookup against canonical `IDENT-001` snapshots.
-- Honest unresolved, ambiguous, malformed, transport, protocol and integrity states; unknown scans never create assets.
-- Serial-level duplicate resolution fails closed.
-- Google Code Scanner app-edge integration for QR/EAN-8/UPC-A/EAN-13; proof app requests no CAMERA permission and scanner UI/camera interaction remains provider-owned.
-- Passive scan remains read-only and does not imply movement.
-- Append-event support preserves the existing Commands schema through a strict transport-only event envelope.
-- Serialized Apps Script worker executes append-event with canonical Event-ID uniqueness, stream revision, idempotency, exact event readback and event-before-idempotency crash recovery.
-- `MovementCommandFacade` stages one explicit MOVE-001 event followed by inventory-state projection through the existing encrypted FIFO queue; no second queue exists.
-- Movement tests cover event-first ordering, multi-pass convergence, exact replay without provider I/O, event-success/projection-conflict recovery, FIFO blocking, and mismatched verified projection refusal.
-- Proof shell requires a distinct `Move scanned asset explicitly` action and reports success only after canonical location readback.
+Verified deterministic/integration evidence:
+- Passive scan is read-only and unknown identifiers never create assets.
+- QR/UPC-A/EAN-8/EAN-13 identifiers normalize through existing IDENT-001 semantics.
+- Movement requires a distinct explicit MOVE-001 action through the existing encrypted/replay-safe queue.
+- Serialized provider worker preserves event uniqueness, revision/idempotency, crash recovery and exact readback.
+- Deterministic tests cover replay, FIFO blocking, conflict recovery, malformed/unknown identifiers and verified projection refusal.
+- Exact canonical location readback is PASS in deterministic/CI evidence; live representative-device/provider proof remains pending.
 
 ## Inventory/manual evidence audit — 2026-09-16
 
-Bounded live-source audit performed against the existing legacy inventory/knowledge surfaces; no protected production rows were deleted or rewritten.
+No protected production rows were deleted or rewritten.
 
-- The legacy `Tool Inventory` remains an inventory source, not the MIRA 2.0 canonical development authority.
-- Live bounded scan of `Purchase & Receipt Archive` → `Knowledge Index` across rows 1:1000 found exactly three rows matching `manual`: the WRX factory service manual, FL5 service-reference manual, and Eastwood 31158 manufacturer-manual-search record. There is no additional setup/QSG artifact currently labeled as a manual in that bounded index.
-- The retained 2015 Subaru WRX/STI factory service manual is classified as `service_manual`.
-- The retained 2022–2024 Honda Civic FL5 service-reference manual is classified as `service_manual`; its record warns to verify 2025 applicability per procedure/specification.
-- Eastwood 31158 is recorded as an exact-SKU manufacturer-instructions search with the advertised official file unavailable to the connected runtime; no substitute was silently archived.
-- LAUNCH CRP129E V2.0 Elite remains explicitly source-unavailable after official-site search because the available manufacturer manual is for a different V3 family. A third-party rewrite is not accepted as the exact manual.
-- Logitech C920s manufacturer evidence resolves to the official `c920s-web-qsg.pdf`, i.e. a quick-start/setup guide. It may be retained as secondary setup evidence, but it does **not** satisfy a full owner/instruction/service-manual requirement.
-- Live Tool Inventory metadata shows 999 rows / 26 columns. An exhaustive `Details pending` search over A1:Z999 matched 101 inventory rows. High-value examples with manufacturer/model still absent include the two-post vehicle lift, air compressor, drill press, table saw, digital multimeter, clamp meter, vacuum pump, hot-air rework station, soldering station, pressure washer, chainsaw and powered woodworking tools. Exact manuals for these must not be guessed from generic tool type.
-- A web evidence probe found a genuine Rotary SPOA10/2000-Series manufacturer-family operation/maintenance manual path, but the legacy inventory row identifies only `Two-post vehicle lift` with brand/model blank. Therefore no SPOA10 manual is attached until the lift's exact identity is reconciled from receipt/serial/photo evidence.
-- Manual evidence rule for continuing reconciliation: classify source artifacts by actual document type; never promote QSG/setup/product/support pages to `owner_manual`, `instruction_manual`, or `service_manual`. If no exact/model-family full manual can be verified, record source-unavailable/not-published rather than fabricating coverage.
+- The legacy `Tool Inventory` is an inventory evidence source, not the MIRA 2.0 development authority.
+- The bounded Knowledge Index manual scan found the WRX factory service manual, FL5 service-reference manual, and Eastwood 31158 manufacturer-manual-search record; no setup/QSG artifact was silently classified as a full manual.
+- The retained WRX factory service manual is `service_manual` evidence.
+- The retained FL5 service-reference manual is `service_manual` evidence with an explicit warning to verify 2025 applicability per procedure/specification.
+- Eastwood 31158 remains an exact-SKU manufacturer-instructions search whose advertised official file was unavailable to the connected runtime; no substitute was fabricated.
+- LAUNCH CRP129E V2.0 Elite remains source-unavailable because the manufacturer manual found was for a different V3 family.
+- Logitech C920s manufacturer evidence resolves to a quick-start/setup guide only. It may be secondary setup evidence but does **not** satisfy a full owner/instruction/service-manual requirement.
+- Tool Inventory has 101 `Details pending` rows in the audited bound. High-value powered/precision examples still lacking stable manufacturer/model identity include the two-post lift, compressor, drill press, table saw, meters, vacuum pump, rework/soldering stations, pressure washer, chainsaw and powered woodworking tools.
+- A genuine Rotary SPOA10/2000-Series manufacturer-family operation/maintenance manual path exists, but the legacy lift row lacks model identity. It must not be attached until receipt/serial/photo evidence establishes applicability.
+- Continuing rule: classify documents by actual type. Never promote QSG/setup/product/support pages to `owner_manual`, `instruction_manual`, or `service_manual`. If no exact/model-family full manual can be verified, record unavailable/not-published rather than fabricating coverage.
 
 ### Idea/backlog capture audit
 
-No new product feature was introduced by this evidence-quality correction; it tightens evidence classification under existing asset/evidence/knowledge semantics. `CAPTURE AUDIT COMPLETE`.
-
-## Acceptance state
-
-1. Camera/QR/barcode observation is bounded and does not itself become canonical truth: **PASS**.
-2. Supported identifiers normalize through existing IDENT-001 semantics and resolve existing assets exactly: **PASS**.
-3. Unknown identifiers fail honestly without fabricated assets: **PASS**.
-4. Passive scan performs zero movement writes: **PASS**.
-5. Movement requires an explicit MOVE-001 action through the shared queued mutation boundary: **PASS**.
-6. Replay/idempotency prevents duplicate movement effects: **PASS**.
-7. Exact canonical asset/location readback after explicit movement: **PASS in deterministic/CI evidence; live proof pending**.
-8. Existing encrypted/replay-safe Android queue is preserved; no second queue: **PASS**.
-9. Error/conflict/replay/unknown/malformed paths are test-covered: **PASS**.
-10. Packet-to-feature alignment and capture audit: **PASS**.
+This evidence-quality correction introduces no new feature. It tightens evidence classification under existing asset/evidence/knowledge semantics. `CAPTURE AUDIT COMPLETE`.
 
 ## Human-only live proof wall
 
 `REQUIRES-HUMAN-ACTION`
 
 Minimum safe proof:
-1. Install/update the CI-retained `com.mira.deviceproof` APK on a representative Android device.
+1. Install/update the retained `com.mira.deviceproof` APK on a representative Android device.
 2. Authorize/select the intended MIRA Personal Google Workspace copy through provider UI.
-3. Scan one supported identifier tied to an existing approved test/safe canonical asset and confirm one read-only resolution without movement.
-4. Enter/select an approved safe existing canonical test destination and press `Move scanned asset explicitly`.
+3. Scan one supported identifier tied to an existing approved safe canonical asset and confirm one read-only resolution without movement.
+4. Select an approved safe existing canonical destination and press `Move scanned asset explicitly`.
 5. Allow the serialized Workspace worker to reconcile; retry the exact movement action only if still pending.
 6. Verify UI reaches `applied with verified canonical location readback`.
-7. Read back canonical Event + inventory-state projection and confirm exactly one movement effect and expected observed location.
+7. Read back canonical Event + inventory-state projection and confirm exactly one movement effect and expected location.
 
 Do not use protected/legacy production state as a disposable proof fixture.
 
 ## Next bounded step
 
-1. Await representative-device/provider proof for the integrated Android capture vertical; do not fabricate live verification.
-2. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual; preserve provenance and explicit unavailable gaps.
-3. Resolve manufacturer/model identity from trustworthy receipts, serial/part numbers, or retained photos before attaching manuals to the 101 `Details pending` inventory rows. Prioritize powered/precision equipment.
-4. Where an exact model is established, prefer manufacturer-hosted owner/instruction/service manuals; retain setup/QSG only as secondary evidence and explicitly mark unavailable gaps.
-5. Continue dependency-safe work that does not require physical-device/provider consent from canonical BACKLOG/ROADMAP on the next execution boundary.
-6. Keep NFC/BLE outside this bounded QR/barcode packet unless independently selected from canonical backlog.
-7. Preserve stale PR #166 as historical finance evidence only; do not use it as recovery authority or merge it blindly.
+1. Verify CI on this repaired checkpoint before claiming the recovery surface green.
+2. Await representative-device/provider proof for live Android capture; do not fabricate it.
+3. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual.
+4. Resolve manufacturer/model identity from trustworthy receipts, serial/part numbers, or retained photos before attaching manuals to `Details pending` rows; prioritize powered/precision equipment.
+5. Preserve stale PR #166 as historical finance evidence only; do not merge it blindly.
 
 ## Direction result
 
