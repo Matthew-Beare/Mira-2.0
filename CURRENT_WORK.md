@@ -3,8 +3,8 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
-Progress: Reconciled remote main and green CI at the latest checkpoint; exact-model manual rules remain enforced and no setup/quick-start artifact is accepted as a full manual.
-Last 24h: Historical finance coverage closed with exact full-history identity parity, Android passive capture + explicit replay-safe movement integrated to main, and legacy manual evidence was audited without promoting setup guides to manuals.
+Progress: Repaired the Sep 18 Financial Escape live-state rollover with exact readback, verified May 1 remains the governing target, and bounded high-value inventory identity searches without inventing unsupported model data; Android live proof remains human-blocked.
+Last 24h: Financial Escape now has exactly one Sep 18 snapshot, zero duplicate Event IDs, live May 1 pace/status recomputed from latest available balances, and powered/precision legacy inventory searches were bounded across receipt/archive, Drive, and Gmail evidence.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
 Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
@@ -79,11 +79,32 @@ No protected production rows were deleted or rewritten.
 - Exact readback of `TI-0027` from canonical `Inventory` row 116 confirms `Two-post vehicle lift`, quantity 1, `verified_existing_inventory`, but brand, model, date, seller, price, serial/part number, receipt link, and photo remain blank. Broad Drive search for `Rotary` returned the inventory row but no trustworthy purchase/serial/photo evidence establishing lift model applicability. A Rotary-family operation/maintenance manual therefore remains deliberately unattached.
 - Continuing rule: classify documents by actual type. Never promote QSG/setup/product/support pages to `owner_manual`, `instruction_manual`, or `service_manual`. If no exact/model-family full manual can be verified, record unavailable/not-published rather than fabricating coverage.
 
-## CI/readback evidence — 2026-09-16
+## Financial Escape live-state reconciliation — 2026-09-18
 
-- Remote `main` head verified before this checkpoint: `b10024b8acee5a436ec0ac5b99378842eacf6226` (`Reconcile hourly worker checkpoint to verified main`).
-- GitHub Actions `Trusted Runner Gate` run 186 for that exact head completed `success`.
+Direct user correction remains authoritative: May 1, 2027 is the governing Financial Escape target; March 1 and April 1 are reference/history only and must not drive current pace, status, briefs, or actions.
+
+Verified provider/workbook evidence:
+- Linked financial accounts were read live before workbook mutation. Transaction coverage reports full-history and complete for the bounded query, but provider freshness remains UNKNOWN and is preserved as UNKNOWN.
+- Bounded posted and pending transaction queries for 2026-09-17 through 2026-09-18 returned no rows. No transaction was fabricated from balance movement.
+- Latest available linked balances used for the Sep 18 snapshot: household depository cash $28,146.21; positive card balances owed $1,016.94; Old Dominion 401(k) $249,716.79; household 401(k) $499,433.58 by the standing 2× rule; HELOC $41,810.05; Civic $42,200.87; Robinhood brokerage + crypto $17,109.90; primary home $577,400.
+- The outgoing 2026-09-17 Daily Snapshot was frozen as historical evidence before inserting the new current row. Exactly one 2026-09-18 Daily Snapshot now exists.
+- Dashboard readback after mutation: duplicate Event IDs = 0; today's snapshot rows = 1; DATA FRESHNESS = UNKNOWN • PROVIDER FRESHNESS; refresh/brief cadence label = 2:20 refresh • 2:45 brief • AM + PM ET.
+- The live model recomputed rather than being hard-coded: May 1 minimum paid-mile pace = 5,171/wk; current completed cycle = 6,006 paid miles; rolling realistic exit = Apr 26, 2027; status = PONITUDE • 5d AHEAD. Mileage remains a leading signal; posted debt reduction remains actual progress.
+- Historical Daily Snapshot rows and March/April reference rows were preserved rather than rewritten to match the new governing target.
+
+## Inventory evidence boundary — 2026-09-18
+
+- Bounded Tool Inventory readback still finds 94 Details pending rows in rows 1:130.
+- High-value unresolved powered/precision identity searches were run against the canonical Purchase & Receipt Archive, connected Gmail, and Drive evidence for compressor, drill press, vacuum pump, multimeter, clamp meter, pressure washer, chainsaw, soldering/rework equipment and related terms.
+- Those searches produced no trustworthy exact purchase/model evidence beyond the existing inventory/interview state. No brand, model, SKU, serial, manual, or fitment identity was invented.
+- Exact-model/full-manual rule remains in force: physical label/photo/serial evidence or a trustworthy retained receipt is required before attaching model-specific manuals to these legacy assets.
+
+## CI/readback evidence — 2026-09-18
+
+- Session-start remote `main` head was independently verified as `1852b53d1931dd44ca87422b94fa3337957753a4` (`Reconcile current main and CI evidence`).
+- GitHub Actions CI run `35086378900` and Trusted Runner Gate run `35086488130` both completed `success` on that exact head.
 - Open PR audit still shows stale finance PR #166; it is preserved as historical evidence and is not a merge candidate.
+- This CURRENT_WORK update records the Sep 18 finance/live-state and inventory evidence boundary; the resulting checkpoint commit must be read back before being treated as durable.
 
 ### Idea/backlog capture audit
 
