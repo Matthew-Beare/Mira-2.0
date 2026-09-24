@@ -4,7 +4,7 @@
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
 Progress: Android implementation remains integrated/test-verified with live device proof human-blocked; historical evidence reconciliation now resolves the legacy transmission jack to exact manufacturer model `HTJ-1322`, with a manufacturer-hosted full user manual available for that exact product page.
-Last 24h: Sep 24 runtime-integrity repairs remain green. Live `main` was independently re-read as `8adacde2b704a9d567dec944eb88ad85d7918214` before this checkpoint, with CI/Trusted Runner Gate green. Durable Operating Addenda was reachable and re-read. Retained Amazon evidence for order `111-9893607-5225060` was joined to VEVOR's official matching 1322-lb transmission-jack product page; the manufacturer identifies Item Model Number `HTJ-1322` and publishes a full `User manual-en (PDF)` on that exact page. This supersedes the earlier family-only/no-manual checkpoint without inventing identity.
+Last 24h: Sep 24 runtime-integrity repairs remain green. Live `main` was independently re-read as `a1d4f1981fba7f85c65138ab5999e681a755cc38` (`Verify exact VEVOR transmission jack model and full manual`), with CI and Trusted Runner Gate green on that exact head. Open-PR audit still shows stale finance PR #166 as non-mergeable historical evidence. Durable Operating Addenda was reachable and re-read earlier in the active packet. Retained Amazon evidence for order `111-9893607-5225060` was joined to VEVOR's official matching 1322-lb transmission-jack product page; the manufacturer identifies Item Model Number `HTJ-1322` and publishes a full `User manual-en (PDF)` on that exact page. This supersedes the earlier family-only/no-manual checkpoint without inventing identity.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
 Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
@@ -125,7 +125,7 @@ Provider truth at repair time remains freshness-UNKNOWN; this repair does not cl
 - Trusted Runner Gate run `35978709083` completed `success` on that exact checkpoint.
 - Open PR audit still includes stale finance PR #166 and historical backfill PR #165; neither is a blind merge candidate.
 - Live workbook readback at checkpoint: zero duplicate Event IDs, zero missing FinOps AD/AE/AH/AI/AJ/AK derived fields across 2,127 populated rows, exact 586↔586 FinOps/Spending Review NEEDS REVIEW Event-ID parity, current zero-entry Fri–Thu week OPEN, provider freshness UNKNOWN preserved.
-- Remote `main` was independently re-read this worker cycle as `8adacde2b704a9d567dec944eb88ad85d7918214` (`Reconcile live head and bounded inventory evidence audit`). CI run `35991151301` and Trusted Runner Gate run `35991276555` are green on that exact head.
+- Remote `main` was independently re-read this worker cycle as `a1d4f1981fba7f85c65138ab5999e681a755cc38` (`Verify exact VEVOR transmission jack model and full manual`). CI run `35997215732` and Trusted Runner Gate run `35997372909` are green on that exact head.
 
 ### Idea/backlog capture audit
 
@@ -150,6 +150,14 @@ This evidence-quality correction introduces no new feature. It tightens evidence
 - No exact model, SKU, serial, receipt link, or manual was attached from these searches. Setup/QSG artifacts remain ineligible as full manuals.
 - Protected historical production data was not mutated.
 - `CAPTURE AUDIT COMPLETE`.
+
+## Worker reconciliation — 2026-09-24
+
+- Re-read live `main`, open pull requests, CI, `FEATURES.md`, `BACKLOG.md`, and the active resume point before further work.
+- Live `main` at cycle start was `a1d4f1981fba7f85c65138ab5999e681a755cc38`; both CI (`35997215732`) and Trusted Runner Gate (`35997372909`) completed successfully on that exact head.
+- Open PR #166 remains stale historical finance evidence and is not a merge candidate. No live Git evidence justified replaying or reprioritizing it.
+- The active packet remains aligned with `ASSET-001`, `IDENT-001`, `EVID-001`, `INV-001`, and the human-gated Android proof. No new feature or backlog item was introduced. `CAPTURE AUDIT COMPLETE`.
+- This checkpoint reconciles stale head/CI references only; it does not claim new provider, inventory, manual, or live-device evidence.
 
 ## Human-only live proof wall
 
