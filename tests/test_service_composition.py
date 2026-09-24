@@ -7,21 +7,13 @@ from mira.service_composition import (
     ServiceBundleSpec,
     ServiceComposer,
     ServiceCompositionValidationError,
+    personal_service_bundle,
 )
 from mira.service_state import ServiceStateService
 from mira.structured_state import InMemoryStructuredStateAdapter
 
 
-BRIEFS = ServiceBundleSpec(
-    service_id="briefs",
-    dependency_ids=(
-        "OPS-001",
-        "OPS-003",
-        "OPS-004",
-        "RECOVERY-001",
-        "RECOVERY-002",
-    ),
-)
+BRIEFS = personal_service_bundle("briefs")
 
 
 def ready_dependencies(*dependency_ids: str) -> tuple[DependencyEvidence, ...]:
@@ -40,6 +32,15 @@ class ServiceComposerTests(unittest.TestCase):
         )
         self.state = ServiceStateService(adapter)
         self.composer = ServiceComposer(self.state)
+
+    def test_personal_briefs_bundle_is_product_owned_not_test_only(self) -> None:
+        self.assertEqual(BRIEFS.service_id, "briefs")
+        self.assertEqual(
+            BRIEFS.dependency_ids,
+            ("OPS-001", "OPS-003", "OPS-004", "RECOVERY-001", "RECOVERY-002"),
+        )
+        with self.assertRaises(ServiceCompositionValidationError):
+            personal_service_bundle("not-a-service")
 
     def test_verified_bundle_becomes_ready_but_never_silently_activates(self) -> None:
         requested = self.state.request_enable(
