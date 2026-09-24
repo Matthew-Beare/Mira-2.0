@@ -4,9 +4,7 @@
     {
       "path": "mira",
       "profile": "python",
-      "suffixes": [
-        ".py"
-      ]
+      "suffixes": [".py"]
     }
   ],
   "components": [
@@ -14,110 +12,55 @@
       "id": "mira-package-surface",
       "responsibility": "Stable public Python package export surface for implemented MIRA core components.",
       "why_separate": "Keeps import compatibility and package presentation separate from mutable-state, routing, transport, and repository-governance implementations.",
-      "owned_paths": [
-        "mira/__init__.py"
-      ],
-      "feature_ids": [
-        "CORE-001"
-      ],
-      "work_ids": [
-        "CODE-OWNERSHIP-001"
-      ],
-      "verification": [
-        "tests/test_synthetic_roundtrip.py"
-      ]
+      "owned_paths": ["mira/__init__.py"],
+      "feature_ids": ["CORE-001"],
+      "work_ids": ["CODE-OWNERSHIP-001"],
+      "verification": ["tests/test_synthetic_roundtrip.py"]
     },
     {
       "id": "structured-state",
       "responsibility": "Provider-neutral canonical structured-state contract and deterministic synthetic adapter semantics.",
       "why_separate": "Storage mutation, revision, replay, query, and event semantics are reusable below authority routing and API transport.",
-      "owned_paths": [
-        "mira/structured_state.py"
-      ],
-      "feature_ids": [
-        "STORE-001"
-      ],
-      "work_ids": [
-        "STORE-ADAPTER-001A"
-      ],
-      "verification": [
-        "tests/test_structured_state.py",
-        "tests/test_synthetic_roundtrip.py"
-      ]
+      "owned_paths": ["mira/structured_state.py"],
+      "feature_ids": ["STORE-001"],
+      "work_ids": ["STORE-ADAPTER-001A"],
+      "verification": ["tests/test_structured_state.py", "tests/test_synthetic_roundtrip.py"]
     },
     {
       "id": "google-sheets-state",
       "responsibility": "Google Sheets REST persistence gateway and single-writer StructuredStateAdapter implementation for the M2-M0 provider-backed authority path.",
       "why_separate": "Provider-specific tab/row persistence and credential injection stay behind the provider-neutral STORE-001 contract so Authority Registry and API code remain unaware of spreadsheet identifiers or ranges.",
-      "owned_paths": [
-        "mira/google_sheets_store.py"
-      ],
-      "feature_ids": [
-        "STORE-001"
-      ],
-      "work_ids": [
-        "GOOGLE-STORE-ADAPTER-001"
-      ],
-      "verification": [
-        "tests/test_google_sheets_store.py"
-      ]
+      "owned_paths": ["mira/google_sheets_store.py"],
+      "feature_ids": ["STORE-001"],
+      "work_ids": ["GOOGLE-STORE-ADAPTER-001"],
+      "verification": ["tests/test_google_sheets_store.py"]
     },
     {
       "id": "authority-registry",
       "responsibility": "Persistent one-authority-per-data-class registry, fail-closed runtime bootstrap, and explicit runtime adapter resolution.",
       "why_separate": "Canonical authority selection and safe restart bootstrap are an integrity boundary independent of storage implementation and client/API transport.",
-      "owned_paths": [
-        "mira/authority.py",
-        "mira/runtime_bootstrap.py"
-      ],
-      "feature_ids": [
-        "AUTH-001"
-      ],
-      "work_ids": [
-        "AUTHORITY-REGISTRY-001"
-      ],
-      "verification": [
-        "tests/test_authority.py",
-        "tests/test_runtime_bootstrap.py",
-        "tests/test_synthetic_roundtrip.py"
-      ]
+      "owned_paths": ["mira/authority.py", "mira/runtime_bootstrap.py"],
+      "feature_ids": ["AUTH-001"],
+      "work_ids": ["AUTHORITY-REGISTRY-001"],
+      "verification": ["tests/test_authority.py", "tests/test_runtime_bootstrap.py", "tests/test_synthetic_roundtrip.py"]
     },
     {
       "id": "api-boundary",
       "responsibility": "Same-user API policy, canonical routing, audit, scoped client sessions, pluggable bearer authentication, and bounded HTTP transport.",
       "why_separate": "Client-facing policy and transport form one service boundary above canonical authority/storage while remaining provider-neutral and deployment-independent.",
-      "owned_paths": [
-        "mira/api_core.py",
-        "mira/http_transport.py"
-      ],
-      "feature_ids": [
-        "API-001"
-      ],
-      "work_ids": [
-        "API-CORE-001"
-      ],
-      "verification": [
-        "tests/test_api_core.py",
-        "tests/test_http_transport.py",
-        "tests/test_synthetic_roundtrip.py"
-      ]
+      "owned_paths": ["mira/api_core.py", "mira/http_transport.py"],
+      "feature_ids": ["API-001"],
+      "work_ids": ["API-CORE-001"],
+      "verification": ["tests/test_api_core.py", "tests/test_http_transport.py", "tests/test_synthetic_roundtrip.py"]
     },
     {
       "id": "managed-runtime-assembly",
       "responsibility": "Provider-neutral managed API composition and startup readiness verification over injected state, authentication, and audit dependencies.",
       "why_separate": "Deployment composition must verify the existing Authority/API/HTTP graph without embedding provider credentials, resource identifiers, or platform-specific hosting policy into reusable core modules.",
-      "owned_paths": [
-        "mira/runtime.py"
-      ],
-      "feature_ids": [
-        "API-001"
-      ],
-      "work_ids": [
-        "API-DEPLOYMENT-001"
-      ],
-      "verification": [
-        "tests/test_runtime.py"
-      ]
+      "owned_paths": ["mira/runtime.py"],
+      "feature_ids": ["API-001"],
+      "work_ids": ["API-DEPLOYMENT-001"],
+      "verification": ["tests/test_runtime.py"]
     },
     {
       "id": "cloud-run-deployment",
@@ -129,13 +72,8 @@
         "mira/google_runtime_auth.py",
         "mira/managed_auth.py"
       ],
-      "feature_ids": [
-        "API-001",
-        "STORE-001"
-      ],
-      "work_ids": [
-        "API-DEPLOYMENT-001"
-      ],
+      "feature_ids": ["API-001", "STORE-001"],
+      "work_ids": ["API-DEPLOYMENT-001"],
       "verification": [
         "tests/test_cloud_run.py",
         "tests/test_google_runtime_auth.py",
@@ -146,736 +84,316 @@
       "id": "workspace-first-run",
       "responsibility": "Public Google Workspace starter bundle integrity for the zero-infrastructure Personal MIRA path, including runtime-only copy binding and direct validation of the bound Apps Script artifact.",
       "why_separate": "Workspace packaging and browser-first deployment constraints are adapter/distribution concerns and must not leak provider IDs or Google execution behavior into the provider-neutral API and storage core.",
-      "owned_paths": [
-        "mira/workspace_bundle.py"
-      ],
-      "feature_ids": [
-        "API-001",
-        "STORE-001",
-        "ONBOARD-006"
-      ],
-      "work_ids": [
-        "API-DEPLOYMENT-001A"
-      ],
-      "verification": [
-        "tests/test_workspace_bundle.py"
-      ]
+      "owned_paths": ["mira/workspace_bundle.py"],
+      "feature_ids": ["API-001", "STORE-001", "ONBOARD-006"],
+      "work_ids": ["API-DEPLOYMENT-001A"],
+      "verification": ["tests/test_workspace_bundle.py"]
     },
     {
       "id": "personal-distribution",
       "responsibility": "Deterministic source-SHA-bound Personal Google starter blueprint, release manifest and clean spreadsheet snapshot verification.",
       "why_separate": "Release reproducibility and starter privacy are distribution integrity concerns above the Workspace runtime bundle; they must not make a mutable live Google Sheet or provider identifier into source authority.",
-      "owned_paths": [
-        "mira/personal_distribution.py"
-      ],
-      "feature_ids": [
-        "DIST-002",
-        "ONBOARD-002",
-        "ONBOARD-006",
-        "DATA-001"
-      ],
-      "work_ids": [
-        "DIST-STARTER-001",
-        "STARTER-SANITIZE-001"
-      ],
-      "verification": [
-        "tests/test_personal_distribution.py"
-      ]
+      "owned_paths": ["mira/personal_distribution.py"],
+      "feature_ids": ["DIST-002", "ONBOARD-002", "ONBOARD-006", "DATA-001"],
+      "work_ids": ["DIST-STARTER-001", "STARTER-SANITIZE-001"],
+      "verification": ["tests/test_personal_distribution.py"]
     },
     {
       "id": "workspace-native-client",
       "responsibility": "Deterministic single-writer preflight, replay, revision, atomic batch mutation and exact-readback protocol for stock ChatGPT using authenticated native Google Sheets actions.",
       "why_separate": "The Personal native-connector lane needs a durable integrity contract that matches STORE-001 without turning the model, Apps Script, or Google transport into a second canonical data model.",
-      "owned_paths": [
-        "mira/workspace_native.py"
-      ],
-      "feature_ids": [
-        "API-001",
-        "AUTH-001",
-        "STORE-001"
-      ],
-      "work_ids": [
-        "CHATGPT-API-CLIENT-001"
-      ],
-      "verification": [
-        "tests/test_workspace_native.py"
-      ]
+      "owned_paths": ["mira/workspace_native.py"],
+      "feature_ids": ["API-001", "AUTH-001", "STORE-001"],
+      "work_ids": ["CHATGPT-API-CLIENT-001"],
+      "verification": ["tests/test_workspace_native.py"]
     },
     {
       "id": "canonical-command-sequencer",
       "responsibility": "Provider-neutral one-at-a-time queued command execution with durable replay, stale-revision conflict, crash-before-acknowledgement recovery, and API-001 authorization semantics for the Android-era shared writer boundary.",
       "why_separate": "Multi-client mutation requires one canonical sequencing seam above Authority/store semantics. Keeping the command sequencer provider-neutral lets Google Workspace or a managed runtime supply execution without making Android depend on spreadsheet rows or Cloud Run details.",
-      "owned_paths": [
-        "mira/command_sequencer.py"
-      ],
-      "feature_ids": [
-        "CLIENT-ANDROID-001",
-        "API-001",
-        "AUTH-001",
-        "STORE-001"
-      ],
-      "work_ids": [
-        "ANDROID-CLIENT-CORE-001"
-      ],
-      "verification": [
-        "tests/test_command_sequencer.py"
-      ]
+      "owned_paths": ["mira/command_sequencer.py"],
+      "feature_ids": ["CLIENT-ANDROID-001", "API-001", "AUTH-001", "STORE-001"],
+      "work_ids": ["ANDROID-CLIENT-CORE-001"],
+      "verification": ["tests/test_command_sequencer.py"]
     },
     {
       "id": "personal-firstboot",
       "responsibility": "Provider-neutral four-question Minimum Useful Setup plus optional resumable progressive discovery for the stock-ChatGPT Personal MIRA front door.",
       "why_separate": "Onboarding order, answer normalization, post-setup choice, progressive topic state and explicit provider-preference semantics are product-domain behavior above storage and remain independent of Google row coordinates, Android, and service activation implementations.",
-      "owned_paths": [
-        "mira/onboarding.py"
-      ],
-      "feature_ids": [
-        "ONBOARD-002",
-        "ONBOARD-003",
-        "ONBOARD-004",
-        "CORE-001",
-        "SERVICE-001",
-        "CAL-006",
-        "STUDIO-001",
-        "ROUTINE-001",
-        "WEARABLE-001",
-        "MEAL-001",
-        "GROCERY-001",
-        "RECEIPT-001",
-        "ASSET-001",
-        "INV-001",
-        "EDU-001",
-        "LOCAL-001"
-      ],
-      "work_ids": [
-        "FIRSTBOOT-CORE-001",
-        "DISCOVERY-CORE-001"
-      ],
-      "verification": [
-        "tests/test_onboarding.py",
-        "tests/test_progressive_onboarding.py"
-      ]
+      "owned_paths": ["mira/onboarding.py"],
+      "feature_ids": ["ONBOARD-002", "ONBOARD-003", "ONBOARD-004", "CORE-001", "SERVICE-001", "CAL-006", "STUDIO-001", "ROUTINE-001", "WEARABLE-001", "MEAL-001", "GROCERY-001", "RECEIPT-001", "ASSET-001", "INV-001", "EDU-001", "LOCAL-001"],
+      "work_ids": ["FIRSTBOOT-CORE-001", "DISCOVERY-CORE-001"],
+      "verification": ["tests/test_onboarding.py", "tests/test_progressive_onboarding.py"]
     },
     {
       "id": "canonical-tasks",
       "responsibility": "Provider-neutral durable task identity, actionable next-action state, explicit completion/cancellation/reopen transitions and deterministic active-task ordering.",
       "why_separate": "Task truth must remain canonical and reusable independently of any one brief renderer, scheduler, provider, or chat session.",
-      "owned_paths": [
-        "mira/tasks.py"
-      ],
-      "feature_ids": [
-        "TASK-001",
-        "TASK-002",
-        "STORE-001"
-      ],
-      "work_ids": [
-        "OPS-BRIEF-VSLICE"
-      ],
-      "verification": [
-        "tests/test_tasks.py"
-      ]
+      "owned_paths": ["mira/tasks.py"],
+      "feature_ids": ["TASK-001", "TASK-002", "STORE-001"],
+      "work_ids": ["OPS-BRIEF-VSLICE"],
+      "verification": ["tests/test_tasks.py"]
     },
     {
       "id": "personal-ops-brief",
       "responsibility": "Deterministic twice-daily task-centered Personal Ops Brief slot/run composition, immutable run checkpointing and optional bounded progressive-discovery prompt insertion.",
       "why_separate": "Brief composition is a user-visible projection over canonical task/onboarding state and must stay distinct from task authority, scheduler delivery, weather/order/calendar integrations and platform notification claims.",
-      "owned_paths": [
-        "mira/ops_brief.py"
-      ],
-      "feature_ids": [
-        "OPS-001",
-        "OPS-003",
-        "OPS-004",
-        "TASK-001",
-        "TASK-002",
-        "RECOVERY-001",
-        "RECOVERY-002",
-        "ONBOARD-004"
-      ],
-      "work_ids": [
-        "OPS-BRIEF-VSLICE"
-      ],
-      "verification": [
-        "tests/test_ops_brief.py"
-      ]
+      "owned_paths": ["mira/ops_brief.py"],
+      "feature_ids": ["OPS-001", "OPS-003", "OPS-004", "TASK-001", "TASK-002", "RECOVERY-001", "RECOVERY-002", "ONBOARD-004"],
+      "work_ids": ["OPS-BRIEF-VSLICE"],
+      "verification": ["tests/test_ops_brief.py"]
     },
     {
       "id": "canonical-receipts",
       "responsibility": "Provider-neutral canonical receipt identity, exact money, conservative multi-source evidence reconciliation, explicit correction, and deterministic purchase-history queries.",
       "why_separate": "Purchase truth must be stable before downstream asset, inventory, order, spending, reimbursement, grocery, or provider-archive side effects are allowed to consume it.",
-      "owned_paths": [
-        "mira/receipts.py"
-      ],
-      "feature_ids": [
-        "RECEIPT-001",
-        "RECEIPT-002",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "RECEIPT-INTAKE-001"
-      ],
-      "verification": [
-        "tests/test_receipts.py"
-      ]
+      "owned_paths": ["mira/receipts.py"],
+      "feature_ids": ["RECEIPT-001", "RECEIPT-002", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["RECEIPT-INTAKE-001"],
+      "verification": ["tests/test_receipts.py"]
     },
     {
       "id": "canonical-assets",
       "responsibility": "Provider-neutral immutable physical Entity UUID allocation, receipt-linked acquisition provenance, source replay/dedupe, bounded individual-vs-lot quantity semantics and nonidentity enrichment.",
       "why_separate": "Physical identity must survive receipt corrections and later identifier, fitment, inventory, location, warranty and maintenance projections without those downstream systems becoming a second asset authority.",
-      "owned_paths": [
-        "mira/assets.py"
-      ],
-      "feature_ids": [
-        "ASSET-001",
-        "ASSET-002",
-        "RECEIPT-001",
-        "RECEIPT-002",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "ASSET-ACQUISITION-001"
-      ],
-      "verification": [
-        "tests/test_assets.py"
-      ]
+      "owned_paths": ["mira/assets.py"],
+      "feature_ids": ["ASSET-001", "ASSET-002", "RECEIPT-001", "RECEIPT-002", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["ASSET-ACQUISITION-001"],
+      "verification": ["tests/test_assets.py"]
     },
     {
       "id": "canonical-identifiers",
       "responsibility": "Provider-neutral namespaced product/device identifier validation, exact-source retention, deterministic normalization, serial-level collision safety and identifier-origin canonical asset lookup.",
       "why_separate": "Product, model, serial, IMEI, MAC and trade identifiers enrich immutable asset UUIDs but must remain independently queryable/collision-checked without turning barcode strings into physical identity or silently triggering fitment/inventory behavior.",
-      "owned_paths": [
-        "mira/identifiers.py"
-      ],
-      "feature_ids": [
-        "IDENT-001",
-        "ASSET-003",
-        "ASSET-001",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "ASSET-IDENTIFIER-001"
-      ],
-      "verification": [
-        "tests/test_identifiers.py"
-      ]
+      "owned_paths": ["mira/identifiers.py"],
+      "feature_ids": ["IDENT-001", "ASSET-003", "ASSET-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["ASSET-IDENTIFIER-001"],
+      "verification": ["tests/test_identifiers.py"]
     },
     {
       "id": "canonical-inventory-location",
       "responsibility": "Provider-neutral inventory participation over immutable asset UUIDs plus stable hierarchical locations and independent intended-versus-observed physical location state.",
       "why_separate": "Inventory/location state must reuse physical identity and answer where an item belongs separately from where it was last observed, while movement events, scanning, broad inventory projection and par/grocery behavior remain downstream services.",
-      "owned_paths": [
-        "mira/inventory_location.py"
-      ],
-      "feature_ids": [
-        "INV-001",
-        "LOC-001",
-        "ASSET-001",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "LOCATION-STATE-001"
-      ],
-      "verification": [
-        "tests/test_inventory_location.py"
-      ]
+      "owned_paths": ["mira/inventory_location.py"],
+      "feature_ids": ["INV-001", "LOC-001", "ASSET-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["LOCATION-STATE-001"],
+      "verification": ["tests/test_inventory_location.py"]
     },
     {
       "id": "canonical-inventory-query",
       "responsibility": "Read-only canonical inventory projection joining tracked asset, identifier, acquisition and intended-versus-observed location truth for bounded no-app queries.",
       "why_separate": "Inventory query composes existing canonical state and must remain a read-only projection so search, filtering and reporting cannot become a second mutable authority or smuggle in movement/scanning semantics.",
-      "owned_paths": [
-        "mira/inventory_query.py"
-      ],
-      "feature_ids": [
-        "INV-002",
-        "INV-001",
-        "LOC-001",
-        "ASSET-003",
-        "IDENT-001",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "INVENTORY-QUERY-001"
-      ],
-      "verification": [
-        "tests/test_inventory_query.py"
-      ]
+      "owned_paths": ["mira/inventory_query.py"],
+      "feature_ids": ["INV-002", "INV-001", "LOC-001", "ASSET-003", "IDENT-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["INVENTORY-QUERY-001"],
+      "verification": ["tests/test_inventory_query.py"]
     },
     {
       "id": "canonical-inventory-movement",
       "responsibility": "Provider-neutral replay-safe explicit inventory observation/movement event history with recovery-safe observed-state projection onto canonical inventory state.",
       "why_separate": "Movement history mutates only supported observed state through append-only canonical events and must stay separate from read-only inventory query, intended placement, scanner capture, passive reads, container propagation and client UI.",
-      "owned_paths": [
-        "mira/movement.py"
-      ],
-      "feature_ids": [
-        "MOVE-001",
-        "INV-001",
-        "LOC-001",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "MOVEMENT-CORE-001"
-      ],
-      "verification": [
-        "tests/test_movement.py"
-      ]
+      "owned_paths": ["mira/movement.py"],
+      "feature_ids": ["MOVE-001", "INV-001", "LOC-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["MOVEMENT-CORE-001"],
+      "verification": ["tests/test_movement.py"]
     },
     {
       "id": "canonical-shopping-intent",
       "responsibility": "Provider-neutral active shopping/procurement intent, explicit terminal lifecycle and conservative receipt reconciliation without turning purchase evidence into current-intent authority or triggering downstream side effects.",
       "why_separate": "Shopping intent answers what remains to obtain, while receipts answer what was purchased; keeping them separate lets later grocery, procurement and recommendation features reconcile evidence explicitly without mutating assets, inventory, fitment, orders or finance state.",
-      "owned_paths": [
-        "mira/shopping.py"
-      ],
-      "feature_ids": [
-        "SHOP-001",
-        "RECEIPT-001",
-        "RECEIPT-002",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "SHOP-CORE-001"
-      ],
-      "verification": [
-        "tests/test_shopping.py"
-      ]
+      "owned_paths": ["mira/shopping.py"],
+      "feature_ids": ["SHOP-001", "RECEIPT-001", "RECEIPT-002", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["SHOP-CORE-001"],
+      "verification": ["tests/test_shopping.py"]
     },
     {
       "id": "grocery-reconciliation",
       "responsibility": "Provider-neutral read-only reconciliation of explicitly selected active grocery shopping intent against canonical observed inventory within an explicit location scope, with exact matching and honest unknown stock quantity.",
       "why_separate": "Grocery reconciliation composes shopping and inventory/location authorities but must never become a second shopping list, stock-quantity, par, receipt, recipe or meal-plan authority.",
-      "owned_paths": [
-        "mira/grocery.py"
-      ],
-      "feature_ids": [
-        "GROCERY-001",
-        "SHOP-001",
-        "INV-001",
-        "LOC-001",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "GROCERY-CORE-001"
-      ],
-      "verification": [
-        "tests/test_grocery.py"
-      ]
+      "owned_paths": ["mira/grocery.py"],
+      "feature_ids": ["GROCERY-001", "SHOP-001", "INV-001", "LOC-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["GROCERY-CORE-001"],
+      "verification": ["tests/test_grocery.py"]
     },
     {
       "id": "backup-restore-core",
       "responsibility": "Provider-neutral deterministic current-Resource snapshot, integrity digest, fresh-target restore and independent material-parity verification with explicit coverage limits.",
       "why_separate": "Backup/restore is nonauthoritative recovery infrastructure above STORE-001. It must preserve canonical current Resource identity/material without becoming a second writable master or falsely claiming Event-history, archive, encryption, scheduling, retention, RPO/RTO or disaster-recovery guarantees.",
-      "owned_paths": [
-        "mira/backup.py"
-      ],
-      "feature_ids": [
-        "BACKUP-001",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "BACKUP-CORE-001"
-      ],
-      "verification": [
-        "tests/test_backup.py"
-      ]
+      "owned_paths": ["mira/backup.py"],
+      "feature_ids": ["BACKUP-001", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["BACKUP-CORE-001"],
+      "verification": ["tests/test_backup.py"]
     },
     {
       "id": "canonical-appointment-identity",
       "responsibility": "Provider-neutral durable provider identity and separate appointment-occurrence identity reconciliation from already-normalized evidence, including exact durable occurrence timing needed by downstream projections, immutable provenance, explicit ambiguity, and user-confirmed correction precedence.",
       "why_separate": "Appointment/provider truth must exist before intake extraction, Calendar projection, reminders, outbound contact, or administrative-health composition; keeping this core separate prevents those downstream surfaces from becoming identity authorities or implying medical meaning.",
-      "owned_paths": [
-        "mira/appointments.py"
-      ],
-      "feature_ids": [
-        "CAL-005",
-        "CAL-008",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "APPOINTMENT-IDENTITY-001",
-        "APPOINTMENT-INTAKE-001"
-      ],
-      "verification": [
-        "tests/test_appointments.py",
-        "tests/test_appointment_intake.py"
-      ]
+      "owned_paths": ["mira/appointments.py"],
+      "feature_ids": ["CAL-005", "CAL-008", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["APPOINTMENT-IDENTITY-001", "APPOINTMENT-INTAKE-001"],
+      "verification": ["tests/test_appointments.py", "tests/test_appointment_intake.py"]
     },
     {
       "id": "appointment-evidence-intake",
       "responsibility": "Provider-neutral appointment evidence intake preflight over authorized email/image/text observations, deterministic confidence/ambiguity handling, CAL-005 reconciliation orchestration, and capability-gated Calendar handoff without raw-source storage or outbound side effects.",
       "why_separate": "Evidence extraction and orchestration must not duplicate canonical provider/appointment identity, service activation, or Calendar-provider authority. A separate intake boundary can reject weak/ambiguous evidence before mutation and preserve canonical appointments even when downstream projection is unavailable.",
-      "owned_paths": [
-        "mira/appointment_intake.py"
-      ],
-      "feature_ids": [
-        "CAL-008",
-        "CAL-005",
-        "CAL-006",
-        "CAL-007",
-        "SERVICE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "APPOINTMENT-INTAKE-001"
-      ],
-      "verification": [
-        "tests/test_appointment_intake.py"
-      ]
+      "owned_paths": ["mira/appointment_intake.py"],
+      "feature_ids": ["CAL-008", "CAL-005", "CAL-006", "CAL-007", "SERVICE-001", "RECOVERY-002"],
+      "work_ids": ["APPOINTMENT-INTAKE-001"],
+      "verification": ["tests/test_appointment_intake.py"]
     },
     {
       "id": "appointment-noapp-personal",
       "responsibility": "Direct stock-ChatGPT text/image appointment provenance, Personal authority-binding reconciliation, canonical intake dry-run planning, native Workspace mutation/readback material, and concise fail-closed clarification.",
       "why_separate": "The no-app Personal orchestration layer composes the existing appointment identity/intake and Workspace contracts without making the model, chat memory, attachment extraction, or provider connector into a second canonical authority.",
-      "owned_paths": [
-        "mira/appointment_noapp.py"
-      ],
-      "feature_ids": [
-        "CAL-008",
-        "CAL-005",
-        "CAL-006",
-        "CAL-007",
-        "AUTH-001",
-        "STORE-001",
-        "SERVICE-001",
-        "ONBOARD-006",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "APPOINTMENT-INTAKE-NOAPP-001"
-      ],
-      "verification": [
-        "tests/test_appointment_noapp.py"
-      ]
+      "owned_paths": ["mira/appointment_noapp.py"],
+      "feature_ids": ["CAL-008", "CAL-005", "CAL-006", "CAL-007", "AUTH-001", "STORE-001", "SERVICE-001", "ONBOARD-006", "RECOVERY-002"],
+      "work_ids": ["APPOINTMENT-INTAKE-NOAPP-001"],
+      "verification": ["tests/test_appointment_noapp.py"]
     },
     {
       "id": "calendar-projection-core",
       "responsibility": "Provider-neutral source-linked Calendar projection identity, deterministic timed-event normalization, replay/conflict semantics, adapter capability boundary, and exact synthetic provider readback verification.",
       "why_separate": "Calendar projection is a boundary between canonical source truth and external provider events. Keeping provider-neutral projection semantics separate from Google, Microsoft, or Apple adapters prevents provider state from becoming canonical authority and prevents synthetic proof from masquerading as live capability.",
-      "owned_paths": [
-        "mira/calendar_projection.py"
-      ],
-      "feature_ids": [
-        "CAL-007",
-        "CAL-005",
-        "STORE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "CALENDAR-PROJECTION-001A"
-      ],
-      "verification": [
-        "tests/test_calendar_projection.py"
-      ]
+      "owned_paths": ["mira/calendar_projection.py"],
+      "feature_ids": ["CAL-007", "CAL-005", "STORE-001", "RECOVERY-002"],
+      "work_ids": ["CALENDAR-PROJECTION-001A"],
+      "verification": ["tests/test_calendar_projection.py"]
     },
     {
       "id": "google-calendar-native-personal",
       "responsibility": "Stock-ChatGPT Google Calendar same-user single-writer projection adapter with intent-first activation, stable MIRA event identity, lost-create-ack recovery, exact preflight drift detection and exact post-write readback.",
       "why_separate": "The native Personal connector is the ordinary-user Google Calendar lane and has a weaker concurrency boundary than the provider-neutral projection core or stronger ETag-guarded Apps Script adapter. Keeping it separate makes its non-atomic update evidence explicit instead of exporting technical setup to the user or pretending shared-writer safety.",
-      "owned_paths": [
-        "mira/google_calendar_native.py"
-      ],
-      "feature_ids": [
-        "CAL-006",
-        "CAL-007",
-        "ONBOARD-006",
-        "PROVIDER-002",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "CALENDAR-PROJECTION-GOOGLE-001"
-      ],
-      "verification": [
-        "tests/test_google_calendar_native.py"
-      ]
+      "owned_paths": ["mira/google_calendar_native.py"],
+      "feature_ids": ["CAL-006", "CAL-007", "ONBOARD-006", "PROVIDER-002", "RECOVERY-002"],
+      "work_ids": ["CALENDAR-PROJECTION-GOOGLE-001"],
+      "verification": ["tests/test_google_calendar_native.py"]
     },
     {
       "id": "service-state",
       "responsibility": "Provider-neutral finite service intent, recommendation, readiness, suspension, and activation truth over durable structured state.",
       "why_separate": "Service activation must not be inferred from onboarding answers, recommendations, or provider capability; this state boundary remains reusable before full service composition and provider adapters exist.",
-      "owned_paths": [
-        "mira/service_state.py"
-      ],
-      "feature_ids": [
-        "SERVICE-001",
-        "SERVICE-002",
-        "RECOVERY-002",
-        "PROVIDER-001"
-      ],
-      "work_ids": [
-        "SERVICE-STATE-001"
-      ],
-      "verification": [
-        "tests/test_service_state.py"
-      ]
+      "owned_paths": ["mira/service_state.py"],
+      "feature_ids": ["SERVICE-001", "SERVICE-002", "RECOVERY-002", "PROVIDER-001"],
+      "work_ids": ["SERVICE-STATE-001"],
+      "verification": ["tests/test_service_state.py"]
     },
     {
       "id": "service-composition",
       "responsibility": "Provider-neutral dependency-derived readiness composition for activatable Personal service bundles, including the canonical briefs bundle contract.",
       "why_separate": "SERVICE-001 owns explicit intent and activation while SERVICE-002 derives readiness from verified dependencies. Keeping composition separate prevents provider capability, dependency success, or tests from silently activating a service and gives orchestration one truthful execution gate.",
-      "owned_paths": [
-        "mira/service_composition.py"
-      ],
-      "feature_ids": [
-        "SERVICE-001",
-        "SERVICE-002",
-        "RECOVERY-002",
-        "OPS-001",
-        "OPS-003",
-        "OPS-004",
-        "RECOVERY-001"
-      ],
-      "work_ids": [
-        "SERVICE-COMPOSE-001"
-      ],
-      "verification": [
-        "tests/test_service_composition.py"
-      ]
+      "owned_paths": ["mira/service_composition.py"],
+      "feature_ids": ["SERVICE-001", "SERVICE-002", "RECOVERY-002", "OPS-001", "OPS-003", "OPS-004", "RECOVERY-001"],
+      "work_ids": ["SERVICE-COMPOSE-001"],
+      "verification": ["tests/test_service_composition.py"]
     },
     {
       "id": "runtime-capability-router",
       "responsibility": "Provider-neutral read-only selection of one eligible provider/runtime lane from operation-specific verified capability evidence plus explicit approval and data-classification policy.",
       "why_separate": "Provider routing is a policy/evidence decision boundary distinct from durable service activation state, canonical Authority routing, managed API runtime assembly, provider authorization, and user-facing connection orchestration. Keeping it separate prevents runtime selection from silently becoming authorization, activation, or provider I/O.",
-      "owned_paths": [
-        "mira/runtime_router.py"
-      ],
-      "feature_ids": [
-        "PROVIDER-001",
-        "SOURCE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "RUNTIME-ROUTER-001"
-      ],
-      "verification": [
-        "tests/test_runtime_router.py"
-      ]
+      "owned_paths": ["mira/runtime_router.py"],
+      "feature_ids": ["PROVIDER-001", "SOURCE-001", "RECOVERY-002"],
+      "work_ids": ["RUNTIME-ROUTER-001"],
+      "verification": ["tests/test_runtime_router.py"]
     },
     {
       "id": "provider-onboarding-orchestration",
       "responsibility": "Provider-neutral ordinary-user connection presentation and next-action planning for product-owned and host-controlled surfaces, including native host discovery/install/connect handoff without manual technical setup.",
       "why_separate": "Connection UX orchestration composes capability and runtime-routing truth but must not become provider authorization, plugin installation, provider I/O, durable service activation, or a second connection-state authority. Keeping it separate lets stock ChatGPT and future Android render the same semantics through different native connection surfaces.",
-      "owned_paths": [
-        "mira/provider_onboarding.py"
-      ],
-      "feature_ids": [
-        "PROVIDER-002",
-        "PROVIDER-001",
-        "SOURCE-001",
-        "ONBOARD-006",
-        "SERVICE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "PROVIDER-ONBOARD-001"
-      ],
-      "verification": [
-        "tests/test_provider_onboarding.py"
-      ]
+      "owned_paths": ["mira/provider_onboarding.py"],
+      "feature_ids": ["PROVIDER-002", "PROVIDER-001", "SOURCE-001", "ONBOARD-006", "SERVICE-001", "RECOVERY-002"],
+      "work_ids": ["PROVIDER-ONBOARD-001"],
+      "verification": ["tests/test_provider_onboarding.py"]
     },
     {
       "id": "compute-observability",
       "responsibility": "Provider-neutral read-only aggregate compute-worker and compute-job observability with deterministic Prometheus exposition and Grafana-compatible query planning.",
       "why_separate": "Operational telemetry composes existing worker-registry and compute-job truth but must remain a nonauthoritative projection, must not mutate routing or durable control-plane state, and must not turn stable worker/job/private deployment identifiers into telemetry dimensions.",
-      "owned_paths": [
-        "mira/compute_observability.py"
-      ],
-      "feature_ids": [
-        "OBS-001",
-        "LOCAL-001"
-      ],
-      "work_ids": [
-        "LOCAL-INTEGRATIONS"
-      ],
-      "verification": [
-        "tests/test_compute_observability.py"
-      ]
+      "owned_paths": ["mira/compute_observability.py"],
+      "feature_ids": ["OBS-001", "LOCAL-001"],
+      "work_ids": ["LOCAL-INTEGRATIONS"],
+      "verification": ["tests/test_compute_observability.py"]
     },
     {
       "id": "compute-hardware-safety",
       "responsibility": "Provider-neutral deterministic compute hardware-safety policy and evidence evaluation over explicit configured sensor thresholds and freshness requirements.",
       "why_separate": "Hardware safety must remain a deterministic policy boundary distinct from worker state, observability, provider sensor I/O, scheduler lifecycle execution and physical power control. Keeping it separate prevents telemetry or an LLM from inventing limits or directly operating private machines.",
-      "owned_paths": [
-        "mira/compute_safety.py"
-      ],
-      "feature_ids": [
-        "LOCAL-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "LOCAL-INTEGRATIONS"
-      ],
-      "verification": [
-        "tests/test_compute_safety.py"
-      ]
+      "owned_paths": ["mira/compute_safety.py"],
+      "feature_ids": ["LOCAL-001", "RECOVERY-002"],
+      "work_ids": ["LOCAL-INTEGRATIONS"],
+      "verification": ["tests/test_compute_safety.py"]
     },
     {
       "id": "compute-power-lifecycle",
       "responsibility": "Provider-neutral deterministic compute power/lifecycle planning over worker state, durable assigned jobs, explicit locks, generic power observations, and deterministic hardware-safety requirements.",
       "why_separate": "Lifecycle reconciliation must compose worker/job/safety authorities without becoming a second scheduler, worker registry, sensor authority, private power adapter or hardware executor. Keeping it separate preserves do-not-wake/do-not-shutdown and interactive/maintenance policy while provider-specific WOL/shutdown remains private deployment work.",
-      "owned_paths": [
-        "mira/compute_lifecycle.py"
-      ],
-      "feature_ids": [
-        "LOCAL-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "LOCAL-INTEGRATIONS"
-      ],
-      "verification": [
-        "tests/test_compute_lifecycle.py"
-      ]
+      "owned_paths": ["mira/compute_lifecycle.py"],
+      "feature_ids": ["LOCAL-001", "RECOVERY-002"],
+      "work_ids": ["LOCAL-INTEGRATIONS"],
+      "verification": ["tests/test_compute_lifecycle.py"]
     },
     {
       "id": "compute-model-profiles",
       "responsibility": "Provider-neutral capability-based model profile and explicit benchmark-evidence evaluation with deterministic eligibility and policy-directed profile selection.",
       "why_separate": "Model-level capability/capacity and benchmark evidence must remain distinct from worker health/routing, lifecycle control, model runtime execution and private deployment binding. Keeping it separate prevents named model families, unrequested metrics or model-invented benchmark thresholds from becoming feature dependencies or routing authority.",
-      "owned_paths": [
-        "mira/model_profiles.py"
-      ],
-      "feature_ids": [
-        "LOCAL-001",
-        "PROVIDER-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "LOCAL-INTEGRATIONS"
-      ],
-      "verification": [
-        "tests/test_model_profiles.py"
-      ]
+      "owned_paths": ["mira/model_profiles.py"],
+      "feature_ids": ["LOCAL-001", "PROVIDER-001", "RECOVERY-002"],
+      "work_ids": ["LOCAL-INTEGRATIONS"],
+      "verification": ["tests/test_model_profiles.py"]
     },
     {
       "id": "studio-competitive-development",
       "responsibility": "Provider-neutral competitive MIRA Studio candidate evidence evaluation and explicit reviewed integration planning over exact Git provenance, acceptance coverage, verification and critique state.",
       "why_separate": "Competitive candidate comparison must preserve exact branch/base/head and review evidence without becoming a Git executor, model/provider runtime, source-trust authority, feature registry or automatic subjective winner selector. Keeping it separate lets Studio consume multiple candidate implementations while preserving human-reviewed integration authority.",
-      "owned_paths": [
-        "mira/studio_competition.py"
-      ],
-      "feature_ids": [
-        "STUDIO-001",
-        "DEV-004",
-        "DEV-002",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "SKILL-BUILDER-001"
-      ],
-      "verification": [
-        "tests/test_studio_competition.py"
-      ]
+      "owned_paths": ["mira/studio_competition.py"],
+      "feature_ids": ["STUDIO-001", "DEV-004", "DEV-002", "RECOVERY-002"],
+      "work_ids": ["SKILL-BUILDER-001"],
+      "verification": ["tests/test_studio_competition.py"]
     },
     {
       "id": "studio-activation-execution",
       "responsibility": "Provider-neutral explicit-approved Studio source activation and rollback execution with capability-gated preflight, injected adapter mutation, exact remote readback, replay safety, and deterministic recovery receipts.",
       "why_separate": "Source mutation is a side-effect boundary distinct from candidate evaluation, approval, provider capability truth, source-lane selection, provider credentials and user-facing Studio UX. Keeping it separate prevents reviewed planning from silently becoming execution authority while still allowing an approved change to be applied and verified through a bounded injected adapter.",
-      "owned_paths": [
-        "mira/studio_activation.py"
-      ],
-      "feature_ids": [
-        "STUDIO-001",
-        "DEV-004",
-        "SOURCE-001",
-        "PROVIDER-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "SKILL-BUILDER-001"
-      ],
-      "verification": [
-        "tests/test_studio_activation.py"
-      ]
+      "owned_paths": ["mira/studio_activation.py"],
+      "feature_ids": ["STUDIO-001", "DEV-004", "SOURCE-001", "PROVIDER-001", "RECOVERY-002"],
+      "work_ids": ["SKILL-BUILDER-001"],
+      "verification": ["tests/test_studio_activation.py"]
     },
     {
       "id": "feature-share-package",
       "responsibility": "Provider-neutral deterministic sanitized feature-share package construction, independent validation, compatibility/dependency inspection, and inert import review readiness.",
       "why_separate": "Feature sharing is a distribution boundary distinct from private Studio ownership, candidate selection, provider publication, source mutation, install, approval and activation. Keeping it separate lets improvements carry provenance and compatibility without allowing imported material to manufacture execution authority.",
-      "owned_paths": [
-        "mira/feature_share.py"
-      ],
-      "feature_ids": [
-        "DIST-001",
-        "STUDIO-001",
-        "DEV-004",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "FEATURE-SHARE-001"
-      ],
-      "verification": [
-        "tests/test_feature_share.py"
-      ]
+      "owned_paths": ["mira/feature_share.py"],
+      "feature_ids": ["DIST-001", "STUDIO-001", "DEV-004", "RECOVERY-002"],
+      "work_ids": ["FEATURE-SHARE-001"],
+      "verification": ["tests/test_feature_share.py"]
     },
     {
       "id": "feature-share-transport",
       "responsibility": "Provider-neutral explicit-authorized feature-share publication, exact remote readback/replay reconciliation, recovery-required uncertainty handling, and inert untrusted import retrieval.",
       "why_separate": "Moving an already-sanitized package across an optional provider boundary is distinct from package construction, provider selection, source mutation, installation and activation. Keeping transport separate preserves exact publication evidence without allowing provider possession of a package to manufacture execution authority.",
-      "owned_paths": [
-        "mira/feature_share_transport.py"
-      ],
-      "feature_ids": [
-        "DIST-001",
-        "STUDIO-001",
-        "DEV-004",
-        "SOURCE-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "FEATURE-SHARE-001"
-      ],
-      "verification": [
-        "tests/test_feature_share_transport.py"
-      ]
+      "owned_paths": ["mira/feature_share_transport.py"],
+      "feature_ids": ["DIST-001", "STUDIO-001", "DEV-004", "SOURCE-001", "RECOVERY-002"],
+      "work_ids": ["FEATURE-SHARE-001"],
+      "verification": ["tests/test_feature_share_transport.py"]
     },
     {
       "id": "studio-guided-surface",
       "responsibility": "Deterministic user-facing MIRA Studio lifecycle projection and next-action orchestration over reviewed change evidence, activation and rollback receipts, and inert shared-import inspection.",
       "why_separate": "The product surface composes existing Studio and sharing authorities without becoming a model runner, source adapter, publication transport, activation executor, or second readiness engine.",
-      "owned_paths": [
-        "mira/studio.py"
-      ],
-      "feature_ids": [
-        "STUDIO-001",
-        "DEV-004",
-        "DIST-001",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "MIRA-STUDIO-001"
-      ],
-      "verification": [
-        "tests/test_studio.py"
-      ]
+      "owned_paths": ["mira/studio.py"],
+      "feature_ids": ["STUDIO-001", "DEV-004", "DIST-001", "RECOVERY-002"],
+      "work_ids": ["MIRA-STUDIO-001"],
+      "verification": ["tests/test_studio.py"]
     },
     {
       "id": "studio-intake",
       "responsibility": "Deterministic ordinary-language MIRA Studio intake validation, exact feature-registry grounding, transitive dependency derivation, stable draft identity, constraint/assumption separation, and clarification/readiness projection.",
       "why_separate": "Intake interpretation validation must remain separate from model invocation, lower-level Studio lifecycle, source mutation, sharing/import, approval and activation so ordinary-language intent cannot manufacture execution authority.",
-      "owned_paths": [
-        "mira/studio_intake.py"
-      ],
-      "feature_ids": [
-        "STUDIO-001",
-        "DEV-004",
-        "DEV-005",
-        "RECOVERY-002"
-      ],
-      "work_ids": [
-        "STUDIO-INTAKE-001"
-      ],
-      "verification": [
-        "tests/test_studio_intake.py"
-      ]
+      "owned_paths": ["mira/studio_intake.py"],
+      "feature_ids": ["STUDIO-001", "DEV-004", "DEV-005", "RECOVERY-002"],
+      "work_ids": ["STUDIO-INTAKE-001"],
+      "verification": ["tests/test_studio_intake.py"]
     },
     {
       "id": "repository-integrity",
@@ -887,16 +405,8 @@
         "mira/code_ownership.py",
         "mira/work_session_alignment.py"
       ],
-      "feature_ids": [
-        "DEV-005",
-        "DEV-006",
-        "DEV-007"
-      ],
-      "work_ids": [
-        "FEATURE-REGISTRY-001",
-        "CODE-OWNERSHIP-001",
-        "FEATURE-ALIGN-001"
-      ],
+      "feature_ids": ["DEV-005", "DEV-006", "DEV-007"],
+      "work_ids": ["FEATURE-REGISTRY-001", "CODE-OWNERSHIP-001", "FEATURE-ALIGN-001"],
       "verification": [
         "tests/test_feature_registry.py",
         "tests/test_product_ledger.py",
