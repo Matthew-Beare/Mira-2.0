@@ -119,10 +119,11 @@ Root causes and verified repairs:
 Provider truth at repair time remains freshness-UNKNOWN; this repair does not claim current-to-the-second transaction completeness.
 ## CI/readback evidence — 2026-09-24
 
-- Pre-repair remote `main` was verified at `ebaf91f23af87fc50cf7131f99df39815952573d` (`Checkpoint Sep 18 live finance and inventory evidence`).
-- GitHub Actions CI run `35367546064` and Trusted Runner Gate run `35367680925` both completed `success` on that exact pre-repair head.
+- Functional runtime-integrity/review-parity checkpoint `0c9f414080dac2a13f2987edf31c29d1560f1c37` is integrated on `main`.
+- GitHub Actions CI run `35978572919` completed `success` on that exact checkpoint.
+- Trusted Runner Gate run `35978709083` completed `success` on that exact checkpoint.
 - Open PR audit still includes stale finance PR #166 and historical backfill PR #165; neither is a blind merge candidate.
-- The Sep 24 runtime-integrity checkpoint commit must be read back and its new CI state verified before green is claimed for the new head.
+- Live workbook readback at checkpoint: zero duplicate Event IDs, zero missing FinOps AD/AE/AH/AI/AJ/AK derived fields across 2,127 populated rows, exact 586↔586 FinOps/Spending Review NEEDS REVIEW Event-ID parity, current zero-entry Fri–Thu week OPEN, provider freshness UNKNOWN preserved.
 
 ### Idea/backlog capture audit
 
