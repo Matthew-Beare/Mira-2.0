@@ -3,8 +3,8 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
-Progress: Android implementation remains integrated/test-verified with live device proof human-blocked; historical evidence reconciliation has now resolved the legacy transmission jack to a trustworthy VEVOR purchase-family identity without inventing an exact model/SKU.
-Last 24h: Sep 24 runtime-integrity repairs remain green; this worker re-read live main/open PR state and Durable Operating Addenda, then reconciled Tool Inventory TI-0030 against retained Amazon evidence: one VEVOR 1322 lb hydraulic telescoping transmission jack, 32–67 in high-lift, purchased Jul 9 2026 for $229.32 under Amazon order 111-9893607-5225060. Exact manufacturer model/SKU is still absent, so no exact-model manual is attached yet.
+Progress: Android implementation remains integrated/test-verified with live device proof human-blocked; historical evidence reconciliation has resolved the legacy transmission jack to a trustworthy VEVOR purchase-family identity without inventing an exact model/SKU, and a fresh bounded powered/precision evidence pass found no defensible additional exact identity.
+Last 24h: Sep 24 runtime-integrity repairs remain green. Live `main` is now `a8e78dfcd571aa359fbaeebb864c48f5d4fb70de` (`Checkpoint transmission jack evidence reconciliation`) with CI/Trusted Runner Gate green. Durable Operating Addenda, ROADMAP and BACKLOG were re-read. Fresh Drive/Gmail searches for compressor, drill press, pressure washer, vacuum-pump and likely brand evidence did not produce trustworthy purchase/model identity for another `Details pending` powered/precision asset, so no model or manual was invented.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
 Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
@@ -117,6 +117,7 @@ Root causes and verified repairs:
 - The brief correctness/zero-entry/spend-freshness/check-specific rules were appended and read back in MIRA Durable Operating Addenda.
 
 Provider truth at repair time remains freshness-UNKNOWN; this repair does not claim current-to-the-second transaction completeness.
+
 ## CI/readback evidence — 2026-09-24
 
 - Functional runtime-integrity/review-parity checkpoint `0c9f414080dac2a13f2987edf31c29d1560f1c37` is integrated on `main`.
@@ -124,7 +125,7 @@ Provider truth at repair time remains freshness-UNKNOWN; this repair does not cl
 - Trusted Runner Gate run `35978709083` completed `success` on that exact checkpoint.
 - Open PR audit still includes stale finance PR #166 and historical backfill PR #165; neither is a blind merge candidate.
 - Live workbook readback at checkpoint: zero duplicate Event IDs, zero missing FinOps AD/AE/AH/AI/AJ/AK derived fields across 2,127 populated rows, exact 586↔586 FinOps/Spending Review NEEDS REVIEW Event-ID parity, current zero-entry Fri–Thu week OPEN, provider freshness UNKNOWN preserved.
-- Remote `main` was re-read at worker start on Sep 24 and is `c2851abbb4e0980284ccd08db4b47bb65af48385` (`Finalize MIRA repair recovery checkpoint`); this supersedes the functional checkpoint as the current head while preserving its green evidence.
+- Remote `main` was re-read at worker start on Sep 24 and is `a8e78dfcd571aa359fbaeebb864c48f5d4fb70de` (`Checkpoint transmission jack evidence reconciliation`). CI run `35979174464` and Trusted Runner Gate run `35979341684` are green on that exact head.
 
 ### Idea/backlog capture audit
 
@@ -138,6 +139,16 @@ This evidence-quality correction introduces no new feature. It tightens evidence
 - Therefore `TI-0030` may be reconciled conceptually to Brand = VEVOR; variant = 1322 lb hydraulic telescoping / 32–67 in high-lift; purchase date = 2026-07-09; seller = Amazon; price = $229.32; order = 111-9893607-5225060. No exact model/SKU or manual is claimed from this evidence alone.
 - Drive manual search returned unrelated vehicle-service PDFs and no trustworthy exact-model VEVOR transmission-jack manual. Per the full-manual rule, none was attached or promoted.
 - Protected legacy production data was not mutated in this cycle; the verified reconciliation is checkpointed here for a later bounded write only after the target MIRA evidence surface is explicit.
+
+## Bounded powered/precision evidence pass — 2026-09-24
+
+- Re-read MIRA Durable Operating Addenda, ROADMAP and BACKLOG before continuing the active packet. Direction remains aligned with existing `IDENT-001` / `ASSET-001` / `EVID-001` / `INV-001` semantics; no new feature was introduced.
+- Fresh Drive searches for `compressor`, `drill press`, `pressure washer`, `vacuum pump`, `Robinair`, `Bauer`, and `WEN` produced either the legacy Tool Inventory itself, unrelated vehicle-service documents, or no result. None established an exact manufacturer/model identity for a pending powered/precision asset.
+- Fresh connected-Gmail searches for powered/precision purchase terms and likely meter/tool brands likewise produced no trustworthy matching receipt/model evidence. A broad Harbor Freight query surfaced unrelated Snap-on correspondence, demonstrating why keyword presence alone is not acceptable identity evidence.
+- The Tool Inventory provider remains discoverable and indexed, but the spreadsheet-row connector could not parse the expected tab name during this run. That connector failure was not treated as evidence that rows disappeared or changed.
+- No exact model, SKU, serial, receipt link, or manual was attached from these searches. Setup/QSG artifacts remain ineligible as full manuals.
+- Protected historical production data was not mutated.
+- `CAPTURE AUDIT COMPLETE`.
 
 ## Human-only live proof wall
 
@@ -158,7 +169,7 @@ Do not use protected/legacy production state as a disposable proof fixture.
 
 1. Await representative-device/provider proof for live Android capture; do not fabricate it.
 2. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual.
-3. Use the same retained-evidence join pattern on another powered/precision `Details pending` asset; prefer an item with purchase description + order/date/amount strong enough to establish identity without inference.
+3. Prefer retained purchase evidence with exact product title + order/date/amount or physical label/serial evidence; do not spend repeated cycles on broad brand guesses that have already returned no trustworthy identity.
 4. For `TI-0030`, seek exact VEVOR manufacturer model/SKU or physical-label evidence before attaching any model-specific manual; do not let the descriptive Amazon title masquerade as a model number.
 5. For `TI-0027`, do not attach a Rotary manual until exact/model-family applicability is established by trustworthy evidence.
 6. Preserve stale PR #166 as historical finance evidence only; do not merge it blindly.
