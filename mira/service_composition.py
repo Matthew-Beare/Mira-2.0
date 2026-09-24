@@ -74,6 +74,35 @@ class ServiceBundleSpec:
             )
 
 
+PERSONAL_SERVICE_BUNDLES = (
+    ServiceBundleSpec(
+        service_id="briefs",
+        dependency_ids=(
+            "OPS-001",
+            "OPS-003",
+            "OPS-004",
+            "RECOVERY-001",
+            "RECOVERY-002",
+        ),
+    ),
+)
+_PERSONAL_SERVICE_BUNDLE_MAP = {
+    bundle.service_id: bundle for bundle in PERSONAL_SERVICE_BUNDLES
+}
+
+
+def personal_service_bundle(service_id: str) -> ServiceBundleSpec:
+    """Return one canonical Personal service bundle contract."""
+
+    normalized = _token(service_id, "service_id")
+    try:
+        return _PERSONAL_SERVICE_BUNDLE_MAP[normalized]
+    except KeyError as exc:
+        raise ServiceCompositionValidationError(
+            f"unknown Personal service bundle: {normalized}"
+        ) from exc
+
+
 @dataclass(frozen=True)
 class ServiceCompositionView:
     """Read-only composed truth returned to orchestration/client layers."""
@@ -222,9 +251,11 @@ def _token(value: object, field: str) -> str:
 
 __all__ = [
     "DependencyEvidence",
+    "PERSONAL_SERVICE_BUNDLES",
     "ServiceBundleSpec",
     "ServiceComposer",
     "ServiceCompositionError",
     "ServiceCompositionValidationError",
     "ServiceCompositionView",
+    "personal_service_bundle",
 ]
