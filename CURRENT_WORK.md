@@ -3,8 +3,8 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
-Progress: Repaired the AM/PM brief and finance-refresh pipeline, restored the hourly development/reconciliation workers, fixed the FinOps derived-formula tail, and hardened zero-entry mileage/spend rendering; Android live proof remains human-blocked.
-Last 24h: Sep 24 live audit verified May 1 governance and provider-freshness fail-closed behavior, changed the current zero-entry Fri–Thu cycle from false CLOSED/lost-time semantics to OPEN/no-time-lost-yet, repaired every missing FinOps Month/Review/allowance-derived formula across 2,127 populated rows, restored exact 586↔586 NEEDS REVIEW Event-ID parity, and persisted the invariants in Durable Operating Addenda.
+Progress: Android implementation remains integrated/test-verified with live device proof human-blocked; historical evidence reconciliation has now resolved the legacy transmission jack to a trustworthy VEVOR purchase-family identity without inventing an exact model/SKU.
+Last 24h: Sep 24 runtime-integrity repairs remain green; this worker re-read live main/open PR state and Durable Operating Addenda, then reconciled Tool Inventory TI-0030 against retained Amazon evidence: one VEVOR 1322 lb hydraulic telescoping transmission jack, 32–67 in high-lift, purchased Jul 9 2026 for $229.32 under Amazon order 111-9893607-5225060. Exact manufacturer model/SKU is still absent, so no exact-model manual is attached yet.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
 Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
@@ -124,10 +124,20 @@ Provider truth at repair time remains freshness-UNKNOWN; this repair does not cl
 - Trusted Runner Gate run `35978709083` completed `success` on that exact checkpoint.
 - Open PR audit still includes stale finance PR #166 and historical backfill PR #165; neither is a blind merge candidate.
 - Live workbook readback at checkpoint: zero duplicate Event IDs, zero missing FinOps AD/AE/AH/AI/AJ/AK derived fields across 2,127 populated rows, exact 586↔586 FinOps/Spending Review NEEDS REVIEW Event-ID parity, current zero-entry Fri–Thu week OPEN, provider freshness UNKNOWN preserved.
+- Remote `main` was re-read at worker start on Sep 24 and is `c2851abbb4e0980284ccd08db4b47bb65af48385` (`Finalize MIRA repair recovery checkpoint`); this supersedes the functional checkpoint as the current head while preserving its green evidence.
 
 ### Idea/backlog capture audit
 
 This evidence-quality correction introduces no new feature. It tightens evidence classification under existing asset/evidence/knowledge semantics. `CAPTURE AUDIT COMPLETE`.
+
+## Inventory evidence reconciliation — 2026-09-24 worker cycle
+
+- Canonical Tool Inventory readback: row 115 / `TI-0030` is `Transmission jack`, quantity 1, hydraulic, `verified_existing_inventory`; brand/model/date/seller/price/order/receipt remain blank in the legacy row.
+- Retained Amazon purchase evidence independently resolves a purchase on 2026-07-09 for $229.32, Amazon order `111-9893607-5225060`, described as `VEVOR Transmission Jack, 1322 LBS Hydraulic Telescoping Transmission Jack, 32\"-67\" High Lift Transmission Jack Stand with Foot Pedal, 360° Swivel Wheel`.
+- The Financial Escape purchase evidence independently carries the same date, amount, order number, merchant context, and `VEVOR Hydraulic Transmission Jack` description. This is sufficient to establish a trustworthy VEVOR purchase-family identity for the single legacy transmission-jack asset, but not an exact manufacturer model/SKU.
+- Therefore `TI-0030` may be reconciled conceptually to Brand = VEVOR; variant = 1322 lb hydraulic telescoping / 32–67 in high-lift; purchase date = 2026-07-09; seller = Amazon; price = $229.32; order = 111-9893607-5225060. No exact model/SKU or manual is claimed from this evidence alone.
+- Drive manual search returned unrelated vehicle-service PDFs and no trustworthy exact-model VEVOR transmission-jack manual. Per the full-manual rule, none was attached or promoted.
+- Protected legacy production data was not mutated in this cycle; the verified reconciliation is checkpointed here for a later bounded write only after the target MIRA evidence surface is explicit.
 
 ## Human-only live proof wall
 
@@ -148,9 +158,10 @@ Do not use protected/legacy production state as a disposable proof fixture.
 
 1. Await representative-device/provider proof for live Android capture; do not fabricate it.
 2. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual.
-3. Resolve manufacturer/model identity from trustworthy receipts, serial/part numbers, or retained photos before attaching manuals to `Details pending` rows; prioritize powered/precision equipment.
-4. For `TI-0027`, do not attach a Rotary manual until exact/model-family applicability is established by trustworthy evidence.
-5. Preserve stale PR #166 as historical finance evidence only; do not merge it blindly.
+3. Use the same retained-evidence join pattern on another powered/precision `Details pending` asset; prefer an item with purchase description + order/date/amount strong enough to establish identity without inference.
+4. For `TI-0030`, seek exact VEVOR manufacturer model/SKU or physical-label evidence before attaching any model-specific manual; do not let the descriptive Amazon title masquerade as a model number.
+5. For `TI-0027`, do not attach a Rotary manual until exact/model-family applicability is established by trustworthy evidence.
+6. Preserve stale PR #166 as historical finance evidence only; do not merge it blindly.
 
 ## Direction result
 
