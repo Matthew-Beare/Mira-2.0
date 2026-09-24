@@ -26,6 +26,19 @@ class ServiceCompositionValidationError(ServiceCompositionError):
     """Raised when a service bundle or dependency evidence is malformed."""
 
 
+def _token(value: object, field: str) -> str:
+    if (
+        not isinstance(value, str)
+        or not value.strip()
+        or value != value.strip()
+        or len(value) > 128
+    ):
+        raise ServiceCompositionValidationError(
+            f"{field} must be non-empty trimmed text up to 128 characters"
+        )
+    return value
+
+
 @dataclass(frozen=True)
 class DependencyEvidence:
     """One dependency decision at the service-composition boundary.
@@ -234,19 +247,6 @@ def _evidence_map(
             )
         result[item.dependency_id] = item
     return result
-
-
-def _token(value: object, field: str) -> str:
-    if (
-        not isinstance(value, str)
-        or not value.strip()
-        or value != value.strip()
-        or len(value) > 128
-    ):
-        raise ServiceCompositionValidationError(
-            f"{field} must be non-empty trimmed text up to 128 characters"
-        )
-    return value
 
 
 __all__ = [
