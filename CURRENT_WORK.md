@@ -3,8 +3,8 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
-Progress: Android implementation remains integrated/test-verified with live device proof human-blocked; historical evidence reconciliation has resolved the legacy transmission jack to a trustworthy VEVOR purchase-family identity without inventing an exact model/SKU, and a fresh bounded powered/precision evidence pass found no defensible additional exact identity.
-Last 24h: Sep 24 runtime-integrity repairs remain green. Live `main` is now `a8e78dfcd571aa359fbaeebb864c48f5d4fb70de` (`Checkpoint transmission jack evidence reconciliation`) with CI/Trusted Runner Gate green. Durable Operating Addenda, ROADMAP and BACKLOG were re-read. Fresh Drive/Gmail searches for compressor, drill press, pressure washer, vacuum-pump and likely brand evidence did not produce trustworthy purchase/model identity for another `Details pending` powered/precision asset, so no model or manual was invented.
+Progress: Android implementation remains integrated/test-verified with live device proof human-blocked; historical evidence reconciliation now resolves the legacy transmission jack to exact manufacturer model `HTJ-1322`, with a manufacturer-hosted full user manual available for that exact product page.
+Last 24h: Sep 24 runtime-integrity repairs remain green. Live `main` was independently re-read as `8adacde2b704a9d567dec944eb88ad85d7918214` before this checkpoint, with CI/Trusted Runner Gate green. Durable Operating Addenda was reachable and re-read. Retained Amazon evidence for order `111-9893607-5225060` was joined to VEVOR's official matching 1322-lb transmission-jack product page; the manufacturer identifies Item Model Number `HTJ-1322` and publishes a full `User manual-en (PDF)` on that exact page. This supersedes the earlier family-only/no-manual checkpoint without inventing identity.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
 Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
@@ -125,7 +125,7 @@ Provider truth at repair time remains freshness-UNKNOWN; this repair does not cl
 - Trusted Runner Gate run `35978709083` completed `success` on that exact checkpoint.
 - Open PR audit still includes stale finance PR #166 and historical backfill PR #165; neither is a blind merge candidate.
 - Live workbook readback at checkpoint: zero duplicate Event IDs, zero missing FinOps AD/AE/AH/AI/AJ/AK derived fields across 2,127 populated rows, exact 586↔586 FinOps/Spending Review NEEDS REVIEW Event-ID parity, current zero-entry Fri–Thu week OPEN, provider freshness UNKNOWN preserved.
-- Remote `main` was re-read at worker start on Sep 24 and is `a8e78dfcd571aa359fbaeebb864c48f5d4fb70de` (`Checkpoint transmission jack evidence reconciliation`). CI run `35979174464` and Trusted Runner Gate run `35979341684` are green on that exact head.
+- Remote `main` was independently re-read this worker cycle as `8adacde2b704a9d567dec944eb88ad85d7918214` (`Reconcile live head and bounded inventory evidence audit`). CI run `35991151301` and Trusted Runner Gate run `35991276555` are green on that exact head.
 
 ### Idea/backlog capture audit
 
@@ -135,9 +135,10 @@ This evidence-quality correction introduces no new feature. It tightens evidence
 
 - Canonical Tool Inventory readback: row 115 / `TI-0030` is `Transmission jack`, quantity 1, hydraulic, `verified_existing_inventory`; brand/model/date/seller/price/order/receipt remain blank in the legacy row.
 - Retained Amazon purchase evidence independently resolves a purchase on 2026-07-09 for $229.32, Amazon order `111-9893607-5225060`, described as `VEVOR Transmission Jack, 1322 LBS Hydraulic Telescoping Transmission Jack, 32\"-67\" High Lift Transmission Jack Stand with Foot Pedal, 360° Swivel Wheel`.
-- The Financial Escape purchase evidence independently carries the same date, amount, order number, merchant context, and `VEVOR Hydraulic Transmission Jack` description. This is sufficient to establish a trustworthy VEVOR purchase-family identity for the single legacy transmission-jack asset, but not an exact manufacturer model/SKU.
-- Therefore `TI-0030` may be reconciled conceptually to Brand = VEVOR; variant = 1322 lb hydraulic telescoping / 32–67 in high-lift; purchase date = 2026-07-09; seller = Amazon; price = $229.32; order = 111-9893607-5225060. No exact model/SKU or manual is claimed from this evidence alone.
-- Drive manual search returned unrelated vehicle-service PDFs and no trustworthy exact-model VEVOR transmission-jack manual. Per the full-manual rule, none was attached or promoted.
+- The Financial Escape purchase evidence independently carries the same date, amount, order number, merchant context, and `VEVOR Hydraulic Transmission Jack` description.
+- Fresh manufacturer verification resolves the matching VEVOR product to Item Model Number `HTJ-1322`. The official VEVOR page matches the retained purchase on manufacturer, product class, 1322-lb capacity, hydraulic telescoping/foot-pedal design, high-lift range and swivel-wheel configuration; this is sufficient exact-model evidence rather than a guessed SKU.
+- The same official exact-product page exposes `User manual-en (PDF)` under Product guides and documents. This is a full manufacturer user manual, not a setup/QSG artifact, and is eligible manual evidence for `HTJ-1322`.
+- Therefore `TI-0030` is now reconciled conceptually to Brand = VEVOR; Model = `HTJ-1322`; variant = 1322 lb hydraulic telescoping high-lift transmission jack; purchase date = 2026-07-09; seller = Amazon; price = $229.32; order = `111-9893607-5225060`; manual status = manufacturer full user manual verified on exact-model product page.
 - Protected legacy production data was not mutated in this cycle; the verified reconciliation is checkpointed here for a later bounded write only after the target MIRA evidence surface is explicit.
 
 ## Bounded powered/precision evidence pass — 2026-09-24
@@ -169,8 +170,8 @@ Do not use protected/legacy production state as a disposable proof fixture.
 
 1. Await representative-device/provider proof for live Android capture; do not fabricate it.
 2. Continue historical inventory/receipt/manual reconciliation without treating quick-start/setup material as a full manual.
-3. Prefer retained purchase evidence with exact product title + order/date/amount or physical label/serial evidence; do not spend repeated cycles on broad brand guesses that have already returned no trustworthy identity.
-4. For `TI-0030`, seek exact VEVOR manufacturer model/SKU or physical-label evidence before attaching any model-specific manual; do not let the descriptive Amazon title masquerade as a model number.
+3. Persist the verified `TI-0030` exact-model/manual evidence only onto the explicit MIRA evidence surface when that write target is resolved; do not overwrite protected legacy rows merely to reduce backlog counts.
+4. Prefer retained purchase evidence with exact product title + order/date/amount or physical label/serial evidence; do not spend repeated cycles on broad brand guesses that have already returned no trustworthy identity.
 5. For `TI-0027`, do not attach a Rotary manual until exact/model-family applicability is established by trustworthy evidence.
 6. Preserve stale PR #166 as historical finance evidence only; do not merge it blindly.
 
