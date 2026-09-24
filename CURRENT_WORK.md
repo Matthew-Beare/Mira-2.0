@@ -3,8 +3,8 @@
 ## Customer status
 
 Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
-Progress: Repaired the Sep 18 Financial Escape live-state rollover with exact readback, verified May 1 remains the governing target, and bounded high-value inventory identity searches without inventing unsupported model data; Android live proof remains human-blocked.
-Last 24h: Financial Escape now has exactly one Sep 18 snapshot, zero duplicate Event IDs, live May 1 pace/status recomputed from latest available balances, and powered/precision legacy inventory searches were bounded across receipt/archive, Drive, and Gmail evidence.
+Progress: Repaired the AM/PM brief and finance-refresh pipeline, restored the hourly development/reconciliation workers, fixed the FinOps derived-formula tail, and hardened zero-entry mileage/spend rendering; Android live proof remains human-blocked.
+Last 24h: Sep 24 live audit verified May 1 governance and provider-freshness fail-closed behavior, changed the current zero-entry Fri–Thu cycle from false CLOSED/lost-time semantics to OPEN/no-time-lost-yet, repaired every missing FinOps Month/Review/allowance-derived formula across 2,127 populated rows, and persisted the rules in Durable Operating Addenda.
 Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
 Expected delivery: UNKNOWN until representative-device/provider consent is available.
 Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
@@ -99,12 +99,28 @@ Verified provider/workbook evidence:
 - Those searches produced no trustworthy exact purchase/model evidence beyond the existing inventory/interview state. No brand, model, SKU, serial, manual, or fitment identity was invented.
 - Exact-model/full-manual rule remains in force: physical label/photo/serial evidence or a trustworthy retained receipt is required before attaching model-specific manuals to these legacy assets.
 
-## CI/readback evidence — 2026-09-18
+## Brief / finance runtime integrity repair — 2026-09-24
 
-- Session-start remote `main` head was independently verified as `1852b53d1931dd44ca87422b94fa3337957753a4` (`Reconcile current main and CI evidence`).
-- GitHub Actions CI run `35086378900` and Trusted Runner Gate run `35086488130` both completed `success` on that exact head.
-- Open PR audit still shows stale finance PR #166; it is preserved as historical evidence and is not a merge candidate.
-- This CURRENT_WORK update records the Sep 18 finance/live-state and inventory evidence boundary; the resulting checkpoint commit must be read back before being treated as durable.
+Root causes and verified repairs:
+- AM and PM remain the only user-facing MIRA briefs, at exact 02:45 and 14:45 America/New_York. Brief prompts now forbid signed-negative ahead/behind wording, forbid verified spend-overage language when provider freshness is UNKNOWN, and suppress routine historical review ambiguity from the executive brief.
+- Financial Escape Refresh remains 02:20/14:20 America/New_York but now uses exact scheduling instead of condition-watch timing, removing early-run slot drift.
+- MIRA Continuous Worker is re-enabled hourly at :05 and MIRA Finance Backfill is re-enabled hourly at :55. They are not brief jobs and are staggered away from the 02:20/14:20 refresh and 02:45/14:45 briefs.
+- The stale Finance Backfill blanket rule that all check-number payments are septic was removed. Check #118/#119 remain user-confirmed septic; the recurring $24 check series is explicitly not septic; each new check is event-specific.
+- Check #120 ($2,800, 2026-09-21) remains NEEDS REVIEW. Same-day official Tennessee septic Certificate of Completion is recorded as supportive evidence only, not direct proof of payment purpose.
+- Canonical mileage semantics were repaired: persistent HOME from a prior work cycle does not close a new zero-entry Fri–Thu week. The current Sep 24 zero-entry week reads back OPEN WEEK • 0 COMPLETED, and Escape Readiness explicitly forbids converting the full-week pace deficit into time lost while open.
+- Mileage & Pay Tracker carries the same closure invariant: early HOME closure requires current-cycle paid activity; otherwise a zero-entry cycle remains open through Thursday 23:59 ET unless authoritative PTO/nonproductive evidence explicitly classifies it.
+- FinOps Ledger audit found derived-tail gaps on appended/backfilled rows. Missing formulas were restored only where blank: Month AD 129 rows; Review Status AE 116; Allowance Debit Amount AH 116; Allowance Key AI 129; Allowance Status AJ 116; Deferred Status AK 116. Post-write audit across all 2,127 populated ledger rows reports zero missing values/formulas in those six derived columns.
+- Spending Review readback for Check #120 now correctly shows Month 2026-09 and Review Status NEEDS REVIEW instead of blank derived state.
+- Dashboard integrity readback remains: current date 2026-09-24, exactly one current Daily Snapshot, duplicate Event IDs 0, DATA FRESHNESS = UNKNOWN • PROVIDER FRESHNESS, latest posted event date 2026-09-23.
+- The brief correctness/zero-entry/spend-freshness/check-specific rules were appended and read back in MIRA Durable Operating Addenda.
+
+Provider truth at repair time remains freshness-UNKNOWN; this repair does not claim current-to-the-second transaction completeness.
+## CI/readback evidence — 2026-09-24
+
+- Pre-repair remote `main` was verified at `ebaf91f23af87fc50cf7131f99df39815952573d` (`Checkpoint Sep 18 live finance and inventory evidence`).
+- GitHub Actions CI run `35367546064` and Trusted Runner Gate run `35367680925` both completed `success` on that exact pre-repair head.
+- Open PR audit still includes stale finance PR #166 and historical backfill PR #165; neither is a blind merge candidate.
+- The Sep 24 runtime-integrity checkpoint commit must be read back and its new CI state verified before green is claimed for the new head.
 
 ### Idea/backlog capture audit
 
