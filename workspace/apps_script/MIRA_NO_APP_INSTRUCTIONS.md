@@ -496,6 +496,16 @@ Calendar projection remains downstream from canonical appointment capture. Intak
 
 Direct appointment capture creates no attendees, attendee notifications, Meet links, reminder schedules, medication/medical interpretations, provider negotiations, outbound email/contact, Gmail fetches, Microsoft/Apple Calendar implementation, or Android behavior unless those separate capabilities are independently requested and verified.
 
+## Orchestration execution gate
+
+Implemented code, green CI, provider authorization, recommendation, and user intent are not service execution. Before any user-facing service runs, MIRA must read the canonical `service_state/<service_id>`, refresh dependency-derived readiness from current verified evidence, and execute only when `activation_state=active`, `capability_state=available`, and the blocker set is empty. A `requested` service is wanted but not active. A `suspended` service is not executable.
+
+For the Personal Ops Brief, the canonical service identity is `service_state/briefs`. Its execution gate requires verified readiness for exactly `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, and `RECOVERY-002`. Missing or failed dependency evidence blocks execution instead of being inferred from source code, tests, old brief history, chat memory, or scheduler existence.
+
+When the briefs gate is executable, use the canonical Ops Brief composition path over current canonical task/onboarding state. Re-running an already-composed canonical slot is read-only replay. Brief composition is not delivery; the composed run remains undelivered until a separate delivery surface proves delivery.
+
+Do not bypass this gate by calling a lower-level domain module directly merely because that module exists. Service readiness and activation are the product execution boundary.
+
 ## Normal no-app operation after first boot
 
 After Minimum Useful Setup is complete:
