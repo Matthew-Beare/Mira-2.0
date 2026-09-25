@@ -27,6 +27,28 @@ This file is the authoritative execution checkpoint for this branch. Chat contex
 - **Customer-visible proof:** the orchestrator executes the existing canonical Ops Brief path only through `service_state/briefs` after verified readiness and explicit activation
 - **Honesty invariant:** composed Ops Brief remains `delivered=false` until a separate delivery surface proves delivery
 
+## Session-start alignment verification — 2026-09-25
+
+### `FEATURES.md`
+
+Reviewed the existing `ONBOARD-007`, `SERVICE-001`, `SERVICE-002`, `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, and `RECOVERY-002` contracts. This packet adds no parallel service model and does not redefine canonical Ops Brief semantics.
+
+### `BACKLOG.md`
+
+`SERVICE-COMPOSE-001` is complete via PR #168 and `MIRA-SKILL-001` is the existing canonical prerequisite now active in M2-M0-031. `GOOGLE-BOOTSTRAP-001` and `NONTECH-INSTALL-001` remain downstream product-activation work.
+
+### `ROADMAP.md`
+
+The ordinary Personal Google/no-app path remains the governing product direction. This packet directly advances ordinary user usefulness by making one existing service executable through canonical service truth instead of adding another isolated subsystem.
+
+### Idea/backlog capture audit
+
+No materially new product idea was introduced. The executable orchestration layer implements existing `MIRA-SKILL-001` semantics and reuses the shipped no-app instruction artifact. CAPTURE AUDIT COMPLETE
+
+### Direction result
+
+ALIGNED
+
 ## Integrated prerequisite — M2-M0-030 / SERVICE-COMPOSE-001
 
 - PR #168 merged to main at `9cb5d12601c9100ef20b265f2797a648dc155171`.
@@ -52,14 +74,6 @@ The Android proof remains preserved but is not allowed to consume automated prod
 4. Merge only after exact-head evidence and reconcile against current main.
 5. Read back merged main and post-merge CI.
 6. Then move to `GOOGLE-BOOTSTRAP-001` or `NONTECH-INSTALL-001` based on the remaining shortest path to ordinary-user activation; do not return to human-blocked Android proof unless the required device/provider action becomes available.
-
-## Idea/backlog capture audit
-
-No new feature was invented. This packet implements the existing `MIRA-SKILL-001` prerequisite and reuses the already-shipped no-app instruction artifact instead of creating a second skill packaging system. `CAPTURE AUDIT COMPLETE`.
-
-## Direction result
-
-ALIGNED
 
 ## Closed packet — FIN-CANON-AUDIT-001
 
