@@ -279,6 +279,15 @@
       "verification": ["tests/test_service_state.py"]
     },
     {
+      "id": "service-composition",
+      "responsibility": "Provider-neutral dependency-derived readiness composition for activatable Personal service bundles, including the canonical briefs bundle contract.",
+      "why_separate": "SERVICE-001 owns explicit intent and activation while SERVICE-002 derives readiness from verified dependencies. Keeping composition separate prevents provider capability, dependency success, or tests from silently activating a service and gives orchestration one truthful execution gate.",
+      "owned_paths": ["mira/service_composition.py"],
+      "feature_ids": ["SERVICE-001", "SERVICE-002", "RECOVERY-002", "OPS-001", "OPS-003", "OPS-004", "RECOVERY-001"],
+      "work_ids": ["SERVICE-COMPOSE-001"],
+      "verification": ["tests/test_service_composition.py"]
+    },
+    {
       "id": "runtime-capability-router",
       "responsibility": "Provider-neutral read-only selection of one eligible provider/runtime lane from operation-specific verified capability evidence plus explicit approval and data-classification policy.",
       "why_separate": "Provider routing is a policy/evidence decision boundary distinct from durable service activation state, canonical Authority routing, managed API runtime assembly, provider authorization, and user-facing connection orchestration. Keeping it separate prevents runtime selection from silently becoming authorization, activation, or provider I/O.",

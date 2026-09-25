@@ -2,48 +2,76 @@
 
 ## Customer status
 
-Objective: Live-verify the integrated Android camera/QR/barcode capture and explicit movement path against a safe canonical asset/location pair while continuing trustworthy historical inventory/manual reconciliation.
-Progress: Android implementation remains integrated/test-verified with live device proof human-blocked; historical evidence reconciliation now resolves the legacy transmission jack to exact manufacturer model `HTJ-1322`, with a manufacturer-hosted full user manual available for that exact product page.
-Last 24h: Sep 24 runtime-integrity repairs remain green. Live `main` was independently re-read as `a1d4f1981fba7f85c65138ab5999e681a755cc38` (`Verify exact VEVOR transmission jack model and full manual`), with CI and Trusted Runner Gate green on that exact head. Open-PR audit still shows stale finance PR #166 as non-mergeable historical evidence. Durable Operating Addenda was reachable and re-read earlier in the active packet. Retained Amazon evidence for order `111-9893607-5225060` was joined to VEVOR's official matching 1322-lb transmission-jack product page; the manufacturer identifies Item Model Number `HTJ-1322` and publishes a full `User manual-en (PDF)` on that exact page. This supersedes the earlier family-only/no-manual checkpoint without inventing identity.
-Deliverable: A representative-device proof showing one read-only identifier resolution, one explicit MOVE-001 effect, and exact canonical location readback without duplicate movement; exact-model inventory/manual reconciliation continues where trustworthy identity evidence exists.
-Expected delivery: UNKNOWN until representative-device/provider consent is available.
-Blocker: Install/update the retained com.mira.deviceproof APK on a representative Android device, authorize the intended MIRA Personal Google Workspace copy, and run the safe scan + explicit-move proof.
+Objective: Turn the already-verified MIRA 2.0 capabilities into one usable Personal product, beginning with dependency-derived service composition that gives orchestration a truthful execution gate.
+Progress: Development priority moved off the human-blocked Android live-proof loop. M2-M0-030 now implements SERVICE-COMPOSE-001 on a dedicated branch; the production Personal briefs bundle derives readiness from OPS/RECOVERY dependencies and never silently activates.
+Last 24h: Repository audit proved the latest main checkpoint changed only CURRENT_WORK, while SERVICE-COMPOSE-001, MIRA-SKILL-001 and NONTECH-INSTALL-001 remain the missing product-glue path. The service composer, direct tests, code ownership, and active backlog state are now committed on the packet branch.
+Deliverable: A merged Personal service-composition gate that makes the existing briefs service executable only when declared dependencies are verified, preserves explicit user activation, fails closed on missing evidence, and suspends on readiness loss.
+Expected delivery: Packet implementation is written; merge remains gated on exact-head CI and review.
+Blocker: None for M2-M0-030. Android representative-device proof remains separately WAITING on physical-device/provider consent.
 
 ## Recovery authority
 
-This file is the authoritative execution checkpoint. Chat context is disposable. Re-read repository instructions, remote `main`, open PRs and CI before implementation or merge.
+This file is the authoritative execution checkpoint for this branch. Chat context is disposable. Re-read repository instructions, remote main, open PRs and CI before implementation or merge.
 
 ## Active packet
 
-### `M2-M1-046` — Android capture live-proof and inventory evidence reconciliation
+### `M2-M0-030` — Personal service composition
 
-- **Primary work:** `ANDROID-CAPTURE-001`
-- **Primary features:** `IDENT-001`, `ASSET-001`
-- **Related invariants/features:** `CLIENT-ANDROID-001`, `EVID-001`, `MOVE-001`, `INV-001`
-- **State:** integrated/test-verified; live representative-device proof pending; historical inventory/manual evidence reconciliation continues where exact identity is trustworthy
-- **Owned surfaces:** `CURRENT_WORK.md` recovery/status checkpoint; no Android implementation changes are claimed in this checkpoint
-- **Shared/high-contention surfaces:** `CURRENT_WORK.md`
-- **Blocker:** representative Android device + provider consent are required only for the live proof; evidence reconciliation remains dependency-safe
+- **Primary work:** `SERVICE-COMPOSE-001`
+- **Primary features:** `SERVICE-001`, `SERVICE-002`
+- **Related invariants/features:** `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, `RECOVERY-002`, `PROVIDER-001`
+- **State:** implementation written on `work/m2-m0-030-service-composition`; CI/PR evidence pending
+- **Owned surfaces:** `mira/service_composition.py`, `tests/test_service_composition.py`, code-ownership registration, minimal lifecycle checkpoint
+- **Shared/high-contention surfaces:** `BACKLOG.md`, `CURRENT_WORK.md`, `project/code_ownership.json`; reconcile against current main immediately before merge
+- **User-visible behavior enabled:** MIRA can determine whether the canonical Personal `briefs` bundle is actually ready from explicit dependency evidence instead of equating code/test existence with executable service state
+- **Activation invariant:** composition never activates a service; explicit user request plus explicit activation remain mandatory
+- **Failure invariant:** missing dependency evidence fails closed; active services suspend when dependency/capability readiness is lost
 
-## Session-start alignment verification — 2026-09-16
+## Session-start alignment verification — 2026-09-24
 
 ### `FEATURES.md`
 
-Reviewed against the active Android capture/inventory objective. `IDENT-001`, `ASSET-001`, `CLIENT-ANDROID-001`, `EVID-001`, `MOVE-001`, and `INV-001` remain the existing canonical feature semantics; no parallel inventory system is introduced.
+Reviewed `SERVICE-001` and `SERVICE-002` plus the existing brief/recovery dependencies. SERVICE-001 requires activation truth to remain separate from capability/recommendation. SERVICE-002 requires activatable service bundles with dependency-derived readiness. ONBOARD-007 is already implemented/test-verified and is not reimplemented here.
 
 ### `BACKLOG.md`
 
-Reviewed against remote main. `ANDROID-CAPTURE-001` remains the canonical work item for nonauthoritative camera/barcode/QR capture; passive reads do not silently move assets. Historical evidence reconciliation is treated as integrity work under the existing asset/evidence semantics rather than invented as a competing product model.
+`SERVICE-COMPOSE-001` is the existing prerequisite and is now active in this packet. `MIRA-SKILL-001` remains queued behind it; `NONTECH-INSTALL-001` remains queued behind the orchestration skill. No duplicate work item or parallel product model was introduced.
 
 ### `ROADMAP.md`
 
-Reviewed against the current Personal Google + Android shared-state direction. The live proof remains a representative-device/provider evidence gate, not something CI can fabricate.
+The no-app Personal path is the governing product direction until ordinary-user usefulness is real. Existing Ops Brief, starter, provider-onboarding, runtime-routing and source-gate proofs are reused rather than rebuilt. This packet closes the first missing composition seam between verified capabilities and product orchestration.
+
+### Concurrent work / collision check
+
+Remote work branches and open PRs were inspected before writes. No open packet was found owning `mira/service_composition.py` or `tests/test_service_composition.py`. Existing finance/history and Studio PRs remain isolated. Shared governance files require rebase/reconciliation before merge.
 
 ### Idea/backlog capture audit
 
-No materially new product idea was introduced by repairing the recovery checkpoint or enforcing the full-manual evidence rule. Existing inventory, identity, movement, evidence, and Android capture semantics are reused. `CAPTURE AUDIT COMPLETE`.
+No new product feature was invented. This packet implements the already-accepted `SERVICE-COMPOSE-001` work item using existing `SERVICE-001` / `SERVICE-002` semantics and the existing Personal briefs dependency set. `CAPTURE AUDIT COMPLETE`.
 
 ### Direction result
+
+ALIGNED
+
+## Waiting packet — Android representative-device proof
+
+The former active Android proof is preserved, not deleted:
+
+- `ANDROID-CAPTURE-001` deterministic/integration implementation remains merged/test-verified.
+- Live representative-device proof remains unfinished.
+- Resume only when a representative Android device and provider consent are actually available.
+- Minimum human action remains: install/update `com.mira.deviceproof`, authorize the intended MIRA Personal Google Workspace copy, run one read-only identifier scan, explicitly execute one safe MOVE-001, and verify exact canonical readback with one movement effect.
+- Do not spend automated development cycles restating this blocker or treating checkpoint/CI refreshes as product progress.
+
+## Next bounded step
+
+1. Open the M2-M0-030 PR.
+2. Require exact-head CI and ownership/session gates.
+3. Fix any real failures; do not add unrelated scope.
+4. After green review, reconcile with current main, merge, and read back main + post-merge CI.
+5. Then select `MIRA-SKILL-001` as the next product-glue packet unless a new integrity/security blocker legitimately preempts it.
+
+## Direction result
 
 ALIGNED
 

@@ -107,7 +107,7 @@ These rows remain valid and dependency-ranked below the active M2-M0/M2-M1 path 
 | `WEARABLE-ADAPTER-001` | LATER | Optional authorized wearable/activity adapters with provenance/capability/readback honesty. | WEARABLE-001 | deferred optional |
 | `OBSERVABILITY-001` | HARDENING | Read-only operational telemetry/dashboard projection. | OBS-001,AUTH-001,RECOVERY-002,core runtime | queued after core |
 | `VOICE-CLIENT-001` | LATER | Optional voice query and command surface over shared API with consequential-action confirmation. | VOICE-001,API-CORE-001 | deferred |
-| `SERVICE-COMPOSE-001` | PREREQUISITE | Port/prove service composition/readiness with activation separate from readiness. | SERVICE-001,SERVICE-002,canonical dependency registry,RUNTIME-ROUTER-001 | queued |
+| `SERVICE-COMPOSE-001` | PREREQUISITE | Port/prove service composition/readiness with activation separate from readiness. | SERVICE-001,SERVICE-002,canonical dependency registry,RUNTIME-ROUTER-001 | active in `M2-M0-030`; bounded Personal briefs composition implementation in progress |
 | `SERVICE-DEPS-001` | PREREQUISITE | F1 Briefs/Orders dependency repair. | SERVICE-002,OPS-002,ORDER-004,dependency registry | queued |
 | `SERVICE-DEPS-002` | PREREQUISITE | F2 finance/calendar/health selected-goal readiness. | SERVICE-002,CAL-005,CAL-006,CAL-008,HEALTH-001,category-C finance features | queued |
 | `SERVICE-DEPS-003` | PREREQUISITE | F3 shopping/recipe/meal/grocery selected-submodule readiness. | SERVICE-002,SHOP-001,GROCERY-001,RECIPE-001,MEAL-001 | queued |
