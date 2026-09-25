@@ -2,12 +2,12 @@
 
 ## Customer status
 
-Objective: Turn the already-verified MIRA 2.0 capabilities into one usable Personal product, beginning with dependency-derived service composition that gives orchestration a truthful execution gate.
-Progress: Development priority moved off the human-blocked Android live-proof loop. M2-M0-030 now implements SERVICE-COMPOSE-001 on a dedicated branch; the production Personal briefs bundle derives readiness from OPS/RECOVERY dependencies and never silently activates.
-Last 24h: Repository audit proved the latest main checkpoint changed only CURRENT_WORK, while SERVICE-COMPOSE-001, MIRA-SKILL-001 and NONTECH-INSTALL-001 remain the missing product-glue path. The service composer, direct tests, code ownership, and active backlog state are now committed on the packet branch.
-Deliverable: A merged Personal service-composition gate that makes the existing briefs service executable only when declared dependencies are verified, preserves explicit user activation, fails closed on missing evidence, and suspends on readiness loss.
-Expected delivery: Packet implementation is written; merge remains gated on exact-head CI and review.
-Blocker: None for M2-M0-030. Android representative-device proof remains separately WAITING on physical-device/provider consent.
+Objective: Make MIRA behave like one usable Personal product instead of a collection of verified modules.
+Progress: SERVICE-COMPOSE-001 is merged on main. M2-M0-031 now adds executable Personal orchestration: the shipped no-app instructions and Python runtime share the same active+ready service gate, and the first real execution path is canonical Ops Brief composition.
+Last 24h: PR #168 merged at `9cb5d12601c9100ef20b265f2797a648dc155171`. On `work/m2-m0-031-mira-orchestration`, `mira/orchestration.py`, end-to-end orchestration tests, the shipped no-app execution-gate contract, code ownership, and lifecycle state are committed.
+Deliverable: A merged orchestration layer proving that an inactive/requested/suspended briefs service cannot run, while an explicitly active and dependency-ready briefs service executes the existing canonical Ops Brief path and persists/replays the real run.
+Expected delivery: Implementation is written; merge depends on exact-head CI and review.
+Blocker: None for M2-M0-031. Android representative-device proof remains independently WAITING on physical-device/provider consent.
 
 ## Recovery authority
 
@@ -15,61 +15,47 @@ This file is the authoritative execution checkpoint for this branch. Chat contex
 
 ## Active packet
 
-### `M2-M0-030` — Personal service composition
+### `M2-M0-031` — Personal MIRA orchestration
 
-- **Primary work:** `SERVICE-COMPOSE-001`
-- **Primary features:** `SERVICE-001`, `SERVICE-002`
-- **Related invariants/features:** `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, `RECOVERY-002`, `PROVIDER-001`
-- **State:** implementation written on `work/m2-m0-030-service-composition`; CI/PR evidence pending
-- **Owned surfaces:** `mira/service_composition.py`, `tests/test_service_composition.py`, code-ownership registration, minimal lifecycle checkpoint
+- **Primary work:** `MIRA-SKILL-001`
+- **Primary features:** `ONBOARD-007`, `SERVICE-001`, `SERVICE-002`
+- **Related invariants/features:** `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, `RECOVERY-002`
+- **State:** implementation written on `work/m2-m0-031-mira-orchestration`; CI/PR evidence pending
+- **Owned surfaces:** `mira/orchestration.py`, `tests/test_mira_orchestration.py`; shipped no-app orchestration contract updated in `workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md`
 - **Shared/high-contention surfaces:** `BACKLOG.md`, `CURRENT_WORK.md`, `project/code_ownership.json`; reconcile against current main immediately before merge
-- **User-visible behavior enabled:** MIRA can determine whether the canonical Personal `briefs` bundle is actually ready from explicit dependency evidence instead of equating code/test existence with executable service state
-- **Activation invariant:** composition never activates a service; explicit user request plus explicit activation remain mandatory
-- **Failure invariant:** missing dependency evidence fails closed; active services suspend when dependency/capability readiness is lost
+- **Execution invariant:** user intent, provider authorization, code existence and green CI are never execution authority; the service must be effectively active
+- **Customer-visible proof:** the orchestrator executes the existing canonical Ops Brief path only through `service_state/briefs` after verified readiness and explicit activation
+- **Honesty invariant:** composed Ops Brief remains `delivered=false` until a separate delivery surface proves delivery
 
-## Session-start alignment verification — 2026-09-24
+## Integrated prerequisite — M2-M0-030 / SERVICE-COMPOSE-001
 
-### `FEATURES.md`
-
-Reviewed `SERVICE-001` and `SERVICE-002` plus the existing brief/recovery dependencies. SERVICE-001 requires activation truth to remain separate from capability/recommendation. SERVICE-002 requires activatable service bundles with dependency-derived readiness. ONBOARD-007 is already implemented/test-verified and is not reimplemented here.
-
-### `BACKLOG.md`
-
-`SERVICE-COMPOSE-001` is the existing prerequisite and is now active in this packet. `MIRA-SKILL-001` remains queued behind it; `NONTECH-INSTALL-001` remains queued behind the orchestration skill. No duplicate work item or parallel product model was introduced.
-
-### `ROADMAP.md`
-
-The no-app Personal path is the governing product direction until ordinary-user usefulness is real. Existing Ops Brief, starter, provider-onboarding, runtime-routing and source-gate proofs are reused rather than rebuilt. This packet closes the first missing composition seam between verified capabilities and product orchestration.
-
-### Concurrent work / collision check
-
-Remote work branches and open PRs were inspected before writes. No open packet was found owning `mira/service_composition.py` or `tests/test_service_composition.py`. Existing finance/history and Studio PRs remain isolated. Shared governance files require rebase/reconciliation before merge.
-
-### Idea/backlog capture audit
-
-No new product feature was invented. This packet implements the already-accepted `SERVICE-COMPOSE-001` work item using existing `SERVICE-001` / `SERVICE-002` semantics and the existing Personal briefs dependency set. `CAPTURE AUDIT COMPLETE`.
-
-### Direction result
-
-ALIGNED
+- PR #168 merged to main at `9cb5d12601c9100ef20b265f2797a648dc155171`.
+- The production Personal `briefs` bundle derives readiness from `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, and `RECOVERY-002`.
+- Missing dependency evidence fails closed.
+- Readiness never silently activates a service.
+- An active service suspends if capability/dependency readiness is lost.
 
 ## Waiting packet — Android representative-device proof
 
-The former active Android proof is preserved, not deleted:
+The Android proof remains preserved but is not allowed to consume automated product-development cycles:
 
 - `ANDROID-CAPTURE-001` deterministic/integration implementation remains merged/test-verified.
 - Live representative-device proof remains unfinished.
 - Resume only when a representative Android device and provider consent are actually available.
-- Minimum human action remains: install/update `com.mira.deviceproof`, authorize the intended MIRA Personal Google Workspace copy, run one read-only identifier scan, explicitly execute one safe MOVE-001, and verify exact canonical readback with one movement effect.
-- Do not spend automated development cycles restating this blocker or treating checkpoint/CI refreshes as product progress.
+- Do not treat repeated CI/checkpoint refreshes of this human-only blocker as product progress.
 
 ## Next bounded step
 
-1. Open the M2-M0-030 PR.
+1. Open the M2-M0-031 PR.
 2. Require exact-head CI and ownership/session gates.
-3. Fix any real failures; do not add unrelated scope.
-4. After green review, reconcile with current main, merge, and read back main + post-merge CI.
-5. Then select `MIRA-SKILL-001` as the next product-glue packet unless a new integrity/security blocker legitimately preempts it.
+3. Fix real failures only; do not widen scope.
+4. Merge only after exact-head evidence and reconcile against current main.
+5. Read back merged main and post-merge CI.
+6. Then move to `GOOGLE-BOOTSTRAP-001` or `NONTECH-INSTALL-001` based on the remaining shortest path to ordinary-user activation; do not return to human-blocked Android proof unless the required device/provider action becomes available.
+
+## Idea/backlog capture audit
+
+No new feature was invented. This packet implements the existing `MIRA-SKILL-001` prerequisite and reuses the already-shipped no-app instruction artifact instead of creating a second skill packaging system. `CAPTURE AUDIT COMPLETE`.
 
 ## Direction result
 
