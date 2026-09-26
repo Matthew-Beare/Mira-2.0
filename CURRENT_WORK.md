@@ -214,3 +214,29 @@ Do not use protected/legacy production state as a disposable proof fixture.
 ## Direction result
 
 ALIGNED
+
+
+## Ops Brief live-finance evidence incident — 2026-09-26 PM
+
+Customer-visible defect:
+- The scheduled PM brief rendered `provider freshness UNKNOWN` and controlled-category weekly `$0` without proving that the brief process itself had executed the required live Finances reads. The resulting finance output was plausible but not evidence-complete and is invalid as a verified finance render.
+- A controlled-category zero was also ambiguous enough to be misread as zero household spending even though live provider rows proved current Fri–Thu non-transfer outflow.
+
+Verified corrective evidence:
+- Direct live linked-account/coverage read executed.
+- Direct live current Fri–Thu posted transaction query executed with transfers included for reconciliation.
+- Transaction coverage returned ready/full-history/complete-for-query; provider freshness remains UNKNOWN and is preserved as UNKNOWN.
+- Six Sep 25 posted rows were returned: matched WGU and birthday own-account transfer pairs, State Farm insurance $196.69, and HELOC payment $1,442.28.
+- Own-account transfers were excluded from economic spend. Current-week known posted economic-spend floor is $1,638.97; controlled Spend Control categories are separately $0 and must never be represented as total household spend.
+- Canonical Today & Accounts, Spend Control, and Provenance were updated and read back. Provenance marker: `FIN-LIVE-VERIFY-2026-09-26-PM-CORRECTION COMPLETE`.
+
+Runtime/control repair:
+- Financial Escape Refresh now has a hard success gate requiring, in the same run, both live linked-account/coverage evidence and a live current Fri-Thu posted transaction query, classification, persisted economic-spend floor, and canonical readback.
+- Both AM and PM brief tasks now independently require those same two live provider reads before finance rendering. Prior refresh state is corroborating evidence only, never a substitute.
+- Finance rendering fails closed with ACTION REQUIRED if those reads are missing/errored or canonical state conflicts with live evidence.
+- When provider freshness is UNKNOWN, the brief must still expose the live known posted economic-spend floor while preserving UNKNOWN completeness.
+- MIRA Finance Backfill was found disabled despite the prior repository checkpoint saying it should be enabled; live automation state was repaired to enabled.
+
+Product requirement:
+- Do not rely on prose-only execution instructions for evidence-critical provider work. The durable product path must make provider-read receipts and finance pre-render evidence explicit machine-verifiable inputs to brief composition before the finance module can claim success.
+- The existing repository `mira/ops_brief.py` remains a task-only vertical and is not by itself the production finance renderer. Do not pretend that patching task composition alone closes this incident.
