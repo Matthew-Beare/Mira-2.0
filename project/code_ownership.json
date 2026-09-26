@@ -927,6 +927,26 @@
         "tests/test_code_ownership.py",
         "tests/test_work_session_alignment.py"
       ]
+    },
+    {
+      "id": "google-bootstrap",
+      "responsibility": "Deterministic Personal Google selected-service bootstrap planning and fail-closed capability verification from SOURCE-001 evidence.",
+      "why_separate": "Bootstrap planning and proof must remain separate from provider authorization, live consent, provider mutation, service activation, and provider-specific storage so a desired Google setup cannot manufacture Connected state.",
+      "owned_paths": [
+        "mira/google_bootstrap.py"
+      ],
+      "feature_ids": [
+        "PROVIDER-003",
+        "ONBOARD-007",
+        "PROVIDER-002",
+        "SOURCE-001"
+      ],
+      "work_ids": [
+        "GOOGLE-BOOTSTRAP-001"
+      ],
+      "verification": [
+        "tests/test_google_bootstrap.py"
+      ]
     }
   ]
 }

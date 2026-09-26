@@ -3,51 +3,60 @@
 ## Customer status
 
 Objective: Make MIRA behave like one usable Personal product instead of a collection of verified modules.
-Progress: SERVICE-COMPOSE-001 is merged on main. M2-M0-031 now adds executable Personal orchestration: the shipped no-app instructions and Python runtime share the same active+ready service gate, and the first real execution path is canonical Ops Brief composition.
-Last 24h: PR #168 merged at `9cb5d12601c9100ef20b265f2797a648dc155171`. On `work/m2-m0-031-mira-orchestration`, `mira/orchestration.py`, end-to-end orchestration tests, the shipped no-app execution-gate contract, code ownership, and lifecycle state are committed.
-Deliverable: A merged orchestration layer proving that an inactive/requested/suspended briefs service cannot run, while an explicitly active and dependency-ready briefs service executes the existing canonical Ops Brief path and persists/replays the real run.
-Expected delivery: Implementation is written; merge depends on exact-head CI and review.
-Blocker: None for M2-M0-031. Android representative-device proof remains independently WAITING on physical-device/provider consent.
+Progress: M2-M0-031 is merged on main at `3ecf6c058aa02032090020c9e8dc2790bb7ad4f9`. M2-M0-032 now advances `GOOGLE-BOOTSTRAP-001` with deterministic selected-service planning and fail-closed capability verification for Personal Google Workspace.
+Last 24h: PR #169 merged Personal orchestration. The new Google bootstrap branch now contains `mira/google_bootstrap.py`, deterministic tests, packet definition, and code-ownership registration.
+Deliverable: A tested bootstrap planner/verifier that never treats authorization, declared scopes, code existence, or another Google service as proof that an explicitly selected service is usable.
+Expected delivery: Implementation is written; PR and exact-head CI remain.
+Blocker: None for M2-M0-032. Android representative-device proof remains independently human-blocked and out of scope.
 
 ## Recovery authority
 
-This file is the authoritative execution checkpoint for this branch. Chat context is disposable. Re-read repository instructions, remote main, open PRs and CI before implementation or merge.
+This file is the authoritative execution checkpoint for this branch. Chat context is disposable. Re-read repository instructions, remote main, this branch, open PRs and CI before implementation or merge.
 
 ## Active packet
 
-### `M2-M0-031` — Personal MIRA orchestration
+### `M2-M0-032` — Personal Google bootstrap
 
-- **Primary work:** `MIRA-SKILL-001`
-- **Primary features:** `ONBOARD-007`, `SERVICE-001`, `SERVICE-002`
-- **Related invariants/features:** `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, `RECOVERY-002`
-- **State:** implementation written on `work/m2-m0-031-mira-orchestration`; CI/PR evidence pending
-- **Owned surfaces:** `mira/orchestration.py`, `tests/test_mira_orchestration.py`; shipped no-app orchestration contract updated in `workspace/apps_script/MIRA_NO_APP_INSTRUCTIONS.md`
-- **Shared/high-contention surfaces:** `BACKLOG.md`, `CURRENT_WORK.md`, `project/code_ownership.json`; reconcile against current main immediately before merge
-- **Execution invariant:** user intent, provider authorization, code existence and green CI are never execution authority; the service must be effectively active
-- **Customer-visible proof:** the orchestrator executes the existing canonical Ops Brief path only through `service_state/briefs` after verified readiness and explicit activation
-- **Honesty invariant:** composed Ops Brief remains `delivered=false` until a separate delivery surface proves delivery
+- **Primary work:** `GOOGLE-BOOTSTRAP-001`
+- **Primary features:** `PROVIDER-003`, `ONBOARD-007`
+- **Related invariants/features:** `PROVIDER-002`, `SOURCE-001`, `SERVICE-001`
+- **Branch:** `work/m2-m0-032-google-bootstrap`
+- **Base:** `3ecf6c058aa02032090020c9e8dc2790bb7ad4f9`
+- **State:** implementation + deterministic tests written; PR/CI pending
+- **Owned surfaces:** `mira/google_bootstrap.py`, `tests/test_google_bootstrap.py`
+- **Shared/high-contention surfaces:** `CURRENT_WORK.md`, `BACKLOG.md`, `project/code_ownership.json`
+- **Execution invariant:** bootstrap planning and proof perform no provider authorization, provider mutation, or service activation
+- **Evidence invariant:** every selected service must independently prove fresh required gates; missing/mismatched/declared-only evidence fails closed
 
-## Session-start alignment verification — 2026-09-25
+## Session-start alignment verification — 2026-09-26
 
 ### `FEATURES.md`
 
-Reviewed the existing `ONBOARD-007`, `SERVICE-001`, `SERVICE-002`, `OPS-001`, `OPS-003`, `OPS-004`, `RECOVERY-001`, and `RECOVERY-002` contracts. This packet adds no parallel service model and does not redefine canonical Ops Brief semantics.
+`PROVIDER-003` already requires a deterministic Personal Google bootstrap adapter with strict drift/readback verification. This packet implements a bounded planning/proof slice without redefining provider onboarding or service activation.
 
 ### `BACKLOG.md`
 
-`SERVICE-COMPOSE-001` is complete via PR #168 and `MIRA-SKILL-001` is the existing canonical prerequisite now active in M2-M0-031. `GOOGLE-BOOTSTRAP-001` and `NONTECH-INSTALL-001` remain downstream product-activation work.
+`GOOGLE-BOOTSTRAP-001` is the existing queued prerequisite after `MIRA-SKILL-001`. M2-M0-031 satisfied the orchestration prerequisite, so M2-M0-032 is the shortest remaining product-activation step before broader `NONTECH-INSTALL-001` hardening.
 
 ### `ROADMAP.md`
 
-The ordinary Personal Google/no-app path remains the governing product direction. This packet directly advances ordinary user usefulness by making one existing service executable through canonical service truth instead of adding another isolated subsystem.
+The ordinary Personal Google/no-app path remains governing direction. This packet deliberately avoids terminal fallback, private updater behavior, or developer-console ceremony.
 
 ### Idea/backlog capture audit
 
-No materially new product idea was introduced. The executable orchestration layer implements existing `MIRA-SKILL-001` semantics and reuses the shipped no-app instruction artifact. CAPTURE AUDIT COMPLETE
+No materially new product idea was introduced. M2-M0-032 implements existing `GOOGLE-BOOTSTRAP-001` / `PROVIDER-003` semantics. `CAPTURE AUDIT COMPLETE`.
 
 ### Direction result
 
 ALIGNED
+
+## Next bounded step
+
+1. Open the M2-M0-032 PR.
+2. Require exact-head CI and ownership/session gates.
+3. Fix real failures only; do not widen into OAuth, live provider mutation, or nontechnical-install UX.
+4. Reconcile shared files against current `main` immediately before merge.
+5. Merge only after exact-head evidence, then read back remote `main` and post-merge CI.
 
 ## Integrated prerequisite — M2-M0-030 / SERVICE-COMPOSE-001
 
